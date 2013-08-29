@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>TasksCode</web>
+  <name>Translations</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>TaskCode.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1200842544000</creationDate>
+  <date>1206540357000</date>
+  <contentUpdateDate>1206540357000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Edit the translations of the Task Manager Application</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/1.0</syntaxId>
+  <hidden>false</hidden>
+  <object>
+    <class>
+      <name>XWiki.TagClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <tags>
+        <cache>0</cache>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>tags</name>
+        <number>1</number>
+        <prettyName>Tags</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <values/>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </tags>
+    </class>
+    <name>TasksCode.Translations</name>
+    <number>0</number>
+    <className>XWiki.TagClass</className>
+    <guid>831e2dde-ea88-4cef-8bc3-39beb86d79e5</guid>
+    <property>
+      <tags/>
+    </property>
+  </object>
+  <content>## {pre}
+its_home_welcome=Welcome to the XWiki Task Manager
+its_home_mytasks=My Tasks
+its_home_myactivetasks=My Active Tasks
+its_home_myreportedtasks=My Reported Tasks
+its_home_allactivetasks=20 Latest Active Tasks
+its_pagetasks_tasks=Page Tasks
+its_pagetasks_newtask=New Task
+its_pagetasks_more=View all my tasks
+its_pagetasks_notask=This page does not have any attached task.
+its_mytasks_mytasks=My Recent Tasks
+its_mytasks_notask=You do not have any assigned task.
+its_newtask=New Task
+its_task_new=New Task
+its_task=Task
+its_task_id=Id
+its_task_assignee=Assignee
+its_task_reporter=Reporter
+its_task_description=Description
+its_task_status=Status
+its_task_severity=Severity
+its_task_title=Title
+its_task_onpage=on page
+its_task_dueDate=Due Date
+its_task_resolution=Resolution
+
+its_taskgroup_new=New Task Group
+its_taskgroup=Task Group
+its_taskgroup_newtask=New Main Task
+its_taskgroup_subtasks=Sub-Tasks
+its_taskgroup_create=Create Task
+its_taskgroup_title=Creating a new task group
+its_taskgroup_addsubtaskassignee=Add a new assignee
+its_taskgroup_created=Task [{0}&gt;{1}] has been created.
+its_taskgroup_created_subtask=Sub-task [{0}&gt;{1}] has been created assigned to [{2}].
+its_taskgroup_created_endmessage=You can now [create another task group&gt;NewTaskGroup] or visit your [My Tasks page&gt;Tasks.WebHome].
+its_taskgroup_onpage=on page
+its_taskgroup_activesubtasks=Active subtasks
+its_taskgroup_inactivesubtasks=Inactive subtasks
+its_taskgroup_list=Task group list
+its_taskgroup_numberofunfinishedsubtasks=Number of unfinished subtasks
+its_taskgroup_activetasks=Active tasks
+its_taskgroup_inactivetasks=Inactive tasks
+its_taskgroup_subtaskexplanation=Clicking on an user will allow you to create a subtask that will be affected to him. You can only create one subtask per user. You can create as many subtasks as there is users on your wiki.
+its_taskgroup_createsubtasks=Create those subtasks
+its_taskscode_admin=Task Manager Application Administration Space
+its_taskscode_spaceindex=Space Index
+its_taskscodespace_info=Welcome to the administration space of the Task Manager Application ! This page lists all the components used to build the Task Manager Application. Remember to always provide a view right on this space to your users for them to be able to add new tasks and view them.
+
+its_notifications_sender=ludovic@xwiki.com
+its_notifications_update_title=Task Update: {0}-{1}
+its_notifications_update_content=\nTask {1} has been updated. You can view the current task information at:\n\n{2}\n\nTask Status: {3} Task Assignee: {4} Task reporter: {5} Task due date: {6}\n\n{7}\n\n
+its_notifications_create_title=Task Create: {0}-{1}
+its_notifications_create_content=\nTask {1} has been created. You can view the current task information at:\n\n{2}\n\nTask Status: {3} Task Assignee: {4} Task reporter: {5} Task due date: {6}\n\n{7}\n\n
+
+## {/pre}</content>
+</xwikidoc>

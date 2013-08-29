@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>TasksCode</web>
+  <name>WebHome</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>Main.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1205281030000</creationDate>
+  <date>1205433100000</date>
+  <contentUpdateDate>1205433100000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/1.0</syntaxId>
+  <hidden>false</hidden>
+  <object>
+    <class>
+      <name>XWiki.TagClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <tags>
+        <cache>0</cache>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>tags</name>
+        <number>1</number>
+        <prettyName>Tags</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <values/>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </tags>
+    </class>
+    <name>TasksCode.WebHome</name>
+    <number>0</number>
+    <className>XWiki.TagClass</className>
+    <guid>418765e1-91ce-4608-a985-e1015813d63a</guid>
+    <property>
+      <tags/>
+    </property>
+  </object>
+  <content>1 $msg.its_taskscode_admin
+
+$msg.its_taskscodespace_info
+
+1.1 $msg.its_taskscode_spaceindex
+
+#set ($sql = "where doc.web='$doc.space' order by doc.name asc")
+#set ($list = $xwiki.searchDocuments($sql))
+#includeInContext("XWiki.Results")</content>
+</xwikidoc>

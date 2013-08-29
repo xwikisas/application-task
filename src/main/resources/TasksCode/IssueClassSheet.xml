@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>TasksCode</web>
+  <name>IssueClassSheet</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>TaskCode.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1200866112000</creationDate>
+  <date>1205281547000</date>
+  <contentUpdateDate>1205281547000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/1.0</syntaxId>
+  <hidden>false</hidden>
+  <object>
+    <class>
+      <name>XWiki.TagClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <tags>
+        <cache>0</cache>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>tags</name>
+        <number>1</number>
+        <prettyName>Tags</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <values/>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </tags>
+    </class>
+    <name>TasksCode.IssueClassSheet</name>
+    <number>0</number>
+    <className>XWiki.TagClass</className>
+    <guid>14954bca-6613-4773-af92-5e74a3e56e14</guid>
+    <property>
+      <tags/>
+    </property>
+  </object>
+  <content>&lt;style&gt;
+#includeInContext("TasksCode.Skin")
+&lt;/style&gt;
+
+$doc.use("TasksCode.IssueClass")
+#if($doc.isNew())
+#set($id = $request.id)
+$doc.set("id", $id)
+$doc.set("status", "new")
+$doc.set("resolution", "none")
+$doc.set("severity", "major")
+$doc.set("reporter", $context.localUser)
+$doc.set("assignee", $context.localUser)
+$doc.set("page", $request.page)
+#else
+#set($id = $doc.display("id", "view"))
+#end
+#set($pagedoc = $xwiki.getDocument($doc.getValue("page")))
+1 $msg.its_task $id #if($doc.getValue("page")!="") $msg.its_task_onpage [$pagedoc.displayTitle&gt;$pagedoc.fullName] #end
+
+$doc.display("page", "hidden")
+
+&lt;div class="box" id="task"&gt;
+
+1.1 $msg.its_task $doc.display("id") - $doc.display("title")
+
+* $msg.its_task_status : $doc.display("status")
+
+* $msg.its_task_resolution : $doc.display("resolution")
+
+* $msg.its_task_reporter : $doc.display("reporter")
+
+* $msg.its_task_assignee : $doc.display("assignee")
+
+* $msg.its_task_dueDate : $doc.display("dueDate")
+
+* $msg.its_task_severity : $doc.display("severity")
+
+&lt;fieldset&gt;
+&lt;legend class="fieldset"&gt;$msg.its_task_description&lt;/legend&gt;
+
+$doc.display("description")
+&lt;/fieldset&gt;
+
+#if($context.action!="inline")
+&lt;fieldset&gt;
+&lt;legend class="fieldset"&gt;$msg.comments&lt;/legend&gt;
+{pre}
+#template("commentsinline.vm")
+{/pre}
+&lt;/fieldset&gt;
+##
+&lt;fieldset&gt;
+&lt;legend class="fieldset"&gt;$msg.attachments&lt;/legend&gt;
+
+#template("attachmentsinline.vm")
+&lt;/fieldset&gt;
+#end 
+## end action inline
+
+&lt;/div&gt;
+
+#set($taskgroup = $doc.getValue("taskgroup"))
+#if($taskgroup=="1")
+&lt;div class="box" id="activesubtasks"&gt;
+1.1 $msg.its_taskgroup_activesubtasks
+
+#foreach($taskDocName in $xwiki.searchDocuments(",BaseObject as obj, StringProperty as prop, StringProperty as statusprop where doc.fullName=obj.name and obj.className='TasksCode.IssueClass' and obj.id=prop.id.id and prop.id.name='page' and prop.value='${doc.fullName}' and obj.id=statusprop.id.id and statusprop.id.name='status' and statusprop.value in ('new','open','reopened') order by doc.date desc"))
+#set($taskdoc = $xwiki.getDocument($taskDocName))
+#set($ok = $taskdoc.use("TasksCode.IssueClass"))
+&lt;div style="margin: 5px;"&gt;
+&lt;span style="font-size: 1.2em;"&gt;[$msg.its_task $taskdoc.display("id","view")&gt;$taskDocName] - [$taskdoc.display("title","view")&gt;$taskDocName]&lt;/span&gt;
+* $msg.its_task_status : $taskdoc.display("status","view")
+* $msg.its_task_assignee : $xwiki.getLocalUserName($taskdoc.display("assignee","view"))
+&lt;/div&gt;
+#end
+&lt;/div&gt;
+&lt;div class="box" id="inactiveactivesubtasks"&gt;
+1.1 $msg.its_taskgroup_inactivesubtasks
+
+#foreach($taskDocName in $xwiki.searchDocuments(",BaseObject as obj, StringProperty as prop, StringProperty as statusprop where doc.fullName=obj.name and obj.className='TasksCode.IssueClass' and obj.id=prop.id.id and prop.id.name='page' and prop.value='${doc.fullName}' and obj.id=statusprop.id.id and statusprop.id.name='status' and statusprop.value not in ('new','open','reopened') order by doc.date desc"))
+#set($taskdoc = $xwiki.getDocument($taskDocName))
+#set($ok = $taskdoc.use("TasksCode.IssueClass"))
+&lt;div style="margin: 5px;"&gt;
+&lt;span style="font-size: 1.2em;"&gt;[$msg.its_task $taskdoc.display("id","view")&gt;$taskDocName] - [$taskdoc.display("title","view")&gt;$taskDocName]&lt;/span&gt;
+* $msg.its_task_status : $taskdoc.display("status","view")
+* $msg.its_task_assignee : $xwiki.getLocalUserName($taskdoc.display("assignee","view"))
+&lt;/div&gt;
+#end
+&lt;/div&gt;
+#end
+
+#set($showcomments = "no")
+#set($showattachments = "no")</content>
+</xwikidoc>
