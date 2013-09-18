@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>TaskManager</web>
+  <name>AdministrationAddProject</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>TaskManager.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1378105925000</creationDate>
+  <date>1378476300000</date>
+  <contentUpdateDate>1378476300000</contentUpdateDate>
+  <version>1.1</version>
+  <title>AdministrationAddProject</title>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{velocity}}
+#if($hasAdmin)
+  #set($project = $request.project)
+  #if(!$stringtool.isBlank($project))
+    #set($documentRef = $services.model.createDocumentReference($context.getDatabase(), 'TaskManager', $project))
+    #set($document = $xwiki.getDocument($documentRef))
+    #set($object = $document.getObject('TaskManager.ProjectClass', true))
+    $object.set('project', "$project")
+    $document.save()    
+  #end
+
+  {{html}}
+    &lt;form class="xformInline" method="post"&gt;
+      &lt;label for="project"&gt;project&lt;/label&gt;
+      &lt;input id="project" name="project" type="text" size="20"/&gt;
+      &lt;span class="buttonwrapper"&gt;
+        &lt;button class="button" type="submit"&gt;Add new Project&lt;/button&gt;
+      &lt;/span&gt;
+    &lt;/form&gt;
+  {{/html}}
+  #set($columns = ['doc.name', 'doc.space', 'doc.date', 'doc.author', '_actions'])
+  #set($columnsProperties = {
+    'doc.name'  : { 'type' : 'text', 'size' : 30, 'link' : 'view', 'filterable' : false },
+    'doc.space' : { 'type' : 'text', 'link' : 'space', 'filterable' : false },
+    'doc.date'  : { 'type' : 'date', 'filterable' : false },
+    'doc.author': { 'type' : 'text', 'link' : 'author', 'filterable' : false },
+    '_actions'  : { 'actions' : ['delete'] }
+  })
+  #set($options = {
+   'translationPrefix' : 'xe.index.',
+    'rowCount' : 15,
+    'description' : 'This table lists all the documents found on this wiki. The columns can be sorted and some can be filtered.',
+    'className' : 'TaskManager.ProjectClass'
+  })
+#livetable("projectTable" $columns $columnsProperties $options)
+#else
+  {{info}}You need to be an Administrator{{/info}}
+#end
+{{/velocity}}</content>
+</xwikidoc>

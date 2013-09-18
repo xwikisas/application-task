@@ -1,6 +1,8 @@
 application-task
 ====================
 
-XWiki Task Management Application is a simple application to create tasks
+XWiki Task Manager Application created to create and assign tasks to users.
 
-Branch name: 1.0 contains  the old code, which is being kept for legacy purposes.
+Version 2
+
+- Created using AWM

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>TaskManager</web>
+  <name>In Progress</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>TaskManager.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1378716241000</creationDate>
+  <date>1378716241000</date>
+  <contentUpdateDate>1378716241000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <object>
+    <class>
+      <name>TaskManager.StatusClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <status>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>status</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>status</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </status>
+    </class>
+    <name>TaskManager.In Progress</name>
+    <number>0</number>
+    <className>TaskManager.StatusClass</className>
+    <guid>324d656b-0ad7-4120-a8d1-8bfbcb65eb00</guid>
+    <property>
+      <status>In Progress</status>
+    </property>
+  </object>
+  <content/>
+</xwikidoc>
