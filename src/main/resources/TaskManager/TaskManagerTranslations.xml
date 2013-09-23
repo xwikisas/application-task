@@ -11,9 +11,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1377783878000</creationDate>
-  <date>1378800457000</date>
-  <contentUpdateDate>1378800457000</contentUpdateDate>
+  <creationDate>1379587362000</creationDate>
+  <date>1379924657000</date>
+  <contentUpdateDate>1379924162000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -57,15 +57,26 @@
       <scope>ON_DEMAND</scope>
     </property>
   </object>
-  <content># Class fields
+  <content>
+TaskManager.administration.addProject.label=Project
+TaskManager.administration.addProject.submit=Add Project
+
+TaskManager.administration.addStatus.label=Status
+TaskManager.administration.addStatus.submit=Add Status
+
+TaskManager.administration.addSeverity.label=Severity
+TaskManager.administration.addSeverity.submit=Add Severity
+
+TaskManager.adminitration.addProject=Add Project
+TaskManager.adminitration.addStatus=Add Status
+TaskManager.adminitration.addSeverity=Add Severity
+
+# Class fields
 TaskManager.TaskManagerClass_name=Task name
 TaskManager.TaskManagerClass_number=Task number
 TaskManager.TaskManagerClass_project=Project
-TaskManager.TaskManagerClass_project_Centaurus=Centaurus
-TaskManager.TaskManagerClass_project_Compatible ONE=Compatible ONE
 TaskManager.TaskManagerClass_description=Task description
 TaskManager.TaskManagerClass_status=Status
-TaskManager.TaskManagerClass_status_ToDo=ToDo
 TaskManager.TaskManagerClass_status_In Progress=In Progress
 TaskManager.TaskManagerClass_status_Done=Done
 TaskManager.TaskManagerClass_severity=Severity
