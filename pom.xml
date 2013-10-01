@@ -35,10 +35,56 @@
   <name>Task Manager Application</name>
   <packaging>xar</packaging>
   <description> A simple task management application</description>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.xwiki.org/browse/XCONTRIB/component/12958</url>
+  </issueManagement>
+  <developers>
+    <developer>
+      <id>sorinello</id>
+      <name>Sorin Burjan</name>
+    </developer>
+  </developers>
+  <scm>
+   <connection>scm:git:git://github.com/xwiki-contrib/application-task.git</connection>
+   <developerConnection>scm:git:git@github.com:xwiki-contrib/application-task.git</developerConnection>
+   <url>https://github.com/xwiki-contrib/application-task</url>
+    <tag>HEAD</tag>
+  </scm>
+  <distributionManagement>
+   <repository>
+     <id>xwiki-staging</id>
+     <name>XWiki Staging Repository</name>
+     <url>http://nexus.xwiki.org/nexus/service/local/staging/deploy/maven2/</url>
+   </repository>
+  </distributionManagement>
   <properties>
     <!-- Don't run CLIRR here since there's no Java code. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
   </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-livetable-ui</artifactId>
+      <version>${project.parent.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+      <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-sheet-ui</artifactId>
+      <version>${project.parent.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-uiextension-ui</artifactId>
+      <version>${project.parent.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
       <plugin>
