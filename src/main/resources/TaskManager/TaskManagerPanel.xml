@@ -11,9 +11,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1379587361000</creationDate>
-  <date>1379071757000</date>
-  <contentUpdateDate>1378122637000</contentUpdateDate>
+  <creationDate>1382358826000</creationDate>
+  <date>1383316307000</date>
+  <contentUpdateDate>1382358826000</contentUpdateDate>
   <version>1.1</version>
   <title>TaskManagerPanel</title>
   <defaultTemplate/>
@@ -105,17 +105,17 @@
     </property>
     <property>
       <content>{{velocity}}
-#panelheader('My Due Tasks')
+#panelheader($services.localization.render('taskmanager.panel.paneltitle'))
 #set($query = "from doc.object(TaskManager.TaskManagerClass) as document where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and document.assignee=:currentUser order by document.duedate asc")
 #set($results = $services.query.xwql("$query").bindValue("currentUser", "$xcontext.getUserReference()").setLimit(5).execute())
 #foreach($result in $results)
   #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))   
-  * [[$object.getProperty('name').value&gt;&gt;$result]] until $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
+  * [[$object.getProperty('name').value&gt;&gt;$result]] $services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
 #end
 #if($results.size() == 0)
-  * No active tasks  
+  * $services.localization.render('taskmanager.panel.noactivetasks')  
 #else
-  * [[See full list&gt;&gt;TaskManager.WebHome]]
+  * [[$services.localization.render('taskmanager.panel.fulltasklist')&gt;&gt;TaskManager.WebHome]]
 #end
 #panelfooter()
 {{/velocity}}</content>

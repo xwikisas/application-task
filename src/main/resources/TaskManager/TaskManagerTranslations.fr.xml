@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>TaskManager</web>
+  <name>TaskManagerTranslations</name>
+  <language>fr</language>
+  <defaultLanguage/>
+  <translation>1</translation>
+  <parent>TaskManagerClass</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1382359158000</creationDate>
+  <date>1383316300000</date>
+  <contentUpdateDate>1383316029000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>
+# Application Panel title
+TaskManager.panels.name=Gestionnaire de tâche
+
+TaskManager.administration.addProject.label=Projet
+TaskManager.administration.addProject.submit=Ajouter un projet
+
+TaskManager.administration.addStatus.label=Statut
+TaskManager.administration.addStatus.submit=Ajouter un statut
+
+TaskManager.administration.addSeverity.label=Importance
+
+TaskManager.administration.addSeverity.submit=Ajouter importance
+
+TaskManager.adminitration.addProject=Ajouter un projet
+TaskManager.adminitration.addStatus=Ajouter un statut
+TaskManager.adminitration.addSeverity=Ajouter importance
+
+# Class fields
+TaskManager.TaskManagerClass_name=Nom de la tâche
+TaskManager.TaskManagerClass_number=Numéro de la tâche
+TaskManager.TaskManagerClass_project=Projet
+TaskManager.TaskManagerClass_description=Description de la tâche
+TaskManager.TaskManagerClass_status=Statut
+TaskManager.TaskManagerClass_status_InProgress=En cours
+TaskManager.TaskManagerClass_status_ToDo=À faire
+TaskManager.TaskManagerClass_status_Done=Effectuée
+TaskManager.TaskManagerClass_severity=Importance
+TaskManager.TaskManagerClass_severity_Medium=Moyenne
+TaskManager.TaskManagerClass_severity_Low=Basse
+TaskManager.TaskManagerClass_severity_High=Haute
+TaskManager.TaskManagerClass_reporter=Créateur de la tâche
+TaskManager.TaskManagerClass_assignee=Personne assignée
+TaskManager.TaskManagerClass_duedate=Echéance
+
+TaskManager.StatusClass_status_InProgress=En cours
+TaskManager.StatusClass_status_ToDo=À faire
+TaskManager.StatusClass_status_Done=Effectuée
+
+
+TaskManager.SeverityClass_severity_Low=Basse
+TaskManager.SeverityClass_severity_Medium=Moyenne
+TaskManager.SeverityClass_severity_High=Haute
+
+
+# Live table specific keys
+taskmanager.livetable.name=Nom de la tâche
+taskmanager.livetable.number=Numéro de la tâche
+taskmanager.livetable.project=Projet
+taskmanager.livetable.description=Description de la tâche
+taskmanager.livetable.status=Statut
+taskmanager.livetable.severity=Importance
+taskmanager.livetable.reporter=Créateur de la tâche
+taskmanager.livetable.assignee=Personne assignée
+taskmanager.livetable.duedate=Echéance
+
+# Panel
+taskmanager.panel.paneltitle=Mes tâches prévues
+taskmanager.panel.untildate=avant
+taskmanager.panel.fulltasklist=Accéder à la liste complète
+taskmanager.panel.noactivetasks=Aucune tâche active</content>
+</xwikidoc>
