@@ -12,10 +12,11 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1382358827000</creationDate>
-  <date>1383315912000</date>
-  <contentUpdateDate>1383315912000</contentUpdateDate>
+  <date>1391607898000</date>
+  <contentUpdateDate>1391607898000</contentUpdateDate>
   <version>1.1</version>
   <title/>
+  <template/>
   <defaultTemplate/>
   <validationScript/>
   <comment/>
@@ -99,14 +100,14 @@ TaskManager.SeverityClass_severity_Medium=Medium
 TaskManager.SeverityClass_severity_High=High
 
 # Live table generic keys
-taskmanager.livetable.doc.title=Page title
-taskmanager.livetable.doc.name=Page name
+taskmanager.livetable.doc.title=Page Title
+taskmanager.livetable.doc.name=Page Name
 taskmanager.livetable.doc.space=Space
-taskmanager.livetable.doc.fullname=Page full name
+taskmanager.livetable.doc.fullname=Page Full Name
 taskmanager.livetable.doc.author=Last Author
 taskmanager.livetable.doc.creator=Creator
-taskmanager.livetable.doc.date=Update date
-taskmanager.livetable.doc.creationDate=Creation date
+taskmanager.livetable.doc.date=Update Date
+taskmanager.livetable.doc.creationDate=Creation Date
 taskmanager.livetable._avatar=Avatar
 taskmanager.livetable._images=Images
 taskmanager.livetable._attachments=Attachments
@@ -116,10 +117,10 @@ taskmanager.livetable._actions.delete=Delete
 taskmanager.livetable.emptyvalue=-
 
 # Live table specific keys
-taskmanager.livetable.name=Task name
-taskmanager.livetable.number=Task number
+taskmanager.livetable.name=Task Name
+taskmanager.livetable.number=Task Number
 taskmanager.livetable.project=Project
-taskmanager.livetable.description=Task description
+taskmanager.livetable.description=Task Description
 taskmanager.livetable.status=Status
 taskmanager.livetable.severity=Severity
 taskmanager.livetable.reporter=Reporter
