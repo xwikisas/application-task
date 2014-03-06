@@ -67,12 +67,12 @@ TaskManager.administration.addProject.submit=Add Project
 TaskManager.administration.addStatus.label=Status
 TaskManager.administration.addStatus.submit=Add Status
 
-TaskManager.administration.addSeverity.label=Severity
-TaskManager.administration.addSeverity.submit=Add Severity
+TaskManager.administration.addSeverity.label=Priority
+TaskManager.administration.addSeverity.submit=Add Priority
 
 TaskManager.adminitration.addProject=Add Project
 TaskManager.adminitration.addStatus=Add Status
-TaskManager.adminitration.addSeverity=Add Severity
+TaskManager.adminitration.addSeverity=Add Priority
 
 # Class fields
 TaskManager.TaskManagerClass_name=Task name
@@ -83,7 +83,7 @@ TaskManager.TaskManagerClass_status=Status
 TaskManager.TaskManagerClass_status_InProgress=In Progress
 TaskManager.TaskManagerClass_status_ToDo=To Do
 TaskManager.TaskManagerClass_status_Done=Done
-TaskManager.TaskManagerClass_severity=Severity
+TaskManager.TaskManagerClass_severity=Priority
 TaskManager.TaskManagerClass_severity_Medium=Medium
 TaskManager.TaskManagerClass_severity_Low=Low
 TaskManager.TaskManagerClass_severity_High=High
@@ -122,7 +122,7 @@ taskmanager.livetable.number=Task Number
 taskmanager.livetable.project=Project
 taskmanager.livetable.description=Task Description
 taskmanager.livetable.status=Status
-taskmanager.livetable.severity=Severity
+taskmanager.livetable.severity=Priority
 taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
