@@ -55,7 +55,7 @@
     <className>XWiki.TranslationDocumentClass</className>
     <guid>6ea857d9-5fc5-47d8-9611-ee26430738e7</guid>
     <property>
-      <scope>ON_DEMAND</scope>
+      <scope>WIKI</scope>
     </property>
   </object>
   <content># Application Panel title
