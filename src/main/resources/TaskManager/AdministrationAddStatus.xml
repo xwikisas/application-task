@@ -45,7 +45,7 @@
   {{/html}}
   #set($columns = ['doc.name', 'doc.date', 'doc.author', '_actions'])
   #set($columnsProperties = {
-    'doc.name'  : { 'type' : 'text' , 'size' : 30, 'link' : 'view', 'filterable' : false },
+    'doc.name'  : { 'displayName' : $services.localization.render('taskmanager.livetable.status'), 'type' : 'text' , 'size' : 30, 'link' : 'view', 'filterable' : false },
     'doc.date'  : { 'type' : 'date', 'filterable' : false },
     'doc.author': { 'type' : 'text', 'link' : 'author', 'filterable' : false },
     '_actions'  : { 'actions' : ['delete'] }
