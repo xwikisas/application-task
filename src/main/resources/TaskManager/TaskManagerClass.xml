@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,9 +30,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1382358826000</creationDate>
-  <date>1383232767000</date>
-  <contentUpdateDate>1383232355000</contentUpdateDate>
+  <creationDate>1401440505000</creationDate>
+  <date>1401810396000</date>
+  <contentUpdateDate>1401810396000</contentUpdateDate>
   <version>1.1</version>
   <title>TaskManager Class</title>
   <defaultTemplate/>
@@ -72,6 +71,84 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
     </assignee>
+    <dependencies>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>{{velocity}}
+## The core will make available the following variables:
+## - $name[String] = the name of the displayed field ('dependencies')
+## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
+## - $object[com.xpn.xwiki.api.Object] = the displayed object 
+## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property 
+## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
+## - $value[DBList in this case] = the property value
+##
+
+{{html wiki=true}}
+#if($type == 'edit')
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
+  #set($results = $services.query.xwql($query).execute())
+  #foreach($taskid in $results)
+    #set($taskpageref = $services.model.resolveDocument($taskid))
+    #set($taskpage = $xwiki.getDocument($taskpageref))
+    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+    #set($tasktitle = $task.getProperty('name').value)
+    #set($tasklink = $task.getName())
+    #set($taskstatus = $task.getProperty('status').value)
+    #set($taskduedate = $task.display('duedate', 'view'))
+    &lt;label class="xwiki-form-listclass" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+      &lt;input
+        id="xwiki-form-dependencies-0-${foreach.index}"
+        value="$taskid"
+        #foreach($dependency in $value)
+          #if($dependency == $taskid)
+            checked
+          #end
+        #end
+        name="TaskManager.TaskManagerClass_0_dependencies"
+        type="checkbox"/&gt;
+      [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
+      [[${tasktitle}&gt;&gt;${tasklink}]]
+      ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
+    &lt;/label&gt;
+  #end
+#else
+  #foreach($taskid in $value)
+    #set($taskpageref = $services.model.resolveDocument($taskid))
+    #set($taskpage = $xwiki.getDocument($taskpageref))
+    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+    #set($tasktitle = $task.getProperty('name').value)
+    #set($tasklink = $task.getName())
+    #set($taskstatus = $task.getProperty('status').value)
+    #set($taskduedate = $task.display('duedate', 'view'))
+    * [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
+      [[${tasktitle}&gt;&gt;${tasklink}]]
+      (${services.localization.render('TaskManager.TaskManagerClass_duedate')} ${taskduedate})&lt;br /&gt;
+  #end
+#end
+{{/html}}
+
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>checkbox</displayType>
+      <idField/>
+      <multiSelect>1</multiSelect>
+      <name>dependencies</name>
+      <number>10</number>
+      <picker>0</picker>
+      <prettyName>Dependencies</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>value</sort>
+      <sql/>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </dependencies>
     <description>
       <customDisplay>{{include reference="AppWithinMinutes.Content"/}}</customDisplay>
       <disabled>0</disabled>

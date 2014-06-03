@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,9 +30,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1382358827000</creationDate>
-  <date>1383303833000</date>
-  <contentUpdateDate>1383303833000</contentUpdateDate>
+  <creationDate>1401440505000</creationDate>
+  <date>1401809990000</date>
+  <contentUpdateDate>1401809990000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -61,13 +60,15 @@
     ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;$escapetool.xml($doc.displayPrettyName('status', false, false))&lt;/label&gt;
     : $doc.display('status')
     ; &lt;label for="TaskManager.TaskManagerClass_0_severity"&gt;$escapetool.xml($doc.displayPrettyName('severity', false, false))&lt;/label&gt;
-    : $doc.display('severity')  
+    : $doc.display('severity')
     ; &lt;label for="TaskManager.TaskManagerClass_0_reporter"&gt;$escapetool.xml($doc.displayPrettyName('reporter', false, false))&lt;/label&gt;
     : $doc.display('reporter')
     ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;$escapetool.xml($doc.displayPrettyName('assignee', false, false))&lt;/label&gt;
     : $doc.display('assignee')
     ; &lt;label for="TaskManager.TaskManagerClass_0_duedate"&gt;$escapetool.xml($doc.displayPrettyName('duedate', false, false))&lt;/label&gt;
     : $doc.display('duedate')
+    ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;$escapetool.xml($doc.displayPrettyName('dependencies', false, false))&lt;/label&gt;
+    : $doc.display('dependencies')
   )))
 #end
 #if($xcontext.action =='edit')
@@ -109,6 +110,8 @@
     #if($doc.isNew())
       &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_reporter" value="$xcontext.user"/&gt;
     #end
+    ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;$escapetool.xml($doc.displayPrettyName('dependencies', false, false))&lt;/label&gt;
+    : $doc.display('dependencies')
 #end
 {{/html}}
 #else
