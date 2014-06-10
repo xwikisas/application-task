@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,12 +30,11 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1382358827000</creationDate>
-  <date>1391607898000</date>
-  <contentUpdateDate>1391607898000</contentUpdateDate>
+  <creationDate>1401875053000</creationDate>
+  <date>1402411425000</date>
+  <contentUpdateDate>1402411425000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <template/>
   <defaultTemplate/>
   <validationScript/>
   <comment/>
@@ -101,6 +99,7 @@ TaskManager.TaskManagerClass_project=Project
 TaskManager.TaskManagerClass_description=Description
 TaskManager.TaskManagerClass_status=Status
 TaskManager.TaskManagerClass_status_InProgress=In Progress
+TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_status_ToDo=To Do
 TaskManager.TaskManagerClass_status_Done=Done
 TaskManager.TaskManagerClass_severity=Priority
