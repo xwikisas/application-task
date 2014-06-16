@@ -31,7 +31,7 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1402057639000</creationDate>
-  <date>1402481049000</date>
+  <date>1402908630000</date>
   <contentUpdateDate>1402411783000</contentUpdateDate>
   <version>1.1</version>
   <title/>
@@ -479,6 +479,9 @@
 #set($taskdoc = $xwiki.getDocument($taskdocref))
 #set($task = $taskdoc.getObject('TaskManager.TaskManagerClass'))
 #set($taskstatus = $task.getProperty('status').value)
+#if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
+  #set($taskstatus = 'Late')
+#end
 #set($taskdependencies = $task.getProperty('dependencies').value)
 #set($tasktitle = $task.getProperty('name').value)
 #set($tasklink = $task.getName())
