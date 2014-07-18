@@ -30,9 +30,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1401440505000</creationDate>
-  <date>1401440505000</date>
-  <contentUpdateDate>1401440505000</contentUpdateDate>
+  <creationDate>1405091841000</creationDate>
+  <date>1405091841000</date>
+  <contentUpdateDate>1405091841000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -87,31 +87,36 @@
 
 {{html wiki=true}}
 #if($type == 'edit')
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
   #set($results = $services.query.xwql($query).execute())
-  #foreach($taskid in $results)
-    #set($taskpageref = $services.model.resolveDocument($taskid))
-    #set($taskpage = $xwiki.getDocument($taskpageref))
-    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
-    #set($tasktitle = $task.getProperty('name').value)
-    #set($tasklink = $task.getName())
-    #set($taskstatus = $task.getProperty('status').value)
-    #set($taskduedate = $task.display('duedate', 'view'))
-    &lt;label class="xwiki-form-listclass" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
-      &lt;input
-        id="xwiki-form-dependencies-0-${foreach.index}"
-        value="$taskid"
-        #foreach($dependency in $value)
-          #if($dependency == $taskid)
-            checked
+  #if($results.size() != 0)
+    #foreach($taskid in $results)
+      #set($taskpageref = $services.model.resolveDocument($taskid))
+      #set($taskpage = $xwiki.getDocument($taskpageref))
+      #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+      #set($tasktitle = $task.getProperty('name').value)
+      #set($tasklink = $task.getName())
+      #set($taskstatus = $task.getProperty('status').value)
+      #set($taskduedate = $task.display('duedate', 'view'))
+      &lt;label class="xwiki-form-listclass" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+        &lt;input
+          id="xwiki-form-dependencies-0-${foreach.index}"
+          value="$taskid"
+          #foreach($dependency in $value)
+            #if($dependency == $taskid)
+              checked
+            #end
           #end
-        #end
-        name="TaskManager.TaskManagerClass_0_dependencies"
-        type="checkbox"/&gt;
-      [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
-      [[${tasktitle}&gt;&gt;${tasklink}]]
-      ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
-    &lt;/label&gt;
+          name="TaskManager.TaskManagerClass_0_dependencies"
+          type="checkbox"
+        /&gt;
+        [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
+        [[${tasktitle}&gt;&gt;${tasklink}]]
+        ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
+      &lt;/label&gt;
+    #end
+  #else
+    {{info}}${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}{{/info}}
   #end
 #else
   #foreach($taskid in $value)
