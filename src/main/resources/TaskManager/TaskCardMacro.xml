@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,9 +31,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1402057639000</creationDate>
-  <date>1402908630000</date>
-  <contentUpdateDate>1402411783000</contentUpdateDate>
+  <creationDate>1405091841000</creationDate>
+  <date>1405602157000</date>
+  <contentUpdateDate>1405601892000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -729,5 +730,7 @@
 
 * ##taskid## [mandatory] is the document name where the ##TaskManager.TaskManagerClass## object is
 * ##width## [optional, default=20em] is the width of the card (size is CSS compliant)
-* ##dependencies## [optional, default="true"] is for displaying the dependencies</content>
+* ##dependencies## [optional, default="true"] is for displaying the dependencies
+
+{{taskcard taskid="TaskManager.TaskManagerTemplate" width="25%" dependencies="true" /}}</content>
 </xwikidoc>
