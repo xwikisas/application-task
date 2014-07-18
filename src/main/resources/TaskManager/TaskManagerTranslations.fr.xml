@@ -24,16 +24,16 @@
   <web>TaskManager</web>
   <name>TaskManagerTranslations</name>
   <language>fr</language>
-  <defaultLanguage>en</defaultLanguage>
+  <defaultLanguage/>
   <translation>1</translation>
   <parent>TaskManagerClass</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1382359158000</creationDate>
-  <date>1383316300000</date>
-  <contentUpdateDate>1383316029000</contentUpdateDate>
+  <creationDate>1401875053000</creationDate>
+  <date>1405603836000</date>
+  <contentUpdateDate>1405603831000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -53,7 +53,6 @@ TaskManager.administration.addStatus.label=Statut
 TaskManager.administration.addStatus.submit=Ajouter un statut
 
 TaskManager.administration.addSeverity.label=Importance
-
 TaskManager.administration.addSeverity.submit=Ajouter importance
 
 TaskManager.adminitration.addProject=Ajouter un projet
@@ -81,11 +80,26 @@ TaskManager.StatusClass_status_InProgress=En cours
 TaskManager.StatusClass_status_ToDo=À faire
 TaskManager.StatusClass_status_Done=Effectuée
 
-
 TaskManager.SeverityClass_severity_Low=Basse
 TaskManager.SeverityClass_severity_Medium=Moyenne
 TaskManager.SeverityClass_severity_High=Haute
 
+# Live table generic keys
+taskmanager.livetable.doc.title=Titre de la page
+taskmanager.livetable.doc.name=Nom de la page
+taskmanager.livetable.doc.space=Espace
+taskmanager.livetable.doc.fullname=Nom complet de la page
+taskmanager.livetable.doc.author=Dernier auteur
+taskmanager.livetable.doc.creator=Créateur
+taskmanager.livetable.doc.date=Date de mise à jour
+taskmanager.livetable.doc.creationDate=Date de création
+taskmanager.livetable._avatar=Avatar
+taskmanager.livetable._images=Images
+taskmanager.livetable._attachments=Fichiers joints
+taskmanager.livetable._actions=Actions
+taskmanager.livetable._actions.edit=Modifier
+taskmanager.livetable._actions.delete=Supprimer
+taskmanager.livetable.emptyvalue=-
 
 # Live table specific keys
 taskmanager.livetable.name=Nom de la tâche
@@ -102,5 +116,6 @@ taskmanager.livetable.duedate=Echéance
 taskmanager.panel.paneltitle=Mes tâches prévues
 taskmanager.panel.untildate=avant
 taskmanager.panel.fulltasklist=Accéder à la liste complète
-taskmanager.panel.noactivetasks=Aucune tâche active</content>
+taskmanager.panel.noactivetasks=Aucune tâche active
+</content>
 </xwikidoc>
