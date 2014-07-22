@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -84,12 +85,14 @@
 ## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
 ## - $value[DBList in this case] = the property value
 ##
+#set($discard = $xwiki.jsx.use('TaskManager.TaskManagerClass'))
 
-{{html wiki=true}}
+{{html wiki="true"}}
 #if($type == 'edit')
   #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
   #set($results = $services.query.xwql($query).execute())
   #if($results.size() != 0)
+    &lt;div id="TaskManager.TaskManagerClass_dependencies"&gt;
     #foreach($taskid in $results)
       #set($taskpageref = $services.model.resolveDocument($taskid))
       #set($taskpage = $xwiki.getDocument($taskpageref))
@@ -98,23 +101,25 @@
       #set($tasklink = $task.getName())
       #set($taskstatus = $task.getProperty('status').value)
       #set($taskduedate = $task.display('duedate', 'view'))
-      &lt;label class="xwiki-form-listclass" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+      #set($taskproject = $task.getProperty('project').value)
+      &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
         &lt;input
           id="xwiki-form-dependencies-0-${foreach.index}"
-          value="$taskid"
+          value="${taskid}"
           #foreach($dependency in $value)
             #if($dependency == $taskid)
               checked
             #end
           #end
-          name="TaskManager.TaskManagerClass_0_dependencies"
-          type="checkbox"
+          name='TaskManager.TaskManagerClass_0_dependencies'
+          type='checkbox'
         /&gt;
         [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
         [[${tasktitle}&gt;&gt;${tasklink}]]
         ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
       &lt;/label&gt;
     #end
+    &lt;/div&gt;
   #else
     {{info}}${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}{{/info}}
   #end
