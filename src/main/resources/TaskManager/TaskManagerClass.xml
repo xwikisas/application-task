@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,9 +31,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1401440505000</creationDate>
-  <date>1401810396000</date>
-  <contentUpdateDate>1401810396000</contentUpdateDate>
+  <creationDate>1405091819000</creationDate>
+  <date>1406046236000</date>
+  <contentUpdateDate>1406046020000</contentUpdateDate>
   <version>1.1</version>
   <title>TaskManager Class</title>
   <defaultTemplate/>
@@ -83,34 +84,43 @@
 ## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
 ## - $value[DBList in this case] = the property value
 ##
+#set($discard = $xwiki.jsx.use('TaskManager.TaskManagerClass'))
 
-{{html wiki=true}}
+{{html wiki="true"}}
 #if($type == 'edit')
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
   #set($results = $services.query.xwql($query).execute())
-  #foreach($taskid in $results)
-    #set($taskpageref = $services.model.resolveDocument($taskid))
-    #set($taskpage = $xwiki.getDocument($taskpageref))
-    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
-    #set($tasktitle = $task.getProperty('name').value)
-    #set($tasklink = $task.getName())
-    #set($taskstatus = $task.getProperty('status').value)
-    #set($taskduedate = $task.display('duedate', 'view'))
-    &lt;label class="xwiki-form-listclass" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
-      &lt;input
-        id="xwiki-form-dependencies-0-${foreach.index}"
-        value="$taskid"
-        #foreach($dependency in $value)
-          #if($dependency == $taskid)
-            checked
+  #if($results.size() != 0)
+    &lt;div id="TaskManager.TaskManagerClass_dependencies"&gt;
+    #foreach($taskid in $results)
+      #set($taskpageref = $services.model.resolveDocument($taskid))
+      #set($taskpage = $xwiki.getDocument($taskpageref))
+      #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+      #set($tasktitle = $task.getProperty('name').value)
+      #set($tasklink = $task.getName())
+      #set($taskstatus = $task.getProperty('status').value)
+      #set($taskduedate = $task.display('duedate', 'view'))
+      #set($taskproject = $task.getProperty('project').value)
+      &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+        &lt;input
+          id="xwiki-form-dependencies-0-${foreach.index}"
+          value="${taskid}"
+          #foreach($dependency in $value)
+            #if($dependency == $taskid)
+              checked
+            #end
           #end
-        #end
-        name="TaskManager.TaskManagerClass_0_dependencies"
-        type="checkbox"/&gt;
-      [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
-      [[${tasktitle}&gt;&gt;${tasklink}]]
-      ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
-    &lt;/label&gt;
+          name='TaskManager.TaskManagerClass_0_dependencies'
+          type='checkbox'
+        /&gt;
+        [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
+        [[${tasktitle}&gt;&gt;${tasklink}]]
+        ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
+      &lt;/label&gt;
+    #end
+    &lt;/div&gt;
+  #else
+    {{info}}${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}{{/info}}
   #end
 #else
   #foreach($taskid in $value)
@@ -426,7 +436,7 @@
   </object>
   <object>
     <class>
-      <name>XWiki.XWikiRights</name>
+      <name>XWiki.JavaScriptExtension</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -434,74 +444,96 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <allow>
-        <defaultValue>1</defaultValue>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>allow</displayType>
-        <name>allow</name>
-        <number>4</number>
-        <prettyName>Allow/Deny</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </allow>
-      <groups>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>input</displayType>
-        <multiSelect>1</multiSelect>
-        <name>groups</name>
-        <number>1</number>
-        <picker>1</picker>
-        <prettyName>Groups</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>5</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.GroupsClass</classType>
-      </groups>
-      <levels>
+      <cache>
         <cache>0</cache>
         <disabled>0</disabled>
         <displayType>select</displayType>
-        <multiSelect>1</multiSelect>
-        <name>levels</name>
-        <number>2</number>
-        <prettyName>Levels</prettyName>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <size>3</size>
+        <separators> ,|</separators>
+        <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.LevelsClass</classType>
-      </levels>
-      <users>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
         <cache>0</cache>
         <disabled>0</disabled>
-        <displayType>input</displayType>
-        <multiSelect>1</multiSelect>
-        <name>users</name>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
         <number>3</number>
-        <picker>1</picker>
-        <prettyName>Users</prettyName>
+        <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <size>5</size>
+        <separators> ,|</separators>
+        <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
-      </users>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
     </class>
     <name>TaskManager.TaskManagerClass</name>
     <number>0</number>
-    <className>XWiki.XWikiRights</className>
-    <guid>516b2ea1-22e2-4a71-982b-e7a9cb9da586</guid>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>93d9d9fc-9c70-4fa5-992e-73d6eb2937bc</guid>
     <property>
-      <allow>1</allow>
+      <cache>long</cache>
     </property>
     <property>
-      <groups>XWiki.XWikiAdminGroup</groups>
+      <code>require(['jquery'], function($) {
+  $("#TaskManager\\.TaskManagerClass_0_project").change(function() {
+    var projectclass =  $(this).val();
+    var $tasks = $("#TaskManager\\.TaskManagerClass_dependencies")
+    $tasks.children().show();
+    // If the project name is empty, show all the tasks
+    if(projectclass !== "") {
+      $tasks.find('label[data-project!="' + projectclass + '"]').hide();
+    }
+  }).trigger('change');
+});</code>
     </property>
     <property>
-      <levels>edit</levels>
+      <name>Dynamic display of dependencies</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
     </property>
   </object>
   <content/>
