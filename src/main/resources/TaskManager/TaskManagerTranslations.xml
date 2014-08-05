@@ -24,19 +24,18 @@
   <web>TaskManager</web>
   <name>TaskManagerTranslations</name>
   <language/>
-  <defaultLanguage>en</defaultLanguage>
+  <defaultLanguage/>
   <translation>0</translation>
   <parent>TaskManagerClass</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1382358827000</creationDate>
-  <date>1391607898000</date>
-  <contentUpdateDate>1391607898000</contentUpdateDate>
+  <creationDate>1401875053000</creationDate>
+  <date>1405094228000</date>
+  <contentUpdateDate>1405094228000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <template/>
   <defaultTemplate/>
   <validationScript/>
   <comment/>
@@ -78,7 +77,8 @@
       <scope>WIKI</scope>
     </property>
   </object>
-  <content># Application Panel title
+  <content>
+# Application Panel title
 TaskManager.panels.name=Task Manager
 
 TaskManager.administration.addProject.label=Project
