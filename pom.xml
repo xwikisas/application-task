@@ -37,7 +37,7 @@
   <description> A simple task management application</description>
   <issueManagement>
     <system>jira</system>
-    <url>http://jira.xwiki.org/browse/XCONTRIB/component/12958</url>
+    <url>http://jira.xwiki.org/browse/TASKMAN</url>
   </issueManagement>
   <developers>
     <developer>
