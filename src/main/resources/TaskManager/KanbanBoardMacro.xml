@@ -134,7 +134,7 @@
 .kanban-board &gt; .column {
   display: inline-block;
   text-align: center;
-  width: 25em;
+  width: 25%;
 }
 .kanban-board &gt; .column &gt; .title {
   text-align: center;
