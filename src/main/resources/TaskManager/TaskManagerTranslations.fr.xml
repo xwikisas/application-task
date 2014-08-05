@@ -74,7 +74,7 @@ TaskManager.TaskManagerClass_severity_Low=Basse
 TaskManager.TaskManagerClass_severity_High=Haute
 TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
-TaskManager.TaskManagerClass_duedate=Echéance
+TaskManager.TaskManagerClass_duedate=Échéance
 TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 
@@ -86,6 +86,23 @@ TaskManager.SeverityClass_severity_Low=Basse
 TaskManager.SeverityClass_severity_Medium=Moyenne
 TaskManager.SeverityClass_severity_High=Haute
 
+# Live table generic keys
+taskmanager.livetable.doc.title=Titre de la page
+taskmanager.livetable.doc.name=Nom de la page
+taskmanager.livetable.doc.space=Espace
+taskmanager.livetable.doc.fullname=Nom complet de la page
+taskmanager.livetable.doc.author=Dernier auteur
+taskmanager.livetable.doc.creator=Créateur
+taskmanager.livetable.doc.date=Date de mise à jour
+taskmanager.livetable.doc.creationDate=Date de création
+taskmanager.livetable._avatar=Avatar
+taskmanager.livetable._images=Images
+taskmanager.livetable._attachments=Fichiers joints
+taskmanager.livetable._actions=Actions
+taskmanager.livetable._actions.edit=Modifier
+taskmanager.livetable._actions.delete=Supprimer
+taskmanager.livetable.emptyvalue=-
+
 # Live table specific keys
 taskmanager.livetable.name=Nom de la tâche
 taskmanager.livetable.number=Numéro de la tâche
@@ -95,7 +112,7 @@ taskmanager.livetable.status=Statut
 taskmanager.livetable.severity=Importance
 taskmanager.livetable.reporter=Créateur de la tâche
 taskmanager.livetable.assignee=Personne assignée
-taskmanager.livetable.duedate=Echéance
+taskmanager.livetable.duedate=Échéance
 
 # Panel
 taskmanager.panel.paneltitle=Mes tâches prévues
