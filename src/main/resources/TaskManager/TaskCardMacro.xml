@@ -523,7 +523,7 @@
       <supportsInlineMode>1</supportsInlineMode>
     </property>
     <property>
-      <visibility>Current User</visibility>
+      <visibility>Global</visibility>
     </property>
   </object>
   <object>
