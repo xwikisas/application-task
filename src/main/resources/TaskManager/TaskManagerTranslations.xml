@@ -112,6 +112,7 @@ TaskManager.TaskManagerClass_severity_High=High
 TaskManager.TaskManagerClass_reporter=Reporter
 TaskManager.TaskManagerClass_assignee=Assignee
 TaskManager.TaskManagerClass_duedate=Due Date
+TaskManager.TaskManagerClass_creationdate=Date de création
 TaskManager.TaskManagerClass_dependencies=Dependencies
 TaskManager.TaskManagerClass_dependencies_nodependencies=Please create other tasks before adding dependencies.
 
@@ -150,6 +151,7 @@ taskmanager.livetable.severity=Priority
 taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
+taskmanager.livetable.creationDate=Date de création
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
