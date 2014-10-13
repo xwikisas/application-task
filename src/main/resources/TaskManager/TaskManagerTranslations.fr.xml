@@ -75,6 +75,8 @@ TaskManager.TaskManagerClass_severity_High=Haute
 TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
 TaskManager.TaskManagerClass_duedate=Échéance
+TaskManager.TaskManagerClass_dependencies=Dépendances
+TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 
 TaskManager.StatusClass_status_InProgress=En cours
 TaskManager.StatusClass_status_ToDo=À faire
