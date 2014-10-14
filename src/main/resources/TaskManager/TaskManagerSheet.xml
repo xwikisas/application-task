@@ -72,117 +72,114 @@
   )))
 #end
 #if($xcontext.action =='edit')
-  (% class="container-fluid" %)
+  (% class="xform" %)
   (((
-    (% class="xform" %)
+    (% class="row" %)
     (((
-      (% class="row" %)
+      (% class="form-group col-xs-12 col-md-12 col-lg-8" %)
       (((
-        (% class="form-group col-xs-12 col-md-12 col-lg-8" %)
-        (((
-          ## Automatically set task name property as the document name
-          ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
-              $escapetool.xml($doc.displayPrettyName('name', false, false))
-            &lt;/label&gt;
-            #set($taskName = $xwiki.getDocument($doc).getObject('TaskManager.TaskManagerClass').getProperty('name').value)
-            #if($taskName)
-          :   &lt;input type="input" name="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
-            #else
-          :   &lt;input type="input" name="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
-            #end
-            #if($doc.isNew())
-            #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
-            #set($result = $services.query.xwql($query).execute())
-            #if (($result.get(0)) &amp;&amp; ("$!result.get(0)" != "")) 
-              #set($index = $result.get(0))
-            #else
-              #set($index = 0)
-            #end
-            #set($number = $mathtool.add($index,1))
-            &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_number" value="$number"/&gt;
-            #end
-        )))
-        (% class="form-group col-xs-12 col-md-12 col-lg-4" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
-              $services.icon.render('folder')
-              $escapetool.xml($doc.displayPrettyName('project', false, false))
-            &lt;/label&gt;
-          : $doc.display('project')
-        )))
+        ## Automatically set task name property as the document name
+        ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
+            $escapetool.xml($doc.displayPrettyName('name', false, false))
+          &lt;/label&gt;
+          #set($taskName = $xwiki.getDocument($doc).getObject('TaskManager.TaskManagerClass').getProperty('name').value)
+          #if($taskName)
+        :   &lt;input type="input" name="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
+          #else
+        :   &lt;input type="input" name="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
+          #end
+          #if($doc.isNew())
+          #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
+          #set($result = $services.query.xwql($query).execute())
+          #if (($result.get(0)) &amp;&amp; ("$!result.get(0)" != "")) 
+            #set($index = $result.get(0))
+          #else
+            #set($index = 0)
+          #end
+          #set($number = $mathtool.add($index,1))
+          &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_number" value="$number"/&gt;
+          #end
       )))
-      (% class="row" %)
+      (% class="form-group col-xs-12 col-md-12 col-lg-4" %)
       (((
-        (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_creationdate"&gt;
-              $services.icon.render('calendar')
-              $services.localization.render('TaskManager.TaskManagerClass_creationdate')
-            &lt;/label&gt;
-          : $xwiki.formatDate($doc.creationDate,'dd/MM/yyyy HH:mm:ss')
-        )))
-        (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_reporter"&gt;
-              $services.icon.render('user')
-              $escapetool.xml($doc.displayPrettyName('reporter', false, false))
-            &lt;/label&gt;
-          : $doc.display('reporter', 'view')
-        )))
-        (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_severity"&gt;
-              $services.icon.render('bell')
-              $escapetool.xml($doc.displayPrettyName('severity', false, false))
-            &lt;/label&gt;
-          : $doc.display('severity')
-        )))
+        ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
+            $services.icon.render('folder')
+            $escapetool.xml($doc.displayPrettyName('project', false, false))
+          &lt;/label&gt;
+        : $doc.display('project')
       )))
-      (% class="row" %)
+    )))
+    (% class="row" %)
+    (((
+      (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
       (((
-        (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_duedate"&gt;
-              $services.icon.render('time')
-              $escapetool.xml($doc.displayPrettyName('duedate', false, false))
-            &lt;/label&gt;
-          : $doc.display('duedate')
-        )))
-        (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
-        (((
-          ## The Reporter displayer was removed from here since we don't want to display it in Edit Mode
-          ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;
-              $services.icon.render('user')
-              $escapetool.xml($doc.displayPrettyName('assignee', false, false))
-            &lt;/label&gt;
-          : $doc.display('assignee')
-        )))
-        (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;
-              $services.icon.render('accept')
-              $escapetool.xml($doc.displayPrettyName('status', false, false))
-            &lt;/label&gt;
-          : $doc.display('status')
-        )))
+        ; &lt;label for="TaskManager.TaskManagerClass_0_creationdate"&gt;
+            $services.icon.render('calendar')
+            $services.localization.render('TaskManager.TaskManagerClass_creationdate')
+          &lt;/label&gt;
+        : $xwiki.formatDate($doc.creationDate,'dd/MM/yyyy HH:mm:ss')
       )))
-      (% class="row" %)
+      (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
       (((
-        (% class="form-group col-xs-12 col-md-12 col-lg-12" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;$escapetool.xml($doc.displayPrettyName('description', false, false))&lt;/label&gt;
-          : $doc.display('description')
-        )))
-        (% class="form-group col-xs-12 col-md-12 col-lg-12" %)
-        (((
-          ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;$escapetool.xml($doc.displayPrettyName('dependencies', false, false))&lt;/label&gt;
-          : $doc.display('dependencies')
-        )))
-        ## Need to make sure if another user will modify the Task, it won't override the reporter property.
-        #if($doc.isNew())
-          &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_reporter" value="$xcontext.user"/&gt;
-        #end
+        ; &lt;label for="TaskManager.TaskManagerClass_0_reporter"&gt;
+            $services.icon.render('user')
+            $escapetool.xml($doc.displayPrettyName('reporter', false, false))
+          &lt;/label&gt;
+        : $doc.display('reporter', 'view')
       )))
+      (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
+      (((
+        ; &lt;label for="TaskManager.TaskManagerClass_0_severity"&gt;
+            $services.icon.render('bell')
+            $escapetool.xml($doc.displayPrettyName('severity', false, false))
+          &lt;/label&gt;
+        : $doc.display('severity')
+      )))
+    )))
+    (% class="row" %)
+    (((
+      (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
+      (((
+        ; &lt;label for="TaskManager.TaskManagerClass_0_duedate"&gt;
+            $services.icon.render('time')
+            $escapetool.xml($doc.displayPrettyName('duedate', false, false))
+          &lt;/label&gt;
+        : $doc.display('duedate')
+      )))
+      (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
+      (((
+        ## The Reporter displayer was removed from here since we don't want to display it in Edit Mode
+        ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;
+            $services.icon.render('user')
+            $escapetool.xml($doc.displayPrettyName('assignee', false, false))
+          &lt;/label&gt;
+        : $doc.display('assignee')
+      )))
+      (% class="form-group col-xs-12 col-md-6 col-lg-4" %)
+      (((
+        ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;
+            $services.icon.render('accept')
+            $escapetool.xml($doc.displayPrettyName('status', false, false))
+          &lt;/label&gt;
+        : $doc.display('status')
+      )))
+    )))
+    (% class="row" %)
+    (((
+      (% class="form-group col-xs-12 col-md-12 col-lg-12" %)
+      (((
+        ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;$escapetool.xml($doc.displayPrettyName('description', false, false))&lt;/label&gt;
+        : $doc.display('description')
+      )))
+      (% class="form-group col-xs-12 col-md-12 col-lg-12" %)
+      (((
+        ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;$escapetool.xml($doc.displayPrettyName('dependencies', false, false))&lt;/label&gt;
+        : $doc.display('dependencies')
+      )))
+      ## Need to make sure if another user will modify the Task, it won't override the reporter property.
+      #if($doc.isNew())
+        &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_reporter" value="$xcontext.user"/&gt;
+      #end
     )))
   )))
 #end
