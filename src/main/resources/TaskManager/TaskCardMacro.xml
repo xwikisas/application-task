@@ -53,73 +53,73 @@
       <nameField/>
       <validationScript/>
       <cache>
-        <cache>0</cache>
         <disabled>0</disabled>
+        <name>cache</name>
+        <number>1</number>
+        <prettyName>Caching policy</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
         <displayType>select</displayType>
         <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators> ,|</separators>
         <size>1</size>
-        <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </cache>
       <code>
         <disabled>0</disabled>
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>20</rows>
+        <size>50</size>
       </code>
       <name>
         <disabled>0</disabled>
         <name>name</name>
-        <number>1</number>
+        <number>3</number>
         <prettyName>Name</prettyName>
-        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
       </name>
       <parse>
         <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
         <name>parse</name>
         <number>4</number>
         <prettyName>Parse content</prettyName>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
       </parse>
       <use>
-        <cache>0</cache>
         <disabled>0</disabled>
+        <name>use</name>
+        <number>5</number>
+        <prettyName>Use this extension</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
         <displayType>select</displayType>
         <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators> ,|</separators>
         <size>1</size>
-        <unmodifiable>0</unmodifiable>
         <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
     <name>TaskManager.TaskCardMacro</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
-    <guid>1e70e7a1-da51-4011-b6c8-dd1a5056bd72</guid>
+    <guid>892b91b2-0045-40a4-8df6-279d777ed334</guid>
     <property>
-      <cache>forbid</cache>
+      <cache>long</cache>
     </property>
     <property>
       <code>/*
@@ -138,63 +138,50 @@
 #set($sdone = 'Done')
 #set($sdonecolor = 'gray')
 .task-card {
-  display: inline-block;
   background: white;
-
-  margin: 0px;
-  padding-top: 1ex;
-  padding-bottom : 1ex;
-  padding-left: 1em;
-  padding-right: 1em;
 
   border-style: solid;
   border-width: 1px;
   border-color: ${xwikibordercolor};
 }
-.task-card &gt; .title {
+.task-card .task-card-title {
   color: #2173AF;
-  text-align: center;
   font-size: 120%;
 }
-.task-card &gt; .status {
-  text-align: center;
+.task-card .task-card-status {
   font-size: 80%;
 }
-.task-card.status-${slate} &gt; .status {
+.task-card.task-card-status-${slate} .task-card-status {
   color: ${slatecolor};
 }
-.task-card.status-${stodo} &gt; .status {
+.task-card.task-card-status-${stodo} .task-card-status {
   color: ${stodocolor};
 }
-.task-card.status-${sinprogress} &gt; .status {
+.task-card.task-card-status-${sinprogress} .task-card-status {
   color: ${sinprogresscolor};
 }
-.task-card.status-${sdone} &gt; .status {
+.task-card.task-card-status-${sdone} .task-card-status {
   color: ${sdonecolor};
 }
-.task-card &gt; .dependencies {
-  height: 1ex;
-  text-align: left;
-}
-.task-card &gt; .dependencies &gt; .dependency {
+.task-card .task-card-dependencies .task-card-dependency {
   display: inline-block;
   width: 1.5em;
   height: 1ex;
   margin-right: 0.25em;
 }
-.task-card &gt; .dependencies &gt; .dependency.status-${slate} {
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-${slate} {
   background: ${slatecolor};
 }
-.task-card &gt; .dependencies &gt; .dependency.status-${stodo} {
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-${stodo} {
   background: ${stodocolor};
 }
-.task-card &gt; .dependencies &gt; .dependency.status-${sinprogress} {
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-${sinprogress} {
   background: ${sinprogresscolor};
 }
-.task-card &gt; .dependencies &gt; .dependency.status-${sdone} {
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-${sdone} {
   background: ${sdonecolor};
 }
-.task-card &gt; .dependencies &gt; .dependency .task-card {
+.task-card .task-card-dependencies .task-card-dependency .task-card {
   display: none;
   position: absolute;
   z-index: 10;
@@ -202,28 +189,24 @@
   margin-top: 1ex;
   transition: opacity 0.25s ease-in-out;
 }
-.task-card &gt; .dependencies &gt; .dependency:hover .task-card {
+.task-card .task-card-dependencies .task-card-dependency:hover .task-card {
   display: block;
   opacity: 0.9;
 }
-.task-card &gt; .duedate {
+.task-card .task-card-duedate {
   color: gray;
-  text-align: left;
   font-size: 60%;
 }
-.task-card &gt; .assignees {
-  height: 5ex;
-  text-align: left;
-}
-.task-card &gt; .assignees &gt; .assignee {
-  display: inline-block;
-  margin-right: 0.25em;
+.task-card .task-card-assignees {
   height: 5ex;
 }
-.task-card &gt; .assignees &gt; .assignee img {
+.task-card .task-card-assignees .task-card-assignee {
   height: 5ex;
 }
-.task-card &gt; .assignees &gt; .assignee .tooltip {
+.task-card .task-card-assignees .task-card-assignee img {
+  height: 5ex;
+}
+.task-card .task-card-assignees .task-card-assignee .task-card-tooltip {
   display: none;
   position: absolute;
   z-index: 10;
@@ -233,19 +216,20 @@
 
   background: ${xwikibordercolor};
 }
-.task-card &gt; .assignees &gt; .assignee:hover .tooltip {
+.task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip {
   display: inline-block;
   margin-left: 2.5ex;
 }
-.task-card &gt; .assignees &gt; .assignee:hover .tooltip::before {
+.task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip::before {
   content: "";
   border-style: solid;
   border-width: 2.5ex;
   border-color: transparent;
   border-right-color: ${xwikibordercolor};
   position: absolute;
-  margin: 0 0 0 -7ex; /* Size of the border (2.5ex) x2 plus the padding-left (2ex) of the .tooltip */
-}</code>
+  margin: 0 0 0 -7ex; /* Size of the border (2.5ex) x2 plus the padding-left (2ex) of the .task-card-tooltip */
+}
+</code>
     </property>
     <property>
       <name>Task card style</name>
@@ -254,7 +238,7 @@
       <parse>1</parse>
     </property>
     <property>
-      <use>always</use>
+      <use>onDemand</use>
     </property>
   </object>
   <object>
@@ -267,117 +251,141 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <code>
-        <disabled>0</disabled>
-        <name>code</name>
-        <number>9</number>
-        <prettyName>Macro code</prettyName>
-        <rows>20</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <contentDescription>
-        <disabled>0</disabled>
-        <name>contentDescription</name>
-        <number>8</number>
-        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </contentDescription>
-      <contentType>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>contentType</name>
-        <number>7</number>
-        <prettyName>Macro content type</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator>|</separator>
-        <separators>|</separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>Optional|Mandatory|No content</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </contentType>
-      <defaultCategory>
-        <disabled>0</disabled>
-        <name>defaultCategory</name>
-        <number>4</number>
-        <prettyName>Default category</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </defaultCategory>
-      <description>
-        <disabled>0</disabled>
-        <name>description</name>
-        <number>3</number>
-        <prettyName>Macro description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
       <id>
         <disabled>0</disabled>
         <name>id</name>
         <number>1</number>
         <prettyName>Macro id</prettyName>
-        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
       </id>
       <name>
         <disabled>0</disabled>
         <name>name</name>
         <number>2</number>
         <prettyName>Macro name</prettyName>
-        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
       </name>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>3</number>
+        <prettyName>Macro description</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </description>
+      <defaultCategory>
+        <disabled>0</disabled>
+        <name>defaultCategory</name>
+        <number>4</number>
+        <prettyName>Default category</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </defaultCategory>
       <supportsInlineMode>
         <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
         <name>supportsInlineMode</name>
         <number>5</number>
         <prettyName>Supports inline mode</prettyName>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
       </supportsInlineMode>
       <visibility>
-        <cache>0</cache>
         <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
         <name>visibility</name>
         <number>6</number>
         <prettyName>Macro visibility</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
         <relationalStorage>0</relationalStorage>
         <separator>|</separator>
         <separators>|</separators>
         <size>1</size>
-        <unmodifiable>0</unmodifiable>
         <values>Current User|Current Wiki|Global</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </visibility>
+      <contentType>
+        <disabled>0</disabled>
+        <name>contentType</name>
+        <number>7</number>
+        <prettyName>Macro content type</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <values>Optional|Mandatory|No content</values>
+      </contentType>
+      <contentDescription>
+        <disabled>0</disabled>
+        <name>contentDescription</name>
+        <number>8</number>
+        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </contentDescription>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>9</number>
+        <prettyName>Macro code</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>20</rows>
+        <size>40</size>
+      </code>
     </class>
     <name>TaskManager.TaskCardMacro</name>
-    <number>0</number>
+    <number>1</number>
     <className>XWiki.WikiMacroClass</className>
-    <guid>1802a7d1-c3eb-474f-ae28-ea74d967ef13</guid>
+    <guid>b78cb8dd-ad75-42f4-887f-318826a4c74f</guid>
+    <property>
+      <id>taskcard</id>
+    </property>
+    <property>
+      <name>Task card</name>
+    </property>
+    <property>
+      <description>Display a task and its information as a card.</description>
+    </property>
+    <property>
+      <defaultCategory/>
+    </property>
+    <property>
+      <supportsInlineMode>1</supportsInlineMode>
+    </property>
+    <property>
+      <visibility>Global</visibility>
+    </property>
+    <property>
+      <contentType>No content</contentType>
+    </property>
+    <property>
+      <contentDescription/>
+    </property>
     <property>
       <code>{{velocity}}
 ################################################
 ################ DISPLAY MACROS ################
 ################################################
 #### MACRO displayCardDependencies
-## @taskdependencies[List&lt;String&gt;] List of dependencies of the task
+## @taskdependencies[List&amp;lt;String&gt;] List of dependencies of the task
 ##
 ## Display the dependencies of a task
 #macro(displayCardDependencies $taskdependencies)
@@ -397,11 +405,11 @@
     #end
     #set($discard = $deptaskslist.get($dtaskstatus).add($dtask))
   #end
-  (% class="dependencies" %)
+  (% class="col-xs-12 task-card-dependencies" %)
   (((
     #foreach($deptaskslistkey in $deptaskslist.keySet())
       #foreach($task in $deptaskslist.get($deptaskslistkey))
-        (% class="dependency status-${deptaskslistkey}" %)
+        (% class="task-card-dependency task-card-status-${deptaskslistkey}" %)
         (((
           {{taskcard taskid="${task.getName()}" dependencies="false" /}}
         )))
@@ -415,9 +423,9 @@
 ## Display the status of the task
 #macro(displayCardStatus $taskstatus)
   #if(!$taskstatus.trim().isEmpty())
-  (% class="status" %)
+  (% class="col-xs-12 task-card-status" %)
   (((
-    [$services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")]
+    ${services.icon.render('bell')} [$services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")]
   )))
   #end
 #end
@@ -428,10 +436,10 @@
 ## Display the title of the task
 #macro(displayCardTitle $tasktitle $tasklink)
   #if(!$tasktitle.trim().isEmpty())
-  (% class="title" %)
-  (((
-    [[${tasktitle}&gt;&gt;${tasklink}]]
-  )))
+    (% class="col-xs-12 task-card-title" %)
+    (((
+      [[${tasktitle}&gt;&gt;${tasklink}]]
+    )))
   #end
 #end
 #### MACRO displayCardDueDate
@@ -440,9 +448,9 @@
 ## Display the due date of a task
 #macro(displayCardDueDate $taskduedate)
   #if(!$taskduedate.trim().isEmpty())
-    (% class="duedate" %)
+    (% class="col-xs-12 task-card-duedate" %)
     (((
-      ${services.localization.render('TaskManager.TaskManagerClass_duedate')} ${taskduedate}
+      ${services.icon.render('time')} ${services.localization.render('TaskManager.TaskManagerClass_duedate')} ${taskduedate}
     )))
   #end
 #end
@@ -451,7 +459,7 @@
 ##
 ## Display the assignees of a task
 #macro(displayCardAssignee $taskassignee)
-  (% class="assignees" %)
+  (% class="col-xs-12 task-card-assignees" %)
   (((
     #foreach($a in $taskassignee.split(','))
       #if(!$a.trim().isEmpty())
@@ -459,12 +467,11 @@
         #set($assigneepage = $xwiki.getDocument($assigneepageref))
         #set($assignee = $assigneepage.getObject('XWiki.XWikiUsers'))
         #set($assigneename = $assignee.name)
-        (% class="assignee user-avatar-wrapper" %)
+        (% class="task-card-assignee user-avatar-wrapper" %)
         (((
           {{html clean='false'}}#largeUserAvatar(${assigneename}){{/html}}
-          (% class="tooltip" %)
+          (% class="task-card-tooltip" %)
           (((
-            ##[[{{html clean='false'}}#largeUserAvatar(${assigneename})&gt;&gt;${assigneename}{{/html}}]]
             [[${assignee.getProperty('first_name').value} ${assignee.getProperty('last_name').value}&gt;&gt;${assigneename}]]
           )))
         )))
@@ -489,7 +496,7 @@
 #set($taskduedate = $task.get('duedate'))
 #set($taskassignee = $task.getProperty('assignee').value)
 #set($discard = $xwiki.ssx.use('TaskManager.TaskCardMacro'))
-(% class="task-card status-${taskstatus}" style="width: ${xcontext.macro.params.width};" %)
+(% class="col-xs-12 task-card task-card-status-${taskstatus} text-left" %)
 (((
   #if($xcontext.macro.params.dependencies == 'true')
     #displayCardDependencies($taskdependencies)
@@ -499,31 +506,8 @@
   #displayCardDueDate($taskduedate)
   #displayCardAssignee($taskassignee)
 )))
-{{/velocity}}</code>
-    </property>
-    <property>
-      <contentDescription/>
-    </property>
-    <property>
-      <contentType>No content</contentType>
-    </property>
-    <property>
-      <defaultCategory/>
-    </property>
-    <property>
-      <description>Display a task and its information as a card.</description>
-    </property>
-    <property>
-      <id>taskcard</id>
-    </property>
-    <property>
-      <name>Task card</name>
-    </property>
-    <property>
-      <supportsInlineMode>1</supportsInlineMode>
-    </property>
-    <property>
-      <visibility>Global</visibility>
+{{/velocity}}
+</code>
     </property>
   </object>
   <object>
@@ -576,7 +560,7 @@
       </name>
     </class>
     <name>TaskManager.TaskCardMacro</name>
-    <number>0</number>
+    <number>2</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>dc5085d2-1a9d-4d4c-bdcc-1ab5a882f09c</guid>
     <property>
@@ -642,73 +626,7 @@
       </name>
     </class>
     <name>TaskManager.TaskCardMacro</name>
-    <number>1</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>bd47d97d-8683-4f33-a688-8c311421864f</guid>
-    <property>
-      <defaultValue>20em</defaultValue>
-    </property>
-    <property>
-      <description>The width of the card (in CSS notation).</description>
-    </property>
-    <property>
-      <mandatory>0</mandatory>
-    </property>
-    <property>
-      <name>width</name>
-    </property>
-  </object>
-  <object>
-    <class>
-      <name>XWiki.WikiMacroParameterClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <defaultValue>
-        <disabled>0</disabled>
-        <name>defaultValue</name>
-        <number>4</number>
-        <prettyName>Parameter default value</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </defaultValue>
-      <description>
-        <disabled>0</disabled>
-        <name>description</name>
-        <number>2</number>
-        <prettyName>Parameter description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
-      <mandatory>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>mandatory</name>
-        <number>3</number>
-        <prettyName>Parameter mandatory</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </mandatory>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Parameter name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-    </class>
-    <name>TaskManager.TaskCardMacro</name>
-    <number>2</number>
+    <number>3</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>9ef63f6a-91cd-43be-823f-807c879bd257</guid>
     <property>
@@ -726,11 +644,11 @@
   </object>
   <content>Example:
 
-##{{{{{taskcard taskid="TaskManager.MyTask" width="80%" dependencies="true" /}}}}}##
+##{{{{{taskcard taskid="TaskManager.MyTask" dependencies="true" /}}}}}##
 
 * ##taskid## [mandatory] is the document name where the ##TaskManager.TaskManagerClass## object is
-* ##width## [optional, default=20em] is the width of the card (size is CSS compliant)
 * ##dependencies## [optional, default="true"] is for displaying the dependencies
 
-{{taskcard taskid="TaskManager.TaskManagerTemplate" width="25%" dependencies="true" /}}</content>
+{{taskcard taskid="TaskManager.TaskManagerTemplate" dependencies="true" /}}
+</content>
 </xwikidoc>

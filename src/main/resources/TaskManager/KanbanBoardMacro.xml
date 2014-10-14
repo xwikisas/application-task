@@ -53,77 +53,76 @@
       <nameField/>
       <validationScript/>
       <cache>
-        <cache>0</cache>
         <disabled>0</disabled>
+        <name>cache</name>
+        <number>1</number>
+        <prettyName>Caching policy</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
         <displayType>select</displayType>
         <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators> ,|</separators>
         <size>1</size>
-        <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </cache>
       <code>
         <disabled>0</disabled>
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>20</rows>
+        <size>50</size>
       </code>
       <name>
         <disabled>0</disabled>
         <name>name</name>
-        <number>1</number>
+        <number>3</number>
         <prettyName>Name</prettyName>
-        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
       </name>
       <parse>
         <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
         <name>parse</name>
         <number>4</number>
         <prettyName>Parse content</prettyName>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
       </parse>
       <use>
-        <cache>0</cache>
         <disabled>0</disabled>
+        <name>use</name>
+        <number>5</number>
+        <prettyName>Use this extension</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
         <displayType>select</displayType>
         <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators> ,|</separators>
         <size>1</size>
-        <unmodifiable>0</unmodifiable>
         <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
-    <guid>3d33bf48-1d77-427c-bac8-d71092e5b976</guid>
+    <guid>7a07aa01-a3e2-446b-b402-f40c01255b17</guid>
     <property>
-      <cache>forbid</cache>
+      <cache>long</cache>
     </property>
     <property>
-      <code>#set($xwikibordercolor = '#E8E8E8')
-#set($slate = 'Late')
+      <code>#set($slate = 'Late')
 #set($slatecolor = '#FF0000')
 #set($stodo = 'ToDo')
 #set($stodocolor = '#2173AF')
@@ -131,35 +130,26 @@
 #set($sinprogresscolor = 'green')
 #set($sdone = 'Done')
 #set($sdonecolor = 'gray')
-.kanban-board &gt; .column {
-  display: inline-block;
-  text-align: center;
-  width: 25%;
-}
-.kanban-board &gt; .column &gt; .title {
-  text-align: center;
+.kanban-board .panel .panel-title {
   font-size: 120%;
   font-weight: 700;
-  padding-top: 1ex;
-  padding-bottom: 1ex;
-  margin-bottom: 1ex;
-  border-style: solid;
-  border-width: 1px;
-  border-color: ${xwikibordercolor};
-  background-color: #F3F3F3;
 }
-.kanban-board &gt; .column.status-${slate} &gt; .title {
+.kanban-board .panel .panel-body {
+  background: #FBFBFB;
+}
+.kanban-board .task-card-status-${slate} .panel .panel-title {
   color: ${slatecolor};
 }
-.kanban-board &gt; .column.status-${stodo} &gt; .title {
+.kanban-board .task-card-status-${stodo} .panel .panel-title {
   color: ${stodocolor};
 }
-.kanban-board &gt; .column.status-${sinprogress} &gt; .title {
+.kanban-board .task-card-status-${sinprogress} .panel .panel-title {
   color: ${sinprogresscolor};
 }
-.kanban-board &gt; .column.status-${sdone} &gt; .title {
+.kanban-board .task-card-status-${sdone} .panel .panel-title {
   color: ${sdonecolor};
-}</code>
+}
+</code>
     </property>
     <property>
       <name>Kanban board style</name>
@@ -181,110 +171,134 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <code>
-        <disabled>0</disabled>
-        <name>code</name>
-        <number>9</number>
-        <prettyName>Macro code</prettyName>
-        <rows>20</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <contentDescription>
-        <disabled>0</disabled>
-        <name>contentDescription</name>
-        <number>8</number>
-        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </contentDescription>
-      <contentType>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>contentType</name>
-        <number>7</number>
-        <prettyName>Macro content type</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator>|</separator>
-        <separators>|</separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>Optional|Mandatory|No content</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </contentType>
-      <defaultCategory>
-        <disabled>0</disabled>
-        <name>defaultCategory</name>
-        <number>4</number>
-        <prettyName>Default category</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </defaultCategory>
-      <description>
-        <disabled>0</disabled>
-        <name>description</name>
-        <number>3</number>
-        <prettyName>Macro description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
       <id>
         <disabled>0</disabled>
         <name>id</name>
         <number>1</number>
         <prettyName>Macro id</prettyName>
-        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
       </id>
       <name>
         <disabled>0</disabled>
         <name>name</name>
         <number>2</number>
         <prettyName>Macro name</prettyName>
-        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
       </name>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>3</number>
+        <prettyName>Macro description</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </description>
+      <defaultCategory>
+        <disabled>0</disabled>
+        <name>defaultCategory</name>
+        <number>4</number>
+        <prettyName>Default category</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </defaultCategory>
       <supportsInlineMode>
         <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
         <name>supportsInlineMode</name>
         <number>5</number>
         <prettyName>Supports inline mode</prettyName>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
       </supportsInlineMode>
       <visibility>
-        <cache>0</cache>
         <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
         <name>visibility</name>
         <number>6</number>
         <prettyName>Macro visibility</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
         <relationalStorage>0</relationalStorage>
         <separator>|</separator>
         <separators>|</separators>
         <size>1</size>
-        <unmodifiable>0</unmodifiable>
         <values>Current User|Current Wiki|Global</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </visibility>
+      <contentType>
+        <disabled>0</disabled>
+        <name>contentType</name>
+        <number>7</number>
+        <prettyName>Macro content type</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <values>Optional|Mandatory|No content</values>
+      </contentType>
+      <contentDescription>
+        <disabled>0</disabled>
+        <name>contentDescription</name>
+        <number>8</number>
+        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </contentDescription>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>9</number>
+        <prettyName>Macro code</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>20</rows>
+        <size>40</size>
+      </code>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>0</number>
+    <number>1</number>
     <className>XWiki.WikiMacroClass</className>
-    <guid>8ecb89fd-5385-4a11-a223-3c42d5bcec3b</guid>
+    <guid>e09a5d96-e862-4929-9f46-254ba0dffed2</guid>
+    <property>
+      <id>kanbanboard</id>
+    </property>
+    <property>
+      <name>Kanban board</name>
+    </property>
+    <property>
+      <description>Display the tasks as a Kanban board (see https://en.wikipedia.org/wiki/Kanban_board).</description>
+    </property>
+    <property>
+      <defaultCategory/>
+    </property>
+    <property>
+      <supportsInlineMode>0</supportsInlineMode>
+    </property>
+    <property>
+      <visibility>Global</visibility>
+    </property>
+    <property>
+      <contentType>No content</contentType>
+    </property>
+    <property>
+      <contentDescription/>
+    </property>
     <property>
       <code>{{velocity}}
 #### MACRO displayCategories
@@ -295,15 +309,21 @@
   (% class="kanban-board" %)
   (((
     #foreach($taskslistkey in $taskslist.keySet())
-      (% class="column status-${taskslistkey}" %)
+      (% class="col-xs-12 col-md-3 text-center task-card-status-${taskslistkey}" %)
       (((
-        (% class="title" %)
+        (% class="panel panel-default" %)
         (((
-          ${services.localization.render("TaskManager.TaskManagerClass_status_${taskslistkey}")}
+          (% class="panel-heading" %)
+          (((
+            (% class="panel-title" %)${services.localization.render("TaskManager.TaskManagerClass_status_${taskslistkey}")}
+          )))
+          (% class="panel-body" %)
+          (((
+            #foreach($task in $taskslist.get($taskslistkey))
+              {{taskcard taskid="${task.name}" /}}
+            #end
+          )))
         )))
-        #foreach($task in $taskslist.get($taskslistkey))
-          {{taskcard taskid="${task.name}" width="20em" /}}
-        #end
       )))
     #end
   )))
@@ -346,31 +366,8 @@
   #set($discard = $categoriestaskslist.get($taskstatus).add($task)) ## Fill for the list
 #end
 #displayCategories($categoriestaskslist)
-{{/velocity}}</code>
-    </property>
-    <property>
-      <contentDescription/>
-    </property>
-    <property>
-      <contentType>No content</contentType>
-    </property>
-    <property>
-      <defaultCategory/>
-    </property>
-    <property>
-      <description>Display the tasks as a Kanban board (see https://en.wikipedia.org/wiki/Kanban_board).</description>
-    </property>
-    <property>
-      <id>kanbanboard</id>
-    </property>
-    <property>
-      <name>Kanban board</name>
-    </property>
-    <property>
-      <supportsInlineMode>0</supportsInlineMode>
-    </property>
-    <property>
-      <visibility>Global</visibility>
+{{/velocity}}
+</code>
     </property>
   </object>
   <object>
@@ -423,7 +420,7 @@
       </name>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>0</number>
+    <number>2</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>b26b8f25-c6f7-446d-8ad0-eb740619f11c</guid>
     <property>
@@ -493,7 +490,7 @@
       </name>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>1</number>
+    <number>3</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>8d1554e7-6649-410c-b6a4-098254048ac0</guid>
     <property>
@@ -559,7 +556,7 @@
       </name>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>2</number>
+    <number>4</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>62b4dde6-f7d6-4075-a758-249d1d4e0afd</guid>
     <property>
@@ -625,7 +622,7 @@
       </name>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>3</number>
+    <number>5</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>c5b1acee-219a-488f-abf8-6915c1758f8b</guid>
     <property>
