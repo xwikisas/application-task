@@ -117,7 +117,7 @@
     <name>TaskManager.KanbanBoardMacro</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
-    <guid>7a07aa01-a3e2-446b-b402-f40c01255b17</guid>
+    <guid>2cba2351-b463-4203-9828-e8398dcf2e1a</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -135,7 +135,7 @@
   font-weight: 700;
 }
 .kanban-board .panel .panel-body {
-  background: #FBFBFB;
+  background: #FCFCFC;
 }
 .kanban-board .task-card-status-${slate} .panel .panel-title {
   color: ${slatecolor};
@@ -274,7 +274,7 @@
     <name>TaskManager.KanbanBoardMacro</name>
     <number>1</number>
     <className>XWiki.WikiMacroClass</className>
-    <guid>e09a5d96-e862-4929-9f46-254ba0dffed2</guid>
+    <guid>519b8fe3-37b7-42d1-ba4d-a9ab3de5c511</guid>
     <property>
       <id>kanbanboard</id>
     </property>
@@ -308,8 +308,8 @@
 #macro(displayCategories $taskslist)
   (% class="kanban-board" %)
   (((
-    #foreach($taskslistkey in $taskslist.keySet())
-      (% class="col-xs-12 col-md-3 text-center task-card-status-${taskslistkey}" %)
+    #foreach($taskslistkey in $xcontext.macro.params.columns.split(','))
+      (% class="col-xs-12 col-md-4 text-center task-card-status-${taskslistkey}" %)
       (((
         (% class="panel panel-default" %)
         (((
@@ -349,8 +349,7 @@
   #set($results = $results.xwql($query).bindValue("project", $xcontext.macro.params.project))
 #end
 #set($results = $results.execute())
-#set($categoriestaskslist = {'Late': []})
-#set($discard = $categoriestaskslist.put('Late', []))
+#set($categoriestaskslist = {})
 #foreach($s in $xwiki.getPropertyClassFromName('TaskManager.TaskManagerClass_status').getListValues())
   #set($discard = $categoriestaskslist.put($s, []))
 #end
@@ -360,9 +359,6 @@
   #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
   #set($taskstatus = $task.getProperty('status').value)
   #set($taskduedate = $task.getProperty('duedate').value)
-  #if($taskduedate.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
-    #set($taskstatus = 'Late')
-  #end
   #set($discard = $categoriestaskslist.get($taskstatus).add($task)) ## Fill for the list
 #end
 #displayCategories($categoriestaskslist)
@@ -636,6 +632,72 @@
     </property>
     <property>
       <name>project</name>
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </name>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+      </mandatory>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </defaultValue>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>6</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>7544168a-69d7-48c5-9232-62c133410f3e</guid>
+    <property>
+      <name>columns</name>
+    </property>
+    <property>
+      <description>This parameter defines the columns and the order of the columns to display based on possible status (ToDo, InProgress and Done by default).</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <defaultValue>ToDo,InProgress,Done</defaultValue>
     </property>
   </object>
   <content>Example:

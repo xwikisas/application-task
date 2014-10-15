@@ -117,7 +117,7 @@
     <name>TaskManager.TaskCardMacro</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
-    <guid>892b91b2-0045-40a4-8df6-279d777ed334</guid>
+    <guid>651f9944-486e-4176-b013-50923a869296</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -150,6 +150,32 @@
 }
 .task-card .task-card-status {
   font-size: 80%;
+}
+.task-card .task-card-late {
+  position: absolute;
+  width: 0;
+  height: 0;
+  display: block;
+  font-size: 0;
+  border-style: solid;
+  border-color: red;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+  border-width: 8px;
+  padding: 0;
+  margin: 0;
+  left: 0;
+  z-index: 5;
+}
+.task-card .task-card-late:hover {
+  color: red;
+  width: 100%;
+  height: 100%;
+  font-size: 150%;
+  padding: 1ex;
+  background: rgba(225,225,225,0.8);
+  border-color: red;
+  font-weight: 700;
 }
 .task-card.task-card-status-${slate} .task-card-status {
   color: ${slatecolor};
@@ -354,7 +380,7 @@
     <name>TaskManager.TaskCardMacro</name>
     <number>1</number>
     <className>XWiki.WikiMacroClass</className>
-    <guid>b78cb8dd-ad75-42f4-887f-318826a4c74f</guid>
+    <guid>6ddab4c4-b1f6-4fd1-be7f-130b2add033a</guid>
     <property>
       <id>taskcard</id>
     </property>
@@ -385,7 +411,7 @@
 ################ DISPLAY MACROS ################
 ################################################
 #### MACRO displayCardDependencies
-## @taskdependencies[List&amp;lt;String&gt;] List of dependencies of the task
+## @taskdependencies[List&lt;String&gt;] List of dependencies of the task
 ##
 ## Display the dependencies of a task
 #macro(displayCardDependencies $taskdependencies)
@@ -400,9 +426,6 @@
     #set($dtask = $dtaskdoc.getObject('TaskManager.TaskManagerClass'))
     #set($dtaskstatus = $dtask.getProperty('status').value)
     #set($dtaskduedate = $dtask.getProperty('duedate').value)
-    #if($dtaskduedate.before($datetool.date) &amp;&amp; $dtaskstatus != 'Done')
-      #set($dtaskstatus = 'Late')
-    #end
     #set($discard = $deptaskslist.get($dtaskstatus).add($dtask))
   #end
   (% class="col-xs-12 task-card-dependencies" %)
@@ -415,6 +438,7 @@
         )))
       #end
     #end
+    (% class="task-card-dependency" %)((()))
   )))
 #end
 #### MACRO displayCardStatus
@@ -487,9 +511,6 @@
 #set($taskdoc = $xwiki.getDocument($taskdocref))
 #set($task = $taskdoc.getObject('TaskManager.TaskManagerClass'))
 #set($taskstatus = $task.getProperty('status').value)
-#if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
-  #set($taskstatus = 'Late')
-#end
 #set($taskdependencies = $task.getProperty('dependencies').value)
 #set($tasktitle = $task.getProperty('name').value)
 #set($tasklink = $task.getName())
@@ -498,6 +519,12 @@
 #set($discard = $xwiki.ssx.use('TaskManager.TaskCardMacro'))
 (% class="col-xs-12 task-card task-card-status-${taskstatus} text-left" %)
 (((
+  #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
+    (% class="task-card-late text-center" %)
+    (((
+      ${services.localization.render('TaskManager.TaskManagerClass_status_Late')}
+    )))
+  #end
   #if($xcontext.macro.params.dependencies == 'true')
     #displayCardDependencies($taskdependencies)
   #end
