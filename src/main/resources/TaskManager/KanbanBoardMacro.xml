@@ -117,7 +117,7 @@
     <name>TaskManager.KanbanBoardMacro</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
-    <guid>2cba2351-b463-4203-9828-e8398dcf2e1a</guid>
+    <guid>7454fc45-d7b0-4d46-aa17-5fd6662a49e9</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -274,7 +274,7 @@
     <name>TaskManager.KanbanBoardMacro</name>
     <number>1</number>
     <className>XWiki.WikiMacroClass</className>
-    <guid>519b8fe3-37b7-42d1-ba4d-a9ab3de5c511</guid>
+    <guid>bb4db0ec-5337-4ca7-8ae6-a2d210c853bf</guid>
     <property>
       <id>kanbanboard</id>
     </property>
@@ -331,22 +331,33 @@
 #set($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
 #set($selection = $xcontext.macro.params.selection)
 #set($results = $services.query)
-#if($selection.equals('all'))
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' order by task.duedate")
-  #set($results = $results.xwql($query))
-#elseif($selection.equals('user'))
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and task.assignee = :user order by task.duedate")
-  #set($user = "$!{xcontext.macro.params.user}")
-  #if($user == '')
-    #set($user = "${services.model.serialize($xcontext.getUserReference(), 'compactwiki')}")
-  #end
-  #set($results = $results.xwql($query).bindValue("user", $user))
-#elseif($selection.equals('space'))
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.space = :space order by task.duedate")
-  #set($results = $results.xwql($query).bindValue("space", $xcontext.macro.params.space))
-#elseif($selection.equals('project'))
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and task.project = :project order by task.duedate")
-  #set($results = $results.xwql($query).bindValue("project", $xcontext.macro.params.project))
+#set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
+#set($paramuser = "$!{xcontext.macro.params.user}")
+#if($paramuser != '')
+  #set($userref = $services.model.resolveDocument($!xcontext.macro.params.user))
+  #set($user = "${services.model.serialize($userref, 'compactwiki')}")
+  #set($query = "${query} and task.assignee = :user")
+#end
+#set($paramspace = "$!{xcontext.macro.params.space}")
+#if($paramspace != '')
+  #set($space = "${paramspace}")
+  #set($query = "${query} and doc.space = :space")
+#end
+#set($paramproject = "$!{xcontext.macro.params.project}")
+#if($paramproject != '')
+  #set($project = "${paramproject}")
+  #set($query = "${query} and task.project = :project")
+#end
+#set($query = "${query} order by task.duedate")
+#set($results = $results.xwql($query))
+#if($paramuser != '')
+  #set($results = $results.bindValue('user', $user))
+#end
+#if($paramspace != '')
+  #set($results = $results.bindValue('space', $space))
+#end
+#if($paramproject != '')
+  #set($results = $results.bindValue('project', $project))
 #end
 #set($results = $results.execute())
 #set($categoriestaskslist = {})
@@ -418,76 +429,6 @@
     <name>TaskManager.KanbanBoardMacro</name>
     <number>2</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>b26b8f25-c6f7-446d-8ad0-eb740619f11c</guid>
-    <property>
-      <defaultValue>all</defaultValue>
-    </property>
-    <property>
-      <description>This parameter select which kind of task are selected to display.  There is multiple possibilities:
-* ##all## [default] select all tasks of the wiki
-* ##user## select tasks which are assigned to a user (defined by the ##user## parameter)
-* ##space## select all tasks in a space (defined by the ##space## parameter)
-* ##project## select all tasks in a project (defined by the ##project## parameter)</description>
-    </property>
-    <property>
-      <mandatory>0</mandatory>
-    </property>
-    <property>
-      <name>selection</name>
-    </property>
-  </object>
-  <object>
-    <class>
-      <name>XWiki.WikiMacroParameterClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <defaultValue>
-        <disabled>0</disabled>
-        <name>defaultValue</name>
-        <number>4</number>
-        <prettyName>Parameter default value</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </defaultValue>
-      <description>
-        <disabled>0</disabled>
-        <name>description</name>
-        <number>2</number>
-        <prettyName>Parameter description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
-      <mandatory>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>mandatory</name>
-        <number>3</number>
-        <prettyName>Parameter mandatory</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </mandatory>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Parameter name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-    </class>
-    <name>TaskManager.KanbanBoardMacro</name>
-    <number>3</number>
-    <className>XWiki.WikiMacroParameterClass</className>
     <guid>8d1554e7-6649-410c-b6a4-098254048ac0</guid>
     <property>
       <defaultValue/>
@@ -552,11 +493,11 @@
       </name>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>4</number>
+    <number>3</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>62b4dde6-f7d6-4075-a758-249d1d4e0afd</guid>
     <property>
-      <defaultValue>TaskManager</defaultValue>
+      <defaultValue/>
     </property>
     <property>
       <description>When value ##space## is defined in ##selection## parameter, this parameter defines in which space the tasks has to be taken.  The default space is ##TaskManager##.</description>
@@ -618,7 +559,7 @@
       </name>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>5</number>
+    <number>4</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>c5b1acee-219a-488f-abf8-6915c1758f8b</guid>
     <property>
@@ -684,9 +625,9 @@
       </defaultValue>
     </class>
     <name>TaskManager.KanbanBoardMacro</name>
-    <number>6</number>
+    <number>5</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>7544168a-69d7-48c5-9232-62c133410f3e</guid>
+    <guid>e1ebbd3b-5a85-4ba1-ad37-d7765b609139</guid>
     <property>
       <name>columns</name>
     </property>
@@ -702,12 +643,11 @@
   </object>
   <content>Example:
 
-##{{{{{kanbanboard selection="space" space="TaskManager" /}}}}}##
+##{{{{{kanbanboard space="TaskManager" /}}}}}##
 
-* ##selection## [optional, default=all] select the method to display tasks ##all##, ##user##, ##space## or ##project##)
-* ##user## [optional, default=$xcontext.userReference] define the user for method ##selection="user"##
-* ##space## [optional, default=TaskManager] define the space for method ##selection="space"##
-* ##project## [optional, default=] define the project for method ##selection="project"##
+* ##user## [optional, default=$xcontext.userReference] define the user for who tasks are assigned
+* ##space## [optional, default=TaskManager] define the space to look for tasks
+* ##project## [optional, default=] define the project to look for tasks
 
 Example:
 
