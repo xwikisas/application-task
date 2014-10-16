@@ -145,9 +145,9 @@
           &lt;/label&gt;
           #set($taskName = $xwiki.getDocument($doc).getObject('TaskManager.TaskManagerClass').getProperty('name').value)
           #if($taskName)
-        :   &lt;input type="input" name="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
+        :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
           #else
-        :   &lt;input type="input" name="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
+        :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
           #end
           #if($doc.isNew())
           #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
