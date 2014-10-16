@@ -22,7 +22,7 @@
 
 <xwikidoc>
   <web>TaskManager</web>
-  <name>TaskManagerTranslations</name>
+  <name>TaskManagerTranslations.fr</name>
   <language>fr</language>
   <defaultLanguage>en</defaultLanguage>
   <translation>1</translation>
@@ -75,6 +75,7 @@ TaskManager.TaskManagerClass_severity_High=Haute
 TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
 TaskManager.TaskManagerClass_duedate=Échéance
+TaskManager.TaskManagerClass_creationdate=Creation Date
 TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 
@@ -113,6 +114,7 @@ taskmanager.livetable.severity=Importance
 taskmanager.livetable.reporter=Créateur de la tâche
 taskmanager.livetable.assignee=Personne assignée
 taskmanager.livetable.duedate=Échéance
+taskmanager.livetable.creationdate=Creation Date
 
 # Panel
 taskmanager.panel.paneltitle=Mes tâches prévues
