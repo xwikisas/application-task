@@ -24,7 +24,7 @@
   <web>TaskManager</web>
   <name>TaskManagerTranslations</name>
   <language/>
-  <defaultLanguage/>
+  <defaultLanguage>en</defaultLanguage>
   <translation>0</translation>
   <parent>TaskManagerClass</parent>
   <creator>xwiki:XWiki.Admin</creator>
