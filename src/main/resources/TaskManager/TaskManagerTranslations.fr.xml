@@ -69,6 +69,7 @@ TaskManager.TaskManagerClass_status_InProgress=En cours
 TaskManager.TaskManagerClass_status_Late=En retard
 TaskManager.TaskManagerClass_status_ToDo=À faire
 TaskManager.TaskManagerClass_status_Done=Effectuée
+TaskManager.TaskManagerClass_status_Late=En retard
 TaskManager.TaskManagerClass_severity=Importance
 TaskManager.TaskManagerClass_severity_Medium=Moyenne
 TaskManager.TaskManagerClass_severity_Low=Basse
