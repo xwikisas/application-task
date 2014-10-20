@@ -235,8 +235,12 @@
 {{html}}
   #if($type=='view')
       &lt;div class="progress"&gt;
-        &lt;div class="progress-bar progress-bar-striped" role="progressbar" style="width: ${value}%"&gt;
-          ${value} %
+        &lt;div class="progress-bar progress-bar-striped" role="progressbar" style="width: $!{value}%"&gt;
+          #if($value &amp;&amp; $value != '')
+            &lt;span&gt;$!{value}%&lt;/span&gt;
+          #else
+            &lt;span&gt;0%&lt;/span&gt;
+          #end
         &lt;/div&gt;
       &lt;/div&gt;
   #else
