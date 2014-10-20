@@ -85,6 +85,46 @@
 ## - $value[DBList in this case] = the property value
 ##
 #set($discard = $xwiki.jsx.use('TaskManager.TaskManagerClass'))
+#set($discard = $xwiki.ssx.use('TaskManager.TaskManagerClass'))
+#macro(displayTaskAsDependency $taskid)
+  #set($taskpageref = $services.model.resolveDocument($taskid))
+  #set($taskpage = $xwiki.getDocument($taskpageref))
+  #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+  #set($tasktitle = $task.getProperty('name').value)
+  #set($tasklink = $task.getName())
+  #set($taskstatus = $task.getProperty('status').value)
+  #set($taskduedate = $task.display('duedate', 'view'))
+  #set($taskproject = $task.getProperty('project').value)
+  #if($type == 'view')
+    ## Begin a list in XWiki Syntax
+    * 
+  #elseif($type == 'edit')
+    &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+      &lt;input
+        id="xwiki-form-dependencies-0-${foreach.index}"
+        value="${taskid}"
+        #foreach($dependency in $value)
+        #if($dependency == $taskid)
+          checked
+        #end
+        #end
+        name='TaskManager.TaskManagerClass_0_dependencies'
+        type='checkbox'
+      /&gt;
+  #end
+  &lt;span class="task-manager-status-${taskstatus}"&gt;[${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]&lt;/span&gt;
+  [[${tasktitle}&gt;&gt;${tasklink}]]
+  ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
+  #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
+    &lt;span class="task-manager-status-Late"&gt;
+      ${services.icon.render('bell')}
+      ${services.localization.render('TaskManager.TaskManagerClass_status_Late')}
+    &lt;/span&gt;
+  #end
+  #if($type == 'edit')
+    &lt;/label&gt;
+  #end
+#end
 
 {{html wiki="true"}}
 #if($type == 'edit')
@@ -93,30 +133,7 @@
   #if($results.size() != 0)
     &lt;div id="TaskManager.TaskManagerClass_dependencies"&gt;
     #foreach($taskid in $results)
-      #set($taskpageref = $services.model.resolveDocument($taskid))
-      #set($taskpage = $xwiki.getDocument($taskpageref))
-      #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
-      #set($tasktitle = $task.getProperty('name').value)
-      #set($tasklink = $task.getName())
-      #set($taskstatus = $task.getProperty('status').value)
-      #set($taskduedate = $task.display('duedate', 'view'))
-      #set($taskproject = $task.getProperty('project').value)
-      &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
-        &lt;input
-          id="xwiki-form-dependencies-0-${foreach.index}"
-          value="${taskid}"
-          #foreach($dependency in $value)
-            #if($dependency == $taskid)
-              checked
-            #end
-          #end
-          name='TaskManager.TaskManagerClass_0_dependencies'
-          type='checkbox'
-        /&gt;
-        [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
-        [[${tasktitle}&gt;&gt;${tasklink}]]
-        ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
-      &lt;/label&gt;
+      #displayTaskAsDependency($taskid)
     #end
     &lt;/div&gt;
   #else
@@ -124,16 +141,7 @@
   #end
 #else
   #foreach($taskid in $value)
-    #set($taskpageref = $services.model.resolveDocument($taskid))
-    #set($taskpage = $xwiki.getDocument($taskpageref))
-    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
-    #set($tasktitle = $task.getProperty('name').value)
-    #set($tasklink = $task.getName())
-    #set($taskstatus = $task.getProperty('status').value)
-    #set($taskduedate = $task.display('duedate', 'view'))
-    * [${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]
-      [[${tasktitle}&gt;&gt;${tasklink}]]
-      (${services.localization.render('TaskManager.TaskManagerClass_duedate')} ${taskduedate})&lt;br /&gt;
+    #displayTaskAsDependency($taskid)
   #end
 #end
 {{/html}}
@@ -547,6 +555,109 @@
     </property>
     <property>
       <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.TaskManagerClass</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>ea3fc26a-af9d-413a-9d5f-ed847c36c170</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.task-manager-status-Late {
+    color: red;
+}
+.task-manager-status-ToDo {
+    color: #2173AF;
+}
+.task-manager-status-ToDo {
+    color: green;
+}
+.task-manager-status-Done {
+    color: gray;
+}</code>
+    </property>
+    <property>
+      <name>Status colors</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>onDemand</use>
     </property>
   </object>
   <content/>
