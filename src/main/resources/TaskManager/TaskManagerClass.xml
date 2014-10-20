@@ -112,6 +112,7 @@
         type='checkbox'
       /&gt;
   #end
+  &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
   &lt;span class="task-manager-status-${taskstatus}"&gt;[${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]&lt;/span&gt;
   [[${tasktitle}&gt;&gt;${tasklink}]]
   ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
@@ -221,11 +222,32 @@
       <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
     </number>
     <progress>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+## The core will make available the following variables:
+## - $name[String] = the name of the displayed field ('dependencies')
+## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
+## - $object[com.xpn.xwiki.api.Object] = the displayed object 
+## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property 
+## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
+## - $value[DBList in this case] = the property value
+##
+#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
+{{html}}
+  #if($type=='view')
+      &lt;div class="progress"&gt;
+        &lt;div class="progress-bar progress-bar-striped" role="progressbar" style="width: ${value}%"&gt;
+          ${value} %
+        &lt;/div&gt;
+      &lt;/div&gt;
+  #else
+    &lt;input class="form-control" id="TaskManager.TaskManagerClass_0_progress" name="TaskManager.TaskManagerClass_0_progress" type="number" value="${value}" /&gt;
+  #end
+{{/html}}
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>progress</name>
       <number>6</number>
-      <numberType>float</numberType>
+      <numberType>integer</numberType>
       <prettyName>Progress</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
@@ -648,6 +670,102 @@
 }
 .task-manager-status-Done {
     color: gray;
+}</code>
+    </property>
+    <property>
+      <name>Status colors</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.TaskManagerClass</name>
+    <number>1</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>0d86443b-d782-44fa-b43d-cb149393f1f1</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.task-manager-dependency-progress {
+  width: 10em;
+  display:inline-block;
+  vertical-align:top;
 }</code>
     </property>
     <property>
