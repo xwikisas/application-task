@@ -769,7 +769,7 @@
 }</code>
     </property>
     <property>
-      <name>Status colors</name>
+      <name>Progress bar for dependencies</name>
     </property>
     <property>
       <parse/>
