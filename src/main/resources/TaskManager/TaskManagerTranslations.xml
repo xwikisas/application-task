@@ -103,6 +103,7 @@ TaskManager.TaskManagerClass_status=Status
 TaskManager.TaskManagerClass_status_InProgress=In Progress
 TaskManager.TaskManagerClass_status_ToDo=To Do
 TaskManager.TaskManagerClass_status_Done=Done
+TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_severity=Priority
 TaskManager.TaskManagerClass_severity_Medium=Medium
 TaskManager.TaskManagerClass_severity_Low=Low
