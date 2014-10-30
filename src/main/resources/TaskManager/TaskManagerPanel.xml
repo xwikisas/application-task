@@ -123,19 +123,20 @@
     </property>
     <property>
       <content>{{velocity}}
-#panelheader($services.localization.render('taskmanager.panel.paneltitle'))
-#set($query = "from doc.object(TaskManager.TaskManagerClass) as document where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and document.assignee=:currentUser order by document.duedate asc")
-#set($results = $services.query.xwql("$query").bindValue("currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
-#foreach($result in $results)
-  #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))   
-  * [[$object.getProperty('name').value&gt;&gt;$result]] $services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
-#end
-#if($results.size() == 0)
-  * $services.localization.render('taskmanager.panel.noactivetasks')  
-#else
-  * [[$services.localization.render('taskmanager.panel.fulltasklist')&gt;&gt;TaskManager.WebHome]]
-#end
-#panelfooter()
+  #panelheader($services.localization.render('taskmanager.panel.paneltitle'))
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as document where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and document.assignee=:currentUser order by document.duedate asc")
+  #set($results = $services.query.xwql("$query").bindValue("currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
+  #foreach($result in $results)
+    #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))
+    * $services.icon.render('accept') **[[$object.getProperty('name').value&gt;&gt;$result]]**
+    (% class="text-muted small" %)$services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
+  #end
+  #if($results.size() == 0)
+    (% class="pull-left"%)$services.localization.render('taskmanager.panel.noactivetasks')
+  #else
+    (% class="pull-right"%)[[$services.localization.render('taskmanager.panel.fulltasklist')&gt;&gt;TaskManager.WebHome]]
+  #end
+  #panelfooter()
 {{/velocity}}</content>
     </property>
     <property>
