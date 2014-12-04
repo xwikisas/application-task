@@ -190,7 +190,7 @@
       <parameters>#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
 label=$services.localization.render('TaskManager.panels.name')
 target=TaskManager.WebHome
-icon=icon:report_user</parameters>
+icon=icon:application_view_list</parameters>
     </property>
     <property>
       <scope>wiki</scope>
