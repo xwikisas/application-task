@@ -20,29 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc>
+<xwikidoc version="1.1">
   <web>TaskManager</web>
   <name>ToDo</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>TaskManager.WebHome</parent>
   <creator>xwiki:XWiki.Admin</creator>
+  <parent>TaskManager.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
-  <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1382359602000</creationDate>
   <date>1382359609000</date>
   <contentUpdateDate>1382358827000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
+  <content/>
   <object>
+    <name>TaskManager.ToDo</name>
+    <number>0</number>
+    <className>TaskManager.StatusClass</className>
+    <guid>97981592-d900-40eb-91d7-943806453cb2</guid>
     <class>
       <name>TaskManager.StatusClass</name>
       <customClass/>
@@ -66,13 +68,8 @@
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </status>
     </class>
-    <name>TaskManager.ToDo</name>
-    <number>0</number>
-    <className>TaskManager.StatusClass</className>
-    <guid>97981592-d900-40eb-91d7-943806453cb2</guid>
     <property>
       <status>ToDo</status>
     </property>
   </object>
-  <content/>
 </xwikidoc>
