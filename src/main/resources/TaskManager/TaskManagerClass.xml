@@ -313,15 +313,28 @@
 {{html}}
 #set($name ="severity")
 #set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $doc.getObject('TaskManager.TaskManagerClass').getProperty('severity').value)
+#set($existingValue = $doc.getObject('TaskManager.TaskManagerClass').getValue('severity'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_severity" id="TaskManager.TaskManagerClass_0_severity"&gt;
 #foreach($rValue in $propertyClass.mapValues.entrySet())
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected="selected" #end&gt;$services.localization.render("TaskManager.SeverityClass_severity_$rValue.key")&lt;/option&gt;
+  #set($key = "TaskManager.SeverityClass_severity_$rValue.key")
+  #set($translation = $services.localization.render($key))
+  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+    #if ($translation == $key)
+      $rValue.key
+    #else
+      $translation
+    #end
+  &lt;/option&gt;
 #end
 {{/html}}
 #else
-  #set($propValue=$object.getProperty('severity').value)
-  $services.localization.render("TaskManager.SeverityClass_severity_$propValue")
+  #set($key = $doc.getObject('TaskManager.TaskManagerClass').getValue('severity'))
+  #set($translation = $services.localization.render($key))
+  #if ($translation == $key)
+    $key
+  #else
+    $translation
+  #end
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
@@ -353,15 +366,28 @@
 {{html}}
 #set($name ="status")
 #set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $doc.getObject('TaskManager.TaskManagerClass').getProperty('status').value)
+#set($existingValue = $doc.getObject('TaskManager.TaskManagerClass').getValue('status'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_status" id="TaskManager.TaskManagerClass_0_status"&gt;
 #foreach($rValue in $propertyClass.mapValues.entrySet())
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected="selected" #end&gt;$services.localization.render("TaskManager.StatusClass_status_$rValue.key")&lt;/option&gt;
+  #set($key = "TaskManager.StatusClass_status_$rValue.key")
+  #set($translation = $services.localization.render($key))
+  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+    #if ($translation == $key)
+      $rValue.key
+    #else
+      $translation
+    #end
+  &lt;/option&gt;
 #end
 {{/html}}
 #else
-  #set($propValue=$object.getProperty('status').value)
-  $services.localization.render("TaskManager.StatusClass_status_$propValue")
+  #set($key = $doc.getObject('TaskManager.TaskManagerClass').getValue('status'))
+  #set($translation = $services.localization.render($key))
+  #if ($translation == $key)
+    $key
+  #else
+    $translation
+  #end
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
