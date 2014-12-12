@@ -49,11 +49,11 @@
       (((
         (% class="row" %)
         (((
-          (% class="col-xs-12 col-md-6 col-lg-8" %)
+          (% class="col-xs-12 col-sm-8 col-md-8" %)
           (((
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -64,7 +64,7 @@
                   : $doc.display('number')
                 )))
               )))
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -78,7 +78,7 @@
             )))
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -89,7 +89,7 @@
                   : $xwiki.formatDate($doc.creationDate,'dd/MM/yyyy HH:mm:ss')
                 )))
               )))
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -103,7 +103,7 @@
             )))
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -114,7 +114,7 @@
                   : $doc.display('reporter')
                 )))
               )))
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -127,7 +127,7 @@
               )))
             )))
           )))
-          (% class="col-xs-12 col-md-6 col-lg-4" %)
+          (% class="col-xs-12 col-sm-4 col-md-4" %)
           (((
             (% class="form-group" %)
             (((
@@ -157,7 +157,7 @@
         )))
         (% class="row" %)
         (((
-          (% class="col-xs-12" %)
+          (% class="col-xs-12 col-sm-12 col-md-12" %)
           (((
             (% class="form-group" %)
             (((
@@ -171,7 +171,7 @@
         )))
         (% class="row" %)
         (((
-          (% class="col-xs-12" %)
+          (% class="col-xs-12 col-sm-12 col-md-12" %)
           (((
             (% class="form-group" %)
             (((
@@ -190,7 +190,7 @@
       (((
         (% class="row" %)
         (((
-          (% class="col-xs-12 col-md-6 col-lg-8" %)
+          (% class="col-xs-12 col-sm-8 col-md-8" %)
           (((
             (% class="form-group" %)
             (((
@@ -218,7 +218,7 @@
                 #end
             )))
           )))
-          (% class="col-xs-12 col-md-6 col-lg-4" %)
+          (% class="col-xs-12 col-sm-4 col-md-4" %)
           (((
             (% class="form-group" %)
             (((
@@ -232,11 +232,11 @@
         )))
         (% class="row" %)
         (((
-          (% class="col-xs-12 col-md-6 col-lg-8" %)
+          (% class="col-xs-12 col-sm-8 col-md-8" %)
           (((
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -247,7 +247,7 @@
                   : $xwiki.formatDate($doc.creationDate,'dd/MM/yyyy HH:mm:ss')
                 )))
               )))
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -261,7 +261,7 @@
             )))
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -272,7 +272,7 @@
                   : $doc.display('reporter', 'view')
                 )))
               )))
-              (% class="col-xs-12 col-lg-6" %)
+              (% class="col-xs-12 col-sm-6" %)
               (((
                 (% class="form-group" %)
                 (((
@@ -285,7 +285,7 @@
               )))
             )))
           )))
-          (% class="col-xs-12 col-md-6 col-lg-4" %)
+          (% class="col-xs-12 col-sm-4 col-md-4" %)
           (((
             (% class="form-group" %)
             (((
@@ -315,7 +315,7 @@
         )))
         (% class="row" %)
         (((
-          (% class="form-group col-xs-12 col-md-12 col-lg-12" %)
+          (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
           (((
             ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
                 $services.icon.render('application_view_list')
@@ -323,7 +323,7 @@
               &lt;/label&gt;
             : $doc.display('description')
           )))
-          (% class="form-group col-xs-12 col-md-12 col-lg-12" %)
+          (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
           (((
             ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;
                 $services.icon.render('add')
