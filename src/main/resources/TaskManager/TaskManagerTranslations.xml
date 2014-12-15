@@ -41,6 +41,7 @@
   <hidden>true</hidden>
   <content>
 # Application Panel title
+TaskManager.home.title=Task Manager
 TaskManager.panels.name=Task Manager
 
 TaskManager.administration.addProject.label=Project
