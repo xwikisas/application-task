@@ -113,7 +113,7 @@ taskmanager.livetable.severity=Priority
 taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
-taskmanager.livetable.creationDate=Date de création
+taskmanager.livetable.creationDate=Creation Date
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
