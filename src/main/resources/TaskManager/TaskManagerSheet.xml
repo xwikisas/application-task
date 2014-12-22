@@ -68,11 +68,13 @@
               (((
                 (% class="form-group" %)
                 (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
-                      $services.icon.render('folder')
-                      $escapetool.xml($doc.displayPrettyName('project', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('project')
+                   #if ("$!doc.display('project')" != '')
+                     ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
+                         $services.icon.render('folder')
+                         $escapetool.xml($doc.displayPrettyName('project', false, false))
+                       &lt;/label&gt;
+                     : $doc.display('project')
+                  #end
                 )))
               )))
             )))
@@ -118,11 +120,13 @@
               (((
                 (% class="form-group" %)
                 (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;
-                      $services.icon.render('user')
-                      $escapetool.xml($doc.displayPrettyName('assignee', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('assignee')
+                   #if ("$!doc.getValue('assignee')" != '')
+                     ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;
+                         $services.icon.render('user')
+                         $escapetool.xml($doc.displayPrettyName('assignee', false, false))
+                       &lt;/label&gt;
+                     : $doc.display('assignee')
+                  #end
                 )))
               )))
             )))
@@ -161,11 +165,13 @@
           (((
             (% class="form-group" %)
             (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
-                  $services.icon.render('application_view_list')
-                  $escapetool.xml($doc.displayPrettyName('description', false, false))
-                &lt;/label&gt;
-              : $doc.display('description')
+              #if ("$!doc.display('description')" != '')
+                ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
+                    $services.icon.render('application_view_list')
+                    $escapetool.xml($doc.displayPrettyName('description', false, false))
+                  &lt;/label&gt;
+                : $doc.display('description')
+              #end
             )))
           )))
         )))
@@ -175,11 +181,13 @@
           (((
             (% class="form-group" %)
             (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;
-                  $services.icon.render('add')
-                  $escapetool.xml($doc.displayPrettyName('dependencies', false, false))
-                &lt;/label&gt;
-              : $doc.display('dependencies')
+               #if ("$!doc.display('dependencies')" != '')
+                 ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;
+                     $services.icon.render('add')
+                     $escapetool.xml($doc.displayPrettyName('dependencies', false, false))
+                   &lt;/label&gt;
+                 : $doc.display('dependencies')
+              #end
             )))
           )))
         )))
