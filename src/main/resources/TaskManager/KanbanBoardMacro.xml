@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc>
+  <web>TaskManager</web>
+  <name>KanbanBoardMacro</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1405091841000</creationDate>
+  <date>1406130844000</date>
+  <contentUpdateDate>1406130844000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <object>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <disabled>0</disabled>
+        <name>cache</name>
+        <number>1</number>
+        <prettyName>Caching policy</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <values>long|short|default|forbid</values>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>20</rows>
+        <size>50</size>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>3</number>
+        <prettyName>Name</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+      </parse>
+      <use>
+        <disabled>0</disabled>
+        <name>use</name>
+        <number>5</number>
+        <prettyName>Use this extension</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+      </use>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>7454fc45-d7b0-4d46-aa17-5fd6662a49e9</guid>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>#set($slate = 'Late')
+#set($slatecolor = '#FF0000')
+#set($stodo = 'ToDo')
+#set($stodocolor = '#2173AF')
+#set($sinprogress = 'InProgress')
+#set($sinprogresscolor = 'green')
+#set($sdone = 'Done')
+#set($sdonecolor = 'gray')
+.kanban-board .panel .panel-title {
+  font-size: 120%;
+  font-weight: 700;
+}
+.kanban-board .panel .panel-body {
+  background: #FCFCFC;
+}
+.kanban-board .task-card-status-${slate} .panel .panel-title {
+  color: ${slatecolor};
+}
+.kanban-board .task-card-status-${stodo} .panel .panel-title {
+  color: ${stodocolor};
+}
+.kanban-board .task-card-status-${sinprogress} .panel .panel-title {
+  color: ${sinprogresscolor};
+}
+.kanban-board .task-card-status-${sdone} .panel .panel-title {
+  color: ${sdonecolor};
+}
+</code>
+    </property>
+    <property>
+      <name>Kanban board style</name>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.WikiMacroClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <id>
+        <disabled>0</disabled>
+        <name>id</name>
+        <number>1</number>
+        <prettyName>Macro id</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </id>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Macro name</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </name>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>3</number>
+        <prettyName>Macro description</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </description>
+      <defaultCategory>
+        <disabled>0</disabled>
+        <name>defaultCategory</name>
+        <number>4</number>
+        <prettyName>Default category</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </defaultCategory>
+      <supportsInlineMode>
+        <disabled>0</disabled>
+        <name>supportsInlineMode</name>
+        <number>5</number>
+        <prettyName>Supports inline mode</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+      </supportsInlineMode>
+      <visibility>
+        <disabled>0</disabled>
+        <name>visibility</name>
+        <number>6</number>
+        <prettyName>Macro visibility</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <values>Current User|Current Wiki|Global</values>
+      </visibility>
+      <contentType>
+        <disabled>0</disabled>
+        <name>contentType</name>
+        <number>7</number>
+        <prettyName>Macro content type</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+        <cache>0</cache>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <values>Optional|Mandatory|No content</values>
+      </contentType>
+      <contentDescription>
+        <disabled>0</disabled>
+        <name>contentDescription</name>
+        <number>8</number>
+        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </contentDescription>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>9</number>
+        <prettyName>Macro code</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>20</rows>
+        <size>40</size>
+      </code>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>1</number>
+    <className>XWiki.WikiMacroClass</className>
+    <guid>bb4db0ec-5337-4ca7-8ae6-a2d210c853bf</guid>
+    <property>
+      <id>kanbanboard</id>
+    </property>
+    <property>
+      <name>Kanban board</name>
+    </property>
+    <property>
+      <description>Display the tasks as a Kanban board (see https://en.wikipedia.org/wiki/Kanban_board).</description>
+    </property>
+    <property>
+      <defaultCategory/>
+    </property>
+    <property>
+      <supportsInlineMode>0</supportsInlineMode>
+    </property>
+    <property>
+      <visibility>Global</visibility>
+    </property>
+    <property>
+      <contentType>No content</contentType>
+    </property>
+    <property>
+      <contentDescription/>
+    </property>
+    <property>
+      <code>{{velocity}}
+#### MACRO displayCategories
+## @taskslist[Map&lt;String,List&lt;TaskCode.TaskClass&gt;&gt;] List of tasks order by categories/status
+##
+## Display the tasks with column for each category
+#macro(displayCategories $taskslist)
+  (% class="kanban-board" %)
+  (((
+    #foreach($taskslistkey in $xcontext.macro.params.columns.split(','))
+      (% class="col-xs-12 col-md-4 text-center task-card-status-${taskslistkey}" %)
+      (((
+        (% class="panel panel-default" %)
+        (((
+          (% class="panel-heading" %)
+          (((
+            (% class="panel-title" %)${services.localization.render("TaskManager.TaskManagerClass_status_${taskslistkey}")}
+          )))
+          (% class="panel-body" %)
+          (((
+            #foreach($task in $taskslist.get($taskslistkey))
+              {{taskcard taskid="${task.name}" /}}
+            #end
+          )))
+        )))
+      )))
+    #end
+  )))
+#end
+#set($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
+#set($selection = $xcontext.macro.params.selection)
+#set($results = $services.query)
+#set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
+#set($paramuser = "$!{xcontext.macro.params.user}")
+#if($paramuser != '')
+  #set($userref = $services.model.resolveDocument($!xcontext.macro.params.user))
+  #set($user = "${services.model.serialize($userref, 'compactwiki')}")
+  #set($query = "${query} and task.assignee = :user")
+#end
+#set($paramspace = "$!{xcontext.macro.params.space}")
+#if($paramspace != '')
+  #set($space = "${paramspace}")
+  #set($query = "${query} and doc.space = :space")
+#end
+#set($paramproject = "$!{xcontext.macro.params.project}")
+#if($paramproject != '')
+  #set($project = "${paramproject}")
+  #set($query = "${query} and task.project = :project")
+#end
+#set($query = "${query} order by task.duedate")
+#set($results = $results.xwql($query))
+#if($paramuser != '')
+  #set($results = $results.bindValue('user', $user))
+#end
+#if($paramspace != '')
+  #set($results = $results.bindValue('space', $space))
+#end
+#if($paramproject != '')
+  #set($results = $results.bindValue('project', $project))
+#end
+#set($results = $results.execute())
+#set($categoriestaskslist = {})
+#foreach($s in $xwiki.getPropertyClassFromName('TaskManager.TaskManagerClass_status').getListValues())
+  #set($discard = $categoriestaskslist.put($s, []))
+#end
+#foreach($taskid in $results)
+  #set($taskpageref = $services.model.resolveDocument($taskid))
+  #set($taskpage = $xwiki.getDocument($taskpageref))
+  #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+  #set($taskstatus = $task.getProperty('status').value)
+  #set($taskduedate = $task.getProperty('duedate').value)
+  #set($discard = $categoriestaskslist.get($taskstatus).add($task)) ## Fill for the list
+#end
+#displayCategories($categoriestaskslist)
+{{/velocity}}
+</code>
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>2</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>8d1554e7-6649-410c-b6a4-098254048ac0</guid>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>When value ##user## is defined in ##selection## parameter, this parameter defines which user has to be selected.  The default user is the current one.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>user</name>
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>3</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>62b4dde6-f7d6-4075-a758-249d1d4e0afd</guid>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>When value ##space## is defined in ##selection## parameter, this parameter defines in which space the tasks has to be taken.  The default space is ##TaskManager##.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>space</name>
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>4</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>c5b1acee-219a-488f-abf8-6915c1758f8b</guid>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>When value ##project## is defined in ##selection## parameter, this parameter defines in which project the tasks has to be taken.  There is no default value.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>project</name>
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </name>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+        <rows>5</rows>
+        <size>40</size>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+      </mandatory>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <size>30</size>
+      </defaultValue>
+    </class>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>5</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>e1ebbd3b-5a85-4ba1-ad37-d7765b609139</guid>
+    <property>
+      <name>columns</name>
+    </property>
+    <property>
+      <description>This parameter defines the columns and the order of the columns to display based on possible status (ToDo, InProgress and Done by default).</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <defaultValue>ToDo,InProgress,Done</defaultValue>
+    </property>
+  </object>
+  <content>Example:
+
+##{{{{{kanbanboard space="TaskManager" /}}}}}##
+
+* ##user## [optional, default=$xcontext.userReference] define the user for who tasks are assigned
+* ##space## [optional, default=TaskManager] define the space to look for tasks
+* ##project## [optional, default=] define the project to look for tasks
+
+Example:
+
+{{kanbanboard selection="space" space="TaskManager"/}}</content>
+</xwikidoc>

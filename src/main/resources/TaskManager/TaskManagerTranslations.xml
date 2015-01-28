@@ -64,6 +64,7 @@ TaskManager.TaskManagerClass_project=Project
 TaskManager.TaskManagerClass_description=Description
 TaskManager.TaskManagerClass_status=Status
 TaskManager.TaskManagerClass_status_InProgress=In Progress
+TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_status_ToDo=To Do
 TaskManager.TaskManagerClass_status_Done=Done
 TaskManager.TaskManagerClass_status_Late=Late
