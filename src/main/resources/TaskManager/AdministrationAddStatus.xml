@@ -45,6 +45,7 @@
   #if(!$stringtool.isBlank($status))
     #set($documentRef = $services.model.createDocumentReference($context.getDatabase(), 'TaskManager', $status))
     #set($document = $xwiki.getDocument($documentRef))
+    #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.StatusClass', true))
     $object.set('status', "$status")
     $document.save()    

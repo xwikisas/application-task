@@ -45,6 +45,7 @@
   #if(!$stringtool.isBlank($severity))
     #set($documentRef = $services.model.createDocumentReference($context.getDatabase(), 'TaskManager', $severity))
     #set($document = $xwiki.getDocument($documentRef))
+    #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.SeverityClass', true))
     $object.set('severity', "$severity")
     $document.save()    
