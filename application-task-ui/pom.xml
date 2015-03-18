@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
+*
 * See the NOTICE file distributed with this work for additional
 * information regarding copyright ownership.
 *
@@ -18,70 +19,51 @@
 * License along with this software; if not, write to the Free
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.xwiki.commons</groupId>
-    <artifactId>xwiki-commons-pom</artifactId>
-    <version>6.2.1</version>
+    <groupId>org.xwiki.contrib</groupId>
+    <artifactId>application-task</artifactId>
+    <version>2.4-SNAPSHOT</version>
   </parent>
   <groupId>org.xwiki.contrib</groupId>
-  <artifactId>application-task</artifactId>
-  <version>2.4.2-SNAPSHOT</version>
-  <name>Task Manager Application - Parent POM</name>
-  <packaging>pom</packaging>
-  <description>A simple task management application</description>
-  <issueManagement>
-    <system>jira</system>
-    <url>http://jira.xwiki.org/browse/TASKMAN</url>
-  </issueManagement>
-  <developers>
-    <developer>
-      <id>sorinello</id>
-      <name>Sorin Burjan</name>
-    </developer>
-    <developer>
-      <id>gabrielasmeria</id>
-      <name>Gabriela Smeria</name>
-    </developer>
-  </developers>
-  <scm>
-   <connection>scm:git:git://github.com/xwiki-contrib/application-task.git</connection>
-   <developerConnection>scm:git:git@github.com:xwiki-contrib/application-task.git</developerConnection>
-   <url>https://github.com/xwiki-contrib/application-task</url>
-    <tag>HEAD</tag>
-  </scm>
-  <distributionManagement>
-   <repository>
-     <id>xwiki-staging</id>
-     <name>XWiki Staging Repository</name>
-     <url>http://nexus.xwiki.org/nexus/service/local/staging/deploy/maven2/</url>
-   </repository>
-  </distributionManagement>
+  <artifactId>application-task-ui</artifactId>
+  <name>Task Manager Application - UI</name>
+  <packaging>xar</packaging>
   <properties>
-    <platform.version>${commons.version}</platform.version>
+    <xwiki.extension.features>org.xwiki.contrib:application-task</xwiki.extension.features>
+    <!-- Don't run CLIRR here since there's no Java code. -->
+    <xwiki.clirr.skip>true</xwiki.clirr.skip>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-livetable-ui</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${platform.version}</version>
       <type>xar</type>
       <scope>runtime</scope>
     </dependency>
-      <dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-appwithinminutes-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-sheet-ui</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${platform.version}</version>
       <type>xar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-uiextension-ui</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${platform.version}</version>
       <type>xar</type>
       <scope>runtime</scope>
     </dependency>
@@ -103,15 +85,4 @@
       </extension>
     </extensions>
   </build>
-  <modules>
-    <module>application-task-ui</module>
-  </modules>
-  <profiles>
-    <profile>
-      <id>integration-tests</id>
-      <modules>
-        <module>application-task-test</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
