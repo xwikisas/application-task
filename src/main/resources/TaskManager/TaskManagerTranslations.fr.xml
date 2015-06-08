@@ -44,6 +44,7 @@
   <hidden>true</hidden>
   <content>
 # Application Panel title
+TaskManager.home.title=Gestionnaire de tâche
 TaskManager.panels.name=Gestionnaire de tâche
 
 TaskManager.administration.addProject.label=Projet
@@ -80,6 +81,7 @@ TaskManager.TaskManagerClass_duedate=Échéance
 TaskManager.TaskManagerClass_creationdate=Date de création
 TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
+TaskManager.TaskManagerClass_progress=Progrès
 
 TaskManager.StatusClass_status_InProgress=En cours
 TaskManager.StatusClass_status_ToDo=À faire

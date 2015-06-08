@@ -78,6 +78,8 @@ TaskManager.TaskManagerClass_duedate=Due Date
 TaskManager.TaskManagerClass_creationdate=Creation Date
 TaskManager.TaskManagerClass_dependencies=Dependencies
 TaskManager.TaskManagerClass_dependencies_nodependencies=Please create other tasks before adding dependencies.
+TaskManager.TaskManagerClass_progress=Progress
+
 
 TaskManager.StatusClass_status_InProgress=In Progress
 TaskManager.StatusClass_status_ToDo=To Do
