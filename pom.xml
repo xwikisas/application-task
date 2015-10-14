@@ -31,7 +31,7 @@
   </parent>
   <groupId>org.xwiki.contrib</groupId>
   <artifactId>application-task</artifactId>
-  <version>2.5-SNAPSHOT</version>
+  <version>2.4.1</version>
   <name>Task Manager Application</name>
   <packaging>xar</packaging>
   <description> A simple task management application</description>
@@ -53,7 +53,7 @@
    <connection>scm:git:git://github.com/xwiki-contrib/application-task.git</connection>
    <developerConnection>scm:git:git@github.com:xwiki-contrib/application-task.git</developerConnection>
    <url>https://github.com/xwiki-contrib/application-task</url>
-    <tag>HEAD</tag>
+    <tag>application-task-2.4.1</tag>
   </scm>
   <distributionManagement>
    <repository>
