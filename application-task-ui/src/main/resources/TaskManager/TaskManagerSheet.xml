@@ -34,7 +34,7 @@
   <date>1423133471000</date>
   <contentUpdateDate>1423132184000</contentUpdateDate>
   <version>1.1</version>
-  <title/>
+  <title>$!{doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value}</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
