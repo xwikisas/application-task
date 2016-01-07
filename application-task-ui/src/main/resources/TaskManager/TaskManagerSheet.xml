@@ -34,7 +34,7 @@
   <date>1423133471000</date>
   <contentUpdateDate>1423132184000</contentUpdateDate>
   <version>1.1</version>
-  <title/>
+  <title>$!{doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value}</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
@@ -209,9 +209,9 @@
                 &lt;/label&gt;
                 #set($taskName = $xwiki.getDocument($doc).getObject('TaskManager.TaskManagerClass').getProperty('name').value)
                 #if($taskName)
-              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
+              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
                 #else
-              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
+              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
                 #end
                 #if($doc.isNew())
                 #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
@@ -222,7 +222,7 @@
                   #set($index = 0)
                 #end
                 #set($number = $mathtool.add($index,1))
-                &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_number" value="$number"/&gt;
+                &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_number" id="TaskManager.TaskManagerClass_0_number" value="$number"/&gt;
                 #end
             )))
           )))
