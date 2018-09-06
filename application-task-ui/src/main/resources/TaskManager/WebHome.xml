@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc version="1.3" reference="TaskManager.WebHome" locale="">
   <web>TaskManager</web>
   <name>WebHome</name>
   <language/>
@@ -66,104 +66,6 @@
 #set ($columns = ['number', 'name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
 #livetable('taskmanager' $columns $columnsProperties $options)
 {{/velocity}}</content>
-  <object>
-    <name>TaskManager.WebHome</name>
-    <number>0</number>
-    <className>AppWithinMinutes.LiveTableClass</className>
-    <guid>c0f83e8b-73d5-40df-8a0c-58d25eefc502</guid>
-    <class>
-      <name>AppWithinMinutes.LiveTableClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <class>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>class</name>
-        <number>1</number>
-        <picker>0</picker>
-        <prettyName>Class</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </class>
-      <columns>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>columns</name>
-        <number>3</number>
-        <picker>0</picker>
-        <prettyName>Columns</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </columns>
-      <description>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <editor>---</editor>
-        <name>description</name>
-        <number>2</number>
-        <picker>0</picker>
-        <prettyName>Description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
-    </class>
-    <property>
-      <class>TaskManager.TaskManagerClass</class>
-    </property>
-    <property>
-      <columns>number name project status severity reporter assignee duedate _actions</columns>
-    </property>
-    <property>
-      <description/>
-    </property>
-  </object>
-  <object>
-    <name>TaskManager.WebHome</name>
-    <number>0</number>
-    <className>XWiki.DocumentSheetBinding</className>
-    <guid>ece9847f-4247-4668-82b5-0b44b9c0b772</guid>
-    <class>
-      <name>XWiki.DocumentSheetBinding</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <sheet>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>sheet</name>
-        <number>1</number>
-        <picker>0</picker>
-        <prettyName>Sheet</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </sheet>
-    </class>
-    <property>
-      <sheet>WebHomeSheet</sheet>
-    </property>
-  </object>
   <object>
     <name>TaskManager.WebHome</name>
     <number>0</number>
@@ -226,7 +128,7 @@
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>

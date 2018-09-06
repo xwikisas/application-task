@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc>
+<xwikidoc version="1.3" reference="TaskManager.TaskManagerTranslations" locale="fr">
   <web>TaskManager</web>
   <name>TaskManagerTranslations</name>
   <language>fr</language>
@@ -42,10 +42,9 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>
-# Application Panel title
-TaskManager.home.title=Gestionnaire de tâche
-TaskManager.panels.name=Gestionnaire de tâche
+  <content># Application Panel title
+TaskManager.home.title=Gestionnaire de tâches
+TaskManager.panels.name=Gestionnaire de tâches
 
 TaskManager.administration.addProject.label=Projet
 TaskManager.administration.addProject.submit=Ajouter un projet
@@ -125,5 +124,8 @@ taskmanager.panel.paneltitle=Mes tâches prévues
 taskmanager.panel.untildate=avant
 taskmanager.panel.fulltasklist=Accéder à la liste complète
 taskmanager.panel.noactivetasks=Aucune tâche active
+
+# Template provider
+taskmanager.entry.name=Tâche
 </content>
 </xwikidoc>
