@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc>
+<xwikidoc version="1.3" reference="TaskManager.TaskManagerClass" locale="">
   <web>TaskManager</web>
   <name>TaskManagerClass</name>
   <language/>
@@ -362,11 +362,11 @@
       <classname>TaskManager.StatusClass</classname>
       <customDisplay>{{velocity}}
 #set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
-#if($context.action=='edit')
+#if($type=='edit')
 {{html}}
 #set($name ="status")
 #set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $doc.getObject('TaskManager.TaskManagerClass').getValue('status'))
+#set($existingValue = $object.getValue('status'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_status" id="TaskManager.TaskManagerClass_0_status"&gt;
 #foreach($rValue in $propertyClass.mapValues.entrySet())
   #set($key = "TaskManager.StatusClass_status_$rValue.key")
@@ -381,7 +381,7 @@
 #end
 {{/html}}
 #else
-  #set($key = $doc.getObject('TaskManager.TaskManagerClass').getValue('status'))
+  #set($key = "TaskManager.StatusClass_status_${object.getValue('status')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
     $key
@@ -412,6 +412,10 @@
     </status>
   </class>
   <object>
+    <name>TaskManager.TaskManagerClass</name>
+    <number>0</number>
+    <className>XWiki.ClassSheetBinding</className>
+    <guid>079ad206-fadb-43b2-8419-25aed0295a85</guid>
     <class>
       <name>XWiki.ClassSheetBinding</name>
       <customClass/>
@@ -435,15 +439,15 @@
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </sheet>
     </class>
-    <name>TaskManager.TaskManagerClass</name>
-    <number>0</number>
-    <className>XWiki.ClassSheetBinding</className>
-    <guid>079ad206-fadb-43b2-8419-25aed0295a85</guid>
     <property>
       <sheet>TaskManagerSheet</sheet>
     </property>
   </object>
   <object>
+    <name>TaskManager.TaskManagerClass</name>
+    <number>0</number>
+    <className>XWiki.DocumentSheetBinding</className>
+    <guid>bdd1438d-f6dc-43b7-a9ad-da4b418cdcf4</guid>
     <class>
       <name>XWiki.DocumentSheetBinding</name>
       <customClass/>
@@ -467,15 +471,15 @@
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </sheet>
     </class>
-    <name>TaskManager.TaskManagerClass</name>
-    <number>0</number>
-    <className>XWiki.DocumentSheetBinding</className>
-    <guid>bdd1438d-f6dc-43b7-a9ad-da4b418cdcf4</guid>
     <property>
       <sheet>AppWithinMinutes.ClassEditSheet</sheet>
     </property>
   </object>
   <object>
+    <name>TaskManager.TaskManagerClass</name>
+    <number>1</number>
+    <className>XWiki.DocumentSheetBinding</className>
+    <guid>6a5b2754-c723-4e34-a61a-0e3b387c5319</guid>
     <class>
       <name>XWiki.DocumentSheetBinding</name>
       <customClass/>
@@ -499,15 +503,15 @@
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </sheet>
     </class>
-    <name>TaskManager.TaskManagerClass</name>
-    <number>1</number>
-    <className>XWiki.DocumentSheetBinding</className>
-    <guid>6a5b2754-c723-4e34-a61a-0e3b387c5319</guid>
     <property>
       <sheet>XWiki.ClassSheet</sheet>
     </property>
   </object>
   <object>
+    <name>TaskManager.TaskManagerClass</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>93d9d9fc-9c70-4fa5-992e-73d6eb2937bc</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -527,7 +531,7 @@
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -572,17 +576,13 @@
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>TaskManager.TaskManagerClass</name>
-    <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>93d9d9fc-9c70-4fa5-992e-73d6eb2937bc</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -633,7 +633,7 @@
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -678,7 +678,7 @@
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>currentPage|onDemand|always</values>
@@ -736,7 +736,7 @@
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -781,7 +781,7 @@
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>currentPage|onDemand|always</values>
