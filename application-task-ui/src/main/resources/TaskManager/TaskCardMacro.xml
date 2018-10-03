@@ -397,7 +397,7 @@
       <supportsInlineMode>1</supportsInlineMode>
     </property>
     <property>
-      <visibility>Global</visibility>
+      <visibility>Current Wiki</visibility>
     </property>
     <property>
       <contentType>No content</contentType>
