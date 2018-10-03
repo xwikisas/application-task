@@ -60,10 +60,10 @@
   'tagCloud': true,
   'rowCount': 15,
   'maxPages': 10,
-  'selectedColumn': 'number',
+  'selectedColumn': 'name',
   'defaultOrder': 'asc'
 })
-#set ($columns = ['number', 'name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
+#set ($columns = ['name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
 #livetable('taskmanager' $columns $columnsProperties $options)
 {{/velocity}}</content>
   <object>
