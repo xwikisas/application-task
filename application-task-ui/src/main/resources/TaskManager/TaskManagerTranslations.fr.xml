@@ -53,11 +53,11 @@ TaskManager.administration.addStatus.label=Statut
 TaskManager.administration.addStatus.submit=Ajouter un statut
 
 TaskManager.administration.addSeverity.label=Importance
-TaskManager.administration.addSeverity.submit=Ajouter importance
+TaskManager.administration.addSeverity.submit=Ajouter un niveau d'importance
 
 TaskManager.adminitration.addProject=Ajouter un projet
 TaskManager.adminitration.addStatus=Ajouter un statut
-TaskManager.adminitration.addSeverity=Ajouter importance
+TaskManager.adminitration.addSeverity=Ajouter un niveau d'importance
 
 # Class fields
 TaskManager.TaskManagerClass_name=Nom de la tâche
@@ -65,14 +65,13 @@ TaskManager.TaskManagerClass_number=Numéro de la tâche
 TaskManager.TaskManagerClass_project=Projet
 TaskManager.TaskManagerClass_description=Description de la tâche
 TaskManager.TaskManagerClass_status=Statut
-TaskManager.TaskManagerClass_status_InProgress=En cours
-TaskManager.TaskManagerClass_status_Late=En retard
 TaskManager.TaskManagerClass_status_ToDo=À faire
+TaskManager.TaskManagerClass_status_InProgress=En cours
 TaskManager.TaskManagerClass_status_Done=Effectuée
 TaskManager.TaskManagerClass_status_Late=En retard
 TaskManager.TaskManagerClass_severity=Importance
-TaskManager.TaskManagerClass_severity_Medium=Moyenne
 TaskManager.TaskManagerClass_severity_Low=Basse
+TaskManager.TaskManagerClass_severity_Medium=Moyenne
 TaskManager.TaskManagerClass_severity_High=Haute
 TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
@@ -82,8 +81,8 @@ TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 TaskManager.TaskManagerClass_progress=Progrès
 
-TaskManager.StatusClass_status_InProgress=En cours
 TaskManager.StatusClass_status_ToDo=À faire
+TaskManager.StatusClass_status_InProgress=En cours
 TaskManager.StatusClass_status_Done=Effectuée
 
 TaskManager.SeverityClass_severity_Low=Basse
