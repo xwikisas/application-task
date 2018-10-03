@@ -23,9 +23,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.xwiki.commons</groupId>
-    <artifactId>xwiki-commons-pom</artifactId>
-    <version>6.2.1</version>
+    <groupId>org.xwiki.contrib</groupId>
+    <artifactId>parent-platform</artifactId>
+    <version>6.4-8</version>
   </parent>
   <groupId>org.xwiki.contrib</groupId>
   <artifactId>application-task</artifactId>
@@ -39,12 +39,20 @@
   </issueManagement>
   <developers>
     <developer>
-      <id>sorinello</id>
-      <name>Sorin Burjan</name>
+      <id>lucaa</id>
+      <name>Anca Luca</name>
     </developer>
     <developer>
       <id>gabrielasmeria</id>
       <name>Gabriela Smeria</name>
+    </developer>
+    <developer>
+      <id>sorinello</id>
+      <name>Sorin Burjan</name>
+    </developer>
+    <developer>
+      <id>slauriere</id>
+      <name>Stéphane Laurière</name>
     </developer>
   </developers>
   <scm>
@@ -53,56 +61,21 @@
    <url>https://github.com/xwiki-contrib/application-task/tree/master</url>
     <tag>HEAD</tag>
   </scm>
-  <distributionManagement>
-   <repository>
-     <id>xwiki-staging</id>
-     <name>XWiki Staging Repository</name>
-     <url>http://nexus.xwiki.org/nexus/service/local/staging/deploy/maven2/</url>
-   </repository>
-  </distributionManagement>
   <properties>
-    <platform.version>${commons.version}</platform.version>
+    <xwiki.extension.name>Task Manager Application</xwiki.extension.name>
+    <xwiki.extension.category>application</xwiki.extension.category>
+    <xwiki.issueManagement.system>jira</xwiki.issueManagement.system>
+    <xwiki.issueManagement.url>https://jira.xwiki.org/projects/TASKMAN/</xwiki.issueManagement.url>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-livetable-ui</artifactId>
-      <version>${project.parent.version}</version>
+      <groupId>org.xwiki.contrib</groupId>
+      <artifactId>macro-kanban</artifactId>
       <type>xar</type>
-      <scope>runtime</scope>
-    </dependency>
-      <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-sheet-ui</artifactId>
-      <version>${project.parent.version}</version>
-      <type>xar</type>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-uiextension-ui</artifactId>
-      <version>${project.parent.version}</version>
-      <type>xar</type>
+      <version>1.2.3</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-        <version>${commons.version}</version>
-      </plugin>
-    </plugins>
-    <!-- Needed to add support for the XAR packaging -->
-    <extensions>
-      <extension>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-handlers</artifactId>
-        <version>${commons.version}</version>
-      </extension>
-    </extensions>
-  </build>
   <modules>
     <module>application-task-ui</module>
   </modules>

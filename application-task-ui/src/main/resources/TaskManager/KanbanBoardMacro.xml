@@ -276,6 +276,32 @@
     <className>XWiki.WikiMacroClass</className>
     <guid>bb4db0ec-5337-4ca7-8ae6-a2d210c853bf</guid>
     <property>
+      <code>{{velocity}}
+## The xwql variable is used by the awmkanban macro called from this one.
+#set ($xwql = '')
+#set($user = "$!{xcontext.macro.params.user}")
+#if($user != '')
+  #set($xwql = "obj.assignee = '$escapetool.sql($user)'")
+#end
+#set($space = "$!{xcontext.macro.params.space}")
+#if($space != '')
+  #if ($xwql.length() &gt; 0)
+    #set ($xwql = "$xwql and")
+  #end
+  #set($xwql = "${xwql} doc.space = '$escapetool.sql($space)'")
+#end
+#set($project = "$!{xcontext.macro.params.project}")
+#if($project != '')
+  #if ($xwql.length() &gt; 0)
+    #set ($xwql = "$xwql and")
+  #end
+  #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
+#end
+{{/velocity}}
+
+{{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="32%"/}}</code>
+    </property>
+    <property>
       <id>kanbanboard</id>
     </property>
     <property>
@@ -298,83 +324,6 @@
     </property>
     <property>
       <contentDescription/>
-    </property>
-    <property>
-      <code>{{velocity}}
-#### MACRO displayCategories
-## @taskslist[Map&lt;String,List&lt;TaskCode.TaskClass&gt;&gt;] List of tasks order by categories/status
-##
-## Display the tasks with column for each category
-#macro(displayCategories $taskslist)
-  (% class="kanban-board" %)
-  (((
-    #foreach($taskslistkey in $xcontext.macro.params.columns.split(','))
-      (% class="col-xs-12 col-md-4 text-center task-card-status-${taskslistkey}" %)
-      (((
-        (% class="panel panel-default" %)
-        (((
-          (% class="panel-heading" %)
-          (((
-            (% class="panel-title" %)${services.localization.render("TaskManager.TaskManagerClass_status_${taskslistkey}")}
-          )))
-          (% class="panel-body" %)
-          (((
-            #foreach($task in $taskslist.get($taskslistkey))
-              {{taskcard taskid="${task.name}" /}}
-            #end
-          )))
-        )))
-      )))
-    #end
-  )))
-#end
-#set($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
-#set($selection = $xcontext.macro.params.selection)
-#set($results = $services.query)
-#set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
-#set($paramuser = "$!{xcontext.macro.params.user}")
-#if($paramuser != '')
-  #set($userref = $services.model.resolveDocument($!xcontext.macro.params.user))
-  #set($user = "${services.model.serialize($userref, 'compactwiki')}")
-  #set($query = "${query} and task.assignee = :user")
-#end
-#set($paramspace = "$!{xcontext.macro.params.space}")
-#if($paramspace != '')
-  #set($space = "${paramspace}")
-  #set($query = "${query} and doc.space = :space")
-#end
-#set($paramproject = "$!{xcontext.macro.params.project}")
-#if($paramproject != '')
-  #set($project = "${paramproject}")
-  #set($query = "${query} and task.project = :project")
-#end
-#set($query = "${query} order by task.duedate")
-#set($results = $results.xwql($query))
-#if($paramuser != '')
-  #set($results = $results.bindValue('user', $user))
-#end
-#if($paramspace != '')
-  #set($results = $results.bindValue('space', $space))
-#end
-#if($paramproject != '')
-  #set($results = $results.bindValue('project', $project))
-#end
-#set($results = $results.execute())
-#set($categoriestaskslist = {})
-#foreach($s in $xwiki.getPropertyClassFromName('TaskManager.TaskManagerClass_status').getListValues())
-  #set($discard = $categoriestaskslist.put($s, []))
-#end
-#foreach($taskid in $results)
-  #set($taskpageref = $services.model.resolveDocument($taskid))
-  #set($taskpage = $xwiki.getDocument($taskpageref))
-  #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
-  #set($taskstatus = $task.getProperty('status').value)
-  #set($taskduedate = $task.getProperty('duedate').value)
-  #set($discard = $categoriestaskslist.get($taskstatus).add($task)) ## Fill for the list
-#end
-#displayCategories($categoriestaskslist)
-{{/velocity}}
-</code>
     </property>
   </object>
   <object>
