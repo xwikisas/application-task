@@ -29,7 +29,7 @@
   </parent>
   <groupId>org.xwiki.contrib</groupId>
   <artifactId>application-task</artifactId>
-  <version>2.5</version>
+  <version>2.5.1-SNAPSHOT</version>
   <name>Task Manager Application - Parent POM</name>
   <packaging>pom</packaging>
   <description>A simple task management application</description>
@@ -59,7 +59,7 @@
    <connection>scm:git:git://github.com/xwiki-contrib/application-task.git</connection>
    <developerConnection>scm:git:git@github.com:xwiki-contrib/application-task.git</developerConnection>
    <url>https://github.com/xwiki-contrib/application-task/tree/master</url>
-    <tag>application-task-2.5</tag>
+    <tag>HEAD</tag>
   </scm>
   <properties>
     <xwiki.extension.name>Task Manager Application</xwiki.extension.name>
