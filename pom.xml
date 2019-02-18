@@ -52,7 +52,7 @@
     </developer>
     <developer>
       <id>slauriere</id>
-      <name>Stéphane Laurière</name>
+      <name>slauriere</name>
     </developer>
   </developers>
   <scm>
@@ -66,6 +66,7 @@
     <xwiki.extension.category>application</xwiki.extension.category>
     <xwiki.issueManagement.system>jira</xwiki.issueManagement.system>
     <xwiki.issueManagement.url>https://jira.xwiki.org/projects/TASKMAN/</xwiki.issueManagement.url>
+    <xwiki.release.jira.skip>true</xwiki.release.jira.skip>
   </properties>
   <dependencies>
     <dependency>
