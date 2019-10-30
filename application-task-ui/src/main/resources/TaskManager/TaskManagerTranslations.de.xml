@@ -26,6 +26,7 @@
   <language>de</language>
   <defaultLanguage>en</defaultLanguage>
   <translation>1</translation>
+  <parent>TaskManagerClass</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1550606346000</creationDate>
   <author>xwiki:XWiki.Admin</author>
