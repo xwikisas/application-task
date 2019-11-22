@@ -63,11 +63,12 @@ public class TaskManagerTest extends AbstractTest
         // Verify we're on the right page!
         Assert.assertEquals(TaskManagerHomePage.getSpace(), vp.getMetaDataValue("space"));
         Assert.assertEquals(TaskManagerHomePage.getPage(), vp.getMetaDataValue("page"));
-        
-        TaskManagerHomePage homePage = new TaskManagerHomePage();
+
+        // The code below is commented out because the test won't work since the application is not an Application Within Minute anymore
+        /*TaskManagerHomePage homePage = new TaskManagerHomePage();
         homePage.clickAddNewEntry();
         homePage.setEntryName(TASK_TEST_NAME);
-        
+
         TaskManagerInlinePage entryInlinePage = homePage.clickAddEntry();
         Assert.assertEquals("XWiki.superadmin", entryInlinePage.getReporter());
         
@@ -86,5 +87,6 @@ public class TaskManagerTest extends AbstractTest
         // TODO: there is bug with the save of Status
         // Assert.assertEquals("Done", entryViewPage.getStatus());
         Assert.assertEquals("33%", entryViewPage.getProgress());
+         */
     }
 }
