@@ -44,11 +44,11 @@
 #if($hasAdmin)
   #set($project = $request.project)
   #if(!$stringtool.isBlank($project))
-    #set($documentRef = $services.model.createDocumentReference($context.getDatabase(), 'TaskManager', $project))
+    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', $project))
     #set($document = $xwiki.getDocument($documentRef))
     #set($object = $document.getObject('TaskManager.ProjectClass', true))
     $object.set('project', "$project")
-    $document.save()    
+    $document.save()
   #end
 
   {{html}}

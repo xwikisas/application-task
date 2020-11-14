@@ -309,7 +309,7 @@
       <classname>TaskManager.SeverityClass</classname>
       <customDisplay>{{velocity}}
 #set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
-#if($context.action=='edit')
+#if($type=='edit')
 {{html}}
 #set($name ="severity")
 #set($propertyClass = $object.getxWikiClass().get($name))

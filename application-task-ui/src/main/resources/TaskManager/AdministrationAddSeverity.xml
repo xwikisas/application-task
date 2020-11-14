@@ -44,7 +44,7 @@
 #if($hasAdmin)
   #set($severity = $request.severity)
   #if(!$stringtool.isBlank($severity))
-    #set($documentRef = $services.model.createDocumentReference($context.getDatabase(), 'TaskManager', $severity))
+    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', $severity))
     #set($document = $xwiki.getDocument($documentRef))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.SeverityClass', true))
