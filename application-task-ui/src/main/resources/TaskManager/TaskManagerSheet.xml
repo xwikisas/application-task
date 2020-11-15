@@ -203,17 +203,20 @@
           (((
             (% class="form-group" %)
             (((
-              ## Automatically set task name property as the document name
+              ## Automatically set task name property from the document name
               ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
                   $services.icon.render('font')
                   $escapetool.xml($doc.displayPrettyName('name', false, false))
                 &lt;/label&gt;
                 #set($taskName = $doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value)
-                #if($taskName)
-              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$taskName"/&gt;
-                #else
-              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$doc.name"/&gt;
+                #if("$!{taskName}" == '')
+                   #set($taskName = $doc.documentReference.name)
+                   #if($taskName == $services.model.getEntityReference('DOCUMENT', 'default').name)
+                     ## we are a non-terminal page: use space name
+                     #set($taskName = $doc.documentReference.parentReference.name)
+                   #end
                 #end
+              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$escapetool.xml($taskName)"/&gt;
                 #if($doc.isNew())
                 #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
                 #set($result = $services.query.xwql($query).execute())
