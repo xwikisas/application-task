@@ -89,7 +89,7 @@
   #set($taskpage = $xwiki.getDocument($taskpageref))
   #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
   #set($tasktitle = $task.getProperty('name').value)
-  #set($tasklink = $task.getName())
+  #set($tasklink = $services.model.serialize($taskpageref,'compactwiki'))
   #set($taskstatus = $task.getProperty('status').value)
   #set($taskduedate = $task.display('duedate', 'view'))
   #set($taskproject = $task.getProperty('project').value)
@@ -100,7 +100,7 @@
     &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
       &lt;input
         id="xwiki-form-dependencies-0-${foreach.index}"
-        value="${taskid}"
+        value="${escapetool.xml($taskid)}"
         #foreach($dependency in $value)
         #if($dependency == $taskid)
           checked
@@ -112,7 +112,7 @@
   #end
   &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
   &lt;span class="task-manager-status-${taskstatus}"&gt;[${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]&lt;/span&gt;
-  [[${tasktitle}&gt;&gt;${tasklink}]]
+  &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($taskpage.getURL('view'))"&gt;${escapetool.xml($tasktitle)}&lt;/a&gt;&lt;/span&gt;
   ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
   #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
     &lt;span class="task-manager-status-Late"&gt;
@@ -127,8 +127,8 @@
 
 {{html wiki="true"}}
 #if($type == 'edit')
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.fullName &lt;&gt; '$doc.fullName' order by task.duedate")
-  #set($results = $services.query.xwql($query).execute())
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.fullName &lt;&gt; :fullName order by task.duedate")
+  #set($results = $services.query.xwql($query).bindValue('fullName', $doc.fullName).execute())
   #if($results.size() != 0)
     &lt;div id="TaskManager.TaskManagerClass_dependencies"&gt;
     #foreach($taskid in $results)
@@ -601,7 +601,7 @@
       <name>Dynamic display of dependencies</name>
     </property>
     <property>
-      <parse/>
+      <parse>0</parse>
     </property>
     <property>
       <use>currentPage</use>
