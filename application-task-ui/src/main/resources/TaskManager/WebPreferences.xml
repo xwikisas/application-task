@@ -1264,7 +1264,7 @@
       <editcomment_mandatory/>
     </property>
     <property>
-      <editor>Text</editor>
+      <editor>Wysiwyg</editor>
     </property>
     <property>
       <guest_comment_requires_captcha/>
