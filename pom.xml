@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.xwiki.contrib</groupId>
     <artifactId>parent-platform</artifactId>
-    <version>6.4-8</version>
+    <version>6.4-10</version>
   </parent>
   <groupId>org.xwiki.contrib</groupId>
   <artifactId>application-task</artifactId>
@@ -56,17 +56,17 @@
     </developer>
   </developers>
   <scm>
-   <connection>scm:git:git://github.com/xwiki-contrib/application-task.git</connection>
-   <developerConnection>scm:git:git@github.com:xwiki-contrib/application-task.git</developerConnection>
-   <url>https://github.com/xwiki-contrib/application-task/tree/master</url>
+    <connection>scm:git:git://github.com/xwiki-contrib/application-task.git</connection>
+    <developerConnection>scm:git:git@github.com:xwiki-contrib/application-task.git</developerConnection>
+    <url>https://github.com/xwiki-contrib/application-task/tree/master</url>
     <tag>HEAD</tag>
   </scm>
   <properties>
     <xwiki.extension.name>Task Manager Application</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
-    <xwiki.issueManagement.system>jira</xwiki.issueManagement.system>
-    <xwiki.issueManagement.url>https://jira.xwiki.org/projects/TASKMAN/</xwiki.issueManagement.url>
-    <xwiki.release.jira.skip>true</xwiki.release.jira.skip>
+
+    <xwiki.issueManagement.jira.id>TASKMAN</xwiki.issueManagement.jira.id>
+    <xwiki.release.jira.skip>false</xwiki.release.jira.skip>
   </properties>
   <dependencies>
     <dependency>
