@@ -10,3 +10,12 @@ XWiki Task Manager Application let users create and assign tasks.
 * Translations: to be specified
 * Sonar Dashboard: N/A
 * Continuous Integration Status: [![Build Status](http://ci.xwiki.org/job/XWiki%20Contrib/job/application-task/job/master/badge/icon)](http://ci.xwiki.org/job/XWiki%20Contrib/job/application-task/job/master/)
+
+# Release
+
+* Release
+
+```
+mvn release:prepare -Pintegration-tests
+mvn release:perform -Pintegration-tests
+```
