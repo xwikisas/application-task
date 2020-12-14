@@ -16,6 +16,6 @@ XWiki Task Manager Application let users create and assign tasks.
 * Release
 
 ```
-mvn release:prepare -Pintegration-tests
-mvn release:perform -Pintegration-tests
+mvn release:prepare -Pintegration-tests -DskipTests -Darguments="-N"
+mvn release:perform -Pintegration-tests -DskipTests -Darguments="-DskipTests"
 ```
