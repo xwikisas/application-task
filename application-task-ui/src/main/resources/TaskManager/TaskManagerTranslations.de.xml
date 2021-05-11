@@ -26,13 +26,13 @@
   <language>de</language>
   <defaultLanguage>en</defaultLanguage>
   <translation>1</translation>
-  <parent>TaskManagerClass</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1550606346000</creationDate>
+  <parent>TaskManagerClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1550606346000</date>
-  <contentUpdateDate>1550606346000</contentUpdateDate>
+  <date>1620728584000</date>
+  <contentUpdateDate>1620728584000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -126,5 +126,7 @@ taskmanager.panel.noactivetasks=Keine aktiven Aufgaben
 
 # Template provider
 taskmanager.entry.name=Aufgabe
+
+taskmanager.extension.name=Aufgabenverwaltung (Pro)
   </content>
 </xwikidoc>
