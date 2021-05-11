@@ -39,7 +39,24 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content/>
+  <content>{{include reference="Licenses.Code.VelocityMacros"/}}
+
+{{velocity}}
+#set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
+#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
+
+  {{error}}#getMissingLicenseMessage('taskmanager.extension.name'){{/error}}
+
+#else
+  == $services.localization.render('TaskManager.adminitration.addProject') ==
+  {{include reference="TaskManager.AdministrationAddProject"/}}
+  == $services.localization.render('TaskManager.adminitration.addStatus') ==
+  {{include reference="TaskManager.AdministrationAddStatus"/}}
+  == $services.localization.render('TaskManager.adminitration.addSeverity') ==
+  {{include reference="TaskManager.AdministrationAddSeverity"/}}
+#end
+{{/velocity}}
+</content>
   <object>
     <name>TaskManager.Administration</name>
     <number>0</number>
@@ -163,13 +180,7 @@
       </propertiesToShow>
     </class>
     <property>
-      <codeToExecute>#set($discard = $services.localization.use('document', "$doc.wiki:TaskManager.TaskManagerTranslations"))
-== $services.localization.render('TaskManager.adminitration.addProject') ==
-{{include reference="TaskManager.AdministrationAddProject"/}}
-== $services.localization.render('TaskManager.adminitration.addStatus') ==
-{{include reference="TaskManager.AdministrationAddStatus"/}}
-== $services.localization.render('TaskManager.adminitration.addSeverity') ==
-{{include reference="TaskManager.AdministrationAddSeverity"/}}</codeToExecute>
+      <codeToExecute>{{include reference="TaskManager.Administration"/}}</codeToExecute>
     </property>
     <property>
       <configurationClass/>

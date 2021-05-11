@@ -37,42 +37,16 @@
   <title>$services.localization.render('TaskManager.home.title')</title>
   <comment/>
   <minorEdit>false</minorEdit>
-  <syntaxId>xwiki/2.0</syntaxId>
+  <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content>{{velocity}}
-#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
-#set ($discard = $xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css'))
-#set ($columnsProperties = {
-  'number': {"type":"number","size":10},
-  'name': {"type":"text","size":10, "link":"view"},
-  'project': {"type":"list","size":10},
-  'status': {"type":"list","size":10,"html":true},
-  'severity': {"type":"list","size":10,"html":true},
-  'reporter': {"type":"text","size":10,"html":true},
-  'assignee': {"type":"text","size":10,"html":true},
-  'duedate': {"type":"text","size":10},
-  '_actions': {"sortable":false,"filterable":false,"html":true,"actions":["edit","delete"]}
-})
-#set ($options = {
-  'className': 'TaskManager.TaskManagerClass',
-  'resultPage': 'TaskManager.TaskManagerLiveTableResults',
-  'translationPrefix': 'taskmanager.livetable.',
-  'tagCloud': true,
-  'rowCount': 15,
-  'maxPages': 10,
-  'selectedColumn': 'name',
-  'defaultOrder': 'asc'
-})
-#set ($columns = ['name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
-#livetable('taskmanager' $columns $columnsProperties $options)
-{{/velocity}}</content>
+  <content/>
   <object>
     <name>TaskManager.WebHome</name>
     <number>0</number>
-    <className>XWiki.UIExtensionClass</className>
-    <guid>5c50f88b-4b03-4fe3-92a8-87cdc49c35b9</guid>
+    <className>XWiki.DocumentSheetBinding</className>
+    <guid>7f946fd5-21a2-4f88-aa38-e869d08bc71c</guid>
     <class>
-      <name>XWiki.UIExtensionClass</name>
+      <name>XWiki.DocumentSheetBinding</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -80,78 +54,22 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <content>
+      <sheet>
+        <customDisplay/>
         <disabled>0</disabled>
-        <name>content</name>
-        <number>3</number>
-        <prettyName>Extension Content</prettyName>
-        <rows>10</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </content>
-      <extensionPointId>
-        <disabled>0</disabled>
-        <name>extensionPointId</name>
+        <name>sheet</name>
         <number>1</number>
-        <prettyName>Extension Point ID</prettyName>
+        <picker>0</picker>
+        <prettyName>Sheet</prettyName>
         <size>30</size>
         <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </extensionPointId>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>2</number>
-        <prettyName>Extension ID</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <parameters>
-        <disabled>0</disabled>
-        <name>parameters</name>
-        <number>4</number>
-        <prettyName>Extension Parameters</prettyName>
-        <rows>10</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </parameters>
-      <scope>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>scope</name>
-        <number>5</number>
-        <prettyName>Extension Scope</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>wiki=Current Wiki|user=Current User|global=Global</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </scope>
+      </sheet>
     </class>
     <property>
-      <content/>
-    </property>
-    <property>
-      <extensionPointId>org.xwiki.platform.panels.Applications</extensionPointId>
-    </property>
-    <property>
-      <name>platform.panels.TaskManagerApplication</name>
-    </property>
-    <property>
-      <parameters>#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
-label=$services.localization.render('TaskManager.panels.name')
-target=TaskManager.WebHome
-icon=icon:application_view_list</parameters>
-    </property>
-    <property>
-      <scope>wiki</scope>
+      <sheet>TaskManager.WebHomeSheet</sheet>
     </property>
   </object>
 </xwikidoc>
