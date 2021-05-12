@@ -45,6 +45,7 @@
   #if(!$stringtool.isBlank($project))
     #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', $project))
     #set($document = $xwiki.getDocument($documentRef))
+    #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.ProjectClass', true))
     $object.set('project', "$project")
     $document.save()
@@ -70,7 +71,8 @@
    'translationPrefix' : 'xe.index.',
     'rowCount' : 15,
     'description' : 'This table lists all the documents found on this wiki. The columns can be sorted and some can be filtered.',
-    'className' : 'TaskManager.ProjectClass'
+    'className' : 'TaskManager.ProjectClass',
+    'queryFilters': ' '
   })
 #livetable("projectTable" $columns $columnsProperties $options)
 #else
