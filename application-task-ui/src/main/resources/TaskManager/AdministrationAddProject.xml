@@ -53,7 +53,7 @@
   {{html}}
     &lt;form class="xformInline" method="post"&gt;
       &lt;label for="project"&gt;$services.localization.render('TaskManager.administration.addProject.label')&lt;/label&gt;
-      &lt;input id="project" name="project" type="text" size="20"/&gt;
+      &lt;input id="project" name="project" type="text" size="20" required/&gt;
       &lt;span class="buttonwrapper"&gt;
         &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addProject.submit')&lt;/button&gt;
       &lt;/span&gt;

@@ -54,7 +54,7 @@
   {{html}}
     &lt;form class="xformInline" method="post"&gt;
       &lt;label for="status"&gt;$services.localization.render('TaskManager.administration.addStatus.label')&lt;/label&gt;
-      &lt;input id="status" name="status" type="text" size="20"/&gt;
+      &lt;input id="status" name="status" type="text" size="20" required/&gt;
       &lt;span class="buttonwrapper"&gt;
         &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addStatus.submit')&lt;/button&gt;
       &lt;/span&gt;

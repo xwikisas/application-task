@@ -54,7 +54,7 @@
   {{html}}
     &lt;form class="xformInline" method="post"&gt;
       &lt;label for="severity"&gt;$services.localization.render('TaskManager.administration.addSeverity.label')&lt;/label&gt;
-      &lt;input id="severity" name="severity" type="text" size="20"/&gt;
+      &lt;input id="severity" name="severity" type="text" size="20" required/&gt;
       &lt;span class="buttonwrapper"&gt;
         &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addSeverity.submit')&lt;/button&gt;
       &lt;/span&gt;
