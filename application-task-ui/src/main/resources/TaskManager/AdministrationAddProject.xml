@@ -40,7 +40,6 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity}}
-#set($discard = $services.localization.use('document', "$doc.wiki:TaskManager.TaskManagerTranslations"))
 #if($hasAdmin)
   #set($project = $request.project)
   #if(!$stringtool.isBlank($project))

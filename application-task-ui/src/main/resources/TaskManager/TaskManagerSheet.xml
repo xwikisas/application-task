@@ -43,7 +43,6 @@
 #if(!$isGuest)
   {{html wiki="true"}}
     #set ($discard = $doc.use('TaskManager.TaskManagerClass'))
-    #set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
     #set($isEdit = ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
     #if(!$isEdit)
       (% class="xform" %)
