@@ -48,6 +48,8 @@ TaskManager.administration.addProject.label=Project
 TaskManager.administration.addProject.submit=Add Project
 
 TaskManager.administration.addStatus.label=Status
+TaskManager.administration.addStatus.orderPlaceholder=order
+TaskManager.administration.addStatus.statusPlaceholder=name
 TaskManager.administration.addStatus.submit=Add Status
 
 TaskManager.administration.addSeverity.label=Priority
@@ -117,6 +119,9 @@ taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
+
+# Status livetable
+xe.index.order=Order
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks

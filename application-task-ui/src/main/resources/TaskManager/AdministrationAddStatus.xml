@@ -42,27 +42,33 @@
   <content>{{velocity}}
 #if($hasAdmin)
   #set($status = $request.status)
-  #if(!$stringtool.isBlank($status))
+  #set($order = $request.order)
+  #if($stringtool.isNotBlank($status) &amp;&amp; $stringtool.isNotBlank($order))
     #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', $status))
     #set($document = $xwiki.getDocument($documentRef))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.StatusClass', true))
-    $object.set('status', "$status")
-    $document.save()    
+    #set($discard = $object.set('status', $status))
+    #set($discard = $object.set('order', $order))
+    #set($discard = $document.save())
   #end
 
   {{html}}
     &lt;form class="xformInline" method="post"&gt;
       &lt;label for="status"&gt;$services.localization.render('TaskManager.administration.addStatus.label')&lt;/label&gt;
-      &lt;input id="status" name="status" type="text" size="20" required/&gt;
+      &lt;input id="status" name="status" type="text" size="20" required
+        placeholder="$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.statusPlaceholder'))"/&gt;
+        &lt;input id="order" name="order" type="number" size="5" required
+        placeholder="$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.orderPlaceholder'))"/&gt;
       &lt;span class="buttonwrapper"&gt;
         &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addStatus.submit')&lt;/button&gt;
       &lt;/span&gt;
     &lt;/form&gt;
   {{/html}}
-  #set($columns = ['doc.name', 'doc.date', 'doc.author', '_actions'])
+  #set($columns = ['doc.name', 'order', 'doc.date', 'doc.author', '_actions'])
   #set($columnsProperties = {
     'doc.name'  : { 'displayName' : $services.localization.render('taskmanager.livetable.status'), 'type' : 'text' , 'size' : 30, 'link' : 'view', 'filterable' : false },
+    'order'     : { 'type' : 'number'},
     'doc.date'  : { 'type' : 'date', 'filterable' : false },
     'doc.author': { 'type' : 'text', 'link' : 'author', 'filterable' : false },
     '_actions'  : { 'actions' : ['delete'] }

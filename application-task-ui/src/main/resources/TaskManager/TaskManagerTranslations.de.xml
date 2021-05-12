@@ -48,6 +48,8 @@ TaskManager.administration.addProject.label=Projekt
 TaskManager.administration.addProject.submit=Neues Projekt
 
 TaskManager.administration.addStatus.label=Status
+TaskManager.administration.addStatus.orderPlaceholder=auftrag
+TaskManager.administration.addStatus.statusPlaceholder=name
 TaskManager.administration.addStatus.submit=Neuer Status
 
 TaskManager.administration.addSeverity.label=Priorität
@@ -117,6 +119,9 @@ taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Zugewiesen
 taskmanager.livetable.duedate=Fälligkeitsdatum
 taskmanager.livetable.creationDate=Anlegedatum
+
+# Status livetable
+xe.index.order=Auftrag
 
 # Panel
 taskmanager.panel.paneltitle=Meine Aufgaben

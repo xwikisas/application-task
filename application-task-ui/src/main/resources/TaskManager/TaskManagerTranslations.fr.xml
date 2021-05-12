@@ -47,6 +47,8 @@ TaskManager.administration.addProject.label=Projet
 TaskManager.administration.addProject.submit=Ajouter un projet
 
 TaskManager.administration.addStatus.label=Statut
+TaskManager.administration.addStatus.orderPlaceholder=ordre
+TaskManager.administration.addStatus.statusPlaceholder=nom
 TaskManager.administration.addStatus.submit=Ajouter un statut
 
 TaskManager.administration.addSeverity.label=Importance
@@ -114,6 +116,9 @@ taskmanager.livetable.reporter=Créateur de la tâche
 taskmanager.livetable.assignee=Personne assignée
 taskmanager.livetable.duedate=Échéance
 taskmanager.livetable.creationdate=Date de création
+
+# Status livetable
+xe.index.order=Ordre
 
 # Panel
 taskmanager.panel.paneltitle=Mes tâches prévues
