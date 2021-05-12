@@ -54,12 +54,6 @@
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-test</artifactId>
-      <version>${platform.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.xwiki.task</groupId>
       <artifactId>application-task-test-pageobjects</artifactId>
       <version>${project.version}</version>
