@@ -58,7 +58,7 @@
       &lt;label for="status"&gt;$services.localization.render('TaskManager.administration.addStatus.label')&lt;/label&gt;
       &lt;input id="status" name="status" type="text" size="20" required
         placeholder="$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.statusPlaceholder'))"/&gt;
-        &lt;input id="order" name="order" type="number" size="5" required
+      &lt;input id="order" name="order" type="number" size="5" required
         placeholder="$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.orderPlaceholder'))"/&gt;
       &lt;span class="buttonwrapper"&gt;
         &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addStatus.submit')&lt;/button&gt;
