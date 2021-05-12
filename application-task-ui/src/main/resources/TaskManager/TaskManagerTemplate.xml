@@ -239,7 +239,6 @@
 ## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
 ## - $value[DBList in this case] = the property value
 ##
-#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
 {{html}}
   #if($type=='view')
       &lt;div class="progress"&gt;
@@ -316,7 +315,6 @@
         <cache>0</cache>
         <classname>TaskManager.SeverityClass</classname>
         <customDisplay>{{velocity}}
-#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
 #if($type=='edit')
 {{html}}
 #set($name ="severity")
@@ -369,7 +367,6 @@
         <cache>0</cache>
         <classname>TaskManager.StatusClass</classname>
         <customDisplay>{{velocity}}
-#set ($discard = $services.localization.use('document', 'TaskManager.TaskManagerTranslations'))
 #if($type=='edit')
 {{html}}
 #set($name ="status")
