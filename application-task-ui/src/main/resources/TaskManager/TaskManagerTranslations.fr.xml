@@ -80,14 +80,6 @@ TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 TaskManager.TaskManagerClass_progress=Progrès
 
-TaskManager.StatusClass_status_ToDo=À faire
-TaskManager.StatusClass_status_InProgress=En cours
-TaskManager.StatusClass_status_Done=Effectuée
-
-TaskManager.SeverityClass_severity_Low=Basse
-TaskManager.SeverityClass_severity_Medium=Moyenne
-TaskManager.SeverityClass_severity_High=Haute
-
 # Live table generic keys
 taskmanager.livetable.doc.title=Titre de la page
 taskmanager.livetable.doc.name=Nom de la page
@@ -130,5 +122,17 @@ taskmanager.panel.noactivetasks=Aucune tâche active
 taskmanager.entry.name=Tâche
 
 taskmanager.extension.name=Gestionnaire de tâches (Pro)
-</content>
+## Used to indicate where deprecated keys start
+#@deprecatedstart
+
+#######################################
+## until 2.5.1
+#######################################
+TaskManager.StatusClass_status_ToDo=À faire
+TaskManager.StatusClass_status_InProgress=En cours
+TaskManager.StatusClass_status_Done=Effectuée
+
+TaskManager.SeverityClass_severity_Low=Basse
+TaskManager.SeverityClass_severity_Medium=Moyenne
+TaskManager.SeverityClass_severity_High=Haute</content>
 </xwikidoc>

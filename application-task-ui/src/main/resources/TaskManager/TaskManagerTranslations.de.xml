@@ -82,15 +82,6 @@ TaskManager.TaskManagerClass_dependencies=Abhängigkeiten
 TaskManager.TaskManagerClass_dependencies_nodependencies=Bitte erzeugen Sie andere Aufgaben, bevor Sie Abhängigkeit anlegen.
 TaskManager.TaskManagerClass_progress=Forschritt
 
-
-TaskManager.StatusClass_status_InProgress=In Bearbeitung
-TaskManager.StatusClass_status_ToDo=ToDo
-TaskManager.StatusClass_status_Done=Erledigt
-
-TaskManager.SeverityClass_severity_Low=Niedrig
-TaskManager.SeverityClass_severity_Medium=Mittel
-TaskManager.SeverityClass_severity_High=Hoch
-
 # Live table generic keys
 taskmanager.livetable.doc.title=Seitentitel
 taskmanager.livetable.doc.name=Seitenname
@@ -133,5 +124,18 @@ taskmanager.panel.noactivetasks=Keine aktiven Aufgaben
 taskmanager.entry.name=Aufgabe
 
 taskmanager.extension.name=Aufgabenverwaltung (Pro)
-  </content>
+
+## Used to indicate where deprecated keys start
+#@deprecatedstart
+
+#######################################
+## until 2.5.1
+#######################################
+TaskManager.StatusClass_status_InProgress=In Bearbeitung
+TaskManager.StatusClass_status_ToDo=ToDo
+TaskManager.StatusClass_status_Done=Erledigt
+
+TaskManager.SeverityClass_severity_Low=Niedrig
+TaskManager.SeverityClass_severity_Medium=Mittel
+TaskManager.SeverityClass_severity_High=Hoch</content>
 </xwikidoc>

@@ -319,10 +319,10 @@
 {{html}}
 #set($name ="severity")
 #set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $doc.getObject('TaskManager.TaskManagerClass').getValue('severity'))
+#set($existingValue = $object.getValue('severity'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_severity" id="TaskManager.TaskManagerClass_0_severity"&gt;
 #foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.SeverityClass_severity_$rValue.key")
+  #set($key = "TaskManager.TaskManagerClass_severity_$rValue.key")
   #set($translation = $services.localization.render($key))
   &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
@@ -334,10 +334,10 @@
 #end
 {{/html}}
 #else
-  #set($key = $doc.getObject('TaskManager.TaskManagerClass').getValue('severity'))
+  #set($key = "TaskManager.TaskManagerClass_severity_${object.getValue('severity')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
-    $key
+    $object.getValue('severity')
   #else
     $translation
   #end
@@ -374,7 +374,7 @@
 #set($existingValue = $object.getValue('status'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_status" id="TaskManager.TaskManagerClass_0_status"&gt;
 #foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.StatusClass_status_$rValue.key")
+  #set($key = "TaskManager.TaskManagerClass_status_$rValue.key")
   #set($translation = $services.localization.render($key))
   &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
@@ -386,10 +386,10 @@
 #end
 {{/html}}
 #else
-  #set($key = "TaskManager.StatusClass_status_${object.getValue('status')}")
+  #set($key = "TaskManager.TaskManagerClass_status_${object.getValue('status')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
-    $key
+    $object.getValue('status')
   #else
     $translation
   #end

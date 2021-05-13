@@ -82,15 +82,6 @@ TaskManager.TaskManagerClass_dependencies=Dependencies
 TaskManager.TaskManagerClass_dependencies_nodependencies=Please create other tasks before adding dependencies.
 TaskManager.TaskManagerClass_progress=Progress
 
-
-TaskManager.StatusClass_status_InProgress=In Progress
-TaskManager.StatusClass_status_ToDo=To Do
-TaskManager.StatusClass_status_Done=Done
-
-TaskManager.SeverityClass_severity_Low=Low
-TaskManager.SeverityClass_severity_Medium=Medium
-TaskManager.SeverityClass_severity_High=High
-
 # Live table generic keys
 taskmanager.livetable.doc.title=Page Title
 taskmanager.livetable.doc.name=Page Name
@@ -133,7 +124,20 @@ taskmanager.panel.noactivetasks=No active Tasks
 taskmanager.entry.name=Task
 
 taskmanager.extension.name=Task Manager Application (Pro)
-  </content>
+
+## Used to indicate where deprecated keys start
+#@deprecatedstart
+
+#######################################
+## until 2.5.1
+#######################################
+TaskManager.StatusClass_status_InProgress=In Progress
+TaskManager.StatusClass_status_ToDo=To Do
+TaskManager.StatusClass_status_Done=Done
+
+TaskManager.SeverityClass_severity_Low=Low
+TaskManager.SeverityClass_severity_Medium=Medium
+TaskManager.SeverityClass_severity_High=High</content>
   <object>
     <name>TaskManager.TaskManagerTranslations</name>
     <number>0</number>
