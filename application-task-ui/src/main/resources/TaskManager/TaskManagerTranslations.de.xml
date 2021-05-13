@@ -74,6 +74,7 @@ TaskManager.TaskManagerClass_severity=Priority
 TaskManager.TaskManagerClass_severity_Medium=Mittel
 TaskManager.TaskManagerClass_severity_Low=Niedrig
 TaskManager.TaskManagerClass_severity_High=Hoch
+TaskManager.TaskManagerClass_project_Other=Andere
 TaskManager.TaskManagerClass_reporter=Reporter
 TaskManager.TaskManagerClass_assignee=Zugewiesen
 TaskManager.TaskManagerClass_duedate=Fällig am

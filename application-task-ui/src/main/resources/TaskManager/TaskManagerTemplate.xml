@@ -269,7 +269,35 @@
       <project>
         <cache>0</cache>
         <classname>TaskManager.ProjectClass</classname>
-        <customDisplay/>
+        <customDisplay>{{velocity}}
+#if($type=='edit')
+{{html}}
+#set($name = 'project')
+#set($propertyClass = $object.getxWikiClass().get($name))
+#set($existingValue = $object.getValue('project'))
+&lt;select size="1" name="TaskManager.TaskManagerClass_0_project" id="TaskManager.TaskManagerClass_0_project"&gt;
+#foreach($rValue in $propertyClass.mapValues.entrySet())
+  #set($key = "TaskManager.TaskManagerClass_project_$rValue.key")
+  #set($translation = $services.localization.render($key))
+  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+    #if ($translation == $key)
+      $rValue.key
+    #else
+      $translation
+    #end
+  &lt;/option&gt;
+#end
+{{/html}}
+#else
+  #set($key = "TaskManager.TaskManagerClass_project_${object.getValue('project')}")
+  #set($translation = $services.localization.render($key))
+  #if ($translation == $key)
+    $object.getValue('project')
+  #else
+    $translation
+  #end
+#end
+{{/velocity}}</customDisplay>
         <disabled>0</disabled>
         <displayType>select</displayType>
         <idField>project</idField>

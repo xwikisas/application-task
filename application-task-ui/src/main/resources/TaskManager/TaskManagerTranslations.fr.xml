@@ -72,6 +72,7 @@ TaskManager.TaskManagerClass_severity=Importance
 TaskManager.TaskManagerClass_severity_Low=Basse
 TaskManager.TaskManagerClass_severity_Medium=Moyenne
 TaskManager.TaskManagerClass_severity_High=Haute
+TaskManager.TaskManagerClass_project_Other=Autre
 TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
 TaskManager.TaskManagerClass_duedate=Échéance
