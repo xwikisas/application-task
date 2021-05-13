@@ -384,7 +384,7 @@
   #set($key = "TaskManager.StatusClass_status_${object.getValue('status')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
-    $key
+    $object.getValue('status')
   #else
     $translation
   #end
