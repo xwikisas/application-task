@@ -32,8 +32,9 @@
   <packaging>xar</packaging>
   <properties>
     <xwiki.extension.features>org.xwiki.contrib:application-task</xwiki.extension.features>
-    <!-- Don't run CLIRR here since there's no Java code. -->
+    <!-- Don't run CLIRR or Revapi here since there's no Java code. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
+    <xwiki.revapi.skip>true</xwiki.revapi.skip>
     <!-- The list of documents that have an implicit unlimited free license. The users can view these documents without
       buying a license or getting a trial license, but they cannot edit or delete them. -->
     <xwiki.extension.licensing.publicDocuments>

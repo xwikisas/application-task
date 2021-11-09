@@ -1,6 +1,4 @@
-<?xml version="1.1" encoding="UTF-8"?>
-
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,23 +16,25 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
+package com.xwiki.task.test.ui;
 
-<xwikidoc version="1.3" reference="TaskManager.TaskManagerLiveTableResults" locale="">
-  <web>TaskManager</web>
-  <name>TaskManagerLiveTableResults</name>
-  <language/>
-  <defaultLanguage/>
-  <translation>0</translation>
-  <creator>xwiki:XWiki.Admin</creator>
-  <parent>WebHome</parent>
-  <author>xwiki:XWiki.Admin</author>
-  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <version>1.1</version>
-  <title/>
-  <comment/>
-  <minorEdit>false</minorEdit>
-  <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>true</hidden>
-  <content>{{include document="XWiki.LiveTableResults" /}}</content>
-</xwikidoc>
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.xwiki.test.docker.junit5.UITest;
+
+/**
+ * All UI tests for the Task Manager application.
+ *
+ * @version $Id$
+ * @since 2.6
+ */
+@UITest
+class AllITs
+{
+    @Nested
+    @DisplayName("Overall Task Manager UI")
+    class NestedTaskManagerIT extends TaskManagerIT
+    {
+    }
+}
