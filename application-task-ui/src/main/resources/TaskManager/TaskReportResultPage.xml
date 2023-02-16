@@ -1,0 +1,78 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.4" reference="TaskManager.TaskReportResultPage" locale="">
+  <web>TaskManager</web>
+  <name>TaskReportResultPage</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>Main.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>TaskReportResultPage</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{include reference="XWiki.LiveTableResultsMacros" /}}
+
+{{velocity wiki="false"}}
+#set ($extraFrom = '')
+#set ($extraWhere = '')
+#set ($params = {})
+
+#set ($spaceWhere = '')
+
+#if ("$!request.tasktag" != '')
+  #set($extraFrom = "${extraFrom} , BaseObject as tobject, DBStringListProperty as tagprop, StringProperty as taskowner join tagprop.list tag")
+  #set($extraWhere = "${extraWhere} and obj.id=taskowner.id.id and taskowner.id.name='owner'")
+  #set($extraWhere = "${extraWhere} and tobject.className='XWiki.TagClass' and (tobject.name=doc.fullName or taskowner.value like CONCAT('%', tobject.name)) and tobject.id=tagprop.id.id and tagprop.id.name='tags' and lower(tag) in :taskTagList")
+  #set ($list = [])
+  #foreach ($tag in $request.getParameterValues('tasktag'))
+    #set ($discard = $list.add($tag))
+  #end
+  #set ($discard = $params.put("taskTagList", $list))
+#end
+
+#if ("$!request.space" != '')
+  #foreach($space in $request.getParameterValues('space'))
+    #if ($foreach.count &gt; 1)
+      #set ($spaceWhere = "${spaceWhere} OR ")
+    #end
+    #set ($paramVal = "$!space.replaceAll('([%_!])', '!$1')%")
+    #set ($spaceWhere = "${spaceWhere}doc.fullName like :docspace${foreach.count} escape '!'")
+    #set ($discard = $params.put("docspace${foreach.count}", $paramVal))
+  #end
+  #set ($extraWhere = "${extraWhere} AND (${spaceWhere})")
+#end
+
+##gridresultwithfilter_buildQuery("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extraWhere}" $params)
+##$sql
+##$sqlParams
+##$request.getParameterValues('tasktags')
+
+#gridresultwithfilter("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extraWhere}" $params)
+{{/velocity}}</content>
+</xwikidoc>

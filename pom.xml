@@ -25,11 +25,11 @@
   <parent>
     <groupId>com.xwiki.parent</groupId>
     <artifactId>xwikisas-parent-platform</artifactId>
-    <version>11.10</version>
+    <version>12.10</version>
   </parent>
   <groupId>com.xwiki.task</groupId>
   <artifactId>application-task</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>3.0.3-SNAPSHOT</version>
   <name>Task Manager Application - Parent POM</name>
   <packaging>pom</packaging>
   <description>A simple task management application</description>
@@ -44,12 +44,16 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <licensing.version>1.21</licensing.version>
+    <licensing.version>1.23</licensing.version>
+    <kanban-macro.version>1.2.5</kanban-macro.version>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
   </properties>
   <modules>
     <module>application-task-ui</module>
+    <module>application-task-api</module>
+    <module>application-task-xip</module>
+    <module>application-task-default</module>
   </modules>
   <profiles>
     <profile>
@@ -76,4 +80,39 @@
       </snapshots>
     </repository>
   </repositories>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.revapi</groupId>
+          <artifactId>revapi-maven-plugin</artifactId>
+          <configuration>
+            <!-- Almost all dependecies are XWiki modules which are checked separately for API breakages. -->
+            <checkDependencies>false</checkDependencies>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <!-- Needed to add support for the XAR packaging -->
+    <extensions>
+      <extension>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-tool-xar-handlers</artifactId>
+        <version>${commons.version}</version>
+      </extension>
+    </extensions>
+    <plugins>
+      <!-- The XAR packaging uses the XAR plugin and thus we need to define what version to use -->
+      <plugin>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
+        <version>${commons.version}</version>
+        <configuration>
+          <contentPages>
+            <contentPage>.*/Space[1-9]*/WebHome\.xml</contentPage>
+          </contentPages>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

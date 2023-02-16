@@ -25,7 +25,7 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task</artifactId>
-    <version>2.6-SNAPSHOT</version>
+    <version>3.0.3-SNAPSHOT</version>
   </parent>
   <artifactId>application-task-ui</artifactId>
   <name>Task Manager Application - UI</name>
@@ -47,15 +47,10 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>com.xwiki.licensing</groupId>
-      <artifactId>application-licensing-licensor-api</artifactId>
-      <version>${licensing.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.xwiki.contrib</groupId>
       <artifactId>macro-kanban</artifactId>
       <type>xar</type>
-      <version>1.2.3</version>
+      <version>${kanban-macro.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -99,6 +94,26 @@
       <version>${platform.version}</version>
       <type>jar</type>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.xwiki.task</groupId>
+      <artifactId>application-task-default</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>requirejs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>momentjs</artifactId>
+      <version>2.24.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>moment-jdateformatparser</artifactId>
+      <version>1.2.1</version>
     </dependency>
   </dependencies>
 </project>

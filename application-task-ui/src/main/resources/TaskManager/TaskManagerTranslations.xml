@@ -135,7 +135,59 @@ TaskManager.StatusClass_status_Done=Done
 
 TaskManager.SeverityClass_severity_Low=Low
 TaskManager.SeverityClass_severity_Medium=Medium
-TaskManager.SeverityClass_severity_High=High</content>
+TaskManager.SeverityClass_severity_High=High
+
+## Confluence-like tasks
+taskmanager.notification.statusChange.success=Task status changed successfully!
+taskmanager.notification.statusChange.restFail=Failed to change the status because of a REST error!
+taskmanager.notification.statusChange.noId=Failed to change the status because the task doesn't have an ID.
+taskmanager.notification.statusChange.inprogress=Changing status..
+
+taskmanager.livetable.render=Task
+taskmanager.livetable.duedate=Deadline
+taskmanager.livetable.assignee=Assignee
+taskmanager.livetable.owner=Location
+taskmanager.livetable.completeDate=Completed on
+taskmanager.livetable.noRights=You don't have view rights for the document that contains this task.
+
+rendering.macro.task.name=Task Macro
+rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline!
+rendering.macro.task.parameter.status.name=The status of the task.
+rendering.macro.task.parameter.status.description=Specify what is the current status of the task.
+rendering.macro.task.parameter.id.name=ID
+rendering.macro.task.parameter.id.description=An unique identifier for the task, relative to the current page.
+rendering.macro.task.parameter.creator.name=Creator
+rendering.macro.task.parameter.creator.description=The user that created the task.
+rendering.macro.task.parameter.createDate.name=Creation date
+rendering.macro.task.parameter.createDate.description=The date when the task was created.
+rendering.macro.task.parameter.completeDate.name=Completion date
+rendering.macro.task.parameter.completeDate.description=If you set the status of the task as "Done", you should also set the completion date.
+
+rendering.macro.tasks-report-macro.name=Task report macro
+rendering.macro.tasks-report-macro.description=Create a custom report of the tasks within the wiki.
+rendering.macro.tasks-report-macro.parameter.pages.name=Pages filter
+rendering.macro.tasks-report-macro.parameter.pages.description=Display the tasks found inside the specified pages or in their children.
+rendering.macro.tasks-report-macro.parameter.tags.name=Tags filter
+rendering.macro.tasks-report-macro.parameter.tags.description=Display only the tasks that are found on pages that have at least one these tags. This field should be a comma separated list of tags. e.g. "tech,blog,programming".
+rendering.macro.tasks-report-macro.parameter.assignees.name=Assignees filter
+rendering.macro.tasks-report-macro.parameter.assignees.description=Filter the tasks by their assigned users. The report will display the tasks that have at least one of their assignees in the users specified.
+rendering.macro.tasks-report-macro.parameter.reporters.name=Reporter filter
+rendering.macro.tasks-report-macro.parameter.reporters.description=Filter the tasks by the reporter. The report will display the tasks created by the users specified.
+rendering.macro.tasks-report-macro.parameter.createdAfter.name=Creation date filter
+rendering.macro.tasks-report-macro.parameter.createdAfter.description=Display all the tasks created after the specified date.
+rendering.macro.tasks-report-macro.parameter.status.name=Status filter
+rendering.macro.tasks-report-macro.parameter.status.description=Display all the tasks that have the specified status.
+rendering.macro.tasks-report-macro.parameter.limit.name=Live table limit
+rendering.macro.tasks-report-macro.parameter.limit.description=Specifies how many tasks should be displayed on a single page.
+rendering.macro.tasks-report-macro.parameter.columns.name=Live table display columns
+rendering.macro.tasks-report-macro.parameter.columns.description=A list task properties that you want the table to display. The possible values are: description, deadline, assignee, doc.title (task location) and completeDate.
+rendering.macro.tasks-report-macro.parameter.sortBy.name=Sort By
+rendering.macro.tasks-report-macro.parameter.sortBy.description=The column that will be used to order the table.
+rendering.macro.tasks-report-macro.parameter.id.name=Table ID
+rendering.macro.tasks-report-macro.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
+
+TaskManager.TaskManagerConfigurationClass_storageDateFormat=The format that will be used to store dates used in Task Manager.
+TaskManager.TaskManagerConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.</content>
   <object>
     <name>TaskManager.TaskManagerTranslations</name>
     <number>0</number>

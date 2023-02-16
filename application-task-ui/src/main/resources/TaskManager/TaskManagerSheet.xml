@@ -213,17 +213,6 @@
                    #end
                 #end
               :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$escapetool.xml($taskName)"/&gt;
-                #if($doc.isNew())
-                #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
-                #set($result = $services.query.xwql($query).execute())
-                #if (($result.get(0)) &amp;&amp; ("$!result.get(0)" != ""))
-                  #set($index = $result.get(0))
-                #else
-                  #set($index = 0)
-                #end
-                #set($number = $mathtool.add($index,1))
-                &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_number" id="TaskManager.TaskManagerClass_0_number" value="$number"/&gt;
-                #end
             )))
           )))
           (% class="col-xs-12 col-sm-4 col-md-4" %)

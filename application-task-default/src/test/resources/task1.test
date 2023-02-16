@@ -1,0 +1,43 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.0
+.# Validate that non inline content is properly supported
+.#-----------------------------------------------------
+{{task reference="XWiki.Task" status="Done"}}
+* item1
+* item2
+{{/task}}
+.#-----------------------------------------------------
+.expect|event/1.0
+.#-----------------------------------------------------
+beginDocument
+beginMacroMarkerStandalone [task] [reference=XWiki.Task|status=Done] [* item1
+* item2]
+beginGroup [[class]=[task-macro][data-source]=[]]
+beginFormat [NONE]
+onRawText [<input type="checkbox" data-taskId="XWiki.Task" checked class="task-status">] [html/5.0]
+endFormat [NONE]
+beginLink [Typed = [true] Type = [doc] Reference = [XWiki.Task]] [false]
+onSpecialSymbol [#]
+onWord [1]
+endLink [Typed = [true] Type = [doc] Reference = [XWiki.Task]] [false]
+beginGroup [[class]=[task-content]]
+beginMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+beginList [BULLETED]
+beginListItem
+onWord [item1]
+endListItem
+beginListItem
+onWord [item2]
+endListItem
+endList [BULLETED]
+endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+endGroup [[class]=[task-content]]
+endGroup [[class]=[task-macro][data-source]=[]]
+endMacroMarkerStandalone [task] [reference=XWiki.Task|status=Done] [* item1
+* item2]
+endDocument
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+<div data-source="" class="task-macro"><input type="checkbox" data-taskId="XWiki.Task" checked class="task-status"><span class="wikiinternallink"><a href="XWiki.Task">#1</a></span><div class="task-content"><ul><li>item1</li><li>item2</li></ul></div></div>
