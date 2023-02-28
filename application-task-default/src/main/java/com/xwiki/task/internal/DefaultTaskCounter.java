@@ -25,13 +25,13 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
 import com.xwiki.task.TaskCounter;
+import com.xwiki.task.TaskException;
 
 /**
  * The default implementation of {@link com.xwiki.task.TaskCounter}.
@@ -46,25 +46,25 @@ public class DefaultTaskCounter implements TaskCounter
     @Inject
     private Provider<QueryManager> queryManagerProvider;
 
-    @Inject
-    private Logger logger;
+    private int lastReturnedNumber = -1;
 
     @Override
-    public int getNextNumber()
+    public synchronized int getNextNumber() throws TaskException
     {
         String statement =
             "select max(taskObject.number) "
                 + "from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject";
         try {
             List<Integer> result = queryManagerProvider.get().createQuery(statement, Query.XWQL).execute();
+
+            int number = 0;
             if (result.size() > 0 && result.get(0) != null) {
-                return result.get(0) + 1;
-            } else {
-                return 1;
+                number = result.get(0);
             }
+            lastReturnedNumber = Integer.max(number, lastReturnedNumber) + 1;
+            return lastReturnedNumber;
         } catch (QueryException e) {
-            logger.warn("Failed to retrieve a valid [number] for a task.");
-            return -1;
+            throw new TaskException("Failed to get the next valid number.", e);
         }
     }
 }

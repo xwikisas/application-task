@@ -23,18 +23,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.localization.LocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
-import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
-import com.xpn.xwiki.XWikiContext;
+import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskReferenceGenerator;
 
 /**
@@ -52,38 +50,36 @@ public class DefaultTaskReferenceGenerator implements TaskReferenceGenerator
     private static final String TASK_MANAGER_SPACE = "TaskManager";
 
     @Inject
-    private AuthorizationManager authorizationManager;
+    private ContextualAuthorizationManager authorizationManager;
 
     @Inject
-    private Provider<XWikiContext> contextProvider;
-
-    @Inject
-    private LocalizationManager localizationManager;
-
-    @Inject
-    private EntityReferenceSerializer<String> serializer;
+    private DocumentAccessBridge documentAccessBridge;
 
     @Inject
     private final Map<SpaceReference, Integer> nameOccurences = new HashMap<>();
 
     @Override
-    public DocumentReference generate(DocumentReference parent)
+    public synchronized DocumentReference generate(DocumentReference parent) throws TaskException
     {
-        XWikiContext context = contextProvider.get();
         SpaceReference parentSpaceRef = parent.getLastSpaceReference();
-        if (!authorizationManager.hasAccess(Right.EDIT, context.getUserReference(), parentSpaceRef)) {
+        if (!authorizationManager.hasAccess(Right.EDIT, parentSpaceRef)) {
             parentSpaceRef = new SpaceReference(parent.getWikiReference().getName(), TASK_MANAGER_SPACE);
+            if (!authorizationManager.hasAccess(Right.EDIT, parentSpaceRef)) {
+                throw new TaskException(String.format(
+                    "The current user does not have rights over [%s] or [%s] thus the task page could not be created.",
+                    parent.getLastSpaceReference(), parentSpaceRef));
+            }
         }
-        return getUniqueName(parentSpaceRef, context);
+        return getUniqueName(parentSpaceRef);
     }
 
-    private DocumentReference getUniqueName(SpaceReference spaceRef, XWikiContext context)
+    private DocumentReference getUniqueName(SpaceReference spaceRef)
     {
 
         int i = nameOccurences.getOrDefault(spaceRef, 0);
         DocumentReference docRef = new DocumentReference(TASK_PAGE_NAME_PREFIX + i, spaceRef);
 
-        while (context.getWiki().exists(docRef, context)) {
+        while (documentAccessBridge.exists(docRef)) {
             i++;
             docRef = new DocumentReference(TASK_PAGE_NAME_PREFIX + i, spaceRef);
             nameOccurences.put(spaceRef, i);

@@ -38,13 +38,21 @@ public interface TaskManager
     /**
      * @param reference the reference of a page that contains a Task Object.
      * @return the Task Model of the object inside the page.
+     * @throws TaskException if the page does not have a task.
      */
-    Task getTaskByReference(String reference);
+    Task getTask(DocumentReference reference) throws TaskException;
 
+    /**
+     * @param id the ID of the task.
+     * @return the Task Model of the object inside the page that has the same ID as the one specified.
+     * @throws TaskException if there is no task with the given id.
+     */
+    Task getTask(int id) throws TaskException;
 
     /**
      * Delete the tasks that have a certain page as an owner.
      * @param documentReference the value by which we want to remove a task.
+     * @throws TaskException when there was an error in retrieving or deleting certain task documents.
      */
     void deleteTasksByOwner(DocumentReference documentReference) throws TaskException;
 }

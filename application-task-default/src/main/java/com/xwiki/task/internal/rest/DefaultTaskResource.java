@@ -20,11 +20,8 @@ package com.xwiki.task.internal.rest;
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -34,10 +31,6 @@ import javax.ws.rs.core.Response;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
-import org.xwiki.rendering.block.Block;
-import org.xwiki.rendering.block.MacroBlock;
-import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.block.match.MacroBlockMatcher;
 import org.xwiki.rest.XWikiRestException;
 import org.xwiki.rest.internal.resources.pages.ModifiablePageResource;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
@@ -46,7 +39,6 @@ import org.xwiki.security.authorization.Right;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xwiki.task.TaskManagerConfiguration;
 import com.xwiki.task.model.Task;
 import com.xwiki.task.rest.TaskResource;
 
@@ -67,11 +59,8 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
     @Inject
     private ContextualAuthorizationManager contextualAuthorizationManager;
 
-    @Inject
-    private TaskManagerConfiguration configuration;
-
     @Override
-    public Response changeTaskStatus(String wikiName, String spaces, String pageName, String taskId, String status)
+    public Response changeTaskStatus(String wikiName, String spaces, String pageName, String status)
         throws XWikiRestException
     {
         DocumentReference docRef = new DocumentReference(pageName, getSpaceReference(spaces, wikiName));
@@ -82,31 +71,21 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
 
         try {
             XWikiDocument document = getXWikiContext().getWiki().getDocument(docRef, getXWikiContext()).clone();
-            XDOM documentContent = document.getXDOM();
-            List<MacroBlock> macros =
-                documentContent.getBlocks(new MacroBlockMatcher(Task.MACRO_NAME), Block.Axes.DESCENDANT);
+            BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
 
-            Optional<MacroBlock> selectedMacro = macros.stream()
-                .filter((macroBlock) -> macroBlock.getParameters().getOrDefault(Task.REFERENCE, "").equals(taskId))
-                .findFirst();
-            String completeDate = new SimpleDateFormat(configuration.getStorageDateFormat()).format(new Date());
-
-            if (selectedMacro.isPresent()) {
-                selectedMacro.get().setParameter(Task.STATUS, status);
-                selectedMacro.get()
-                    .setParameter(Task.COMPLETE_DATE, status.equals(Task.STATUS_DONE) ? completeDate : "");
-
-                document.setContent(documentContent);
-            } else {
-                BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
-                if (taskObject == null || !taskId.equals(taskObject.getDocumentReference().toString())) {
-                    return Response.status(Response.Status.NOT_FOUND).build();
-                }
-                taskObject.set(Task.STATUS, status, getXWikiContext());
-                taskObject.set(Task.COMPLETE_DATE, status.equals(Task.STATUS_DONE) ? completeDate : "",
-                    getXWikiContext());
+            if (taskObject == null) {
+                return Response.status(Response.Status.NOT_FOUND).build();
             }
-            getXWikiContext().getWiki().saveDocument(document, "Changed task status!", getXWikiContext());
+
+            taskObject.set(Task.STATUS, status, getXWikiContext());
+
+            Date completeDate = null;
+            if (status.equals("Done")) {
+                completeDate = new Date();
+            }
+            taskObject.set(Task.COMPLETE_DATE, completeDate, getXWikiContext());
+
+            getXWikiContext().getWiki().saveDocument(document, "Task status was updated.", getXWikiContext());
 
             return Response.ok().build();
         } catch (XWikiException e) {

@@ -22,6 +22,7 @@ package com.xwiki.task.macro;
 
 import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
+import org.xwiki.stability.Unstable;
 
 import com.xwiki.task.TaskDate;
 
@@ -29,28 +30,29 @@ import com.xwiki.task.TaskDate;
  * @version $Id$
  * @since 3.0
  */
+@Unstable
 public class DateMacroParameters
 {
-    private String date;
+    private String value;
 
     private String format;
 
     /**
      * @return the string representation of the date.
      */
-    public String getDate()
+    public String getValue()
     {
-        return date;
+        return value;
     }
 
     /**
-     * @param date the string representation of the date.
+     * @param value the string representation of the date.
      */
     @PropertyDisplayType(TaskDate.class)
     @PropertyMandatory
-    public void setDate(String date)
+    public void setValue(String value)
     {
-        this.date = date;
+        this.value = value;
     }
 
     /**

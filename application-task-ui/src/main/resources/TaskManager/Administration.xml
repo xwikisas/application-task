@@ -51,6 +51,8 @@
   {{include reference="TaskManager.AdministrationAddStatus"/}}
   == $services.localization.render('TaskManager.adminitration.addSeverity') ==
   {{include reference="TaskManager.AdministrationAddSeverity"/}}
+  == $services.localization.render('TaskManager.adminitration.addSeverity') ==
+  {{include reference="TaskManager.AdministrationAddSeverity"/}}
 #end
 {{/velocity}}
 </content>

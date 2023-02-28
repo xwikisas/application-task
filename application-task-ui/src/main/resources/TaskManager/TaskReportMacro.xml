@@ -284,14 +284,15 @@
   #set ($discard = $extraParams.put('tasktag', $tags.split('\s*,\s*')))
 #end
 #set ($columnsProperties = {
-  'render': {'type': 'text', 'size': 10, 'html': true},
-  'assignee': {'type': 'text', 'size': 10, 'html': true},
+  'name': {'type': 'text', 'size': 10, 'html': true},
+  'assignee': {'type': 'user', 'size': 10, 'html': true},
   'duedate': {'type': 'date', 'size': 10},
   'completeDate': {'type': 'date', 'size': 10},
-  'owner' : {'type': 'text', 'size': 10, 'html': true, 'link': 'view'},
+  'owner' : {'type': 'page', 'size': 10, 'html': true, 'link': 'view'},
   'createDate': {'type': 'hidden'},
   'status': {'type': 'hidden'},
-  'reporter': {'type': 'hidden'}
+  'reporter': {'type': 'hidden'},
+  'number': {'type': 'hidden'}
 })
 #set ($options = {
   'resultPage': 'TaskManager.TaskReportResultPage',
@@ -944,7 +945,7 @@
       </type>
     </class>
     <property>
-      <defaultValue>render,duedate,assignee,owner,createDate</defaultValue>
+      <defaultValue>name,duedate,assignee,owner,createDate,number</defaultValue>
     </property>
     <property>
       <description/>

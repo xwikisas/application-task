@@ -22,6 +22,7 @@ package com.xwiki.task.macro;
 
 import org.xwiki.properties.annotation.PropertyDisplayHidden;
 import org.xwiki.properties.annotation.PropertyDisplayType;
+import org.xwiki.stability.Unstable;
 
 import com.xwiki.task.TaskDate;
 import com.xwiki.task.TaskReference;
@@ -31,6 +32,7 @@ import com.xwiki.task.TaskStatus;
  * @version $Id$
  * @since 3.0
  */
+@Unstable
 public class TaskMacroParameters
 {
     private String reference;

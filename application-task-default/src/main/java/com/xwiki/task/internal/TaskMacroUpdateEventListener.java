@@ -37,7 +37,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.event.Event;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
 import com.xpn.xwiki.XWikiContext;
@@ -56,14 +56,15 @@ import com.xwiki.task.model.Task;
  * @since 3.0
  */
 @Component
-@Named("internal.TaskMacroUpdateEventListener")
+@Named("com.xwiki.taskmanager.internal.TaskMacroUpdateEventListener")
 @Singleton
 public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 {
     @Inject
-    private AuthorizationManager authorizationManager;
+    private ContextualAuthorizationManager authorizationManager;
 
     @Inject
+    @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
 
     @Inject
@@ -136,16 +137,14 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 XWikiDocument taskDoc = context.getWiki().getDocument(previousDocTask.getReference(), context);
                 BaseObject taskObj = taskDoc.getXObject(TASK_CLASS_REFERENCE);
                 if (!document.getDocumentReference()
-                    .equals(resolver.resolve(taskObj.getLargeStringValue(Task.OWNER))))
+                    .equals(resolver.resolve(taskObj.getLargeStringValue(Task.OWNER), previousDocTask.getReference())))
                 {
                     continue;
                 }
-                if (authorizationManager.hasAccess(Right.DELETE, context.getUserReference(),
-                    previousDocTask.getReference()))
+                if (authorizationManager.hasAccess(Right.DELETE, previousDocTask.getReference()))
                 {
                     context.getWiki().deleteDocument(taskDoc, context);
-                } else if (authorizationManager.hasAccess(Right.EDIT, context.getUserReference(),
-                    previousDocTask.getOwner()))
+                } else if (authorizationManager.hasAccess(Right.EDIT, previousDocTask.getReference()))
                 {
                     taskObj.set(Task.OWNER, "", context);
                     context.getWiki().saveDocument(taskDoc, context);
@@ -164,22 +163,22 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     private void createOrUpdateTaskPages(XWikiDocument document, XWikiContext context, List<Task> tasks)
     {
         for (Task task : tasks) {
-            DocumentReference macroReference = task.getReference();
+            DocumentReference taskReference = task.getReference();
             try {
-                if (!authorizationManager.hasAccess(Right.EDIT, context.getUserReference(), macroReference)) {
+                if (!authorizationManager.hasAccess(Right.EDIT, taskReference)) {
                     logger.warn(
                         "The user [{}] edited the macro with id [{}] but does not have edit rights over it's "
                             + "corresponding page.",
-                        context.getUserReference(), macroReference);
+                        context.getUserReference(), taskReference);
                     continue;
                 }
 
-                XWikiDocument taskDoc = context.getWiki().getDocument(macroReference, context).clone();
+                XWikiDocument taskDoc = context.getWiki().getDocument(taskReference, context).clone();
 
                 BaseObject taskObj = taskDoc.getXObject(TASK_CLASS_REFERENCE, true, context);
 
                 if (!taskDoc.isNew() && !document.getDocumentReference()
-                    .equals(resolver.resolve(taskObj.getLargeStringValue(Task.OWNER))))
+                    .equals(resolver.resolve(taskObj.getLargeStringValue(Task.OWNER), taskReference)))
                 {
                     continue;
                 }
@@ -191,15 +190,13 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 context.getWiki().saveDocument(taskDoc, "Task updated!", context);
             } catch (XWikiException ignored) {
                 logger.error("Failed to retrieve the document that contains the Task Object with id [{}].",
-                    macroReference);
+                    taskReference);
             }
         }
     }
 
     private void populateObjectWithMacroParams(XWikiContext context, Task task, BaseObject object)
     {
-        object.set(Task.REFERENCE, task.getReference(), context);
-
         object.set(Task.NAME, task.getName(), context);
 
         object.set(Task.REPORTER, serializer.serialize(task.getReporter()), context);
@@ -208,11 +205,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
         object.set(Task.CREATE_DATE, task.getCreateDate(), context);
 
-        object.set(Task.RENDER, task.getRender(), context);
-
         object.set(Task.ASSIGNEE, serializer.serialize(task.getAssignee()), context);
 
-        object.set(Task.DUE_DATE, task.getDuedate(), context);
+        object.set(Task.DUE_DATE, task.getDueDate(), context);
 
         object.set(Task.COMPLETE_DATE, task.getCompleteDate(), context);
     }

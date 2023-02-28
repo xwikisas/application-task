@@ -65,6 +65,7 @@ public class Task
     /**
      * The value of the STATUS field denoting that the task has been completed.
      */
+    // TODO: The value of the "Done" state should be configurable in the administration section.
     public static final String STATUS_DONE = "Done";
 
     /**
@@ -92,11 +93,6 @@ public class Task
      */
     public static final String COMPLETE_DATE = "completeDate";
 
-    /**
-     * The name of the RENDER field.
-     */
-    public static final String RENDER = "render";
-
     private String name;
 
     private int number;
@@ -116,8 +112,6 @@ public class Task
     private Date duedate;
 
     private Date completeDate;
-
-    private String render;
 
     /**
      * @return the reference of the document where this task resides.
@@ -218,7 +212,7 @@ public class Task
     /**
      * @return the deadline of the task.
      */
-    public Date getDuedate()
+    public Date getDueDate()
     {
         return duedate;
     }
@@ -245,22 +239,6 @@ public class Task
     public void setCompleteDate(Date completeDate)
     {
         this.completeDate = completeDate;
-    }
-
-    /**
-     * @return the way the task is rendered in the current syntax of the wiki.
-     */
-    public String getRender()
-    {
-        return render;
-    }
-
-    /**
-     * @param render the rendition of this task.
-     */
-    public void setRender(String render)
-    {
-        this.render = render;
     }
 
     /**

@@ -143,7 +143,7 @@ taskmanager.notification.statusChange.restFail=Failed to change the status becau
 taskmanager.notification.statusChange.noId=Failed to change the status because the task doesn't have an ID.
 taskmanager.notification.statusChange.inprogress=Changing status..
 
-taskmanager.livetable.render=Task
+taskmanager.livetable.name=Task
 taskmanager.livetable.duedate=Deadline
 taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.owner=Location

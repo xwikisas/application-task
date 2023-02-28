@@ -29,8 +29,8 @@ import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.XWikiContext;
@@ -38,6 +38,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.TaskCounter;
+import com.xwiki.task.TaskException;
 import com.xwiki.task.model.Task;
 
 /**
@@ -51,6 +52,9 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
 {
+    private static final LocalDocumentReference TEMPLATE_REFERENCE =
+        new LocalDocumentReference("TaskManager", "TaskManagerTemplate");
+
     @Inject
     private TaskCounter taskCounter;
 
@@ -66,18 +70,10 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
     @Override
     protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
     {
-        if (event instanceof DocumentDeletingEvent) {
-            try {
-                XWikiDocument actualDoc = context.getWiki().getDocument(document.getDocumentReference(), context);
-                BaseObject object = actualDoc.getXObject(TASK_CLASS_REFERENCE);
-                if (object != null && !object.getStringValue(Task.OWNER).isEmpty()) {
-                    taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
-                        resolver.resolve(object.getStringValue(Task.OWNER)), context);
-                }
-            } catch (XWikiException e) {
-                logger.warn("Failed to remove the macro call from the owner document of the task [{}]",
-                    document.getDocumentReference());
-            }
+        if (new LocalDocumentReference(document.getDocumentReference()).equals(TEMPLATE_REFERENCE)) {
+            return;
+        }
+        if (handleDeleteEvent(document, context, event)) {
             return;
         }
         BaseObject taskObj = document.getXObject(TASK_CLASS_REFERENCE);
@@ -86,18 +82,15 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
-        setTaskNumber(context, taskObj);
-        taskObj.set(Task.RENDER,
-            taskXDOMProcessor.renderTaskByReference(taskObj.getDocumentReference(), document.getSyntax()), context);
+        maybeSetTaskNumber(context, taskObj);
 
         if (context.get(TASK_UPDATE_FLAG) != null || taskObj.getStringValue(Task.OWNER).isEmpty()) {
             return;
         }
 
-
         String taskOwner = taskObj.getStringValue(Task.OWNER);
 
-        DocumentReference taskOwnerRef = resolver.resolve(taskOwner, EntityType.DOCUMENT);
+        DocumentReference taskOwnerRef = resolver.resolve(taskOwner, document.getDocumentReference());
 
         try {
             context.put(TASK_UPDATE_FLAG, true);
@@ -110,12 +103,32 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
         }
     }
 
-    private void setTaskNumber(XWikiContext context, BaseObject taskObj)
+    private boolean handleDeleteEvent(XWikiDocument document, XWikiContext context, Event event)
+    {
+        if (event instanceof DocumentDeletingEvent) {
+            try {
+                XWikiDocument actualDoc = context.getWiki().getDocument(document.getDocumentReference(), context);
+                BaseObject object = actualDoc.getXObject(TASK_CLASS_REFERENCE);
+                if (object != null && !object.getStringValue(Task.OWNER).isEmpty()) {
+                    taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
+                        resolver.resolve(object.getStringValue(Task.OWNER), document.getDocumentReference()), context);
+                }
+            } catch (XWikiException e) {
+                logger.warn("Failed to remove the macro call from the owner document of the task [{}]",
+                    document.getDocumentReference());
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void maybeSetTaskNumber(XWikiContext context, BaseObject taskObj)
     {
         if (taskObj.getIntValue(Task.NUMBER, -1) == -1) {
-            int taskNumber = taskCounter.getNextNumber();
-            if (taskNumber != -1) {
-                taskObj.set(Task.NUMBER, taskNumber, context);
+            try {
+                taskObj.set(Task.NUMBER, taskCounter.getNextNumber(), context);
+            } catch (TaskException e) {
+                logger.warn("Failed to set a number to the task [{}].", taskObj.getDocumentReference());
             }
         }
     }

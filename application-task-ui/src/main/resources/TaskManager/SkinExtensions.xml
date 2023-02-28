@@ -126,15 +126,17 @@
     <property>
       <code>require(['jquery'], function ($) {
   $(document).on('change', '.task-status', function() {
-    console.log("Input just changed. It's data is: " + $(this).data('taskid'));
     let taskId = $(this).data('taskid');
     if (taskId !== undefined) {
       let checkbox = $(this);
       let task = checkbox.parent('.task-macro');
-      let taskDocument = XWiki.Model.resolve(task.data('source'), XWiki.EntityType.DOCUMENT) || XWiki.currentDocument.documentReference;
+      let taskDocument = XWiki.Model.resolve(taskId, XWiki.EntityType.DOCUMENT);
+      if (taskDocument.getReversedReferenceChain()[0].type != XWiki.EntityType.WIKI) {
+        taskDocument.getReversedReferenceChain()[0].parent = new XWiki.WikiReference(XWiki.currentWiki);
+      }
       let baseURL = new XWiki.Document(taskDocument).getRestURL();
 
-      let restURL = baseURL + '/tasks/' + taskId + '?status=' + (checkbox.is(':checked') ? "Done" : "InProgress");
+      let restURL = baseURL + '/task' + '?status=' + (checkbox.is(':checked') ? "Done" : "InProgress");
 
       checkbox.prop("disabled", true);
       let not = new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.inprogress')", "inprogress");
@@ -142,8 +144,7 @@
         url: restURL,
         type: 'PUT',
         success: function() {
-          not.replace(new
-        XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.success')", "done"));
+          not.replace(new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.success')", "done"));
         },
         error: function () {
           not.replace(new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.restFail')", "error"));

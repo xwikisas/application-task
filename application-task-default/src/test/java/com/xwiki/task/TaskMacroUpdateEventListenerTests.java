@@ -20,171 +20,181 @@ package com.xwiki.task;
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.bridge.event.DocumentDeletingEvent;
+import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
-import org.xwiki.observation.EventListener;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.test.junit5.mockito.ComponentTest;
-import org.xwiki.test.mockito.MockitoComponentMockingRule;
+import org.xwiki.test.junit5.mockito.InjectMockComponents;
+import org.xwiki.test.junit5.mockito.MockComponent;
 
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xwiki.task.internal.TaskXDOMProcessor;
+import com.xwiki.task.internal.AbstractTaskEventListener;
 import com.xwiki.task.internal.TaskMacroUpdateEventListener;
+import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-@RunWith(MockitoJUnitRunner.class)
 public class TaskMacroUpdateEventListenerTests
 {
-    @Rule
-    public final MockitoComponentMockingRule<EventListener> mocker =
-        new MockitoComponentMockingRule<>(TaskMacroUpdateEventListener.class);
+    private static final String DOC_PREV_VERSION = "1";
 
-    private EventListener listener;
+    private static final String TASK_NAME = "Hello there";
 
-    private DocumentReferenceResolver<String> resolver;
+    @InjectMockComponents
+    private TaskMacroUpdateEventListener eventListener;
 
+    @MockComponent
+    private ContextualAuthorizationManager authorizationManager;
+
+    @MockComponent
+    private DocumentRevisionProvider revisionProvider;
+
+    @MockComponent
+    private EntityReferenceSerializer<String> serializer;
+
+    @MockComponent
+    private TaskManager taskManager;
+
+    @MockComponent
     private TaskXDOMProcessor taskXDOMProcessor;
 
-    private EntityReferenceSerializer<String> serializer;
+    @MockComponent
+    private DocumentReferenceResolver<String> resolver;
 
     @Mock
     private XWikiContext context;
 
     @Mock
-    private XWikiDocument document;
+    private XWiki wiki;
+
+    @Mock
+    private XWikiDocument docWithTasks;
+
+    @Mock
+    private XWikiDocument taskDoc;
+
+    @Mock
+    private XWikiDocument task_1Doc;
+
+    @Mock
+    private XWikiDocument prevVersionDoc;
 
     @Mock
     private XDOM docXDOM;
 
     @Mock
+    private XDOM prevVersionDocXDOM;
+
+    @Mock
     private MacroBlock macro1;
 
     @Mock
-    private BaseObject obj1;
+    private BaseObject taskObj;
+    @Mock
+    private BaseObject task_1Obj;
 
     private final DocumentReference adminRef = new DocumentReference("xwiki", "XWiki", "Admin");
+    private final DocumentReference pageWithMacro = new DocumentReference("xwiki", "XWiki", "Home");
+    private final DocumentReference taskPage = new DocumentReference("xwiki", "XWiki", "Task");
+    private final DocumentReference taskPage_1 = new DocumentReference("xwiki", "XWiki", "Task_1");
+    private Task task = new Task();
+    private Task task_1 = new Task();
+    private final Date date1 = new Date(1000);
 
-    private final DocumentReference docRef = new DocumentReference("xwiki", "XWiki", "Task");
-
-    public final DateFormat deadlineDateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
-
-    private Task task1 = new Task();
-
-    private Date date1 = new Date();
-    @Before
-    public void setup() throws ComponentLookupException
+    @BeforeEach
+    public void setup() throws XWikiException
     {
-        this.listener = mocker.getComponentUnderTest();
-//        this.resolver = mocker.getInstance(DocumentReferenceResolver.TYPE_STRING);
-        this.taskXDOMProcessor = mocker.getInstance(TaskXDOMProcessor.class);
-        this.serializer = mocker.getInstance(EntityReferenceSerializer.TYPE_STRING);
+        when(this.context.getWiki()).thenReturn(this.wiki);
+        when(this.docWithTasks.getDocumentReference()).thenReturn(this.pageWithMacro);
+        when(this.docWithTasks.getXDOM()).thenReturn(this.docXDOM);
+        when(this.docWithTasks.getPreviousVersion()).thenReturn(DOC_PREV_VERSION);
+        when(this.revisionProvider.getRevision(this.docWithTasks, DOC_PREV_VERSION)).thenReturn(this.prevVersionDoc);
+        when(this.prevVersionDoc.getXDOM()).thenReturn(this.prevVersionDocXDOM);
+        when(this.docWithTasks.clone()).thenReturn(this.docWithTasks);
+        when(this.prevVersionDoc.clone()).thenReturn(this.prevVersionDoc);
+        when(this.taskDoc.clone()).thenReturn(this.taskDoc);
+        when(this.task_1Doc.clone()).thenReturn(this.task_1Doc);
+        when(this.wiki.getDocument(this.pageWithMacro, this.context)).thenReturn(this.docWithTasks);
+        when(this.wiki.getDocument(this.taskPage, this.context)).thenReturn(this.taskDoc);
+        when(this.wiki.getDocument(this.taskPage_1, this.context)).thenReturn(this.task_1Doc);
+        when(this.taskDoc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE, true, this.context)).thenReturn(this.taskObj);
+        when(this.taskDoc.getDocumentReference()).thenReturn(this.taskPage);
+        when(this.task_1Doc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE)).thenReturn(this.task_1Obj);
+        when(this.task_1Doc.getDocumentReference()).thenReturn(this.taskPage_1);
+        when(this.taskObj.getLargeStringValue(Task.OWNER)).thenReturn(this.pageWithMacro.toString());
+        when(this.task_1Obj.getLargeStringValue(Task.OWNER)).thenReturn(this.pageWithMacro.toString());
+        when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage)).thenReturn(this.pageWithMacro);
+        when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage_1)).thenReturn(this.pageWithMacro);
 
-        when(this.document.getXDOM()).thenReturn(this.docXDOM);
-        when(this.document.getDocumentReference()).thenReturn(this.docRef);
+        task_1.setReference(taskPage_1);
+        task_1.setReporter(adminRef);
+        task_1.setDuedate(date1);
+        task_1.setAssignee(adminRef);
+        task_1.setName(TASK_NAME);
+        task_1.setCompleteDate(date1);
+        task_1.setStatus(Task.STATUS_DONE);
+        task_1.setNumber(1);
+        task_1.setOwner(pageWithMacro);
+        task_1.setCreateDate(date1);
 
-        task1.setReference(new DocumentReference("wiki", "Space", "WebHome"));
-        task1.setReporter(adminRef);
-        task1.setCreateDate(date1);
-        task1.setStatus("false");
-        task1.setAssignee(adminRef);
-        task1.setRender("Some description");
-        task1.setDuedate(date1);
-        task1.setCompleteDate(date1);
-
-        when(this.taskXDOMProcessor.extract(this.docXDOM, this.docRef)).thenReturn(new ArrayList<>(Collections.singletonList(task1)));
-//        when(this.document.getXObjects(TaskMacroUpdateEventListener.TASK_CLASS_REFERENCE)).thenReturn(Collections.singletonList(obj1));
-//        when(this.docXDOM.getBlocks(any(), any())).thenReturn(Collections.singletonList(macro1));
-//        when(this.serializer.serialize(adminRef)).thenReturn("XWiki.Admin");
-//        when(this.obj1.getStringValue("id")).thenReturn("someid1");
-//        when(this.resolver.resolve("XWiki.Admin")).thenReturn(adminRef);
-//        when(this.macro1.getContent()).thenReturn("Important task! {{mention reference=\"XWiki.Admin\" "
-//            + "style=\"FULL_NAME\" anchor=\"XWiki-Admin-zmrgl3\"/}}{{date date=\"2022/10/12 18:16\"/}} lesgooo it works");
+        task.setReference(taskPage);
+        task.setReporter(adminRef);
+        task.setDuedate(date1);
+        task.setAssignee(adminRef);
+        task.setName(TASK_NAME);
+        task.setCompleteDate(date1);
+        task.setStatus(Task.STATUS_DONE);
+        task.setNumber(2);
+        task.setOwner(pageWithMacro);
+        task.setCreateDate(date1);
 
     }
 
-    @Test
-    public void updateExistingMacroObjectTest() throws ParseException, XWikiException
+    @org.junit.jupiter.api.Test
+    public void onDeletingEventTest() throws TaskException
     {
-        this.listener.onEvent(null, document, context);
+        this.eventListener.onEvent(new DocumentDeletingEvent(), this.docWithTasks, this.context);
 
-//        verify(obj1).set(Task.CREATOR, "XWiki.Admin", context);
-//        verify(obj1).set(Task.STATUS, task1.isCompleted(), context);
-//        verify(obj1).set(Task.CREATE_DATE, task1.getCreateDate(), context);
-//        verify(obj1).set(Task.DESCRIPTION, task1.getDescription(), context);
-//
-//        verify(obj1).set(Task.ASSIGNEES, Collections.singletonList("XWiki.Admin"), context);
-//        verify(obj1).set(Task.DEADLINE, task1.getDeadline(), context);
-//        verify(obj1).set(Task.DESCRIPTION, task1.getDescription(), context);
-
-        verify(document, never()).removeXObject(obj1);
+        verify(this.taskManager).deleteTasksByOwner(this.pageWithMacro);
     }
 
     @Test
-    public void updateExistingMacroObjectWithMultipleAssignees() throws XWikiException, ParseException
+    public void onUpdatingWithRemovedTaskEventTest() throws XWikiException
     {
-        DocumentReference assignee2ref = new DocumentReference("xwiki", "XWiki", "User1");
-        task1.setAssignee(adminRef);
-//        when(serializer.serialize(assignee2ref)).thenReturn("XWiki.User1");
+        when(this.taskXDOMProcessor.extract(this.docXDOM, this.pageWithMacro)).thenReturn(new ArrayList<>(Collections.singletonList(task)));
+        when(this.taskXDOMProcessor.extract(this.prevVersionDocXDOM, this.pageWithMacro)).thenReturn(new ArrayList<>(Collections.singletonList(task_1)));
+        when(this.taskDoc.isNew()).thenReturn(true);
+        when(this.authorizationManager.hasAccess(Right.EDIT, taskPage)).thenReturn(true);
+        when(this.authorizationManager.hasAccess(Right.DELETE, taskPage_1)).thenReturn(true);
 
-        this.listener.onEvent(null, document, context);
+        this.eventListener.onEvent(new DocumentUpdatingEvent(), this.docWithTasks, this.context);
 
-        verify(document, never()).newXObject(TaskMacroUpdateEventListener.TASK_CLASS_REFERENCE, context);
-//        verify(obj1).set(Task.ASSIGNEES, Arrays.asList("XWiki.Admin", "XWiki.User1"), context);
-    }
-
-    @Test
-    public void createMacroObjectTest() throws XWikiException, ParseException
-    {
-
-//        when(this.document.getXObjects(TaskMacroUpdateEventListener.TASK_CLASS_REFERENCE)).thenReturn(Collections.emptyList());
-//        when(this.document.newXObject(TaskMacroUpdateEventListener.TASK_CLASS_REFERENCE, context)).thenReturn(obj1);
-
-        this.listener.onEvent(null, document, context);
-
-//        verify(document).newXObject(TaskMacroUpdateEventListener.TASK_CLASS_REFERENCE, context);
-//
-//        verify(obj1).set(Task.CREATOR, "XWiki.Admin", context);
-//        verify(obj1).set(Task.STATUS, task1.isCompleted(), context);
-//        verify(obj1).set(Task.CREATE_DATE, task1.getCreateDate(), context);
-//        verify(obj1).set(Task.DESCRIPTION, task1.getDescription(), context);
-//
-//        verify(obj1).set(Task.ASSIGNEES, Collections.singletonList("XWiki.Admin"), context);
-//        verify(obj1).set(Task.DEADLINE, task1.getDeadline(), context);
-//        verify(obj1).set(Task.DESCRIPTION, task1.getDescription(), context);
-    }
-
-    @Test
-    public void removeMacroObjectWhenThereIsNoCorrespondingMacroOnPageTest() {
-        when(this.taskXDOMProcessor.extract(any(), any())).thenReturn(Collections.emptyList());
-
-        this.listener.onEvent(null, document, context);
-
-//        verify(this.document).removeXObject(obj1);
-        verify(this.document, never()).setTitle(any());
+        verify(this.wiki).getDocument(this.taskPage, this.context);
+        verify(this.taskObj).set(Task.OWNER, this.pageWithMacro, this.context);
+        verify(this.authorizationManager).hasAccess(Right.EDIT, taskPage);
+        verify(this.authorizationManager).hasAccess(Right.DELETE, taskPage_1);
+        verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
+        verify(this.wiki).deleteDocument(this.task_1Doc, this.context);
     }
 }

@@ -37,14 +37,11 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{include reference="XWiki.LiveTableResultsMacros" /}}
-
 {{velocity wiki="false"}}
 #set ($extraFrom = '')
 #set ($extraWhere = '')
 #set ($params = {})
-
 #set ($spaceWhere = '')
-
 #if ("$!request.tasktag" != '')
   #set($extraFrom = "${extraFrom} , BaseObject as tobject, DBStringListProperty as tagprop, StringProperty as taskowner join tagprop.list tag")
   #set($extraWhere = "${extraWhere} and obj.id=taskowner.id.id and taskowner.id.name='owner'")
@@ -55,24 +52,26 @@
   #end
   #set ($discard = $params.put("taskTagList", $list))
 #end
-
 #if ("$!request.space" != '')
   #foreach($space in $request.getParameterValues('space'))
-    #if ($foreach.count &gt; 1)
+    #if ($foreach.count > 1)
       #set ($spaceWhere = "${spaceWhere} OR ")
     #end
+    ## In versions lower than 13.0 creating a query having an array parameter and a QueryParameter like
+    ##  `$services.query.parameter().literal('literal')` will produce an error. So we need to work around the issue.
     #set ($paramVal = "$!space.replaceAll('([%_!])', '!$1')%")
     #set ($spaceWhere = "${spaceWhere}doc.fullName like :docspace${foreach.count} escape '!'")
     #set ($discard = $params.put("docspace${foreach.count}", $paramVal))
   #end
   #set ($extraWhere = "${extraWhere} AND (${spaceWhere})")
 #end
-
-##gridresultwithfilter_buildQuery("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extraWhere}" $params)
-##$sql
-##$sqlParams
-##$request.getParameterValues('tasktags')
-
-#gridresultwithfilter("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extraWhere}" $params)
+#if($xcontext.action == 'get' &amp;&amp; "$!{request.outputSyntax}" == 'plain')
+  #set($map = {})
+  #gridresultwithfilter_buildJSON("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extraWhere}" $params $map)
+  #foreach ($row in $map.rows)
+    #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+  #end
+  #jsonResponse($map)
+#end
 {{/velocity}}</content>
 </xwikidoc>

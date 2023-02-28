@@ -3,18 +3,18 @@
 .input|xwiki/2.0
 .# Validate that non inline content is properly supported
 .#-----------------------------------------------------
-{{date value="2021/09/07 00:00"/}}
+{{date value="10/12/2022" format="dd/MM/yyyy"/}}
 .#-----------------------------------------------------
 .expect|event/1.0
 .#-----------------------------------------------------
 beginDocument
-beginMacroMarkerStandalone [date] [value=2021/09/07 00:00]
+beginMacroMarkerStandalone [date] [value=10/12/2022|format=dd/MM/yyyy]
 beginFormat [NONE] [[class]=[xwiki-date]]
-onWord [2021/09/07 00:00]
+onWord [2022/12/10 00:00]
 endFormat [NONE] [[class]=[xwiki-date]]
-endMacroMarkerStandalone [date] [value=2021/09/07 00:00]
+endMacroMarkerStandalone [date] [value=10/12/2022|format=dd/MM/yyyy]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<span class="xwiki-date">2021/09/07 00:00</span>
+<span class="xwiki-date">2022/12/10 00:00</span>

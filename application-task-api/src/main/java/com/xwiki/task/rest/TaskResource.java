@@ -37,7 +37,7 @@ import org.xwiki.stability.Unstable;
  * @version $Id$
  * @since 3.0
  */
-@Path("/wikis/{wikiName}/spaces/{spaceName: .+}/pages/{pageName}/tasks/{taskId}")
+@Path("/wikis/{wikiName}/spaces/{spaceName: .+}/pages/{pageName}/task")
 @Unstable
 public interface TaskResource
 {
@@ -47,7 +47,6 @@ public interface TaskResource
      * @param wikiName the name of the wiki in which the page resides
      * @param spaces the spaces of the page
      * @param pageName the name of the page
-     * @param taskId the id of the macro
      * @param status whether the task has been completed or not
      * @return 200 is the status has been changed successfully of 404 if the task was not found
      * @throws XWikiRestException when failing in retrieving the document or saving it
@@ -57,7 +56,6 @@ public interface TaskResource
         @PathParam("wikiName") String wikiName,
         @PathParam("spaceName") @Encoded String spaces,
         @PathParam("pageName") String pageName,
-        @PathParam("taskId") String taskId,
         @QueryParam("status") @DefaultValue("Done") String status
     ) throws XWikiRestException;
 }

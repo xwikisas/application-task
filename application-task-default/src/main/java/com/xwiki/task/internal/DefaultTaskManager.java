@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -70,36 +70,71 @@ public class DefaultTaskManager implements TaskManager
     private EntityReferenceSerializer<String> serializer;
 
     @Inject
-    private Logger logger;
+    @Named("compactwiki")
+    private EntityReferenceSerializer<String> compactserializer;
 
     @Override
-    public Task getTaskByReference(String reference)
+    public Task getTask(DocumentReference reference) throws TaskException
     {
         XWikiContext context = contextProvider.get();
-        DocumentReference docRef = resolver.resolve(reference);
         try {
-            XWikiDocument doc = context.getWiki().getDocument(docRef, context);
+            XWikiDocument doc = context.getWiki().getDocument(reference, context);
             Task task = new Task();
             BaseObject obj = doc.getXObject(TASK_CLASS_REFERENCE);
             if (obj == null) {
-                logger.warn("The page [{}] does not have a Task Object.", docRef);
-                return null;
+                throw new TaskException(String.format("The page [%s] does not have a Task Object.", reference));
             }
-            task.setReference(docRef);
+            task.setReference(reference);
             task.setName(obj.getStringValue(Task.NAME));
             task.setNumber(obj.getIntValue(Task.NUMBER));
-            task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER)));
+            task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), reference));
             task.setAssignee(resolver.resolve(obj.getLargeStringValue(Task.ASSIGNEE)));
             task.setStatus(obj.getStringValue(Task.STATUS));
             task.setReporter(resolver.resolve(obj.getLargeStringValue(Task.REPORTER)));
-            task.setRender(obj.getLargeStringValue(Task.RENDER));
             task.setDuedate(obj.getDateValue(Task.DUE_DATE));
             task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
             task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
             return task;
         } catch (XWikiException e) {
-            logger.error("Failed to retrieve the task from the page [{}]", reference);
-            return null;
+            throw new TaskException(String.format("Failed to retrieve the task from the page [%s]", reference));
+        }
+    }
+
+    @Override
+    public Task getTask(int id) throws TaskException
+    {
+        try {
+            XWikiContext context = contextProvider.get();
+            String statement = ", BaseObject as taskObj, IntegerProperty as idProp "
+                + "WHERE taskObj.name = doc.fullName "
+                + "AND doc.fullName != 'TaskManager.TaskManagerTemplate' "
+                + "AND taskObj.className = 'TaskManager.TaskManagerClass' "
+                + "AND taskObj.id = idProp.id.id AND idProp.id.name = 'number' "
+                + "AND idProp.value = :id";
+            List<String> results = queryManager.createQuery(statement, Query.HQL).bindValue("id", id).execute();
+            if (results.size() > 0) {
+                Task task = new Task();
+                DocumentReference documentReference = resolver.resolve(results.get(0));
+                XWikiDocument document = context.getWiki().getDocument(documentReference, context);
+                BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
+                if (taskObject == null) {
+                    return null;
+                }
+                task.setReference(documentReference);
+                task.setNumber(id);
+                task.setStatus(taskObject.getStringValue(Task.STATUS));
+                task.setName(taskObject.getStringValue(Task.NAME));
+                task.setAssignee(resolver.resolve(taskObject.getLargeStringValue(Task.ASSIGNEE)));
+                task.setCompleteDate(taskObject.getDateValue(Task.COMPLETE_DATE));
+                task.setDuedate(taskObject.getDateValue(Task.DUE_DATE));
+                task.setCreateDate(taskObject.getDateValue(Task.CREATE_DATE));
+                task.setReporter(resolver.resolve(taskObject.getLargeStringValue(Task.REPORTER)));
+
+                return task;
+            }
+            throw new TaskException(String.format("There is no task with the id [%d].", id));
+        } catch (QueryException | XWikiException e) {
+            throw new TaskException(String.format("Failed to retrieve the task with id [%s].", id), e);
         }
     }
 
@@ -108,16 +143,29 @@ public class DefaultTaskManager implements TaskManager
     {
         try {
             XWikiContext context = contextProvider.get();
-            String statement = ", BaseObject as taskObj, StringProperty as ownerProp "
-                + "WHERE taskObj.name = doc.fullName AND taskObj.className = 'TaskManager.TaskManagerClass' "
-                + "AND taskObj.id = ownerProp.id.id AND ownerProp.id.name = 'owner' "
-                + "AND ownerProp.value like :docRef";
-            Query query = queryManager.createQuery(statement, Query.HQL);
-            query.bindValue("docRef").anyChars().literal(serializer.serialize(documentReference));
+            String statement =
+                "FROM doc.object(TaskManager.TaskManagerClass) as task "
+                    + "WHERE task.owner = :absoluteOwnerRef "
+                    + "OR task.owner = :compactOwnerRef "
+                    + "OR (task.owner = :relativeOwnerRef AND doc.space = :ownerSpaceRef)";
+            Query query = queryManager.createQuery(statement, Query.XWQL);
+
+            query
+                .bindValue("absoluteOwnerRef", serializer.serialize(documentReference))
+                .bindValue("compactOwnerRef", compactserializer.serialize(documentReference))
+                .bindValue("relativeOwnerRef", documentReference.getName())
+                .bindValue("ownerSpaceRef", compactserializer.serialize(documentReference.getLastSpaceReference()));
+
             List<String> results = query.execute();
             for (String result : results) {
                 DocumentReference taskRef = resolver.resolve(result);
                 XWikiDocument document = context.getWiki().getDocument(taskRef, context);
+                BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
+                if (taskObject == null || !resolver.resolve(taskObject.getLargeStringValue(Task.OWNER), taskRef)
+                    .equals(documentReference))
+                {
+                    continue;
+                }
                 context.getWiki().deleteDocument(document, context);
             }
         } catch (QueryException | XWikiException e) {

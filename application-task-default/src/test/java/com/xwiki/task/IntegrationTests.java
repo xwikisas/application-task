@@ -22,19 +22,26 @@ package com.xwiki.task;
 
 import java.text.SimpleDateFormat;
 
+import javax.inject.Provider;
+
 import org.junit.runner.RunWith;
+import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.component.util.DefaultParameterizedType;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.skinx.SkinExtension;
 import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xwiki.task.model.Task;
 import com.xwiki.task.script.TaskManagerScriptService;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -46,9 +53,9 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(RenderingTestSuite.class)
 @AllComponents
+@RenderingTestSuite.Scope(value = ""/*, pattern = "task1.test"*/)
 public class IntegrationTests
 {
-
     @RenderingTestSuite.Initialized
     public void initialize(MockitoComponentManager componentManager) throws Exception
     {
@@ -57,16 +64,53 @@ public class IntegrationTests
         componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
         componentManager.registerMockComponent(ScriptService.class, "taskmanager");
         componentManager.registerMockComponent(TaskManagerScriptService.class);
+
+        Provider<XWikiContext> contextProvider =
+            componentManager.registerMockComponent(
+                new DefaultParameterizedType(null, Provider.class, XWikiContext.class));
+        XWikiContext context = componentManager.registerMockComponent(XWikiContext.class);
+        when(contextProvider.get()).thenReturn(context);
+        ContextualAuthorizationManager authorizationManager =
+            componentManager.registerMockComponent(ContextualAuthorizationManager.class);
         TaskManager taskManager = componentManager.registerMockComponent(TaskManager.class);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        DocumentReference user = new DocumentReference("xwiki", "XWiki", "User1");
+        DocumentReference ref1 = new DocumentReference("xwiki", "Sandbox", "Task");
+        DocumentReference ref2 = new DocumentReference("xwiki", "Sandbox", "Task2");
+
         Task task = new Task();
-        task.setReference(new DocumentReference("xwiki", "Sandbox", "Task"));
+        task.setReference(ref1);
         task.setName("Test name");
-        task.setDuedate(new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2023"));
+        task.setDuedate(dateFormat.parse("01/01/2023"));
         task.setNumber(1);
-        task.setAssignee(new DocumentReference("xwiki", "XWiki", "User1"));
         task.setStatus("Done");
-        when(taskManager.getTaskByReference(any())).thenReturn(task);
+        task.setReporter(user);
+        task.setCreateDate(dateFormat.parse("01/01/2023"));
+        task.setCompleteDate(dateFormat.parse("01/01/2023"));
+
+        Task task2 = new Task();
+        task2.setReference(ref2);
+        task2.setName("Test name");
+        task2.setDuedate(dateFormat.parse("01/01/2023"));
+        task2.setNumber(2);
+        task2.setStatus("Done");
+        task2.setReporter(user);
+        task2.setCreateDate(dateFormat.parse("01/01/2023"));
+        task2.setCompleteDate(dateFormat.parse("01/01/2023"));
+
+        when(taskManager.getTask(2)).thenReturn(task2);
+        when(taskManager.getTask(1)).thenReturn(task);
+        when(taskManager.getTask(ref1)).thenReturn(task);
+        when(taskManager.getTask(ref2)).thenReturn(task2);
+        when(context.getUserReference()).thenReturn(user);
+        when(authorizationManager.hasAccess(Right.VIEW, ref1)).thenReturn(true);
+        when(authorizationManager.hasAccess(Right.VIEW, ref2)).thenReturn(true);
+
         ConfigurationSource prefs = componentManager.registerMockComponent(ConfigurationSource.class, "wiki");
         when(prefs.getProperty("dateformat", "yyyy/MM/dd HH:mm")).thenReturn("yyyy/MM/dd HH:mm");
+
+        componentManager.registerComponent(ComponentManager.class, "context", componentManager);
+        componentManager.registerMockComponent(DocumentReferenceResolver.TYPE_STRING, "macro");
     }
 }

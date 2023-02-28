@@ -24,7 +24,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.stability.Unstable;
 
 /**
- * Counter that handles the id generation for the tasks.
+ * Handles the reference generation for the tasks.
  *
  * @version $Id$
  * @since 3.0
@@ -40,5 +40,5 @@ public interface TaskReferenceGenerator
      * @return a reference to the task. It can be either a child of the parent, a sibling or it can be a child to the
      * default TaskManager home, depending on the rights of the current user.
      */
-    DocumentReference generate(DocumentReference parent);
+    DocumentReference generate(DocumentReference parent) throws TaskException;
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -66,24 +67,23 @@ public class TaskBlockProcessor
     private static final String DATE = "date";
 
     @Inject
-    private ComponentManager componentManager;
+    @Named("context")
+    private ComponentManager contextComponentManager;
 
     @Inject
     private MacroContentParser contentParser;
 
     /**
-     * Render the task content in xwiki/2.1 syntax.
+     * Render the task content in the given syntax.
      *
      * @param taskBlocks the content of a task macro.
      * @param syntax the syntax in which the taskBlocks need to be rendered.
-     * @return the result of rendering the content in xwiki/2.1 syntax.
+     * @return the result of rendering the content in the given syntax.
      */
-    public String renderTaskContent(List<Block> taskBlocks, String syntax) throws TaskException
+    public String renderTaskContent(List<Block> taskBlocks, Syntax syntax) throws TaskException
     {
         try {
-            // Store the macro as wiki syntax inside the task description, so we can display the rendered macro
-            // inside the live table.
-            BlockRenderer renderer = componentManager.getInstance(BlockRenderer.class, syntax);
+            BlockRenderer renderer = contextComponentManager.getInstance(BlockRenderer.class, syntax.toIdString());
             WikiPrinter printer = new DefaultWikiPrinter(new StringBuffer());
             renderer.render(taskBlocks, printer);
             return printer.toString();
@@ -93,7 +93,7 @@ public class TaskBlockProcessor
     }
 
     /**
-     * Get the XDOM of the contentt of a task macro.
+     * Get the XDOM of the content of a task macro.
      *
      * @param taskBlock the block whose content we want to retrieve.
      * @param syntax The syntax in which the content is encoded.
@@ -115,6 +115,7 @@ public class TaskBlockProcessor
 
     /**
      * Create a link block for a task.
+     *
      * @param reference the reference to the task page.
      * @param taskNumber the number of the task, that uniquely identifies it.
      * @return a {@link LinkBlock} that points to the reference and the number of the task as content.
@@ -141,20 +142,8 @@ public class TaskBlockProcessor
     public List<Block> generateTaskContentBlocks(String assignee, Date duedate, String text,
         SimpleDateFormat storageFormat) throws TaskException
     {
-        Map<String, String> mentionParams = new HashMap<>();
-        Map<String, String> dateParams = new HashMap<>();
-
-        mentionParams.put("style", "FULL_NAME");
-        mentionParams.put("reference", assignee);
-        mentionParams.put("anchor", assignee.replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
-
-        dateParams.put(DATE, storageFormat.format(duedate));
-
-        MacroBlock mentionBlock = new MacroBlock("mention", mentionParams, true);
-        MacroBlock dateBlock = new MacroBlock(DATE, dateParams, true);
-
         XDOM newTaskContentXDOM =
-            getTaskContentXDOM(new MacroBlock("temporaryMacro", new HashMap<>(), text, false),
+            getTaskContentXDOM(new MacroBlock("temporaryMacro", new HashMap<>(), text == null ? "" : text, false),
                 Syntax.PLAIN_1_0);
 
         Block insertionPoint = newTaskContentXDOM.getFirstBlock(new ClassBlockMatcher(ParagraphBlock.class),
@@ -162,9 +151,23 @@ public class TaskBlockProcessor
         if (insertionPoint == null) {
             insertionPoint = newTaskContentXDOM;
         }
-        insertionPoint.addChild(mentionBlock);
-        insertionPoint.addChild(dateBlock);
 
+        if (assignee != null) {
+            Map<String, String> mentionParams = new HashMap<>();
+            mentionParams.put("style", "FULL_NAME");
+            mentionParams.put("reference", assignee);
+            // TODO: Possible improvement: use the IdGenerator from the XDOM of the document.
+            mentionParams.put("anchor", assignee.replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
+            MacroBlock mentionBlock = new MacroBlock("mention", mentionParams, true);
+            insertionPoint.addChild(mentionBlock);
+        }
+
+        if (duedate != null) {
+            Map<String, String> dateParams = new HashMap<>();
+            dateParams.put("value", storageFormat.format(duedate));
+            MacroBlock dateBlock = new MacroBlock(DATE, dateParams, true);
+            insertionPoint.addChild(dateBlock);
+        }
         return newTaskContentXDOM.getChildren();
     }
 }

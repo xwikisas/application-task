@@ -22,12 +22,12 @@ package com.xwiki.task.internal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -69,6 +69,7 @@ public class TaskXDOMProcessor
     private DocumentReferenceResolver<String> resolver;
 
     @Inject
+    @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
 
     @Inject
@@ -103,11 +104,16 @@ public class TaskXDOMProcessor
             Task task = new Task();
 
             if (macroId == null) {
-                taskReference = taskRefGenerator.generate(contentSource);
-                macro.setParameter(Task.REFERENCE, serializer.serialize(taskReference));
+                try {
+                    taskReference = taskRefGenerator.generate(contentSource);
+                } catch (TaskException e) {
+                    logger.warn(String.format("Failed to extract a task from the page [%s]", contentSource), e);
+                    continue;
+                }
+                macro.setParameter(Task.REFERENCE, serializer.serialize(taskReference, contentSource));
                 task.setOwner(contentSource);
             } else {
-                taskReference = resolver.resolve(macroId);
+                taskReference = resolver.resolve(macroId, contentSource);
             }
 
             extractBasicProperties(macroParams, taskReference, task);
@@ -116,17 +122,10 @@ public class TaskXDOMProcessor
                 (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
             try {
-                task.setRender(
-                    taskBlockProcessor.renderTaskContent(Collections.singletonList(macro), syntax.toIdString()));
-            } catch (TaskException e) {
-                logger.warn(e.getMessage());
-            }
-
-            try {
 
                 XDOM macroContent = taskBlockProcessor.getTaskContentXDOM(macro, syntax);
                 task.setName(
-                    taskBlockProcessor.renderTaskContent(macroContent.getChildren(), Syntax.PLAIN_1_0.toIdString()));
+                    taskBlockProcessor.renderTaskContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
                 task.setAssignee(extractAssignedUser(macroContent));
 
                 Date deadline = extractDeadlineDate(macroContent);
@@ -161,8 +160,9 @@ public class TaskXDOMProcessor
         List<MacroBlock> macros = content.getBlocks(new MacroBlockMatcher(Task.MACRO_NAME), Block.Axes.DESCENDANT);
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
         for (MacroBlock macro : macros) {
-            DocumentReference macroRef = resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""));
-            if (macroRef.equals(taskDocRef)) {
+            DocumentReference taskRef =
+                resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), ownerDocument);
+            if (taskRef.equals(taskDocRef)) {
 
                 setBasicMacroParameters(taskObject, storageFormat, macro);
 
@@ -179,7 +179,7 @@ public class TaskXDOMProcessor
                         taskObject.getStringValue(Task.NAME), storageFormat
                     );
 
-                    String newContent = taskBlockProcessor.renderTaskContent(newTaskContentBlocks, syntax.toIdString());
+                    String newContent = taskBlockProcessor.renderTaskContent(newTaskContentBlocks, syntax);
 
                     MacroBlock newMacroBlock =
                         new MacroBlock(macro.getId(), macro.getParameters(), newContent, macro.isInline());
@@ -196,30 +196,8 @@ public class TaskXDOMProcessor
     }
 
     /**
-     * Return the render of task macro with only the reference parameter.
-     *
-     * @param reference the reference parameter of the task macro. It points to the task page.
-     * @param syntax the syntax in which the render will be done.
-     * @return the render of a task macro in the given syntax.
-     */
-    public String renderTaskByReference(DocumentReference reference, Syntax syntax)
-    {
-        try {
-            Block block =
-                new MacroBlock(
-                    Task.MACRO_NAME,
-                    Collections.singletonMap("reference", reference.toString()),
-                    false);
-
-            return taskBlockProcessor.renderTaskContent(Collections.singletonList(block), syntax.toIdString());
-        } catch (TaskException e) {
-            logger.warn(e.getMessage());
-            return "";
-        }
-    }
-
-    /**
      * Remove the task macro call that has the given reference.
+     *
      * @param taskReference the reference that identifies the task macro.
      * @param location the location of the task macro.
      * @param context the current context.

@@ -35,5 +35,5 @@ public interface TaskCounter
     /**
      * @return the next valid number for a task. -1 if the retrieval failed.
      */
-    int getNextNumber();
+    int getNextNumber() throws TaskException;
 }

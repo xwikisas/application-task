@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,23 +16,33 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
+package com.xwiki.task.macro;
 
+import org.xwiki.stability.Unstable;
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.xwiki.task</groupId>
-    <artifactId>application-task</artifactId>
-    <version>3.0-SNAPSHOT</version>
-  </parent>
+/**
+ * @version $Id$
+ * @since 3.0
+ */
+@Unstable
+public class TasksMacroParameters
+{
+    private String ids;
 
-  <artifactId>application-task-xip</artifactId>
+    /**
+     * @return a list of comma separated ids of the tasks that need to be displayed.
+     */
+    public String getIds()
+    {
+        return ids;
+    }
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-</project>
+    /**
+     * @param ids see ${@link #getIds()}.
+     */
+    public void setIds(String ids)
+    {
+        this.ids = ids;
+    }
+}
