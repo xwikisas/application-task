@@ -30,6 +30,10 @@
 
   <artifactId>application-task-default</artifactId>
 
+  <properties>
+    <xwiki.jacoco.instructionRatio>0.47</xwiki.jacoco.instructionRatio>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.xwiki.task</groupId>
@@ -76,6 +80,12 @@
       <groupId>org.xwiki.rendering</groupId>
       <artifactId>xwiki-rendering-macro-message</artifactId>
       <version>${rendering.version}</version>
+    </dependency>
+    <!-- We need to create our own DateMacroConverter that will convert from the confluence time macro. -->
+    <dependency>
+      <groupId>org.xwiki.contrib.confluence</groupId>
+      <artifactId>confluence-xml</artifactId>
+      <version>${confluence.xml.version}</version>
     </dependency>
     <!-- Testing dependencies -->
     <dependency>

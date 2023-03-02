@@ -39,7 +39,7 @@ public class TasksMacroParameters
     }
 
     /**
-     * @param ids see ${@link #getIds()}.
+     * @param ids see {@link #getIds()}.
      */
     public void setIds(String ids)
     {

@@ -130,7 +130,7 @@
     if (taskId !== undefined) {
       let checkbox = $(this);
       let task = checkbox.parent('.task-macro');
-      let taskDocument = XWiki.Model.resolve(taskId, XWiki.EntityType.DOCUMENT);
+      let taskDocument = XWiki.Model.resolve(taskId, XWiki.EntityType.DOCUMENT, XWiki.currentDocument.documentReference);
       if (taskDocument.getReversedReferenceChain()[0].type != XWiki.EntityType.WIKI) {
         taskDocument.getReversedReferenceChain()[0].parent = new XWiki.WikiReference(XWiki.currentWiki);
       }

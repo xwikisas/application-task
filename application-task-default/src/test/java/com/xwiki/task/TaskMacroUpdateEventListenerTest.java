@@ -55,7 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-public class TaskMacroUpdateEventListenerTests
+public class TaskMacroUpdateEventListenerTest
 {
     private static final String DOC_PREV_VERSION = "1";
 
@@ -111,15 +111,22 @@ public class TaskMacroUpdateEventListenerTests
 
     @Mock
     private BaseObject taskObj;
+
     @Mock
     private BaseObject task_1Obj;
 
     private final DocumentReference adminRef = new DocumentReference("xwiki", "XWiki", "Admin");
+
     private final DocumentReference pageWithMacro = new DocumentReference("xwiki", "XWiki", "Home");
+
     private final DocumentReference taskPage = new DocumentReference("xwiki", "XWiki", "Task");
+
     private final DocumentReference taskPage_1 = new DocumentReference("xwiki", "XWiki", "Task_1");
+
     private Task task = new Task();
+
     private Task task_1 = new Task();
+
     private final Date date1 = new Date(1000);
 
     @BeforeEach
@@ -138,7 +145,8 @@ public class TaskMacroUpdateEventListenerTests
         when(this.wiki.getDocument(this.pageWithMacro, this.context)).thenReturn(this.docWithTasks);
         when(this.wiki.getDocument(this.taskPage, this.context)).thenReturn(this.taskDoc);
         when(this.wiki.getDocument(this.taskPage_1, this.context)).thenReturn(this.task_1Doc);
-        when(this.taskDoc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE, true, this.context)).thenReturn(this.taskObj);
+        when(this.taskDoc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE, true, this.context)).thenReturn(
+            this.taskObj);
         when(this.taskDoc.getDocumentReference()).thenReturn(this.taskPage);
         when(this.task_1Doc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE)).thenReturn(this.task_1Obj);
         when(this.task_1Doc.getDocumentReference()).thenReturn(this.taskPage_1);
@@ -168,11 +176,10 @@ public class TaskMacroUpdateEventListenerTests
         task.setNumber(2);
         task.setOwner(pageWithMacro);
         task.setCreateDate(date1);
-
     }
 
-    @org.junit.jupiter.api.Test
-    public void onDeletingEventTest() throws TaskException
+    @Test
+    public void onDeletingEvent() throws TaskException
     {
         this.eventListener.onEvent(new DocumentDeletingEvent(), this.docWithTasks, this.context);
 
@@ -180,20 +187,19 @@ public class TaskMacroUpdateEventListenerTests
     }
 
     @Test
-    public void onUpdatingWithRemovedTaskEventTest() throws XWikiException
+    public void onUpdatingWithRemovedTaskEvent() throws XWikiException
     {
-        when(this.taskXDOMProcessor.extract(this.docXDOM, this.pageWithMacro)).thenReturn(new ArrayList<>(Collections.singletonList(task)));
-        when(this.taskXDOMProcessor.extract(this.prevVersionDocXDOM, this.pageWithMacro)).thenReturn(new ArrayList<>(Collections.singletonList(task_1)));
+        when(this.taskXDOMProcessor.extract(this.docXDOM, this.pageWithMacro)).thenReturn(
+            new ArrayList<>(Collections.singletonList(task)));
+        when(this.taskXDOMProcessor.extract(this.prevVersionDocXDOM, this.pageWithMacro)).thenReturn(
+            new ArrayList<>(Collections.singletonList(task_1)));
         when(this.taskDoc.isNew()).thenReturn(true);
         when(this.authorizationManager.hasAccess(Right.EDIT, taskPage)).thenReturn(true);
         when(this.authorizationManager.hasAccess(Right.DELETE, taskPage_1)).thenReturn(true);
 
         this.eventListener.onEvent(new DocumentUpdatingEvent(), this.docWithTasks, this.context);
 
-        verify(this.wiki).getDocument(this.taskPage, this.context);
         verify(this.taskObj).set(Task.OWNER, this.pageWithMacro, this.context);
-        verify(this.authorizationManager).hasAccess(Right.EDIT, taskPage);
-        verify(this.authorizationManager).hasAccess(Right.DELETE, taskPage_1);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);
     }

@@ -105,6 +105,8 @@
       <groupId>org.webjars</groupId>
       <artifactId>requirejs</artifactId>
     </dependency>
+    <!-- MomentJS is needed to populate the createDate field of the task macro with a date formatted as specified in
+     the configuration files. -->
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>momentjs</artifactId>

@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
@@ -107,7 +108,8 @@ public class TaskXDOMProcessor
                 try {
                     taskReference = taskRefGenerator.generate(contentSource);
                 } catch (TaskException e) {
-                    logger.warn(String.format("Failed to extract a task from the page [%s]", contentSource), e);
+                    logger.warn("Failed to extract a task from the page [{}]. Cause: [{}].", contentSource,
+                        ExceptionUtils.getRootCauseMessage(e));
                     continue;
                 }
                 macro.setParameter(Task.REFERENCE, serializer.serialize(taskReference, contentSource));
@@ -296,7 +298,7 @@ public class TaskXDOMProcessor
             return deadline;
         }
 
-        String dateValue = macro.getParameters().get(DATE_MACRO_ID);
+        String dateValue = macro.getParameters().get("value");
         try {
             deadline = new SimpleDateFormat(configuration.getStorageDateFormat()).parse(dateValue);
         } catch (ParseException e) {

@@ -55,12 +55,12 @@ public class DefaultTaskReferenceGenerator implements TaskReferenceGenerator
     @Inject
     private DocumentAccessBridge documentAccessBridge;
 
-    @Inject
     private final Map<SpaceReference, Integer> nameOccurences = new HashMap<>();
 
     @Override
     public synchronized DocumentReference generate(DocumentReference parent) throws TaskException
     {
+
         SpaceReference parentSpaceRef = parent.getLastSpaceReference();
         if (!authorizationManager.hasAccess(Right.EDIT, parentSpaceRef)) {
             parentSpaceRef = new SpaceReference(parent.getWikiReference().getName(), TASK_MANAGER_SPACE);

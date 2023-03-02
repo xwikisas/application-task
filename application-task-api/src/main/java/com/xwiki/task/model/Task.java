@@ -52,6 +52,7 @@ public class Task
      * The name of the OWNER field.
      */
     public static final String OWNER = "owner";
+
     /**
      * The name of the ID field.
      */
@@ -138,7 +139,8 @@ public class Task
     }
 
     /**
-     * @param reference the Id of the task. Grouping the tasks by the document reference, their Ids have to be unique.
+     * @param reference the Id of the task. Grouping the tasks by the document reference, their Ids have to be
+     *     unique.
      */
     public void setReference(DocumentReference reference)
     {
@@ -248,6 +250,7 @@ public class Task
     {
         return name;
     }
+
     /**
      * @param name the name/title given to this task.
      */

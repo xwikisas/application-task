@@ -55,7 +55,8 @@ import com.xwiki.task.macro.TaskMacroParameters;
 import com.xwiki.task.model.Task;
 
 /**
- * Task macro that will enable the users to assign tasks to each other.
+ * Task macro that will facilitate the creation of content-stored tasks inside a xwiki document. Upon saving the
+ * document, a task page will be created. The macro and the page will be synced.
  *
  * @version $Id$
  * @since 3.0

@@ -51,6 +51,7 @@ public interface TaskManager
 
     /**
      * Delete the tasks that have a certain page as an owner.
+     *
      * @param documentReference the value by which we want to remove a task.
      * @throws TaskException when there was an error in retrieving or deleting certain task documents.
      */

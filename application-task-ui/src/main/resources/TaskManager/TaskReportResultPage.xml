@@ -69,7 +69,11 @@
   #set($map = {})
   #gridresultwithfilter_buildJSON("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extraWhere}" $params $map)
   #foreach ($row in $map.rows)
-    #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+    #if ("$!row.number" == '')
+      #set ($row.name = $services.localization.render('taskmanager.livetable.noRights'))
+    #else
+      #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+    #end
   #end
   #jsonResponse($map)
 #end

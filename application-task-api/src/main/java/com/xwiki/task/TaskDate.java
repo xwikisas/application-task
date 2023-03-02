@@ -24,8 +24,8 @@ import org.xwiki.stability.Unstable;
 /**
  * The date macro pickers will need to use the date format from the {@link TaskManagerConfiguration}.
  *
- * @since 3.0
  * @version $Id$
+ * @since 3.0
  */
 @Unstable
 public interface TaskDate

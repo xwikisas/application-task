@@ -53,7 +53,6 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(RenderingTestSuite.class)
 @AllComponents
-@RenderingTestSuite.Scope(value = ""/*, pattern = "task1.test"*/)
 public class IntegrationTests
 {
     @RenderingTestSuite.Initialized

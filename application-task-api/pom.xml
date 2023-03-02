@@ -30,6 +30,10 @@
 
   <artifactId>application-task-api</artifactId>
 
+  <properties>
+    <xwiki.jacoco.instructionRatio>0.88</xwiki.jacoco.instructionRatio>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>

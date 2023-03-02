@@ -24,8 +24,10 @@ import javax.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
@@ -40,16 +42,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-public class DefaultTaskReferenceGeneratorTests
+public class DefaultTaskReferenceGeneratorTest
 {
     @InjectMockComponents
     private DefaultTaskReferenceGenerator referenceGenerator;
 
     @MockComponent
-    private AuthorizationManager authorizationManager;
+    private ContextualAuthorizationManager authorizationManager;
 
     @MockComponent
     private Provider<XWikiContext> contextProvider;
+
+    @MockComponent
+    private DocumentAccessBridge documentAccessBridge;
 
     @Mock
     private XWikiContext context;
@@ -62,18 +67,19 @@ public class DefaultTaskReferenceGeneratorTests
     private final DocumentReference userReference = new DocumentReference("xwiki", "XWiki", "User");
 
     @BeforeEach
-    public void setup() {
+    public void setup()
+    {
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getUserReference()).thenReturn(this.userReference);
         when(this.context.getWiki()).thenReturn(this.wiki);
-        when(this.authorizationManager.hasAccess(Right.EDIT, this.userReference,
-            this.documentReference.getLastSpaceReference())).thenReturn(true);
+        when(this.authorizationManager.hasAccess(Right.EDIT, this.documentReference.getLastSpaceReference()))
+            .thenReturn(true);
     }
 
     @Test
-    public void generateMultipleReferencesTest() throws TaskException
+    public void generateMultipleReferences() throws TaskException
     {
-        when(this.wiki.exists(any(DocumentReference.class), any())).thenReturn(false);
+        when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
 
         DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
         assertEquals(new DocumentReference("Task_0", documentReference.getLastSpaceReference()), generatedReference);
@@ -85,9 +91,10 @@ public class DefaultTaskReferenceGeneratorTests
     @Test
     public void generateReferenceWhenDocumentAlreadyExistsInWiki() throws TaskException
     {
-        when(this.wiki.exists(any(DocumentReference.class), any())).thenReturn(false);
-        when(this.wiki.exists(new DocumentReference("Task_0", documentReference.getLastSpaceReference()),
-            this.context)).thenReturn(true);
+        when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
+        when(
+            this.documentAccessBridge.exists(new DocumentReference("Task_0", documentReference.getLastSpaceReference()))
+        ).thenReturn(true);
 
         DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
 
@@ -98,9 +105,11 @@ public class DefaultTaskReferenceGeneratorTests
     @Test
     public void generateReferenceWhenTheUserDoesNotHaveEditRightsOnTheSpace() throws TaskException
     {
-        when(this.wiki.exists(any(DocumentReference.class), any())).thenReturn(false);
-        when(this.authorizationManager.hasAccess(Right.EDIT, this.userReference,
-            this.documentReference.getLastSpaceReference())).thenReturn(false);
+        when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
+        when(this.authorizationManager.hasAccess(Right.EDIT, this.documentReference.getLastSpaceReference()))
+            .thenReturn(false);
+        when(this.authorizationManager.hasAccess(Right.EDIT, new SpaceReference("xwiki", "TaskManager")))
+            .thenReturn(true);
 
         DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
 

@@ -22,6 +22,7 @@ package com.xwiki.task;
 import java.util.Collections;
 import java.util.Date;
 
+import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -54,12 +55,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-public class DefaultTaskManagerTests
+public class DefaultTaskManagerTest
 {
     private static final String TASK_0_NAME = "Task";
+
     private static final String TASK_0_STATUS = "Done";
+
     private static final int TASK_0_NUMBER = 1;
+
     private static final Date TASK_0_DATE = new Date(1000);
+
     @InjectMockComponents
     private DefaultTaskManager taskManager;
 
@@ -74,6 +79,11 @@ public class DefaultTaskManagerTests
 
     @MockComponent
     private EntityReferenceSerializer<String> serializer;
+
+    @MockComponent
+    @Named("compactwiki")
+    private EntityReferenceSerializer<String> compactSerializer;
+
     @Mock
     private XWikiContext context;
 
@@ -102,8 +112,13 @@ public class DefaultTaskManagerTests
         when(this.document.getXObject(any(EntityReference.class))).thenReturn(this.taskObject);
         when(this.resolver.resolve(documentReference.toString())).thenReturn(documentReference);
         when(this.resolver.resolve(userReference.toString())).thenReturn(userReference);
+        when(this.resolver.resolve(documentReference.toString(), documentReference)).thenReturn(documentReference);
         when(this.serializer.serialize(documentReference)).thenReturn(documentReference.toString());
         when(this.serializer.serialize(userReference)).thenReturn(userReference.toString());
+        when(this.compactSerializer.serialize(documentReference)).thenReturn(documentReference.toString());
+        when(this.compactSerializer.serialize(userReference)).thenReturn(userReference.toString());
+        when(this.compactSerializer.serialize(documentReference.getLastSpaceReference()))
+            .thenReturn(documentReference.getLastSpaceReference().toString());
 
         when(taskObject.getStringValue(Task.NAME)).thenReturn(TASK_0_NAME);
         when(taskObject.getIntValue(Task.NUMBER)).thenReturn(TASK_0_NUMBER);
@@ -114,11 +129,10 @@ public class DefaultTaskManagerTests
         when(taskObject.getDateValue(Task.DUE_DATE)).thenReturn(TASK_0_DATE);
         when(taskObject.getDateValue(Task.CREATE_DATE)).thenReturn(TASK_0_DATE);
         when(taskObject.getDateValue(Task.COMPLETE_DATE)).thenReturn(TASK_0_DATE);
-
     }
 
     @Test
-    public void getTaskByReferenceTest() throws TaskException
+    public void getTaskByReference() throws TaskException
     {
 
         Task task = this.taskManager.getTask(documentReference);
@@ -132,16 +146,21 @@ public class DefaultTaskManagerTests
     }
 
     @Test
-    public void getTaskByIdTest() throws TaskException, QueryException
+    public void getTaskById() throws TaskException, QueryException
     {
-        when(this.queryManager.createQuery(any(), any())).thenReturn(this.query);
-        when(this.query.bindValue(any(), any())).thenReturn(this.query);
+        String queryStatement = ", BaseObject as taskObj, IntegerProperty as idProp "
+            + "WHERE taskObj.name = doc.fullName "
+            + "AND doc.fullName != 'TaskManager.TaskManagerTemplate' "
+            + "AND taskObj.className = 'TaskManager.TaskManagerClass' "
+            + "AND taskObj.id = idProp.id.id AND idProp.id.name = 'number' "
+            + "AND idProp.value = :id";
+
+        when(this.queryManager.createQuery(queryStatement, Query.HQL)).thenReturn(this.query);
+        when(this.query.bindValue("id", 1)).thenReturn(this.query);
         when(this.query.execute()).thenReturn(Collections.singletonList(documentReference.toString()));
 
         Task task = this.taskManager.getTask(1);
 
-        verify(this.queryManager).createQuery(any(), any());
-        verify(this.query).bindValue("id", 1);
         assertEquals(TASK_0_NUMBER, task.getNumber());
         assertEquals(documentReference, task.getReference());
         assertEquals(TASK_0_STATUS, task.getStatus());
@@ -151,19 +170,26 @@ public class DefaultTaskManagerTests
     }
 
     @Test
-    public void deleteTaskByOwnerTest() throws TaskException, QueryException, XWikiException
+    public void deleteTaskByOwner() throws TaskException, QueryException, XWikiException
     {
-        when(this.queryManager.createQuery(any(), any())).thenReturn(this.query);
-        when(this.query.bindValue(any(), any())).thenReturn(this.query);
+        String queryStatement = "FROM doc.object(TaskManager.TaskManagerClass) as task "
+            + "WHERE task.owner = :absoluteOwnerRef "
+            + "OR task.owner = :compactOwnerRef "
+            + "OR (task.owner = :relativeOwnerRef AND doc.space = :ownerSpaceRef)";
+        when(this.queryManager.createQuery(queryStatement, Query.XWQL)).thenReturn(this.query);
+        when(this.query.bindValue("absoluteOwnerRef", documentReference.toString())).thenReturn(this.query);
+        when(this.query.bindValue("compactOwnerRef", documentReference.toString())).thenReturn(this.query);
+        when(this.query.bindValue("relativeOwnerRef", documentReference.getName())).thenReturn(this.query);
+        when(this.query.bindValue("ownerSpaceRef", documentReference.getLastSpaceReference().toString()))
+            .thenReturn(this.query);
         when(this.query.execute()).thenReturn(Collections.singletonList(documentReference.toString()));
         QueryParameter queryParameter = mock(QueryParameter.class);
         when(this.query.bindValue(any())).thenReturn(queryParameter);
         when(queryParameter.anyChars()).thenReturn(queryParameter);
         when(queryParameter.literal(any())).thenReturn(queryParameter);
 
-        this.taskManager.deleteTasksByOwner(userReference);
+        this.taskManager.deleteTasksByOwner(documentReference);
 
-        verify(this.queryManager).createQuery(any(), any());
         verify(this.wiki).deleteDocument(this.document, this.context);
     }
 }

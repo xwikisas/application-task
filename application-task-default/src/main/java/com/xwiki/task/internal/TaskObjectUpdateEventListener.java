@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
@@ -128,7 +129,8 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             try {
                 taskObj.set(Task.NUMBER, taskCounter.getNextNumber(), context);
             } catch (TaskException e) {
-                logger.warn("Failed to set a number to the task [{}].", taskObj.getDocumentReference());
+                logger.warn("Failed to set a number to the task [{}]. Reason: [{}].", taskObj.getDocumentReference(),
+                    ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }

@@ -150,6 +150,8 @@ taskmanager.livetable.owner=Location
 taskmanager.livetable.completeDate=Completed on
 taskmanager.livetable.noRights=You don't have view rights for the document that contains this task.
 
+taskmanager.macro.tasks.noRights=You are not allowed to view task ({0}).
+
 rendering.macro.task.name=Task Macro
 rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline!
 rendering.macro.task.parameter.status.name=The status of the task.

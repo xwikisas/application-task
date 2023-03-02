@@ -38,7 +38,7 @@ public interface TaskReferenceGenerator
      *
      * @param parent the parent of the task.
      * @return a reference to the task. It can be either a child of the parent, a sibling or it can be a child to the
-     * default TaskManager home, depending on the rights of the current user.
+     *     default TaskManager home, depending on the rights of the current user.
      */
     DocumentReference generate(DocumentReference parent) throws TaskException;
 }

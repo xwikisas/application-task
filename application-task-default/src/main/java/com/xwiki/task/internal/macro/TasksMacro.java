@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
@@ -75,6 +76,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
     @Inject
     private ContextualAuthorizationManager authorizationManager;
 
+    @Inject
+    private ContextualLocalizationManager localizationManager;
+
     /**
      * Default constructor.
      */
@@ -104,7 +108,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 Task task = taskManager.getTask(Integer.parseInt(id));
                 if (!authorizationManager.hasAccess(Right.VIEW, task.getReference())) {
                     throw new TaskException(
-                        String.format("You don't have the rights to view the task identified by [%s].", id));
+                        localizationManager.getTranslationPlain("taskmanager.macro.tasks.noRights", id));
                 }
                 Map<String, String> taskParams = new HashMap<>();
                 taskParams.put(Task.REFERENCE, serializer.serialize(task.getReference()));

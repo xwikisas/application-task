@@ -141,11 +141,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 {
                     continue;
                 }
-                if (authorizationManager.hasAccess(Right.DELETE, previousDocTask.getReference()))
-                {
+                if (authorizationManager.hasAccess(Right.DELETE, previousDocTask.getReference())) {
                     context.getWiki().deleteDocument(taskDoc, context);
-                } else if (authorizationManager.hasAccess(Right.EDIT, previousDocTask.getReference()))
-                {
+                } else if (authorizationManager.hasAccess(Right.EDIT, previousDocTask.getReference())) {
                     taskObj.set(Task.OWNER, "", context);
                     context.getWiki().saveDocument(taskDoc, context);
                 } else {

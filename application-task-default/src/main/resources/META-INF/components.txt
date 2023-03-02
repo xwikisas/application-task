@@ -1,3 +1,4 @@
+com.xwiki.task.internal.DateMacroConverter
 com.xwiki.task.internal.DefaultTaskCounter
 com.xwiki.task.internal.DefaultTaskManagerConfiguration
 com.xwiki.task.internal.DefaultTaskManager

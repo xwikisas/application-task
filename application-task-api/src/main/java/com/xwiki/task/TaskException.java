@@ -27,11 +27,9 @@ import org.xwiki.stability.Unstable;
  * @version $Id$
  * @since 3.0
  */
-
 @Unstable
 public class TaskException extends Exception
 {
-
     private static final long serialVersionUID = 1L;
 
     /**
@@ -50,5 +48,4 @@ public class TaskException extends Exception
     {
         super(message);
     }
-
 }

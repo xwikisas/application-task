@@ -22,7 +22,7 @@ package com.xwiki.task;
 import org.xwiki.stability.Unstable;
 
 /**
- * The date macro pickers will need to use the date format from the {@link TaskManagerConfiguration}.
+ * Used for pickers that will need to display the possible statuses that can be assigned to a task.
  *
  * @since 3.0
  * @version $Id$
