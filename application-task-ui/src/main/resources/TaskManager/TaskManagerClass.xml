@@ -371,23 +371,6 @@
       <valueField>project</valueField>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </project>
-    <render>
-      <contenttype>---</contenttype>
-      <customDisplay/>
-      <disabled>0</disabled>
-      <editor>---</editor>
-      <hint/>
-      <name>render</name>
-      <number>15</number>
-      <picker>1</picker>
-      <prettyName>render</prettyName>
-      <rows>5</rows>
-      <size>40</size>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-    </render>
     <reporter>
       <cache>0</cache>
       <customDisplay/>

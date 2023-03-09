@@ -99,6 +99,19 @@
                   : $doc.display('duedate')
                 )))
               )))
+              (% class="col-xs-12 col-sm-6" %)
+              (((
+                (% class="form-group" %)
+                (((
+                  #if ("$!doc.display('completeDate')" != '')
+                  ; &lt;label for="TaskManager.TaskManagerClass_0_completeDate"&gt;
+                      $services.icon.render('check')
+                      $escapetool.xml($doc.displayPrettyName('completeDate', false, false))
+                    &lt;/label&gt;
+                  : $doc.display('completeDate')
+                  #end
+                )))
+              )))
             )))
             (% class="row" %)
             (((
@@ -141,7 +154,7 @@
             (% class="form-group" %)
             (((
               ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;
-                  $services.icon.render('accept')
+                  $services.icon.render('info')
                   $escapetool.xml($doc.displayPrettyName('status', false, false))
                 &lt;/label&gt;
               : $doc.display('status')
@@ -255,6 +268,20 @@
                   : $doc.display('duedate')
                 )))
               )))
+              (% class="col-xs-12 col-sm-6" %)
+              (((
+              )))
+              (% class="col-xs-12 col-sm-6" %)
+              (((
+                (% class="form-group" %)
+                (((
+                  ; &lt;label for="TaskManager.TaskManagerClass_0_completeDate"&gt;
+                      $services.icon.render('check')
+                      $escapetool.xml($doc.displayPrettyName('completeDate', false, false))
+                    &lt;/label&gt;
+                  : $doc.display('completeDate')
+                )))
+              )))
             )))
             (% class="row" %)
             (((
@@ -299,7 +326,7 @@
             (% class="form-group" %)
             (((
               ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;
-                  $services.icon.render('accept')
+                  $services.icon.render('info')
                   $escapetool.xml($doc.displayPrettyName('status', false, false))
                 &lt;/label&gt;
               : $doc.display('status')
