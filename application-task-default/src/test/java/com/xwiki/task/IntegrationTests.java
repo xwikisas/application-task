@@ -83,7 +83,7 @@ public class IntegrationTests
         task.setName("Test name");
         task.setDuedate(dateFormat.parse("01/01/2023"));
         task.setNumber(1);
-        task.setStatus("Done");
+        task.setStatus(Task.STATUS_DONE);
         task.setReporter(user);
         task.setCreateDate(dateFormat.parse("01/01/2023"));
         task.setCompleteDate(dateFormat.parse("01/01/2023"));
@@ -93,7 +93,7 @@ public class IntegrationTests
         task2.setName("Test name");
         task2.setDuedate(dateFormat.parse("01/01/2023"));
         task2.setNumber(2);
-        task2.setStatus("Done");
+        task2.setStatus(Task.STATUS_DONE);
         task2.setReporter(user);
         task2.setCreateDate(dateFormat.parse("01/01/2023"));
         task2.setCompleteDate(dateFormat.parse("01/01/2023"));

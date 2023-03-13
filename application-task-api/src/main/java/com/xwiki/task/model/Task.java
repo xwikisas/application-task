@@ -66,8 +66,13 @@ public class Task
     /**
      * The value of the STATUS field denoting that the task has been completed.
      */
-    // TODO: The value of the "Done" state should be configurable in the administration section.
+    // TODO: The value of the "Done" and "InProgress" state should be configurable in the administration section.
     public static final String STATUS_DONE = "Done";
+
+    /**
+     * The value of the STATUS field denoting that the task is still in progress.
+     */
+    public static final String STATUS_IN_PROGRESS = "InProgress";
 
     /**
      * The name of the REPORTER field.

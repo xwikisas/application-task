@@ -17,9 +17,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package com.xwiki.task.internal;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Named;
@@ -27,35 +27,41 @@ import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.confluence.filter.internal.macros.AbstractMacroConverter;
-import org.xwiki.rendering.listener.Listener;
+
+import com.xwiki.task.model.Task;
 
 /**
- * Convert the confluence time macro into a date macro.
+ * Convert task macros.
  *
  * @version $Id$
- * @since 1.0
+ * @since 3.0
  */
 @Component
 @Singleton
-@Named("time")
-public class DateMacroConverter extends AbstractMacroConverter
+@Named("task")
+public class TaskMacroConverter extends AbstractMacroConverter
 {
-    @Override
-    public void toXWiki(String confluenceId, Map<String, String> confluenceParameters, String confluenceContent,
-        boolean inline, Listener listener)
-    {
-        confluenceParameters.put("format", "yyyy-MM-dd");
+    private static final String TASK_STATUS_PARAMETER = "status";
 
-        super.toXWiki("date", confluenceParameters, confluenceContent, inline, listener);
-    }
+    private static final String TASK_ID_PARAMETER = "id";
+
+    private static final String TASK_REFERENCE_PARAMETER = "reference";
 
     @Override
-    protected String toXWikiParameterName(String confluenceParameterName, String id,
-        Map<String, String> confluenceParameters, String confluenceContent)
+    protected Map<String, String> toXWikiParameters(String confluenceId, Map<String, String> confluenceParameters,
+        String content)
     {
-        if (confluenceParameterName.equals("datetime")) {
-            return "value";
-        }
-        return super.toXWikiParameterName(confluenceParameterName, id, confluenceParameters, confluenceContent);
+        Map<String, String> params = new HashMap<>();
+        // TODO: Use a configurable value instead of "Done".
+        String xwikiStatus =
+            !confluenceParameters.get(TASK_STATUS_PARAMETER).equals("complete") ? Task.STATUS_IN_PROGRESS
+                : Task.STATUS_DONE;
+        String xwikiIdParam = confluenceParameters.get(TASK_ID_PARAMETER) != null
+            ? confluenceParameters.get(TASK_ID_PARAMETER)
+            : confluenceParameters.get(TASK_REFERENCE_PARAMETER);
+
+        params.put(TASK_STATUS_PARAMETER, xwikiStatus);
+//        params.put(TASK_REFERENCE_PARAMETER, xwikiIdParam);
+        return params;
     }
 }

@@ -230,12 +230,20 @@ public class TaskXDOMProcessor
 
     private void setBasicMacroParameters(BaseObject taskObject, SimpleDateFormat storageFormat, MacroBlock macro)
     {
-        Date completeDate = taskObject.getDateValue(Task.COMPLETE_DATE);
-        if (completeDate != null) {
+        String taskStatus = taskObject.getStringValue(Task.STATUS);
+        if (taskStatus.equals(Task.STATUS_DONE)) {
+            Date completeDate = taskObject.getDateValue(Task.COMPLETE_DATE);
             macro.setParameter(Task.COMPLETE_DATE,
-                storageFormat.format(taskObject.getDateValue(Task.COMPLETE_DATE)));
+                storageFormat.format(completeDate != null ? completeDate : new Date()));
+        } else {
+            taskObject.setDateValue(Task.COMPLETE_DATE, null);
         }
-        macro.setParameter(Task.CREATE_DATE, storageFormat.format(taskObject.getDateValue(Task.CREATE_DATE)));
+        Date createDate = taskObject.getDateValue(Task.CREATE_DATE);
+        if (createDate == null) {
+            createDate = new Date();
+            taskObject.setDateValue(Task.CREATE_DATE, createDate);
+        }
+        macro.setParameter(Task.CREATE_DATE, storageFormat.format(createDate));
         macro.setParameter(Task.STATUS, taskObject.getStringValue(Task.STATUS));
         macro.setParameter(Task.REPORTER, taskObject.getStringValue(Task.REPORTER));
     }
@@ -244,9 +252,13 @@ public class TaskXDOMProcessor
     {
         task.setReference(macroId);
 
-        task.setReporter(resolver.resolve(macroParams.get(Task.REPORTER)));
+        String reporter = macroParams.getOrDefault(Task.REPORTER, "");
+        if (!reporter.isEmpty()) {
+            task.setReporter(resolver.resolve(reporter));
+        }
 
-        task.setStatus(macroParams.getOrDefault(Task.STATUS, "InProgress"));
+        String taskStatus = macroParams.getOrDefault(Task.STATUS, Task.STATUS_IN_PROGRESS);
+        task.setStatus(taskStatus);
 
         String strCreateDate = macroParams.getOrDefault(Task.CREATE_DATE, "");
         String strCompletedDate = macroParams.getOrDefault(Task.COMPLETE_DATE, "");
@@ -263,17 +275,17 @@ public class TaskXDOMProcessor
         }
         task.setCreateDate(createDate);
 
-        if (!"".equals(strCompletedDate)) {
-            Date completedDate;
+        Date completeDate = null;
+        if (taskStatus.equals(Task.STATUS_DONE)) {
             try {
-                completedDate = dateFormat.parse(strCompletedDate);
+                completeDate = strCompletedDate.isEmpty() ? new Date() : dateFormat.parse(strCompletedDate);
             } catch (ParseException e) {
                 logger.warn("Failed to parse the completeDate macro parameter [{}]. Expected format is [{}]",
                     strCreateDate, configuration.getStorageDateFormat());
-                completedDate = new Date();
+                completeDate = new Date();
             }
-            task.setCompleteDate(completedDate);
         }
+        task.setCompleteDate(completeDate);
     }
 
     private DocumentReference extractAssignedUser(XDOM taskContent)

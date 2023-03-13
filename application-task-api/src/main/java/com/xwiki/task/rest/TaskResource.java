@@ -31,6 +31,8 @@ import javax.ws.rs.core.Response;
 import org.xwiki.rest.XWikiRestException;
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.task.model.Task;
+
 /**
  * Provides the functionality of changing the status of a Task macro inside a page.
  *
@@ -56,6 +58,6 @@ public interface TaskResource
         @PathParam("wikiName") String wikiName,
         @PathParam("spaceName") @Encoded String spaces,
         @PathParam("pageName") String pageName,
-        @QueryParam("status") @DefaultValue("Done") String status
+        @QueryParam("status") @DefaultValue(Task.STATUS_DONE) String status
     ) throws XWikiRestException;
 }

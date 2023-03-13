@@ -4,6 +4,8 @@ com.xwiki.task.internal.DefaultTaskManagerConfiguration
 com.xwiki.task.internal.DefaultTaskManager
 com.xwiki.task.internal.DefaultTaskReferenceGenerator
 com.xwiki.task.internal.TaskBlockProcessor
+com.xwiki.task.internal.TaskListMacroConverter
+com.xwiki.task.internal.TaskMacroConverter
 com.xwiki.task.internal.TaskXDOMProcessor
 com.xwiki.task.internal.TaskMacroUpdateEventListener
 com.xwiki.task.internal.TaskManagerConfigurationSource

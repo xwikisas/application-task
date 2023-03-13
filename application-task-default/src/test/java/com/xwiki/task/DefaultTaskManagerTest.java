@@ -59,7 +59,7 @@ public class DefaultTaskManagerTest
 {
     private static final String TASK_0_NAME = "Task";
 
-    private static final String TASK_0_STATUS = "Done";
+    private static final String TASK_0_STATUS = Task.STATUS_DONE;
 
     private static final int TASK_0_NUMBER = 1;
 
