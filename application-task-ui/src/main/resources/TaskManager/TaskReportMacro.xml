@@ -324,7 +324,7 @@
       <description/>
     </property>
     <property>
-      <id>tasks-report-macro</id>
+      <id>task-report</id>
     </property>
     <property>
       <name>Task Report</name>

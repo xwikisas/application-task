@@ -312,7 +312,9 @@ public class TaskXDOMProcessor
 
         String dateValue = macro.getParameters().get("value");
         try {
-            deadline = new SimpleDateFormat(configuration.getStorageDateFormat()).parse(dateValue);
+            String formatParam = macro.getParameters().get("format");
+            deadline = new SimpleDateFormat(formatParam != null && !formatParam.isEmpty() ? formatParam
+                : configuration.getStorageDateFormat()).parse(dateValue);
         } catch (ParseException e) {
             logger.warn("Failed to parse the deadline date [{}] of the Task macro! Expected format is [{}]",
                 dateValue, configuration.getStorageDateFormat());

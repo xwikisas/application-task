@@ -29,10 +29,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.filter.internal.job.FilterStreamConverterJob;
+import org.xwiki.job.JobExecutor;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.event.Event;
@@ -71,6 +74,12 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     private DocumentRevisionProvider revisionProvider;
 
     @Inject
+    private JobExecutor executor;
+
+    @Inject
+    private DocumentAccessBridge accessBridge;
+
+    @Inject
     private TaskManager taskManager;
 
     /**
@@ -85,6 +94,12 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     @Override
     protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
     {
+        // Skip when inside filter-job.
+        if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null)
+        {
+            return;
+        }
+
         if (event instanceof DocumentDeletingEvent) {
             try {
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
@@ -136,7 +151,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             try {
                 XWikiDocument taskDoc = context.getWiki().getDocument(previousDocTask.getReference(), context);
                 BaseObject taskObj = taskDoc.getXObject(TASK_CLASS_REFERENCE);
-                if (!document.getDocumentReference()
+                if (taskObj == null || !document.getDocumentReference()
                     .equals(resolver.resolve(taskObj.getLargeStringValue(Task.OWNER), previousDocTask.getReference())))
                 {
                     continue;

@@ -47,6 +47,8 @@ public class TaskMacroConverter extends AbstractMacroConverter
 
     private static final String TASK_REFERENCE_PARAMETER = "reference";
 
+    private static final String TASK_REFERENCE_PREFIX = "Task_";
+
     @Override
     protected Map<String, String> toXWikiParameters(String confluenceId, Map<String, String> confluenceParameters,
         String content)
@@ -57,11 +59,11 @@ public class TaskMacroConverter extends AbstractMacroConverter
             !confluenceParameters.get(TASK_STATUS_PARAMETER).equals("complete") ? Task.STATUS_IN_PROGRESS
                 : Task.STATUS_DONE;
         String xwikiIdParam = confluenceParameters.get(TASK_ID_PARAMETER) != null
-            ? confluenceParameters.get(TASK_ID_PARAMETER)
+            ? TASK_REFERENCE_PREFIX + confluenceParameters.get(TASK_ID_PARAMETER)
             : confluenceParameters.get(TASK_REFERENCE_PARAMETER);
 
         params.put(TASK_STATUS_PARAMETER, xwikiStatus);
-//        params.put(TASK_REFERENCE_PARAMETER, xwikiIdParam);
+        params.put(TASK_REFERENCE_PARAMETER, xwikiIdParam);
         return params;
     }
 }
