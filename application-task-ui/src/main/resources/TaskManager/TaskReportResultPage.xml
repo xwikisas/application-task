@@ -54,7 +54,7 @@
 #end
 #if ("$!request.space" != '')
   #foreach($space in $request.getParameterValues('space'))
-    #if ($foreach.count > 1)
+    #if ($foreach.count &gt; 1)
       #set ($spaceWhere = "${spaceWhere} OR ")
     #end
     ## In versions lower than 13.0 creating a query having an array parameter and a QueryParameter like

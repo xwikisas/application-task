@@ -36,7 +36,12 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
+  <content>{{include reference="Licenses.Code.VelocityMacros"/}}
+{{velocity}}
+#set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
+#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
+  {{error}}#getMissingLicenseMessage('taskmanager.extension.name'){{/error}}
+#else
 #set ($discard = $xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css'))
 #set ($columnsProperties = {
   'name': {'type': 'text', 'size': 10, 'link': 'view'},
@@ -57,6 +62,7 @@
 })
 #set ($columns = ['name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
 #livetable('taskmanager' $columns $columnsProperties $options)
+#end
 {{/velocity}}</content>
   <object>
     <name>TaskManager.WebHomeSheet</name>

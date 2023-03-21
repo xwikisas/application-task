@@ -44,7 +44,7 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <licensing.version>1.24</licensing.version>
+    <licensing.version>1.24.1</licensing.version>
     <kanban-macro.version>1.2.5</kanban-macro.version>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
@@ -104,7 +104,6 @@
     <module>application-task-api</module>
     <module>application-task-default</module>
     <module>application-task-ui</module>
-    <module>application-task-xip</module>
   </modules>
   <profiles>
     <profile>

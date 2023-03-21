@@ -163,7 +163,7 @@ public class TaskXDOMProcessor
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
         for (MacroBlock macro : macros) {
             DocumentReference taskRef =
-                resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), ownerDocument);
+                resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), documentReference);
             if (taskRef.equals(taskDocRef)) {
 
                 setBasicMacroParameters(taskObject, storageFormat, macro);

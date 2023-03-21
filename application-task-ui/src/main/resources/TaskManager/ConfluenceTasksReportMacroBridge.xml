@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.TaskReportMacro" locale="">
+<xwikidoc version="1.4" reference="TaskManager.ConfluenceTasksReportMacroBridge" locale="">
   <web>TaskManager</web>
-  <name>TaskReportMacro</name>
+  <name>ConfluenceTasksReportMacroBridge</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>TaskManager.TaskReportResultPage</parent>
+  <parent>TaskManager.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>TaskReportMacro</title>
+  <title>ConfluenceTasksReportMacroBridge</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>0</number>
     <className>XWiki.WikiMacroClass</className>
-    <guid>167f2129-0b79-4959-a5dd-8c6d172e5061</guid>
+    <guid>d1a1e7b9-0a1c-4254-a8dd-8703ab2af5d7</guid>
     <class>
       <name>XWiki.WikiMacroClass</name>
       <customClass/>
@@ -57,7 +57,7 @@
         <displayFormType>select</displayFormType>
         <displayType/>
         <name>async_cached</name>
-        <number>12</number>
+        <number>13</number>
         <prettyName>Cached</prettyName>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
@@ -70,7 +70,7 @@
         <largeStorage>0</largeStorage>
         <multiSelect>1</multiSelect>
         <name>async_context</name>
-        <number>13</number>
+        <number>14</number>
         <prettyName>Context elements</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator>, </separator>
@@ -86,7 +86,7 @@
         <displayFormType>select</displayFormType>
         <displayType/>
         <name>async_enabled</name>
-        <number>11</number>
+        <number>12</number>
         <prettyName>Asynchronous rendering</prettyName>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
@@ -191,6 +191,16 @@
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
+      <priority>
+        <disabled>0</disabled>
+        <name>priority</name>
+        <number>11</number>
+        <numberType>integer</numberType>
+        <prettyName>Priority</prettyName>
+        <size>10</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </priority>
       <supportsInlineMode>
         <disabled>0</disabled>
         <displayFormType>select</displayFormType>
@@ -230,93 +240,72 @@
       <async_enabled>0</async_enabled>
     </property>
     <property>
-      <code>{{include reference="Licenses.Code.VelocityMacros"/}}
-{{velocity}}
-#set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
-#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
-  {{error}}#getMissingLicenseMessage('taskmanager.extension.name'){{/error}}
-#else
-#set ($pages = $xcontext.macro.params.pages)
-#set ($tags = $wikimacro.parameters.tags)
+      <code>{{velocity}}
+#set ($pages = $xcontext.macro.params.spaces)
+#set ($tags = $wikimacro.parameters.labels)
 #set ($assignees = $xcontext.macro.params.assignees)
-#set ($creator = $xcontext.macro.params.reporters)
-#set ($createdAfter = $xcontext.macro.params.createdAfter)
+#set ($creator = $xcontext.macro.params.creators)
+#set ($createdAfter = $wikimacro.parameters.createddateFrom)
 #set ($status = $xcontext.macro.params.status)
 #set ($sortBy = $wikimacro.parameters.sortBy)
 #set ($displayColumns = $wikimacro.parameters.columns)
-#set ($rowCount = $wikimacro.parameters.limit)
-#set ($tableId = $escapetool.xml($wikimacro.parameters.id))
-#set ($spaceFilter = [])
-#foreach($page in $pages.split('\s*,\s*'))
-  #set ($pageRef = $services.model.resolveDocument($page))
-  #set ($discard = $spaceFilter.add($services.model.serialize($pageRef.lastSpaceReference)))
-#end
-#if ("$!tableId" == '')
-  #set ($tableId = "$mathtool.random")
-  #set ($tableId = "task-report-$tableId.substring(2, 7)")
-#end
-#if ("$displayColumns" != '')
-  ## The displayable columns are name,duedate,assignee,owner,createDate,number. We also need to add the reporter, createDate and status column
-  ## for the LiveTable to be able to filter them. They will be hidden.
-  #set ($colSet = $collectiontool.orderedSet)
-  #foreach ($col in $displayColumns.split('\s*,\s*'))
-    #set ($discard = $colSet.add($col))
-  #end
-  #set ($discard = $colSet.addAll(['reporter', 'status', 'number', 'createDate']))
-  #set ($displayColumns = $stringtool.join($colSet, ','))
-#else
-  #set ($displayColumns = 'name,number')
-#end
-#set ($columns = $displayColumns.split('\s*,\s*'))
-#set ($rowCount = $numbertool.toNumber($rowCount).intValue())
-#set ($startDate = '')
-#if ($createdAfter)
-  #set ($dateFormat = $services.taskmanager.configuration.storageDateFormat)
-  #set ($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
-  #set ($startDate = $xwiki.jodatime.dateTime.parse($createdAfter, $dateTimeFormatter))
-  #set ($endDate = $startDate.plusYears(1000).millis)
-#end
-#if ($status != "Done")
-  #set ($status = "InProgress")
-#end
-#set ($extraParams = {
-  'space': $spaceFilter,
-  'status': $status,
-  'assignee': $assignees.split('\s*,\s*'),
-  'assignee/join_mode': 'or',
-  'reporter': $creator.split('\s*,\s*'),
-  'reporter/join_mode': 'or'
-})
-#if ("$!startDate" != '')
-  #set ($discard = $extraParams.put('createDate', "${startDate.millis}-${endDate}"))
+#set ($rowCount = $wikimacro.parameters.pageSize)
+#set ($paramMap = {})
+#if ("$!pages" != '')
+  #set ($discard = $paramMap.put('pages', "pages='$pages'"))
 #end
 #if ("$!tags" != '')
-  #set ($discard = $extraParams.put('tasktag', $tags.split('\s*,\s*')))
+  #set ($discard = $paramMap.put('tags', "tags='$tags'"))
 #end
-#set ($columnsProperties = {
-  'name': {'type': 'text', 'size': 10, 'html': true},
-  'assignee': {'type': 'user', 'size': 10, 'html': true},
-  'duedate': {'type': 'date', 'size': 10},
-  'completeDate': {'type': 'date', 'size': 10},
-  'owner' : {'type': 'page', 'size': 10, 'html': true, 'link': 'view'},
-  'createDate': {'type': 'hidden'},
-  'status': {'type': 'hidden'},
-  'reporter': {'type': 'hidden'},
-  'number': {'type': 'hidden'}
-})
-#set ($options = {
-  'resultPage': 'TaskManager.TaskReportResultPage',
-  'className': 'TaskManager.TaskManagerClass',
-  'translationPrefix': 'taskmanager.livetable.',
-  'selectedColumn': $!sortBy,
-  'rowCount': $rowCount,
-  'extraParams': $escapetool.url($extraParams),
-  'queryFilters': 'unique'
-})
-#livetable($tableId $columns $columnsProperties $options)
-#set ($discard = $xwiki.ssx.use('TaskManager.SkinExtensions'))
-#set ($discard = $xwiki.jsx.use('TaskManager.SkinExtensions'))
+#if ("$!assignees" != '')
+  #set ($discard = $paramMap.put('assignees', "assignees='${assignees}'"))
 #end
+#if ("$!creator" != '')
+  #set ($discard = $paramMap.put('reporters', "reporters='$creator'"))
+#end
+#if ("$!createdAfter" != '')
+  #set ($createdAfter = $datetool.toDate('dd-MM-yyyy', $createdAfter))
+  #set ($createdAfter = $datetool.format($services.taskmanager.configuration.storageDateFormat, $createdAfter))
+  #set ($discard = $paramMap.put('createdAfter', "createdAfter='$createdAfter'"))
+#end
+#if ("$!status" != '')
+  #if ($status == 'complete')
+    #set ($discard = $paramMap.put('status', "status='Done'"))
+  #elseif ($status == 'incomplete')
+    #set ($discard = $paramMap.put('status', "status='InProgress'"))
+  #end
+#end
+#if ("$!sortBy" != '')
+  #set ($discard = $paramMap.put('sortBy', "sortBy='$sortBy'"))
+#end
+#if ("$!rowCount" != '')
+  #set ($discard = $paramMap.put('limit', "limit='$rowCount'"))
+#end
+#if ("$!displayColumns" != '')
+  ## Confluence: description, duedate, assignee, location, labels,     completedate
+  ## XWiki     : name       , duedate, assignee, owner,    createDate, number
+  #set ($colMap = {
+    "description": "name",
+    "duedate": "duedate",
+    "assignee": "assignee",
+    "location": "owner",
+    "labels": "",
+    "completedate": "completeDate"
+  })
+  #set ($colParam = '')
+  #foreach ($col in $displayColumns.split('\s*,\s*'))
+    #if ("$!colMap.get($col)" != '')
+      #if ("$!colParam" == '')
+        #set ($colParam = $colMap.get($col))
+      #else
+        #set ($colParam = "$colParam,${colMap.get($col)}")
+      #end
+    #end
+  #end
+  #set ($discard = $paramMap.put('columns', "columns='$colParam'"))
+#end
+#set ($taskReportCall = "{{task-report $!paramMap.pages $!paramMap.tags $!paramMap.assignees $!paramMap.reporters $!paramMap.createdAfter $!paramMap.status $!paramMap.sortBy $!paramMap.limit $!paramMap.columns /}}")
+$taskReportCall
 {{/velocity}}</code>
     </property>
     <property>
@@ -335,10 +324,13 @@
       <description/>
     </property>
     <property>
-      <id>task-report</id>
+      <id>tasks-report-macro</id>
     </property>
     <property>
-      <name>Task Report</name>
+      <name>Confluence Tasks Report Macro</name>
+    </property>
+    <property>
+      <priority/>
     </property>
     <property>
       <supportsInlineMode>0</supportsInlineMode>
@@ -348,10 +340,10 @@
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>0</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>c3aef885-7ca3-4f63-b974-8b51b9d4a9e3</guid>
+    <guid>f4b07bdc-70d1-4951-9f66-6c47b9081855</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -419,17 +411,17 @@
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>pages</name>
+      <name>spaces</name>
     </property>
     <property>
       <type>com.xwiki.task.DocumentReferenceList</type>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>1</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>0399854d-d21e-41f0-9626-5ebac9ffc328</guid>
+    <guid>213cd08b-9ff8-438c-b94e-4024d9ddfca9</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -491,23 +483,24 @@
       <defaultValue/>
     </property>
     <property>
-      <description/>
+      <description>
+</description>
     </property>
     <property>
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>tags</name>
+      <name>labels</name>
     </property>
     <property>
-      <type>java.lang.String</type>
+      <type/>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>2</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>09120146-e706-47c4-a5b9-0ea2d56adf7e</guid>
+    <guid>c6a7da5e-ccbd-46ab-bb0f-7fe19af36cbf</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -569,7 +562,8 @@
       <defaultValue/>
     </property>
     <property>
-      <description/>
+      <description>
+</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -582,10 +576,10 @@
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>3</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>e41d9848-9dd2-4b63-8b35-d7232157a400</guid>
+    <guid>4907984e-b839-49fb-b56e-d9048c9fddab</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -647,23 +641,24 @@
       <defaultValue/>
     </property>
     <property>
-      <description/>
+      <description>
+</description>
     </property>
     <property>
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>reporters</name>
+      <name>creators</name>
     </property>
     <property>
       <type>com.xwiki.task.UserReferenceList</type>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>4</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>5a361718-10ec-479a-b382-afb570fd24f9</guid>
+    <guid>66b26aae-4229-4ec5-98ed-269377d8cc51</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -731,17 +726,17 @@
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>createdAfter</name>
+      <name>createddateFrom</name>
     </property>
     <property>
-      <type>com.xwiki.task.TaskDate</type>
+      <type/>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>5</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>102340bb-15ac-4e57-b25a-40ebe8daa43d</guid>
+    <guid>6396d5b1-1b66-456b-b9f6-b78f2f40cc9b</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -800,7 +795,7 @@
       </type>
     </class>
     <property>
-      <defaultValue>Done</defaultValue>
+      <defaultValue/>
     </property>
     <property>
       <description/>
@@ -812,14 +807,14 @@
       <name>status</name>
     </property>
     <property>
-      <type>com.xwiki.task.TaskStatus</type>
+      <type/>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>6</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>8fc87043-f8db-46e4-8ae4-b02867f04bfb</guid>
+    <guid>b611fef6-d87a-4aca-aca7-49a1df3ad52c</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -881,23 +876,24 @@
       <defaultValue>20</defaultValue>
     </property>
     <property>
-      <description/>
+      <description>
+</description>
     </property>
     <property>
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>limit</name>
+      <name>pageSize</name>
     </property>
     <property>
       <type>java.lang.Integer</type>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>7</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>9dd186b3-dc83-4e1c-ae65-ffa466bd6261</guid>
+    <guid>80f5bddc-9ee2-417e-9947-c7dc9bcbfc29</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -956,10 +952,11 @@
       </type>
     </class>
     <property>
-      <defaultValue>name,duedate,assignee,owner</defaultValue>
+      <defaultValue>description,duedate,assignee,location,labels</defaultValue>
     </property>
     <property>
-      <description/>
+      <description>
+</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -968,14 +965,14 @@
       <name>columns</name>
     </property>
     <property>
-      <type>java.lang.String</type>
+      <type/>
     </property>
   </object>
   <object>
-    <name>TaskManager.TaskReportMacro</name>
+    <name>TaskManager.ConfluenceTasksReportMacroBridge</name>
     <number>8</number>
     <className>XWiki.WikiMacroParameterClass</className>
-    <guid>7de4f483-906c-474a-bbdc-008367607995</guid>
+    <guid>7d5923d3-e497-4761-bfd4-17323d1a0b78</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -1037,7 +1034,8 @@
       <defaultValue>duedate</defaultValue>
     </property>
     <property>
-      <description/>
+      <description>
+</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -1046,85 +1044,7 @@
       <name>sortBy</name>
     </property>
     <property>
-      <type>java.lang.String</type>
-    </property>
-  </object>
-  <object>
-    <name>TaskManager.TaskReportMacro</name>
-    <number>9</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>aa559d9e-e4e4-4117-bedf-afa94620c704</guid>
-    <class>
-      <name>XWiki.WikiMacroParameterClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <defaultValue>
-        <disabled>0</disabled>
-        <name>defaultValue</name>
-        <number>4</number>
-        <prettyName>Parameter default value</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </defaultValue>
-      <description>
-        <disabled>0</disabled>
-        <name>description</name>
-        <number>2</number>
-        <prettyName>Parameter description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
-      <mandatory>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>mandatory</name>
-        <number>3</number>
-        <prettyName>Parameter mandatory</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </mandatory>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Parameter name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <type>
-        <disabled>0</disabled>
-        <name>type</name>
-        <number>5</number>
-        <prettyName>Parameter type</prettyName>
-        <size>60</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </type>
-    </class>
-    <property>
-      <defaultValue/>
-    </property>
-    <property>
-      <description/>
-    </property>
-    <property>
-      <mandatory>0</mandatory>
-    </property>
-    <property>
-      <name>id</name>
-    </property>
-    <property>
-      <type>java.lang.String</type>
+      <type/>
     </property>
   </object>
 </xwikidoc>
