@@ -79,22 +79,11 @@ public class DefaultTaskManager implements TaskManager
         XWikiContext context = contextProvider.get();
         try {
             XWikiDocument doc = context.getWiki().getDocument(reference, context);
-            Task task = new Task();
             BaseObject obj = doc.getXObject(TASK_CLASS_REFERENCE);
             if (obj == null) {
                 throw new TaskException(String.format("The page [%s] does not have a Task Object.", reference));
             }
-            task.setReference(reference);
-            task.setName(obj.getStringValue(Task.NAME));
-            task.setNumber(obj.getIntValue(Task.NUMBER));
-            task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), reference));
-            task.setAssignee(resolver.resolve(obj.getLargeStringValue(Task.ASSIGNEE)));
-            task.setStatus(obj.getStringValue(Task.STATUS));
-            task.setReporter(resolver.resolve(obj.getLargeStringValue(Task.REPORTER)));
-            task.setDuedate(obj.getDateValue(Task.DUE_DATE));
-            task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
-            task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
-            return task;
+            return getTaskFromXObject(obj);
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the task from the page [%s]", reference));
         }
@@ -113,24 +102,13 @@ public class DefaultTaskManager implements TaskManager
                 + "AND idProp.value = :id";
             List<String> results = queryManager.createQuery(statement, Query.HQL).bindValue("id", id).execute();
             if (results.size() > 0) {
-                Task task = new Task();
                 DocumentReference documentReference = resolver.resolve(results.get(0));
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null) {
                     return null;
                 }
-                task.setReference(documentReference);
-                task.setNumber(id);
-                task.setStatus(taskObject.getStringValue(Task.STATUS));
-                task.setName(taskObject.getStringValue(Task.NAME));
-                task.setAssignee(resolver.resolve(taskObject.getLargeStringValue(Task.ASSIGNEE)));
-                task.setCompleteDate(taskObject.getDateValue(Task.COMPLETE_DATE));
-                task.setDuedate(taskObject.getDateValue(Task.DUE_DATE));
-                task.setCreateDate(taskObject.getDateValue(Task.CREATE_DATE));
-                task.setReporter(resolver.resolve(taskObject.getLargeStringValue(Task.REPORTER)));
-
-                return task;
+                return getTaskFromXObject(taskObject);
             }
             throw new TaskException(String.format("There is no task with the id [%d].", id));
         } catch (QueryException | XWikiException e) {
@@ -172,5 +150,21 @@ public class DefaultTaskManager implements TaskManager
             throw new TaskException(String.format("Failed to delete the task documents that had [%s] as owner.",
                 documentReference), e);
         }
+    }
+
+    private Task getTaskFromXObject(BaseObject obj)
+    {
+        Task task = new Task();
+        task.setReference(obj.getDocumentReference());
+        task.setName(obj.getStringValue(Task.NAME));
+        task.setNumber(obj.getIntValue(Task.NUMBER));
+        task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), obj.getDocumentReference()));
+        task.setAssignee(resolver.resolve(obj.getLargeStringValue(Task.ASSIGNEE)));
+        task.setStatus(obj.getStringValue(Task.STATUS));
+        task.setReporter(resolver.resolve(obj.getLargeStringValue(Task.REPORTER)));
+        task.setDuedate(obj.getDateValue(Task.DUE_DATE));
+        task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
+        task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
+        return task;
     }
 }

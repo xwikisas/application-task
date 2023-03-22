@@ -53,6 +53,7 @@ public interface TaskResource
      * @return 200 is the status has been changed successfully of 404 if the task was not found
      * @throws XWikiRestException when failing in retrieving the document or saving it
      */
+    // TODO: Replace with a generic method that can be used to modify any value of the task.
     @PUT
     Response changeTaskStatus(
         @PathParam("wikiName") String wikiName,

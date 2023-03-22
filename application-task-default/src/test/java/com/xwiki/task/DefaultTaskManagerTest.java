@@ -55,7 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-public class DefaultTaskManagerTest
+class DefaultTaskManagerTest
 {
     private static final String TASK_0_NAME = "Task";
 
@@ -84,6 +84,7 @@ public class DefaultTaskManagerTest
     @Named("compactwiki")
     private EntityReferenceSerializer<String> compactSerializer;
 
+    // TODO: Use MockitoOldCore instead of mocking each class from xwiki-oldcore.
     @Mock
     private XWikiContext context;
 
@@ -104,7 +105,7 @@ public class DefaultTaskManagerTest
     private final DocumentReference userReference = new DocumentReference("xwiki", "XWiki", "User1");
 
     @BeforeEach
-    public void setup() throws XWikiException
+    void setup() throws XWikiException
     {
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getWiki()).thenReturn(this.wiki);
@@ -132,7 +133,7 @@ public class DefaultTaskManagerTest
     }
 
     @Test
-    public void getTaskByReference() throws TaskException
+    void getTaskByReference() throws TaskException
     {
 
         Task task = this.taskManager.getTask(documentReference);
@@ -146,7 +147,7 @@ public class DefaultTaskManagerTest
     }
 
     @Test
-    public void getTaskById() throws TaskException, QueryException
+    void getTaskById() throws TaskException, QueryException
     {
         String queryStatement = ", BaseObject as taskObj, IntegerProperty as idProp "
             + "WHERE taskObj.name = doc.fullName "
@@ -170,7 +171,7 @@ public class DefaultTaskManagerTest
     }
 
     @Test
-    public void deleteTaskByOwner() throws TaskException, QueryException, XWikiException
+    void deleteTaskByOwner() throws TaskException, QueryException, XWikiException
     {
         String queryStatement = "FROM doc.object(TaskManager.TaskManagerClass) as task "
             + "WHERE task.owner = :absoluteOwnerRef "

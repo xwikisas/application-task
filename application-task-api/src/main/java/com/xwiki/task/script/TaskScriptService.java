@@ -27,7 +27,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
-import com.xwiki.task.TaskManagerConfiguration;
+import com.xwiki.task.TaskConfiguration;
 
 /**
  * Script service for retrieving information about the Task Manager Application.
@@ -36,18 +36,18 @@ import com.xwiki.task.TaskManagerConfiguration;
  * @since 3.0
  */
 @Component
-@Named("taskmanager")
+@Named("task")
 @Singleton
 @Unstable
-public class TaskManagerScriptService implements ScriptService
+public class TaskScriptService implements ScriptService
 {
     @Inject
-    private TaskManagerConfiguration configuration;
+    private TaskConfiguration configuration;
 
     /**
      * @return the configuration of the application.
      */
-    public TaskManagerConfiguration getConfiguration()
+    public TaskConfiguration getConfiguration()
     {
         return this.configuration;
     }

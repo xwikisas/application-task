@@ -1,7 +1,7 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Validate that non inline content is properly supported
+.# Tasks macro test with a single id as parameter.
 .#-----------------------------------------------------
 {{tasks ids="1" /}}
 .#-----------------------------------------------------

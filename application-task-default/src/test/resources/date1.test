@@ -1,7 +1,7 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Validate that non inline content is properly supported
+.# Date macro test.
 .#-----------------------------------------------------
 {{date value="2021/09/07 00:00"/}}
 .#-----------------------------------------------------

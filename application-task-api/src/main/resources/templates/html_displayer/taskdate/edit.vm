@@ -19,7 +19,7 @@
 ## ---------------------------------------------------------------------------
 #set ($dateTimePickerParams = {
   'value': $displayer.value,
-  'data-format': $services.taskmanager.configuration.storageDateFormat
+  'data-format': $services.task.configuration.storageDateFormat
 })
 #set ($discard = $dateTimePickerParams.putAll($displayer.parameters))
 #dateTimePicker($dateTimePickerParams)

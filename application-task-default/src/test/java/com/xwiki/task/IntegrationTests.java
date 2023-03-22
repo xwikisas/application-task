@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.util.DefaultParameterizedType;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
@@ -40,8 +41,9 @@ import org.xwiki.test.mockito.MockitoComponentManager;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xwiki.task.model.Task;
-import com.xwiki.task.script.TaskManagerScriptService;
+import com.xwiki.task.script.TaskScriptService;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -62,7 +64,9 @@ public class IntegrationTests
         componentManager.registerMockComponent(SkinExtension.class, "jsx");
         componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
         componentManager.registerMockComponent(ScriptService.class, "taskmanager");
-        componentManager.registerMockComponent(TaskManagerScriptService.class);
+        componentManager.registerMockComponent(TaskScriptService.class);
+        ContextualLocalizationManager localizationManager =
+            componentManager.registerMockComponent(ContextualLocalizationManager.class);
 
         Provider<XWikiContext> contextProvider =
             componentManager.registerMockComponent(
@@ -77,6 +81,7 @@ public class IntegrationTests
         DocumentReference user = new DocumentReference("xwiki", "XWiki", "User1");
         DocumentReference ref1 = new DocumentReference("xwiki", "Sandbox", "Task");
         DocumentReference ref2 = new DocumentReference("xwiki", "Sandbox", "Task2");
+        DocumentReference ref3 = new DocumentReference("xwiki", "Sandbox", "Task3");
 
         Task task = new Task();
         task.setReference(ref1);
@@ -98,6 +103,10 @@ public class IntegrationTests
         task2.setCreateDate(dateFormat.parse("01/01/2023"));
         task2.setCompleteDate(dateFormat.parse("01/01/2023"));
 
+        Task task3 = new Task();
+        task3.setReference(ref3);
+
+        when(taskManager.getTask(3)).thenReturn(task3);
         when(taskManager.getTask(2)).thenReturn(task2);
         when(taskManager.getTask(1)).thenReturn(task);
         when(taskManager.getTask(ref1)).thenReturn(task);
@@ -105,6 +114,8 @@ public class IntegrationTests
         when(context.getUserReference()).thenReturn(user);
         when(authorizationManager.hasAccess(Right.VIEW, ref1)).thenReturn(true);
         when(authorizationManager.hasAccess(Right.VIEW, ref2)).thenReturn(true);
+        when(authorizationManager.hasAccess(Right.VIEW, ref3)).thenReturn(false);
+        when(localizationManager.getTranslationPlain(any())).thenReturn("Message");
 
         ConfigurationSource prefs = componentManager.registerMockComponent(ConfigurationSource.class, "wiki");
         when(prefs.getProperty("dateformat", "yyyy/MM/dd HH:mm")).thenReturn("yyyy/MM/dd HH:mm");

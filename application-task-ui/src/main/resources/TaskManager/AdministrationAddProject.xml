@@ -39,8 +39,8 @@
   <content>{{velocity}}
 #if($hasAdmin)
   #set($project = $request.project)
-  #if(!$stringtool.isBlank($project))
-    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', $project))
+  #if(!$stringtool.isBlank($project) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
+    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Project_$project"))
     #set($document = $xwiki.getDocument($documentRef))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.ProjectClass', true))
@@ -50,10 +50,11 @@
 
   {{html}}
     &lt;form class="xformInline" method="post"&gt;
-      &lt;label for="project"&gt;$services.localization.render('TaskManager.administration.addProject.label')&lt;/label&gt;
+      &lt;input type="hidden" name="form_token" value="$!{services.csrf.getToken()}" /&gt;
+      &lt;label for="project"&gt;$escapetool.xml($services.localization.render('TaskManager.administration.addProject.label'))&lt;/label&gt;
       &lt;input id="project" name="project" type="text" size="20" required/&gt;
       &lt;span class="buttonwrapper"&gt;
-        &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addProject.submit')&lt;/button&gt;
+        &lt;button class="button" type="submit"&gt;$escapetool.xml($services.localization.render('TaskManager.administration.addProject.submit'))&lt;/button&gt;
       &lt;/span&gt;
     &lt;/form&gt;
   {{/html}}
@@ -65,15 +66,15 @@
     '_actions'  : { 'actions' : ['delete'] }
   })
   #set($options = {
-   'translationPrefix' : 'xe.index.',
+    'translationPrefix' : 'TaskManager.administration.livetable.',
     'rowCount' : 15,
-    'description' : 'This table lists all the documents found on this wiki. The columns can be sorted and some can be filtered.',
+    'description' : 'This table lists all projects configured within the Task Application.',
     'className' : 'TaskManager.ProjectClass',
     'queryFilters': ' '
   })
 #livetable("projectTable" $columns $columnsProperties $options)
 #else
-  {{info}}You need to be an Administrator{{/info}}
+  {{info}}$!{services.rendering.escape($services.localization.render('TaskManager.administration.noRights'), 'xwiki/2.1')}{{/info}}
 #end
 {{/velocity}}</content>
 </xwikidoc>

@@ -19,20 +19,26 @@
  */
 package com.xwiki.task;
 
+import org.xwiki.component.annotation.Role;
+import org.xwiki.stability.Unstable;
+
 /**
- * Exception thrown by the Task Manager Application.
+ * The configuration of the Task Manager Application for the current wiki.
  *
  * @version $Id$
  * @since 3.0
  */
-public class TaskManagerException extends Exception
+@Role
+@Unstable
+public interface TaskConfiguration
 {
     /**
-     * @param message the exception message.
-     * @param cause the cause of this exception.
+     * @return the date format that should be used for storage.
      */
-    public TaskManagerException(String message, Throwable cause)
-    {
-        super(message, cause);
-    }
+    String getStorageDateFormat();
+
+    /**
+     * @return the date format that should be used for displaying purposes.
+     */
+    String getDisplayDateFormat();
 }

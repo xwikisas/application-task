@@ -26,17 +26,17 @@ import javax.inject.Singleton;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
-import com.xwiki.task.TaskManagerConfiguration;
+import com.xwiki.task.TaskConfiguration;
 
 /**
- * The default implementation of {@link TaskManagerConfiguration}.
+ * The default implementation of {@link TaskConfiguration}.
  *
  * @version $Id$
  * @since 3.0
  */
 @Component
 @Singleton
-public class DefaultTaskManagerConfiguration implements TaskManagerConfiguration
+public class DefaultTaskConfiguration implements TaskConfiguration
 {
     private static final String STORAGE_FORMAT_KEY = "storageDateFormat";
 
@@ -44,7 +44,7 @@ public class DefaultTaskManagerConfiguration implements TaskManagerConfiguration
 
     private static final String DEFAULT_DATE_FORMAT = "yyyy/MM/dd HH:mm";
 
-    private static final String PROPERTIES_PREFIX = "taskmanager.";
+    private static final String PROPERTIES_PREFIX = "task.";
 
     @Inject
     @Named("xwikiproperties")

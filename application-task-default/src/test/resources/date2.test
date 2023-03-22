@@ -1,7 +1,7 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Validate that non inline content is properly supported
+.# Verify that the date macro output takes the format parameter into consideration.
 .#-----------------------------------------------------
 {{date value="10/12/2022" format="dd/MM/yyyy"/}}
 .#-----------------------------------------------------

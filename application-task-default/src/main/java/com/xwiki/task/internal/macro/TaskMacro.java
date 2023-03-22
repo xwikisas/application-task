@@ -135,10 +135,9 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
     private List<Block> createTaskStructure(TaskMacroParameters parameters, MacroTransformationContext context,
         List<Block> contentBlocks)
     {
-        Block ret;
+        Block ret = new GroupBlock();
         Map<String, String> blockParameters = new HashMap<>();
 
-        ret = context.isInline() ? new FormatBlock() : new GroupBlock();
         blockParameters.put(HTML_CLASS, "task-macro");
         ret.setParameters(blockParameters);
         String checked = "";

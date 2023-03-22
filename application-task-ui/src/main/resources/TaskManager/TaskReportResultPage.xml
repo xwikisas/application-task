@@ -57,10 +57,8 @@
     #if ($foreach.count &gt; 1)
       #set ($spaceWhere = "${spaceWhere} OR ")
     #end
-    ## In versions lower than 13.0 creating a query having an array parameter and a QueryParameter like
-    ##  `$services.query.parameter().literal('literal')` will produce an error. So we need to work around the issue.
-    #set ($paramVal = "$!space.replaceAll('([%_!])', '!$1')%")
-    #set ($spaceWhere = "${spaceWhere}doc.fullName like :docspace${foreach.count} escape '!'")
+    #set ($paramVal = $services.query.parameter().literal($space).anyChars())
+    #set ($spaceWhere = "${spaceWhere}doc.fullName like :docspace${foreach.count}")
     #set ($discard = $params.put("docspace${foreach.count}", $paramVal))
   #end
   #set ($extraWhere = "${extraWhere} AND (${spaceWhere})")

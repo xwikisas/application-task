@@ -256,8 +256,8 @@
   #set ($tableId = "task-report-$tableId.substring(2, 7)")
 #end
 #if ("$displayColumns" != '')
-  ## The displayable columns are name,duedate,assignee,owner,createDate,number. We also need to add the reporter, createDate and status column
-  ## for the LiveTable to be able to filter them. They will be hidden.
+  ## The displayable columns are name,duedate,assignee,owner,createDate,number. We also need to add the reporter,
+  ## createDate and status column for the LiveTable to be able to filter them. They will be hidden.
   #set ($colSet = $collectiontool.orderedSet)
   #foreach ($col in $displayColumns.split('\s*,\s*'))
     #set ($discard = $colSet.add($col))
@@ -271,7 +271,7 @@
 #set ($rowCount = $numbertool.toNumber($rowCount).intValue())
 #set ($startDate = '')
 #if ($createdAfter)
-  #set ($dateFormat = $services.taskmanager.configuration.storageDateFormat)
+  #set ($dateFormat = $services.task.configuration.storageDateFormat)
   #set ($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
   #set ($startDate = $xwiki.jodatime.dateTime.parse($createdAfter, $dateTimeFormatter))
   #set ($endDate = $startDate.plusYears(1000).millis)

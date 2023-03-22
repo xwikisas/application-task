@@ -139,22 +139,22 @@
       let restURL = baseURL + '/task' + '?status=' + (checkbox.is(':checked') ? "Done" : "InProgress");
 
       checkbox.prop("disabled", true);
-      let not = new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.inprogress')", "inprogress");
+      let notification = new XWiki.widgets.Notification("$jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.inprogress'))", "inprogress");
       $.ajax({
         url: restURL,
         type: 'PUT',
         success: function() {
-          not.replace(new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.success')", "done"));
+          notification.replace(new XWiki.widgets.Notification("$jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.success'))", "done"));
         },
         error: function () {
-          not.replace(new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.restFail')", "error"));
+          notification.replace(new XWiki.widgets.Notification("$jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.restFail'))", "error"));
         },
         complete: function () {
           checkbox.prop("disabled", false);
         }
       });
     } else {
-      let not = new XWiki.widgets.Notification("$services.localization.render('taskmanager.notification.statusChange.noId')", "error");
+      let notification = new XWiki.widgets.Notification("$jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.noId'))", "error");
     }
   });
 });</code>
@@ -276,7 +276,8 @@
     <property>
       <code>.xwiki-date {
   font-size: 1.1em;
-  background: #ECEDF0;
+  background: @btn-default-bg;
+  color: @btn-default-color;
   border-radius: 3px;
   margin: 0 3px;
   padding: 2px 4px;
@@ -300,7 +301,7 @@
 }</code>
     </property>
     <property>
-      <contentType/>
+      <contentType>LESS</contentType>
     </property>
     <property>
       <name/>

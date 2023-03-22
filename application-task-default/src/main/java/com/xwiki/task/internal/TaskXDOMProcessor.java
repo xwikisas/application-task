@@ -47,8 +47,8 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
-import com.xwiki.task.TaskManagerConfiguration;
 import com.xwiki.task.TaskReferenceGenerator;
 import com.xwiki.task.model.Task;
 
@@ -74,7 +74,7 @@ public class TaskXDOMProcessor
     private EntityReferenceSerializer<String> serializer;
 
     @Inject
-    private TaskManagerConfiguration configuration;
+    private TaskConfiguration configuration;
 
     @Inject
     private Logger logger;
@@ -134,7 +134,8 @@ public class TaskXDOMProcessor
 
                 task.setDuedate(deadline);
             } catch (TaskException e) {
-                logger.warn(e.getMessage());
+                logger.warn("Failed to extract the task with reference [{}] from the content of the page [{}]: [{}].",
+                    taskReference, contentSource, ExceptionUtils.getRootCauseMessage(e));
                 continue;
             }
 
@@ -187,7 +188,8 @@ public class TaskXDOMProcessor
                         new MacroBlock(macro.getId(), macro.getParameters(), newContent, macro.isInline());
                     siblings.add(macroIndex, newMacroBlock);
                 } catch (TaskException e) {
-                    logger.warn(e.getMessage());
+                    logger.warn("Failed to update the task macro call for the task with reference [{}]: [{}].",
+                        taskDocRef, ExceptionUtils.getRootCauseMessage(e));
                 }
                 break;
             }
@@ -224,7 +226,8 @@ public class TaskXDOMProcessor
                 }
             }
         } catch (XWikiException e) {
-            logger.warn("Failed to remove the possible macro calls from the document [{}]", location);
+            logger.warn("Failed to remove macro calls from the document [{}]: [{}].", location,
+                ExceptionUtils.getRootCauseMessage(e));
         }
     }
 

@@ -44,7 +44,7 @@ import org.xwiki.security.authorization.Right;
 
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
-import com.xwiki.task.TaskManagerConfiguration;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -67,7 +67,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
     private TaskManager taskManager;
 
     @Inject
-    private TaskManagerConfiguration configuration;
+    private TaskConfiguration configuration;
 
     @Inject
     @Named("compactwiki")
@@ -103,12 +103,13 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
 
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
         List<Block> errorList = new ArrayList<>();
+        boolean noViewRights = false;
         for (String id : ids.split("\\s*,\\s*")) {
             try {
                 Task task = taskManager.getTask(Integer.parseInt(id));
                 if (!authorizationManager.hasAccess(Right.VIEW, task.getReference())) {
-                    throw new TaskException(
-                        localizationManager.getTranslationPlain("taskmanager.macro.tasks.noRights", id));
+                    noViewRights = true;
+                    continue;
                 }
                 Map<String, String> taskParams = new HashMap<>();
                 taskParams.put(Task.REFERENCE, serializer.serialize(task.getReference()));
@@ -133,6 +134,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }
+        }
+        if (noViewRights) {
+            blocks.add(0, new MacroBlock("warning", Collections.emptyMap(), localizationManager.getTranslationPlain("taskmanager.macro.tasks.noRights"), false));
         }
         blocks.addAll(errorList);
         return blocks;

@@ -1,14 +1,23 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Tasks macro test with the id parameter having multiple values.
+.# Tasks macro test with the id parameter having multiple values and the user doesn't have view rights for one of them.
 .#-----------------------------------------------------
-{{tasks ids="1, 2" /}}
+{{tasks ids="1, 2, 3" /}}
 .#-----------------------------------------------------
 .expect|event/1.0
 .#-----------------------------------------------------
 beginDocument
-beginMacroMarkerStandalone [tasks] [ids=1, 2]
+beginMacroMarkerStandalone [tasks] [ids=1, 2, 3]
+beginMacroMarkerStandalone [warning] [] [Message]
+beginGroup [[class]=[box warningmessage]]
+beginMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+beginParagraph
+onWord [Message]
+endParagraph
+endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+endGroup [[class]=[box warningmessage]]
+endMacroMarkerStandalone [warning] [] [Message]
 beginMacroMarkerStandalone [task] [reference=Sandbox.Task|reporter=XWiki.User1|status=Done|createDate=2023/01/01 00:00|completeDate=2023/01/01 00:00] [Test name{{date value="2023/01/01 00:00"/}}]
 beginGroup [[class]=[task-macro]]
 beginFormat [NONE]
@@ -59,9 +68,9 @@ endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.B
 endGroup [[class]=[task-content]]
 endGroup [[class]=[task-macro]]
 endMacroMarkerStandalone [task] [reference=Sandbox.Task2|reporter=XWiki.User1|status=Done|createDate=2023/01/01 00:00|completeDate=2023/01/01 00:00] [Test name{{date value="2023/01/01 00:00"/}}]
-endMacroMarkerStandalone [tasks] [ids=1, 2]
+endMacroMarkerStandalone [tasks] [ids=1, 2, 3]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div><div class="task-macro"><input type="checkbox" data-taskId="Sandbox.Task2" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task2">#2</a></span><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div>
+<div class="box warningmessage"><p>Message</p></div><div class="task-macro"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div><div class="task-macro"><input type="checkbox" data-taskId="Sandbox.Task2" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task2">#2</a></span><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div>

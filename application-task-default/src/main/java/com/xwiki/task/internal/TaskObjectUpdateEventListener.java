@@ -100,7 +100,8 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             }
             context.put(TASK_UPDATE_FLAG, null);
         } catch (XWikiException e) {
-            logger.error("Failed to process the owner document of the task [{}].", taskOwnerRef);
+            logger.warn("Failed to process the owner document of the task [{}]: [{}].", taskOwnerRef,
+                ExceptionUtils.getRootCauseMessage(e));
         }
     }
 
@@ -115,8 +116,8 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                         resolver.resolve(object.getStringValue(Task.OWNER), document.getDocumentReference()), context);
                 }
             } catch (XWikiException e) {
-                logger.warn("Failed to remove the macro call from the owner document of the task [{}]",
-                    document.getDocumentReference());
+                logger.warn("Failed to remove the macro call from the owner document of the task [{}]: [{}].",
+                    document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
             }
             return true;
         }

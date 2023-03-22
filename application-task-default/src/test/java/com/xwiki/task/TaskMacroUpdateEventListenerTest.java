@@ -55,7 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-public class TaskMacroUpdateEventListenerTest
+class TaskMacroUpdateEventListenerTest
 {
     private static final String DOC_PREV_VERSION = "1";
 
@@ -130,7 +130,7 @@ public class TaskMacroUpdateEventListenerTest
     private final Date date1 = new Date(1000);
 
     @BeforeEach
-    public void setup() throws XWikiException
+    void setup() throws XWikiException
     {
         when(this.context.getWiki()).thenReturn(this.wiki);
         when(this.docWithTasks.getDocumentReference()).thenReturn(this.pageWithMacro);
@@ -179,7 +179,7 @@ public class TaskMacroUpdateEventListenerTest
     }
 
     @Test
-    public void onDeletingEvent() throws TaskException
+    void onDeletingEvent() throws TaskException
     {
         this.eventListener.onEvent(new DocumentDeletingEvent(), this.docWithTasks, this.context);
 
@@ -187,7 +187,7 @@ public class TaskMacroUpdateEventListenerTest
     }
 
     @Test
-    public void onUpdatingWithRemovedTaskEvent() throws XWikiException
+    void onUpdatingWithRemovedTaskEvent() throws XWikiException
     {
         when(this.taskXDOMProcessor.extract(this.docXDOM, this.pageWithMacro)).thenReturn(
             new ArrayList<>(Collections.singletonList(task)));

@@ -41,6 +41,13 @@
 TaskManager.home.title=Task Manager
 TaskManager.panels.name=Task Manager
 
+TaskManager.administration.noRights=You need to be an Administrator
+
+TaskManager.administration.livetable.doc.date=Date
+TaskManager.administration.livetable.doc.author=Last Author
+TaskManager.administration.livetable._actions=Actions
+TaskManager.administration.livetable.order=Order
+
 TaskManager.administration.addProject.label=Project
 TaskManager.administration.addProject.submit=Add Project
 
@@ -109,9 +116,6 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
-# Status livetable
-xe.index.order=Order
-
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until
@@ -139,7 +143,7 @@ TaskManager.SeverityClass_severity_High=High
 
 ## Confluence-like tasks
 taskmanager.notification.statusChange.success=Task status changed successfully!
-taskmanager.notification.statusChange.restFail=Failed to change the status because of a REST error!
+taskmanager.notification.statusChange.restFail=Failed to change the status because of a server error!
 taskmanager.notification.statusChange.noId=Failed to change the status because the task doesn't have an ID.
 taskmanager.notification.statusChange.inprogress=Changing status..
 
@@ -150,10 +154,10 @@ taskmanager.livetable.owner=Location
 taskmanager.livetable.completeDate=Completed on
 taskmanager.livetable.noRights=You don't have view rights for the document that contains this task.
 
-taskmanager.macro.tasks.noRights=You are not allowed to view task ({0}).
+taskmanager.macro.tasks.noRights=Some tasks have no been displayed because you don't have the rights to view them.
 
 rendering.macro.task.name=Task Macro
-rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline!
+rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline.
 rendering.macro.task.parameter.status.name=The status of the task.
 rendering.macro.task.parameter.status.description=Specify what is the current status of the task.
 rendering.macro.task.parameter.id.name=ID

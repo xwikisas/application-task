@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
@@ -94,9 +95,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     @Override
     protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
     {
-        // Skip when inside filter-job.
-        if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null)
-        {
+        // Skip when inside filter-job because it generates a lot of save events for each version of the imported doc.
+        if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null) {
             return;
         }
 
@@ -104,7 +104,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             try {
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
             } catch (TaskException e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn("Failed to delete the tasks that have the current document as owner: [{}].",
+                    ExceptionUtils.getRootCauseMessage(e));
             }
             return;
         }
@@ -126,9 +127,10 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 List<DocumentReference> currentTasksIds =
                     tasks.stream().map(Task::getReference).collect(Collectors.toList());
                 previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
-            } catch (XWikiException ignored) {
-                logger.warn(
-                    "Could not check for the possibly removed Task Macros and delete their associated Task Pages.");
+            } catch (XWikiException e) {
+                logger.warn("There was an exception when attempting to remove the task pages associated to the task "
+                        + "macros present in the previous version of the document: [{}].",
+                    ExceptionUtils.getRootCauseMessage(e));
             }
         }
         if (tasks.size() > 0 || previousDocTasks.size() > 0) {
@@ -136,7 +138,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             try {
                 document.setContent(documentContent);
             } catch (XWikiException e) {
-                logger.error("Could not update the content of the document!");
+                logger.warn("Could not update the content of the document [{}]: [{}].",
+                    document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
             }
             context.put(TASK_UPDATE_FLAG, true);
             deleteTaskPages(document, context, previousDocTasks);
@@ -164,11 +167,12 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 } else {
                     logger.warn(
                         "The task macro with id [{}] was removed but the associated page could not be deleted or "
-                            + "modified.",
+                            + "modified because the current user does not have the rights to do so.",
                         previousDocTask.getReference());
                 }
             } catch (XWikiException e) {
-                logger.error("Failed to remove the Task Document with id [{}]", previousDocTask.getReference());
+                logger.warn("Failed to remove the Task Document with id [{}]: [{}].", previousDocTask.getReference(),
+                    ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }
@@ -201,9 +205,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 populateObjectWithMacroParams(context, task, taskObj);
 
                 context.getWiki().saveDocument(taskDoc, "Task updated!", context);
-            } catch (XWikiException ignored) {
-                logger.error("Failed to retrieve the document that contains the Task Object with id [{}].",
-                    taskReference);
+            } catch (XWikiException e) {
+                logger.warn("Failed to retrieve the document that contains the Task Object with id [{}]: [{}].",
+                    taskReference, ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }

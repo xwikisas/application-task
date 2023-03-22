@@ -252,34 +252,34 @@
 #set ($rowCount = $wikimacro.parameters.pageSize)
 #set ($paramMap = {})
 #if ("$!pages" != '')
-  #set ($discard = $paramMap.put('pages', "pages='$pages'"))
+  #set ($discard = $paramMap.put('pages', $pages))
 #end
 #if ("$!tags" != '')
-  #set ($discard = $paramMap.put('tags', "tags='$tags'"))
+  #set ($discard = $paramMap.put('tags', $tags))
 #end
 #if ("$!assignees" != '')
-  #set ($discard = $paramMap.put('assignees', "assignees='${assignees}'"))
+  #set ($discard = $paramMap.put('assignees', $assignees))
 #end
 #if ("$!creator" != '')
-  #set ($discard = $paramMap.put('reporters', "reporters='$creator'"))
+  #set ($discard = $paramMap.put('reporters', $creator))
 #end
 #if ("$!createdAfter" != '')
   #set ($createdAfter = $datetool.toDate('dd-MM-yyyy', $createdAfter))
-  #set ($createdAfter = $datetool.format($services.taskmanager.configuration.storageDateFormat, $createdAfter))
-  #set ($discard = $paramMap.put('createdAfter', "createdAfter='$createdAfter'"))
+  #set ($createdAfter = $datetool.format($services.task.configuration.storageDateFormat, $createdAfter))
+  #set ($discard = $paramMap.put('createdAfter', $createdAfter))
 #end
 #if ("$!status" != '')
   #if ($status == 'complete')
-    #set ($discard = $paramMap.put('status', "status='Done'"))
+    #set ($discard = $paramMap.put('status', 'Done'))
   #elseif ($status == 'incomplete')
-    #set ($discard = $paramMap.put('status', "status='InProgress'"))
+    #set ($discard = $paramMap.put('status', 'InProgress'))
   #end
 #end
 #if ("$!sortBy" != '')
-  #set ($discard = $paramMap.put('sortBy', "sortBy='$sortBy'"))
+  #set ($discard = $paramMap.put('sortBy', $sortBy))
 #end
 #if ("$!rowCount" != '')
-  #set ($discard = $paramMap.put('limit', "limit='$rowCount'"))
+  #set ($discard = $paramMap.put('limit', $rowCount))
 #end
 #if ("$!displayColumns" != '')
   ## Confluence: description, duedate, assignee, location, labels,     completedate
@@ -302,9 +302,12 @@
       #end
     #end
   #end
-  #set ($discard = $paramMap.put('columns', "columns='$colParam'"))
+  #set ($discard = $paramMap.put('columns', $colParam))
 #end
-#set ($taskReportCall = "{{task-report $!paramMap.pages $!paramMap.tags $!paramMap.assignees $!paramMap.reporters $!paramMap.createdAfter $!paramMap.status $!paramMap.sortBy $!paramMap.limit $!paramMap.columns /}}")
+#foreach ($entry in $paramMap.entrySet())
+  #set ($taskReportParams = "$!{taskReportParams} $entry.key='$!{services.rendering.escape($entry.value, 'xwiki/2.1')}'")
+#end
+#set ($taskReportCall = "{{task-report $!taskReportParams /}}")
 $taskReportCall
 {{/velocity}}</code>
     </property>

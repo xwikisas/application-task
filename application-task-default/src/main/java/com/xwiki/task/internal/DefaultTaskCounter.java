@@ -22,7 +22,6 @@ package com.xwiki.task.internal;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
@@ -44,7 +43,7 @@ import com.xwiki.task.TaskException;
 public class DefaultTaskCounter implements TaskCounter
 {
     @Inject
-    private Provider<QueryManager> queryManagerProvider;
+    private QueryManager queryManager;
 
     private int lastReturnedNumber = -1;
 
@@ -55,7 +54,7 @@ public class DefaultTaskCounter implements TaskCounter
             "select max(taskObject.number) "
                 + "from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject";
         try {
-            List<Integer> result = queryManagerProvider.get().createQuery(statement, Query.XWQL).execute();
+            List<Integer> result = queryManager.createQuery(statement, Query.XWQL).execute();
 
             int number = 0;
             if (result.size() > 0 && result.get(0) != null) {

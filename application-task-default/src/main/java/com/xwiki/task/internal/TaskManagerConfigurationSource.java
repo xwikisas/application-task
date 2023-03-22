@@ -44,7 +44,7 @@ public class TaskManagerConfigurationSource extends AbstractDocumentConfiguratio
     private static final List<String> SPACE_NAMES = Collections.singletonList("TaskManager");
 
     private static final LocalDocumentReference DOCUMENT_REFERENCE = new LocalDocumentReference(SPACE_NAMES,
-        "TaskManagerConfiguration");
+        "Administration");
 
     private static final LocalDocumentReference CLASS_REFERENCE = new LocalDocumentReference(SPACE_NAMES,
         "TaskManagerConfigurationClass");

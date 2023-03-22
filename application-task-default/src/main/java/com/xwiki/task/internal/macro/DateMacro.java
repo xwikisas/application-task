@@ -40,7 +40,7 @@ import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.skinx.SkinExtension;
 
-import com.xwiki.task.TaskManagerConfiguration;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.macro.DateMacroParameters;
 
 /**
@@ -65,7 +65,7 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "TaskManager.SkinExtensions";
 
     @Inject
-    private TaskManagerConfiguration configuration;
+    private TaskConfiguration configuration;
 
     @Inject
     @Named("ssx")

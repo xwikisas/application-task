@@ -33,7 +33,8 @@ import org.xwiki.stability.Unstable;
 public interface TaskCounter
 {
     /**
-     * @return the next valid number for a task. -1 if the retrieval failed.
+     * @return the next valid number for a task.
+     * @throws TaskException if the retrieval of the number failed.
      */
     int getNextNumber() throws TaskException;
 }

@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-public class DefaultTaskReferenceGeneratorTest
+class DefaultTaskReferenceGeneratorTest
 {
     @InjectMockComponents
     private DefaultTaskReferenceGenerator referenceGenerator;
@@ -77,7 +77,7 @@ public class DefaultTaskReferenceGeneratorTest
     }
 
     @Test
-    public void generateMultipleReferences() throws TaskException
+    void generateMultipleReferences() throws TaskException
     {
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
 
@@ -89,7 +89,7 @@ public class DefaultTaskReferenceGeneratorTest
     }
 
     @Test
-    public void generateReferenceWhenDocumentAlreadyExistsInWiki() throws TaskException
+    void generateReferenceWhenDocumentAlreadyExistsInWiki() throws TaskException
     {
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
         when(
@@ -103,7 +103,7 @@ public class DefaultTaskReferenceGeneratorTest
     }
 
     @Test
-    public void generateReferenceWhenTheUserDoesNotHaveEditRightsOnTheSpace() throws TaskException
+    void generateReferenceWhenTheUserDoesNotHaveEditRightsOnTheSpace() throws TaskException
     {
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
         when(this.authorizationManager.hasAccess(Right.EDIT, this.documentReference.getLastSpaceReference()))

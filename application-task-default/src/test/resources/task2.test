@@ -1,7 +1,7 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Validate that non inline content is properly supported
+.# Task macro test with date macro inside the content.
 .#-----------------------------------------------------
 {{task reference="Sandbox.Task" status="Done"}}
 Important task with the following deadline: {{date value="2021/09/07 00:00"/}}

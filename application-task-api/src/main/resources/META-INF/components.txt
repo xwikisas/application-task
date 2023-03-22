@@ -1,1 +1,1 @@
-com.xwiki.task.script.TaskManagerScriptService
+com.xwiki.task.script.TaskScriptService

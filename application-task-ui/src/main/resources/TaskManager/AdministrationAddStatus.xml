@@ -40,8 +40,8 @@
 #if($hasAdmin)
   #set($status = $request.status)
   #set($order = $request.order)
-  #if($stringtool.isNotBlank($status) &amp;&amp; $stringtool.isNotBlank($order))
-    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', $status))
+  #if($stringtool.isNotBlank($status) &amp;&amp; $stringtool.isNotBlank($order) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
+    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Status_$status"))
     #set($document = $xwiki.getDocument($documentRef))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.StatusClass', true))
@@ -52,13 +52,14 @@
 
   {{html}}
     &lt;form class="xformInline" method="post"&gt;
-      &lt;label for="status"&gt;$services.localization.render('TaskManager.administration.addStatus.label')&lt;/label&gt;
+      &lt;input type="hidden" name="form_token" value="$!{services.csrf.getToken()}" /&gt;
+      &lt;label for="status"&gt;$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.label'))&lt;/label&gt;
       &lt;input id="status" name="status" type="text" size="20" required
         placeholder="$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.statusPlaceholder'))"/&gt;
       &lt;input id="order" name="order" type="number" size="5" required
         placeholder="$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.orderPlaceholder'))"/&gt;
       &lt;span class="buttonwrapper"&gt;
-        &lt;button class="button" type="submit"&gt;$services.localization.render('TaskManager.administration.addStatus.submit')&lt;/button&gt;
+        &lt;button class="button" type="submit"&gt;$escapetool.xml($services.localization.render('TaskManager.administration.addStatus.submit'))&lt;/button&gt;
       &lt;/span&gt;
     &lt;/form&gt;
   {{/html}}
@@ -71,15 +72,15 @@
     '_actions'  : { 'actions' : ['delete'] }
   })
   #set($options = {
-   'translationPrefix' : 'xe.index.',
+    'translationPrefix' : 'TaskManager.administration.livetable.',
     'rowCount' : 15,
-    'description' : 'This table lists all the documents found on this wiki. The columns can be sorted and some can be filtered.',
+    'description' : 'This table lists all the statuses that a task can have.',
     'className' : 'TaskManager.StatusClass',
     'queryFilters': ' '
   })
 #livetable("statusTable" $columns $columnsProperties $options)
 #else
-  {{info}}You need to be an Administrator{{/info}}
+  {{info}}$!{services.rendering.escape($services.localization.render('TaskManager.administration.noRights'), 'xwiki/2.1')}{{/info}}
 #end
 {{/velocity}}</content>
 </xwikidoc>
