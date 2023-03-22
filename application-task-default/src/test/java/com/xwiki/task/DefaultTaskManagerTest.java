@@ -121,6 +121,7 @@ class DefaultTaskManagerTest
         when(this.compactSerializer.serialize(documentReference.getLastSpaceReference()))
             .thenReturn(documentReference.getLastSpaceReference().toString());
 
+        when(taskObject.getDocumentReference()).thenReturn(documentReference);
         when(taskObject.getStringValue(Task.NAME)).thenReturn(TASK_0_NAME);
         when(taskObject.getIntValue(Task.NUMBER)).thenReturn(TASK_0_NUMBER);
         when(taskObject.getLargeStringValue(Task.OWNER)).thenReturn(documentReference.toString());

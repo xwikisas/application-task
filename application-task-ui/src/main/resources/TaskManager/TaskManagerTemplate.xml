@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.3" reference="TaskManager.TaskManagerTemplate" locale="">
+<xwikidoc version="1.4" reference="TaskManager.TaskManagerTemplate" locale="">
   <web>TaskManager</web>
   <name>TaskManagerTemplate</name>
   <language/>
@@ -72,6 +72,38 @@
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
       </assignee>
+      <completeDate>
+        <customDisplay/>
+        <dateFormat>dd/MM/yyyy HH:mm:ss</dateFormat>
+        <disabled>0</disabled>
+        <emptyIsToday>1</emptyIsToday>
+        <hint/>
+        <name>completeDate</name>
+        <number>12</number>
+        <picker>1</picker>
+        <prettyName>completeDate</prettyName>
+        <size>20</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+      </completeDate>
+      <createDate>
+        <customDisplay/>
+        <dateFormat>dd/MM/yyyy HH:mm:ss</dateFormat>
+        <disabled>0</disabled>
+        <emptyIsToday>1</emptyIsToday>
+        <hint/>
+        <name>createDate</name>
+        <number>13</number>
+        <picker>1</picker>
+        <prettyName>createDate</prettyName>
+        <size>20</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+      </createDate>
       <dependencies>
         <cache>0</cache>
         <classname/>
@@ -216,6 +248,7 @@
       <number>
         <customDisplay/>
         <disabled>0</disabled>
+        <hint/>
         <name>number</name>
         <number>2</number>
         <numberType>integer</numberType>
@@ -226,6 +259,34 @@
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
       </number>
+      <owner>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText/>
+        <hint/>
+        <idField/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>owner</name>
+        <number>14</number>
+        <picker>1</picker>
+        <prettyName>owner</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort/>
+        <sql/>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
+      </owner>
       <progress>
         <customDisplay>{{velocity}}
 ## The core will make available the following variables:
@@ -445,6 +506,15 @@
       <assignee/>
     </property>
     <property>
+      <completeDate/>
+    </property>
+    <property>
+      <createDate/>
+    </property>
+    <property>
+      <dependencies/>
+    </property>
+    <property>
       <duedate/>
     </property>
     <property>
@@ -452,6 +522,12 @@
     </property>
     <property>
       <number/>
+    </property>
+    <property>
+      <owner/>
+    </property>
+    <property>
+      <progress/>
     </property>
     <property>
       <project>Other</project>

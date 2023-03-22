@@ -336,9 +336,6 @@
       <configurationClass>TaskManager.TaskManagerConfigurationClass</configurationClass>
     </property>
     <property>
-      <configureGlobally>1</configureGlobally>
-    </property>
-    <property>
       <displayBeforeCategory/>
     </property>
     <property>

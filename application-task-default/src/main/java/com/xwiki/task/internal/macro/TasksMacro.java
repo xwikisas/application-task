@@ -42,9 +42,9 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
-import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -136,7 +136,8 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
             }
         }
         if (noViewRights) {
-            blocks.add(0, new MacroBlock("warning", Collections.emptyMap(), localizationManager.getTranslationPlain("taskmanager.macro.tasks.noRights"), false));
+            blocks.add(0, new MacroBlock("warning", Collections.emptyMap(),
+                localizationManager.getTranslationPlain("taskmanager.macro.tasks.noRights"), false));
         }
         blocks.addAll(errorList);
         return blocks;
