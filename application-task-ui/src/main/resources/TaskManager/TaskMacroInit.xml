@@ -132,11 +132,25 @@
 });
 require(['moment-setup'], function () {
   require(['jquery', 'xwiki-meta', 'moment', 'moment-jdateformatparser'], function ($, xm, moment) {
+    let initCompleteDate = function () {
+      // TODO: Replace 'Done' with an user configurable value.
+      if ($(this).val() == 'Done') {
+        if (!$('.modal :input[name="completeDate"]').val()) {
+          var dateFormat = moment().toMomentFormatString($('.modal').find("input[name='reference']").data('dateformat'));
+          $('.modal :input[name="completeDate"]').val(moment(new Date()).format(dateFormat));
+          $('.modal :input[name="completeDate"]').prop('disabled', false);
+        }
+      } else {
+        $('.modal :input[name="completeDate"]').val('');
+        $('.modal :input[name="completeDate"]').prop('disabled', true);
+      }
+    };
     let init = function () {
       let isTaskMacroModal = !!$('.task-reference').length;
       if (isTaskMacroModal) {
         let modal = $('.modal');
         let idInput = modal.find("input[name='reference']");
+        $('.modal select[name="status"]').each(initCompleteDate)
         if (idInput.val()) return;
         let createDateInput = modal.find("input[name='createDate']");
         let creatorInput = modal.find("input[name='reporter']");
@@ -148,6 +162,8 @@ require(['moment-setup'], function () {
     };
     init();
     $(document).on('shown.bs.modal', '.modal', init);
+    // Create a relationship between status and completeDate fields.
+    $(document).on('change', '.modal select[name="status"]', initCompleteDate);
   });
 });
 </code>

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
+import javax.inject.Named;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -51,6 +53,8 @@ import com.xwiki.task.internal.TaskMacroUpdateEventListener;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +75,7 @@ class TaskMacroUpdateEventListenerTest
     private DocumentRevisionProvider revisionProvider;
 
     @MockComponent
+    @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
 
     @MockComponent
@@ -154,6 +159,8 @@ class TaskMacroUpdateEventListenerTest
         when(this.task_1Obj.getLargeStringValue(Task.OWNER)).thenReturn(this.pageWithMacro.toString());
         when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage)).thenReturn(this.pageWithMacro);
         when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage_1)).thenReturn(this.pageWithMacro);
+        when(this.serializer.serialize(this.pageWithMacro, this.taskPage)).thenReturn(this.pageWithMacro.toString());
+        when(this.serializer.serialize(this.pageWithMacro, this.taskPage_1)).thenReturn(this.pageWithMacro.toString());
 
         task_1.setReference(taskPage_1);
         task_1.setReporter(adminRef);
@@ -199,7 +206,7 @@ class TaskMacroUpdateEventListenerTest
 
         this.eventListener.onEvent(new DocumentUpdatingEvent(), this.docWithTasks, this.context);
 
-        verify(this.taskObj).set(Task.OWNER, this.pageWithMacro, this.context);
+        verify(this.taskObj).set(Task.OWNER, this.pageWithMacro.toString(), this.context);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);
     }

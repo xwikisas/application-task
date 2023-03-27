@@ -200,7 +200,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                     continue;
                 }
 
-                taskObj.set(Task.OWNER, document.getDocumentReference(), context);
+                taskObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference), context);
 
                 populateObjectWithMacroParams(context, task, taskObj);
 

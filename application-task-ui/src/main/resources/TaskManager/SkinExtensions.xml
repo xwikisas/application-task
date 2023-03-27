@@ -288,6 +288,7 @@
 
 .task-macro &gt; span a {
   margin-right: 0.5em;
+  white-space: nowrap;
 }
 
 .task-macro {

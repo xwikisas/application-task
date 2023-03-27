@@ -56,7 +56,8 @@ public class TaskMacroConverter extends AbstractMacroConverter
         Map<String, String> params = new HashMap<>();
         // TODO: Use a configurable value instead of "Done".
         String xwikiStatus =
-            !confluenceParameters.get(TASK_STATUS_PARAMETER).equals("complete") ? Task.STATUS_IN_PROGRESS
+            !confluenceParameters.get(TASK_STATUS_PARAMETER).equals("complete")
+                && !confluenceParameters.get(TASK_STATUS_PARAMETER).equals(Task.STATUS_DONE) ? Task.STATUS_IN_PROGRESS
                 : Task.STATUS_DONE;
         String xwikiIdParam = confluenceParameters.get(TASK_ID_PARAMETER) != null
             ? TASK_REFERENCE_PREFIX + confluenceParameters.get(TASK_ID_PARAMETER)

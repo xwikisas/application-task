@@ -159,7 +159,8 @@ public class DefaultTaskManager implements TaskManager
         task.setName(obj.getStringValue(Task.NAME));
         task.setNumber(obj.getIntValue(Task.NUMBER));
         task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), obj.getDocumentReference()));
-        task.setAssignee(resolver.resolve(obj.getLargeStringValue(Task.ASSIGNEE)));
+        String assignee = obj.getLargeStringValue(Task.ASSIGNEE);
+        task.setAssignee(assignee.isEmpty() ? null : resolver.resolve(assignee));
         task.setStatus(obj.getStringValue(Task.STATUS));
         task.setReporter(resolver.resolve(obj.getLargeStringValue(Task.REPORTER)));
         task.setDuedate(obj.getDateValue(Task.DUE_DATE));
