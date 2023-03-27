@@ -30,13 +30,14 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.filter.internal.job.FilterStreamConverterJob;
+import org.xwiki.job.Job;
 import org.xwiki.job.JobExecutor;
+import org.xwiki.job.event.status.JobStatus;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.event.Event;
@@ -78,7 +79,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     private JobExecutor executor;
 
     @Inject
-    private DocumentAccessBridge accessBridge;
+    private TaskDatesInitializer datesInitializer;
 
     @Inject
     private TaskManager taskManager;
@@ -114,6 +115,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         }
         XDOM documentContent = document.getXDOM();
 
+        maybeInitDatesForTasks(document, documentContent, context);
+
         List<Task> tasks = this.taskXDOMProcessor.extract(documentContent, document.getDocumentReference());
 
         String previousVersion = document.getPreviousVersion();
@@ -145,6 +148,20 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             deleteTaskPages(document, context, previousDocTasks);
             createOrUpdateTaskPages(document, context, tasks);
             context.put(TASK_UPDATE_FLAG, null);
+        }
+    }
+
+    private void maybeInitDatesForTasks(XWikiDocument document, XDOM processedContent, XWikiContext context)
+    {
+        Job npmigJob = executor.getJob(Arrays.asList("npmig", "executemigrationplan", "xwiki"));
+        if (npmigJob != null && JobStatus.State.RUNNING.equals(npmigJob.getStatus().getState())) {
+            try {
+                this.datesInitializer.processDocument(document, processedContent, context);
+            } catch (TaskException e) {
+                logger.warn(
+                    "Attempted to init the creation and completion dates of the document [{}] but failed. Cause: [{}].",
+                    document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
+            }
         }
     }
 
