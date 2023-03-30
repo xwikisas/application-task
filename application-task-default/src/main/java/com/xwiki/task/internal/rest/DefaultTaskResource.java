@@ -80,9 +80,12 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
             taskObject.set(Task.STATUS, status, getXWikiContext());
 
             Date completeDate = null;
+            int progress = 0;
             if (status.equals(Task.STATUS_DONE)) {
                 completeDate = new Date();
+                progress = 100;
             }
+            taskObject.set(Task.PROGRESS, progress, getXWikiContext());
             taskObject.set(Task.COMPLETE_DATE, completeDate, getXWikiContext());
 
             getXWikiContext().getWiki().saveDocument(document, "Task status was updated.", getXWikiContext());

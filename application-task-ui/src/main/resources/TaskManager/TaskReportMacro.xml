@@ -268,19 +268,6 @@
   #set ($tableId = "$mathtool.random")
   #set ($tableId = "task-report-$tableId.substring(2, 7)")
 #end
-#if ("$displayColumns" != '')
-  ## The displayable columns are name,duedate,assignee,owner,createDate,number. We also need to add the reporter,
-  ## createDate and status column for the LiveTable to be able to filter them. They will be hidden.
-  #set ($colSet = $collectiontool.orderedSet)
-  #foreach ($col in $displayColumns.split('\s*,\s*'))
-    #set ($discard = $colSet.add($col))
-  #end
-  #set ($discard = $colSet.addAll(['reporter', 'status', 'number', 'createDate']))
-  #set ($displayColumns = $stringtool.join($colSet, ','))
-#else
-  #set ($displayColumns = 'name,number')
-#end
-#set ($columns = $displayColumns.split('\s*,\s*'))
 #set ($rowCount = $numbertool.toNumber($rowCount).intValue())
 #set ($startDate = '')
 #if ($createdAfter)
@@ -313,10 +300,33 @@
   'completeDate': {'type': 'date', 'size': 10},
   'owner' : {'type': 'page', 'size': 10, 'html': true, 'link': 'view'},
   'createDate': {'type': 'hidden'},
-  'status': {'type': 'hidden'},
-  'reporter': {'type': 'hidden'},
+  'status': {'type': 'hidden', 'html': true},
+  'reporter': {'type': 'hidden', 'html': true},
   'number': {'type': 'hidden'}
 })
+#set ($colType = {
+  'createDate': 'date',
+  'status': 'text',
+  'reporter': 'user',
+  'number': 'text'
+})
+#if ("$displayColumns" != '')
+  ## The displayable columns are name,duedate,assignee,owner,completeDate,createDate,reporter,status.
+  ## If the user does not want to display the createDate/status/reporter/number columns, we still need them, so we hide them.
+  ## If the user wants one of the columns to be displayed, we change the type from hidden to whatever is needed.
+  #set ($colSet = $collectiontool.orderedSet)
+  #foreach ($col in $displayColumns.split('\s*,\s*'))
+    #set ($discard = $colSet.add($col))
+    #if ($colType.containsKey($col))
+      #set ($discard = $columnsProperties.get($col).put('type', $colType.get($col)))
+    #end
+  #end
+  #set ($discard = $colSet.addAll(['reporter', 'status', 'number', 'createDate']))
+  #set ($displayColumns = $stringtool.join($colSet, ','))
+#else
+  #set ($displayColumns = 'name,number')
+#end
+#set ($columns = $displayColumns.split('\s*,\s*'))
 #set ($options = {
   'resultPage': 'TaskManager.TaskReportResultPage',
   'className': 'TaskManager.TaskManagerClass',

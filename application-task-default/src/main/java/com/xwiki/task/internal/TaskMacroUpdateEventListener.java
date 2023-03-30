@@ -153,7 +153,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     private void maybeInitDatesForTasks(XWikiDocument document, XDOM processedContent, XWikiContext context)
     {
-        Job npmigJob = executor.getJob(Arrays.asList("npmig", "executemigrationplan", "xwiki"));
+        // The job id is used in NestedPagesMigrator version 0.7.5.
+        Job npmigJob = executor.getJob(Arrays.asList("npmig", "executemigrationplan",
+            document.getDocumentReference().getWikiReference().getName()));
         if (npmigJob != null && JobStatus.State.RUNNING.equals(npmigJob.getStatus().getState())) {
             try {
                 this.datesInitializer.processDocument(document, processedContent, context);
@@ -216,6 +218,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 {
                     continue;
                 }
+                taskDoc.setAuthorReference(context.getUserReference());
 
                 taskObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference), context);
 

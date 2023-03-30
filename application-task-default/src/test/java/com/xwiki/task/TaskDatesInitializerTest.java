@@ -27,8 +27,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Provider;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -46,13 +44,12 @@ import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
-import com.xwiki.task.internal.SpaceTaskDatesInitializer;
+import com.xwiki.task.internal.TaskDatesInitializer;
 import com.xwiki.task.model.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,15 +60,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
-class SpaceTaskDatesInitializerTest
+class TaskDatesInitializerTest
 {
     private static final String DATE_FORMAT = "dd/MM/yyyy";
 
     @InjectMockComponents
-    private SpaceTaskDatesInitializer taskInit;
-
-    @MockComponent
-    private TaskManager taskManager;
+    private TaskDatesInitializer taskInit;
 
     @MockComponent
     private TaskConfiguration configuration;
@@ -80,16 +74,10 @@ class SpaceTaskDatesInitializerTest
     private DocumentRevisionProvider revisionProvider;
 
     @MockComponent
-    private Provider<XWikiContext> contextProvider;
-
-    @MockComponent
     private EntityReferenceSerializer<String> serializer;
 
     @Mock
     private XWikiContext context;
-
-    @Mock
-    private XWiki wiki;
 
     @Mock
     private XWikiDocument doc;
@@ -111,13 +99,8 @@ class SpaceTaskDatesInitializerTest
     private final Calendar calendar = Calendar.getInstance();
 
     @BeforeEach
-    void setup() throws XWikiException, TaskException
+    void setup()
     {
-        when(this.contextProvider.get()).thenReturn(this.context);
-        when(this.context.getWiki()).thenReturn(this.wiki);
-        when(this.context.getWiki().getDocument(this.docRef, this.context)).thenReturn(this.doc);
-        when(this.taskManager.getTaskOwnersFromSpace(this.spaceRef)).thenReturn(Collections.singletonList(this.docRef));
-        when(this.doc.clone()).thenReturn(this.doc);
         when(this.doc.getXDOM()).thenReturn(this.xdom);
         when(this.doc.getAuthorReference()).thenReturn(this.userReference);
         when(this.serializer.serialize(this.userReference)).thenReturn(this.serializedDocRef);
@@ -125,7 +108,8 @@ class SpaceTaskDatesInitializerTest
     }
 
     @Test
-    void taskCreatedInVersion2OfTheDocumentWithStatusDone() throws XWikiException, DifferentiationFailedException
+    void taskCreatedInVersion2OfTheDocumentWithStatusDone()
+        throws XWikiException, DifferentiationFailedException, TaskException
     {
         Map<String, String> macroParams = new HashMap<>();
         macroParams.put("reference", "Task_1");
@@ -164,20 +148,18 @@ class SpaceTaskDatesInitializerTest
         when(delta23.getRevised()).thenReturn(chunk23);
         when(chunk23.toString()).thenReturn("{{task reference=\"Task_1\" status=\"Done\"}}");
 
-        this.taskInit.run(this.spaceRef);
+        this.taskInit.processDocument(this.doc, this.xdom, this.context);
 
         assertEquals(new SimpleDateFormat(DATE_FORMAT).format(docV2Date),
             task1.getParameter(Task.CREATE_DATE));
         assertEquals(new SimpleDateFormat(DATE_FORMAT).format(docV3Date),
             task1.getParameter(Task.COMPLETE_DATE));
         assertEquals("XWiki.Admin", task1.getParameter(Task.REPORTER));
-
-        verify(this.doc).setContent(this.xdom);
-        verify(this.context.getWiki()).saveDocument(this.doc, "Inferred createDate parameter for tasks.", this.context);
     }
 
     @Test
-    void taskCreatedInTheFirstVersionOfTheDocument() throws XWikiException, DifferentiationFailedException
+    void taskCreatedInTheFirstVersionOfTheDocument()
+        throws XWikiException, DifferentiationFailedException, TaskException
     {
         Map<String, String> macroParams = new HashMap<>();
         macroParams.put("reference", "Task_1");
@@ -206,7 +188,7 @@ class SpaceTaskDatesInitializerTest
         when(delta23.getRevised()).thenReturn(chunk23);
         when(chunk23.toString()).thenReturn("Something unrelated changed.");
 
-        this.taskInit.run(this.spaceRef);
+        this.taskInit.processDocument(this.doc, this.xdom, this.context);
 
         assertEquals(new SimpleDateFormat(DATE_FORMAT).format(docV1Date),
             task1.getParameter(Task.CREATE_DATE));
@@ -215,12 +197,10 @@ class SpaceTaskDatesInitializerTest
         assertEquals("XWiki.Admin", task1.getParameter(Task.REPORTER));
 
         verify(this.doc, never()).getContentDiff(any(String.class), any(String.class), any(XWikiContext.class));
-        verify(this.doc).setContent(this.xdom);
-        verify(this.context.getWiki()).saveDocument(this.doc, "Inferred createDate parameter for tasks.", this.context);
     }
 
     @Test
-    void noTasksThatNeedUpdating() throws XWikiException, DifferentiationFailedException
+    void noTasksThatNeedUpdating() throws XWikiException, DifferentiationFailedException, TaskException
     {
         Map<String, String> macroParams = new HashMap<>();
         macroParams.put("reference", "Task_1");
@@ -230,12 +210,10 @@ class SpaceTaskDatesInitializerTest
         MacroBlock task1 = new MacroBlock(Task.MACRO_NAME, macroParams, true);
         when(this.xdom.getBlocks(any(), any())).thenReturn(Collections.singletonList(task1));
 
-        this.taskInit.run(this.spaceRef);
+        this.taskInit.processDocument(this.doc, this.xdom, this.context);
 
         verify(this.revisionProvider, never()).getRevision(any(XWikiDocument.class), any(String.class));
         verify(this.doc, never()).getContentDiff(any(String.class), any(String.class), any(XWikiContext.class));
-        verify(this.doc, never()).setContent(this.xdom);
-        verify(this.context.getWiki(), never()).saveDocument(this.doc, "Inferred createDate parameter for tasks.",
-            this.context);
+
     }
 }

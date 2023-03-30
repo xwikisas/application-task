@@ -99,6 +99,11 @@ public class Task
      */
     public static final String COMPLETE_DATE = "completeDate";
 
+    /**
+     * The name of the PROGRESS field.
+     */
+    public static final String PROGRESS = "progress";
+
     private String name;
 
     private int number;
@@ -118,6 +123,8 @@ public class Task
     private Date duedate;
 
     private Date completeDate;
+
+    private int progress;
 
     /**
      * @return the reference of the document where this task resides.
@@ -278,5 +285,21 @@ public class Task
     public void setNumber(int number)
     {
         this.number = number;
+    }
+
+    /**
+     * @return the progress that was made to a specific task. Value from 0 to 100.
+     */
+    public int getProgress()
+    {
+        return progress;
+    }
+
+    /**
+     * @param progress see {@link #getProgress()}.
+     */
+    public void setProgress(int progress)
+    {
+        this.progress = progress;
     }
 }

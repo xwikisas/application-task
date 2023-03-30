@@ -152,6 +152,7 @@ taskmanager.livetable.duedate=Deadline
 taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.owner=Location
 taskmanager.livetable.completeDate=Completed on
+taskmanager.livetable.createDate=Creation date
 taskmanager.livetable.noRights=You don't have view rights for the document that contains this task.
 
 taskmanager.macro.tasks.noRights=Some tasks have no been displayed because you don't have the rights to view them.

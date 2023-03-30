@@ -19,11 +19,8 @@
  */
 package com.xwiki.task;
 
-import java.util.List;
-
 import org.xwiki.component.annotation.Role;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.stability.Unstable;
 
 import com.xwiki.task.model.Task;
@@ -51,13 +48,6 @@ public interface TaskManager
      * @throws TaskException if there is no task with the given id.
      */
     Task getTask(int id) throws TaskException;
-
-    /**
-     * @param spaceReference the space from which you want to get the pages holding task macros.
-     * @return a list of references to the pages that are owners to task pages.
-     * @throws TaskException if the retrieval of the pages failed.
-     */
-    List<DocumentReference> getTaskOwnersFromSpace(SpaceReference spaceReference) throws TaskException;
 
     /**
      * Delete the tasks that have a certain page as an owner.

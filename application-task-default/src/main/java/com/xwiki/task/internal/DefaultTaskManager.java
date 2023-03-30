@@ -21,7 +21,6 @@ package com.xwiki.task.internal;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -33,11 +32,9 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.LocalDocumentReference;
-import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
-import org.xwiki.query.internal.DefaultQueryParameter;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -116,30 +113,6 @@ public class DefaultTaskManager implements TaskManager
             throw new TaskException(String.format("There is no task with the id [%d].", id));
         } catch (QueryException | XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the task with id [%s].", id), e);
-        }
-    }
-
-    @Override
-    public List<DocumentReference> getTaskOwnersFromSpace(SpaceReference spaceReference) throws TaskException
-    {
-        String statement =
-            "select distinct taskObject.owner "
-                + "from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject "
-                + "WHERE taskObject.owner like :absoluteSpaceRef "
-                + "OR taskObject.owner like :compactSpaceRef";
-
-        try {
-            Query query = queryManager.createQuery(statement, Query.XWQL);
-            query
-                .bindValue("absoluteSpaceRef",
-                    new DefaultQueryParameter(null).literal(serializer.serialize(spaceReference)).anyChars())
-                .bindValue("compactSpaceRef",
-                    new DefaultQueryParameter(null).literal(compactserializer.serialize(spaceReference)).anyChars());
-            List<String> result = query.execute();
-            return result.stream().map(item -> resolver.resolve(item)).collect(Collectors.toList());
-        } catch (QueryException e) {
-            throw new TaskException(
-                String.format("Failed to query for the pages in the space [%s].", spaceReference), e);
         }
     }
 

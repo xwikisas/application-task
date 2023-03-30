@@ -27,7 +27,7 @@
     <artifactId>application-task</artifactId>
     <version>3.0-SNAPSHOT</version>
   </parent>
-
+  <name>Task Manager Application - Default</name>
   <artifactId>application-task-default</artifactId>
 
   <properties>

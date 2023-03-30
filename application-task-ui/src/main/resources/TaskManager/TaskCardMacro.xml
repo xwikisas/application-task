@@ -728,7 +728,7 @@
       <defaultValue/>
     </property>
     <property>
-      <description>The ID (page name) of the task.</description>
+      <description>The reference of the task page.</description>
     </property>
     <property>
       <mandatory>1</mandatory>

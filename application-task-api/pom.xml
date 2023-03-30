@@ -27,7 +27,7 @@
     <version>3.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
+  <name>Task Manager Application - API</name>
   <artifactId>application-task-api</artifactId>
 
   <properties>
