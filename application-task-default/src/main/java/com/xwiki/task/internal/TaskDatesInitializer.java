@@ -135,8 +135,8 @@ public class TaskDatesInitializer
                 }
                 j = i;
             } catch (XWikiException | DifferentiationFailedException e) {
-                logger.warn("Failed to compare the versions [{}] and [{}] of the document [{}]. Cause [{}].", j, i,
-                    ownerDoc.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
+                logger.warn("Failed to compare the versions [{}] and [{}] of the document [{}]. Cause [{}].",
+                    versions[j], versions[i], ownerDoc.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }

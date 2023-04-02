@@ -74,7 +74,7 @@
   })
 #livetable("severityTable" $columns $columnsProperties $options)
 #else
-  {{info}}$!{services.rendering.escape($services.localization.render('TaskManager.administration.noRights'), 'xwiki/2.1')}{{/info}}
+  {{info}}{{translation key="TaskManager.administration.noRights"/}}{{/info}}
 #end
 {{/velocity}}</content>
 </xwikidoc>

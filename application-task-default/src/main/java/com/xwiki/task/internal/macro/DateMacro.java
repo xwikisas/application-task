@@ -92,14 +92,15 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
         this.ssx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
 
         Date paramDate = null;
+        String format = configuration.getStorageDateFormat();
         try {
             if (parameters.getFormat() != null && !parameters.getFormat().isEmpty()) {
-                paramDate = new SimpleDateFormat(parameters.getFormat()).parse(parameters.getValue());
-            } else {
-                paramDate = new SimpleDateFormat(configuration.getStorageDateFormat()).parse(parameters.getValue());
+                format = parameters.getFormat();
             }
+            paramDate = new SimpleDateFormat(format).parse(parameters.getValue());
         } catch (ParseException e) {
-            throw new MacroExecutionException("Failed to parse the given date!");
+            throw new MacroExecutionException(
+                String.format("Failed to parse the given date, expected format [%s]!", format));
         }
 
         String displayDate = new SimpleDateFormat(configuration.getDisplayDateFormat()).format(paramDate);
