@@ -152,7 +152,7 @@ public class TaskBlockProcessor
             insertionPoint = newTaskContentXDOM;
         }
 
-        if (assignee != null) {
+        if (assignee != null && !assignee.isEmpty()) {
             Map<String, String> mentionParams = new HashMap<>();
             mentionParams.put("style", "FULL_NAME");
             mentionParams.put("reference", assignee);

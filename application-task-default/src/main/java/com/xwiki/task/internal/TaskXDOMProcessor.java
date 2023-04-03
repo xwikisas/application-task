@@ -304,7 +304,7 @@ public class TaskXDOMProcessor
 
     private Date extractDeadlineDate(XDOM taskContent)
     {
-        Date deadline = new Date();
+        Date deadline = null;
 
         MacroBlock macro =
             taskContent.getFirstBlock(new MacroBlockMatcher(DATE_MACRO_ID), Block.Axes.DESCENDANT);
