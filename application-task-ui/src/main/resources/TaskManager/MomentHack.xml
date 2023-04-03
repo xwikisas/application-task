@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.MomentJSConfig" locale="">
+<xwikidoc version="1.4" reference="TaskManager.MomentHack" locale="">
   <web>TaskManager</web>
-  <name>MomentJSConfig</name>
+  <name>MomentHack</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>TaskManager.WebHome</parent>
+  <parent>Main.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>MomentJSConfig</title>
+  <title>MomentHack</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>TaskManager.MomentJSConfig</name>
+    <name>TaskManager.MomentHack</name>
     <number>0</number>
     <className>XWiki.JavaScriptExtension</className>
-    <guid>a1fd0e00-9c73-41a0-9d7c-ef417f39571e</guid>
+    <guid>d6b2755b-dae2-46b7-a07e-d8e56233f54f</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -124,43 +124,41 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>(function () {
-  if (require.toUrl('moment').indexOf('/webjars/') &lt; 0) {
-    const config = {
-      packages: [],
-      paths: {},
-      map: {
-        '*': {}
-      }
-    };
-    // Before XWiki 14.1RC1 (XWIKI-19427) there was no global configuration for the 'moment' module available by default
-    // so each extension had to define / duplicate its own configuration. The problem is that RequireJS can throw a load
-    // timeout error if two extensions configure the 'moment' module differently (e.g. using different paths). So we
-    // need to ensure our configuration is compatible with the configuration used by other XWiki extensions.
-    const xwikiVersion = $jsontool.serialize($services.extension.core.getCoreExtension('org.xwiki.commons:xwiki-commons-script').version.value);
-    const xwikiVersionParts = xwikiVersion.match(/(\d+).(\d+)*/);
-    if (xwikiVersionParts &amp;&amp; (parseInt(xwikiVersionParts[1]) &lt; 14 || (parseInt(xwikiVersionParts[1]) == 14 &amp;&amp; parseInt(xwikiVersionParts[2]) &lt; 1))) {
-      config.packages.push({
+      <code>// There is a configuration conflict for momentjs module. The livetabledate.js consiguration is different than the
+// datepicker configuration. In the case of the task-macro, both are used on the same page. This will cause the require
+// for moment js to timeout. This occurs when inplace editing or in wysiwyg mode. To fix this, we override require.config
+// to detect when the livetabledate.js code is run and prevent it from causing any issues. This page needs to be removed
+// when the parent of the project is upgraded to a version greater or equal to 14.1.
+let oldRequireConfig = require.config;
+require.config = function (cfg) {
+  if (cfg.paths &amp;&amp; cfg.paths.moment)  {
+    var paths = cfg.paths;
+    var momentRelativePath = 'min/moment.min';
+    // The base path shouldn't end with the path separator (slash).
+    var momentBasePath = paths.moment.substring(0, paths.moment.length - (momentRelativePath.length + 1));
+    delete paths.moment;
+    let packages = cfg.packages || [];
+    packages.push({
         name: 'moment',
-        location: $jsontool.serialize($stringtool.removeEnd($services.webjars.url('momentjs', ''), '/')),
-        main: 'min/moment.min'
-      });
-      // momentjs locales depend on '../moment' which gets resolved as 'moment/moment' due to our package configuration,
-      // which points to the unminified version. The consequence is that we end up loading both the minified and the
-      // unminified version of momentjs and, more importantly, the locales are loaded into the moment instance created by
-      // the unminified code. In order to fix this we map the unminified version to the minified version so that we work
-      // with a single moment instance (that has the locales loaded).
-      config.map['*']['moment/moment'] = 'moment';
-      require.config(config);
-    }
-  }
-})();</code>
+        location: momentBasePath,
+        main: momentRelativePath
+    });
+    let map = cfg.map || {};
+    let star = map['*'] || {};
+    map['*'] = star;
+    star['moment/moment'] = 'moment';
+    cfg['packages'] = packages;
+    cfg['paths'] = paths;
+    cfg['map'] = map;
+  };
+  oldRequireConfig.apply(this, [cfg]);
+};</code>
     </property>
     <property>
       <name/>
     </property>
     <property>
-      <parse>1</parse>
+      <parse>0</parse>
     </property>
     <property>
       <use>onDemand</use>
