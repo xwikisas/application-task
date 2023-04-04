@@ -129,30 +129,32 @@
 // for moment js to timeout. This occurs when inplace editing or in wysiwyg mode. To fix this, we override require.config
 // to detect when the livetabledate.js code is run and prevent it from causing any issues. This page needs to be removed
 // when the parent of the project is upgraded to a version greater or equal to 14.1.
-let oldRequireConfig = require.config;
-require.config = function (cfg) {
-  if (cfg.paths &amp;&amp; cfg.paths.moment)  {
-    var paths = cfg.paths;
-    var momentRelativePath = 'min/moment.min';
-    // The base path shouldn't end with the path separator (slash).
-    var momentBasePath = paths.moment.substring(0, paths.moment.length - (momentRelativePath.length + 1));
-    delete paths.moment;
-    let packages = cfg.packages || [];
-    packages.push({
-        name: 'moment',
-        location: momentBasePath,
-        main: momentRelativePath
-    });
-    let map = cfg.map || {};
-    let star = map['*'] || {};
-    map['*'] = star;
-    star['moment/moment'] = 'moment';
-    cfg['packages'] = packages;
-    cfg['paths'] = paths;
-    cfg['map'] = map;
+(function() {
+  let oldRequireConfig = require.config;
+  require.config = function (cfg) {
+    if (cfg.paths &amp;&amp; cfg.paths.moment)  {
+      var paths = cfg.paths;
+      var momentRelativePath = 'min/moment.min';
+      // The base path shouldn't end with the path separator (slash).
+      var momentBasePath = paths.moment.substring(0, paths.moment.length - (momentRelativePath.length + 1));
+      delete paths.moment;
+      let packages = cfg.packages || [];
+      packages.push({
+          name: 'moment',
+         location: momentBasePath,
+         main: momentRelativePath
+      });
+      let map = cfg.map || {};
+      let star = map['*'] || {};
+      map['*'] = star;
+      star['moment/moment'] = 'moment';
+      cfg['packages'] = packages;
+      cfg['paths'] = paths;
+      cfg['map'] = map;
+    };
+    oldRequireConfig.apply(this, arguments);
   };
-  oldRequireConfig.apply(this, [cfg]);
-};</code>
+})();</code>
     </property>
     <property>
       <name/>

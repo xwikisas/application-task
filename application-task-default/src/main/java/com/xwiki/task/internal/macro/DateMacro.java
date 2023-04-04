@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.FormatBlock;
@@ -94,7 +95,7 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
         Date paramDate = null;
         String format = configuration.getStorageDateFormat();
         try {
-            if (parameters.getFormat() != null && !parameters.getFormat().isEmpty()) {
+            if (!StringUtils.isEmpty(parameters.getFormat())) {
                 format = parameters.getFormat();
             }
             paramDate = new SimpleDateFormat(format).parse(parameters.getValue());

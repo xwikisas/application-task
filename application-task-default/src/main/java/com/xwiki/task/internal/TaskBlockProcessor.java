@@ -31,6 +31,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -152,7 +153,7 @@ public class TaskBlockProcessor
             insertionPoint = newTaskContentXDOM;
         }
 
-        if (assignee != null && !assignee.isEmpty()) {
+        if (!StringUtils.isEmpty(assignee)) {
             Map<String, String> mentionParams = new HashMap<>();
             mentionParams.put("style", "FULL_NAME");
             mentionParams.put("reference", assignee);

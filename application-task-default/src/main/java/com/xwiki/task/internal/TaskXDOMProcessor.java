@@ -240,6 +240,7 @@ public class TaskXDOMProcessor
                 storageFormat.format(completeDate != null ? completeDate : new Date()));
         } else {
             taskObject.setDateValue(Task.COMPLETE_DATE, null);
+            macro.setParameter(Task.COMPLETE_DATE, "");
         }
         Date createDate = taskObject.getDateValue(Task.CREATE_DATE);
         if (createDate == null) {
