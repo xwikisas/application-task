@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.3" reference="TaskManager.TaskManagerTranslations" locale="">
+<xwikidoc version="1.4" reference="TaskManager.TaskManagerTranslations" locale="">
   <web>TaskManager</web>
   <name>TaskManagerTranslations</name>
   <language/>
@@ -40,6 +40,13 @@
 # Application Panel title
 TaskManager.home.title=Task Manager
 TaskManager.panels.name=Task Manager
+
+TaskManager.administration.noRights=You need to be an Administrator
+
+TaskManager.administration.livetable.doc.date=Date
+TaskManager.administration.livetable.doc.author=Last Author
+TaskManager.administration.livetable._actions=Actions
+TaskManager.administration.livetable.order=Order
 
 TaskManager.administration.addProject.label=Project
 TaskManager.administration.addProject.submit=Add Project
@@ -109,9 +116,6 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
-# Status livetable
-xe.index.order=Order
-
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until
@@ -135,7 +139,62 @@ TaskManager.StatusClass_status_Done=Done
 
 TaskManager.SeverityClass_severity_Low=Low
 TaskManager.SeverityClass_severity_Medium=Medium
-TaskManager.SeverityClass_severity_High=High</content>
+TaskManager.SeverityClass_severity_High=High
+
+## Confluence-like tasks
+taskmanager.notification.statusChange.success=Task status changed successfully!
+taskmanager.notification.statusChange.restFail=Failed to change the status because of a server error!
+taskmanager.notification.statusChange.noId=Failed to change the status because the task doesn't have an ID.
+taskmanager.notification.statusChange.inprogress=Changing status..
+
+taskmanager.livetable.name=Task
+taskmanager.livetable.duedate=Deadline
+taskmanager.livetable.assignee=Assignee
+taskmanager.livetable.owner=Location
+taskmanager.livetable.completeDate=Completed on
+taskmanager.livetable.createDate=Creation date
+taskmanager.livetable.noRights=You don't have view rights for the document that contains this task.
+
+taskmanager.macro.tasks.noRights=Some tasks have no been displayed because you don't have the rights to view them.
+
+rendering.macro.task.name=Task Macro
+rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline.
+rendering.macro.task.parameter.status.name=The status of the task.
+rendering.macro.task.parameter.status.description=Specify what is the current status of the task.
+rendering.macro.task.parameter.id.name=ID
+rendering.macro.task.parameter.id.description=An unique identifier for the task, relative to the current page.
+rendering.macro.task.parameter.creator.name=Creator
+rendering.macro.task.parameter.creator.description=The user that created the task.
+rendering.macro.task.parameter.createDate.name=Creation date
+rendering.macro.task.parameter.createDate.description=The date when the task was created.
+rendering.macro.task.parameter.completeDate.name=Completion date
+rendering.macro.task.parameter.completeDate.description=If you set the status of the task as "Done", you should also set the completion date.
+
+rendering.macro.task-report.name=Task report macro
+rendering.macro.task-report.description=Create a custom report of the tasks within the wiki.
+rendering.macro.task-report.parameter.pages.name=Pages filter
+rendering.macro.task-report.parameter.pages.description=Display the tasks found inside the specified pages or in their children.
+rendering.macro.task-report.parameter.tags.name=Tags filter
+rendering.macro.task-report.parameter.tags.description=Display only the tasks that are found on pages that have at least one these tags. This field should be a comma separated list of tags. e.g. "tech,blog,programming".
+rendering.macro.task-report.parameter.assignees.name=Assignees filter
+rendering.macro.task-report.parameter.assignees.description=Filter the tasks by their assigned users. The report will display the tasks that have at least one of their assignees in the users specified.
+rendering.macro.task-report.parameter.reporters.name=Reporter filter
+rendering.macro.task-report.parameter.reporters.description=Filter the tasks by the reporter. The report will display the tasks created by the users specified.
+rendering.macro.task-report.parameter.createdAfter.name=Creation date filter
+rendering.macro.task-report.parameter.createdAfter.description=Display all the tasks created after the specified date.
+rendering.macro.task-report.parameter.status.name=Status filter
+rendering.macro.task-report.parameter.status.description=Display all the tasks that have the specified status.
+rendering.macro.task-report.parameter.limit.name=Live table limit
+rendering.macro.task-report.parameter.limit.description=Specifies how many tasks should be displayed on a single page.
+rendering.macro.task-report.parameter.columns.name=Live table display columns
+rendering.macro.task-report.parameter.columns.description=A list task properties that you want the table to display. The possible values are: name, duedate, assignee, owner, reporter, number, status, completeDate, createDate.
+rendering.macro.task-report.parameter.sortBy.name=Sort By
+rendering.macro.task-report.parameter.sortBy.description=The column that will be used to order the table.
+rendering.macro.task-report.parameter.id.name=Table ID
+rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
+
+TaskManager.TaskManagerConfigurationClass_storageDateFormat=The format that will be used to store dates used in Task Manager.
+TaskManager.TaskManagerConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.</content>
   <object>
     <name>TaskManager.TaskManagerTranslations</name>
     <number>0</number>
@@ -154,6 +213,8 @@ TaskManager.SeverityClass_severity_High=High</content>
         <cache>0</cache>
         <disabled>0</disabled>
         <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
         <multiSelect>0</multiSelect>
         <name>scope</name>
         <number>1</number>

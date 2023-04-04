@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.3" reference="TaskManager.TaskManagerSheet" locale="">
+<xwikidoc version="1.4" reference="TaskManager.TaskManagerSheet" locale="">
   <web>TaskManager</web>
   <name>TaskManagerSheet</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>TaskManagerClass</parent>
+  <parent>TaskManager.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -36,7 +36,26 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
+  <content>{{velocity output="false"}}
+#macro(displayPropertyCol $name $icon)
+(% class="col-xs-12 col-sm-6" %)
+(((
+  #displayProperty($name $icon)
+)))
+#end
+#macro(displayProperty $name $icon)
+  (% class="form-group" %)
+  (((
+    ; &lt;label for="TaskManager.TaskManagerClass_0_$name"&gt;
+        $services.icon.render($icon)
+        $escapetool.xml($doc.displayPrettyName($name, false, false))
+      &lt;/label&gt;
+    : $doc.display($name)
+  )))
+#end
+{{/velocity}}
+
+{{velocity}}
 #if(!$isGuest)
   {{html wiki="true"}}
     #set ($discard = $doc.use('TaskManager.TaskManagerClass'))
@@ -50,110 +69,32 @@
           (((
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_number"&gt;
-                      $services.icon.render('key')
-                      $escapetool.xml($doc.displayPrettyName('number', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('number')
-                )))
-              )))
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                   #if ("$!doc.display('project')" != '')
-                     ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
-                         $services.icon.render('folder')
-                         $escapetool.xml($doc.displayPrettyName('project', false, false))
-                       &lt;/label&gt;
-                     : $doc.display('project')
-                  #end
-                )))
-              )))
+              #displayPropertyCol('number', 'key')
+              #if ("$!doc.display('project')" != '')
+                #displayPropertyCol('project', 'folder')
+              #end
             )))
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_creationdate"&gt;
-                      $services.icon.render('calendar')
-                      $services.localization.render('TaskManager.TaskManagerClass_creationdate')
-                    &lt;/label&gt;
-                  : $xwiki.formatDate($doc.creationDate,'dd/MM/yyyy HH:mm:ss')
-                )))
-              )))
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_duedate"&gt;
-                      $services.icon.render('time')
-                      $escapetool.xml($doc.displayPrettyName('duedate', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('duedate')
-                )))
-              )))
+              #displayPropertyCol('createDate', 'calendar')
+              #displayPropertyCol('duedate', 'time')
+              #if ("$!doc.display('completeDate')" != '')
+                #displayPropertyCol('completeDate', 'check')
+              #end
             )))
             (% class="row" %)
             (((
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_reporter"&gt;
-                      $services.icon.render('user')
-                      $escapetool.xml($doc.displayPrettyName('reporter', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('reporter')
-                )))
-              )))
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                   #if ("$!doc.getValue('assignee')" != '')
-                     ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;
-                         $services.icon.render('user')
-                         $escapetool.xml($doc.displayPrettyName('assignee', false, false))
-                       &lt;/label&gt;
-                     : $doc.display('assignee')
-                  #end
-                )))
-              )))
+              #displayPropertyCol('reporter', 'user')
+              #if ("$!doc.getValue('assignee')" != '')
+                #displayPropertyCol('assignee', 'user')
+              #end
             )))
           )))
           (% class="col-xs-12 col-sm-4 col-md-4" %)
           (((
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_severity"&gt;
-                  $services.icon.render('bell')
-                  $escapetool.xml($doc.displayPrettyName('severity', false, false))
-                &lt;/label&gt;
-              : $doc.display('severity')
-            )))
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;
-                  $services.icon.render('accept')
-                  $escapetool.xml($doc.displayPrettyName('status', false, false))
-                &lt;/label&gt;
-              : $doc.display('status')
-            )))
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_progress"&gt;
-                  $services.icon.render('contrast')
-                  $escapetool.xml($doc.displayPrettyName('progress', false, false))
-                &lt;/label&gt;
-              : $doc.display('progress')
-            )))
+            #displayProperty('severity', 'bell')
+            #displayProperty('status', 'info')
+            #displayProperty('progress', 'contrast')
           )))
         )))
         (% class="row" %)
@@ -176,17 +117,9 @@
         (((
           (% class="col-xs-12 col-sm-12 col-md-12" %)
           (((
-            (% class="form-group" %)
-            (((
-               #if ("$!doc.display('dependencies')" != '')
-                 ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;
-                     $services.icon.render('add')
-                     $escapetool.xml($doc.displayPrettyName('dependencies', false, false))
-                   &lt;/label&gt;
-                 : $doc.display('dependencies')
-              #end
-            )))
-          )))
+            #if ("$!doc.display('dependencies')" != '')
+               #displayProperty('dependencies', 'add')
+            #end
         )))
       )))
     #end
@@ -213,17 +146,6 @@
                    #end
                 #end
               :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$escapetool.xml($taskName)"/&gt;
-                #if($doc.isNew())
-                #set($query = "select max(taskObject.number) from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject")
-                #set($result = $services.query.xwql($query).execute())
-                #if (($result.get(0)) &amp;&amp; ("$!result.get(0)" != ""))
-                  #set($index = $result.get(0))
-                #else
-                  #set($index = 0)
-                #end
-                #set($number = $mathtool.add($index,1))
-                &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_number" id="TaskManager.TaskManagerClass_0_number" value="$number"/&gt;
-                #end
             )))
           )))
           (% class="col-xs-12 col-sm-4 col-md-4" %)
@@ -244,28 +166,12 @@
           (((
             (% class="row" %)
             (((
+              #displayPropertyCol('createDate', 'calendar')
+              #displayPropertyCol('duedate', 'time')
               (% class="col-xs-12 col-sm-6" %)
               (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_creationdate"&gt;
-                      $services.icon.render('calendar')
-                      $services.localization.render('TaskManager.TaskManagerClass_creationdate')
-                    &lt;/label&gt;
-                  : $xwiki.formatDate($doc.creationDate,'dd/MM/yyyy HH:mm:ss')
-                )))
               )))
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_duedate"&gt;
-                      $services.icon.render('time')
-                      $escapetool.xml($doc.displayPrettyName('duedate', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('duedate')
-                )))
-              )))
+              #displayPropertyCol('completeDate', 'check')
             )))
             (% class="row" %)
             (((
@@ -284,45 +190,14 @@
                     $doc.display('reporter', 'view')
                 )))
               )))
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_assignee"&gt;
-                      $services.icon.render('user')
-                      $escapetool.xml($doc.displayPrettyName('assignee', false, false))
-                    &lt;/label&gt;
-                  : $doc.display('assignee')
-                )))
-              )))
+              #displayPropertyCol('assignee', 'user')
             )))
           )))
           (% class="col-xs-12 col-sm-4 col-md-4" %)
           (((
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_severity"&gt;
-                  $services.icon.render('bell')
-                  $escapetool.xml($doc.displayPrettyName('severity', false, false))
-                &lt;/label&gt;
-              : $doc.display('severity')
-            )))
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_status"&gt;
-                  $services.icon.render('accept')
-                  $escapetool.xml($doc.displayPrettyName('status', false, false))
-                &lt;/label&gt;
-              : $doc.display('status')
-            )))
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_progress"&gt;
-                  $services.icon.render('contrast')
-                  $escapetool.xml($doc.displayPrettyName('progress', false, false))
-                &lt;/label&gt;
-              : $doc.display('progress')
-            )))
+            #displayProperty('severity', 'bell')
+            #displayProperty('status', 'info')
+            #displayProperty('progress', 'contrast')
           )))
         )))
         (% class="row" %)
@@ -367,8 +242,11 @@
       <validationScript/>
       <cache>
         <cache>0</cache>
+        <defaultValue>long</defaultValue>
         <disabled>0</disabled>
         <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
         <multiSelect>0</multiSelect>
         <name>cache</name>
         <number>5</number>
@@ -416,6 +294,8 @@
         <cache>0</cache>
         <disabled>0</disabled>
         <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
         <multiSelect>0</multiSelect>
         <name>use</name>
         <number>3</number>

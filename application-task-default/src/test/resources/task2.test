@@ -1,0 +1,52 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.0
+.# Task macro test with date macro inside the content.
+.#-----------------------------------------------------
+{{task reference="Sandbox.Task" status="Done"}}
+Important task with the following deadline: {{date value="2021/09/07 00:00"/}}
+{{/task}}
+.#-----------------------------------------------------
+.expect|event/1.0
+.#-----------------------------------------------------
+beginDocument
+beginMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
+beginGroup [[class]=[task-macro]]
+beginFormat [NONE]
+onRawText [<input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status">] [html/5.0]
+endFormat [NONE]
+beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
+onSpecialSymbol [#]
+onWord [1]
+endLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
+beginGroup [[class]=[task-content]]
+beginMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+beginParagraph
+onWord [Important]
+onSpace
+onWord [task]
+onSpace
+onWord [with]
+onSpace
+onWord [the]
+onSpace
+onWord [following]
+onSpace
+onWord [deadline]
+onSpecialSymbol [:]
+onSpace
+beginMacroMarkerInline [date] [value=2021/09/07 00:00]
+beginFormat [NONE] [[class]=[xwiki-date]]
+onWord [2021/09/07 00:00]
+endFormat [NONE] [[class]=[xwiki-date]]
+endMacroMarkerInline [date] [value=2021/09/07 00:00]
+endParagraph
+endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+endGroup [[class]=[task-content]]
+endGroup [[class]=[task-macro]]
+endMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
+endDocument
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+<div class="task-macro"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span><div class="task-content"><p>Important task with the following deadline: <span class="xwiki-date">2021/09/07 00:00</span></p></div></div>

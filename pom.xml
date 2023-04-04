@@ -25,11 +25,11 @@
   <parent>
     <groupId>com.xwiki.parent</groupId>
     <artifactId>xwikisas-parent-platform</artifactId>
-    <version>11.10</version>
+    <version>13.10</version>
   </parent>
   <groupId>com.xwiki.task</groupId>
   <artifactId>application-task</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>3.0-SNAPSHOT</version>
   <name>Task Manager Application - Parent POM</name>
   <packaging>pom</packaging>
   <description>A simple task management application</description>
@@ -44,11 +44,65 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <licensing.version>1.21</licensing.version>
+    <licensing.version>1.24.1</licensing.version>
+    <kanban-macro.version>1.2.5</kanban-macro.version>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
+    <confluence.xml.version>9.20.0</confluence.xml.version>
   </properties>
+  <dependencyManagement>
+    <!-- Fix "Require upper bound dependencies error" -->
+    <dependencies>
+      <dependency>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-filter-xml</artifactId>
+        <version>${commons.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-filter-event-model</artifactId>
+        <version>${platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.rendering</groupId>
+        <artifactId>xwiki-rendering-syntax-plain</artifactId>
+        <version>${rendering.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-model-api</artifactId>
+        <version>${platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-rendering-async-default</artifactId>
+        <version>${platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-filter-event-user</artifactId>
+        <version>${platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.rendering</groupId>
+        <artifactId>xwiki-rendering-wikimodel</artifactId>
+        <version>${rendering.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.rendering</groupId>
+        <artifactId>xwiki-rendering-syntax-xwiki21</artifactId>
+        <version>${rendering.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.rendering</groupId>
+        <artifactId>xwiki-rendering-syntax-wikimodel</artifactId>
+        <version>${rendering.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <modules>
+    <module>application-task-api</module>
+    <module>application-task-default</module>
     <module>application-task-ui</module>
   </modules>
   <profiles>
