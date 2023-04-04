@@ -49,6 +49,14 @@ public class TaskMacroConverter extends AbstractMacroConverter
 
     private static final String TASK_REFERENCE_PREFIX = "Task_";
 
+    // A workaround for issue XWIKI-20805 that causes the wysiwyg editor to delete the macros inside the content of
+    // another macro when saving the page.
+    @Override
+    protected String toXWikiContent(String confluenceId, Map<String, String> parameters, String confluenceContent)
+    {
+        return confluenceContent.replace("(% class=\"placeholder-inline-tasks\" %)", "");
+    }
+
     @Override
     protected Map<String, String> toXWikiParameters(String confluenceId, Map<String, String> confluenceParameters,
         String content)
