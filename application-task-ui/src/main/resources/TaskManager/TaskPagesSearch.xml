@@ -44,11 +44,14 @@
   #set ($query = $services.query.xwql($statement).setLimit(10).bindValue('param', $param))
   #set ($array = [])
   #foreach ($item in $query.execute())
-    #set ($discard = $array.add({
-      'label': $item[1],
-      'value': $item[0],
-      'hint':  $item[2]
-    }))
+    #set ($docRef = $services.model.resolveDocument($item[0]))
+    #if ($services.security.authorization.hasAccess("view", $docRef))
+      #set ($discard = $array.add({
+        'label': $item[1],
+        'value': $item[0],
+        'hint':  $item[2]
+      }))
+    #end
   #end
   $jsontool.serialize($array)
 #end
