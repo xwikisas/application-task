@@ -737,7 +737,7 @@
       <name>taskid</name>
     </property>
     <property>
-      <type/>
+      <type>com.xwiki.task.TaskPageReference</type>
     </property>
   </object>
   <object>
