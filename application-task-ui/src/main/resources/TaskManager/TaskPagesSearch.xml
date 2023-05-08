@@ -41,7 +41,7 @@
   $response.setContentType('application/json')
   #set ($statement = "SELECT distinct doc.fullName, doc.name, doc.space FROM Document doc, doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' AND lower(doc.fullName) LIKE lower(:param)")
   #set ($param = $services.query.parameter().anyChars().literal("$!request.text").anyChars())
-  #set ($query = $services.query.setLimit(10).xwql($statement).bindValue('param', $param))
+  #set ($query = $services.query.xwql($statement).setLimit(10).bindValue('param', $param))
   #set ($array = [])
   #foreach ($item in $query.execute())
     #set ($discard = $array.add({
