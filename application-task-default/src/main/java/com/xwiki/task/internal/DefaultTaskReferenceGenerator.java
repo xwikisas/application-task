@@ -29,10 +29,7 @@ import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
-import org.xwiki.security.authorization.ContextualAuthorizationManager;
-import org.xwiki.security.authorization.Right;
 
-import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskReferenceGenerator;
 
 /**
@@ -47,29 +44,16 @@ public class DefaultTaskReferenceGenerator implements TaskReferenceGenerator
 {
     private static final String TASK_PAGE_NAME_PREFIX = "Task_";
 
-    private static final String TASK_MANAGER_SPACE = "TaskManager";
-
-    @Inject
-    private ContextualAuthorizationManager authorizationManager;
-
     @Inject
     private DocumentAccessBridge documentAccessBridge;
 
     private final Map<SpaceReference, Integer> nameOccurences = new HashMap<>();
 
     @Override
-    public synchronized DocumentReference generate(DocumentReference parent) throws TaskException
+    public synchronized DocumentReference generate(DocumentReference parent)
     {
 
         SpaceReference parentSpaceRef = parent.getLastSpaceReference();
-        if (!authorizationManager.hasAccess(Right.EDIT, parentSpaceRef)) {
-            parentSpaceRef = new SpaceReference(parent.getWikiReference().getName(), TASK_MANAGER_SPACE);
-            if (!authorizationManager.hasAccess(Right.EDIT, parentSpaceRef)) {
-                throw new TaskException(String.format(
-                    "The current user does not have rights over [%s] or [%s] thus the task page could not be created.",
-                    parent.getLastSpaceReference(), parentSpaceRef));
-            }
-        }
         return getUniqueName(parentSpaceRef);
     }
 

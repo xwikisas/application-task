@@ -38,7 +38,10 @@ import org.xwiki.filter.internal.job.FilterStreamConverterJob;
 import org.xwiki.job.Job;
 import org.xwiki.job.JobExecutor;
 import org.xwiki.job.event.status.JobStatus;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceProvider;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.event.Event;
 import org.xwiki.rendering.block.XDOM;
@@ -83,6 +86,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     @Inject
     private TaskManager taskManager;
+
+    @Inject
+    private EntityReferenceProvider referenceProvider;
 
     /**
      * Default constructor.
@@ -201,7 +207,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         for (Task task : tasks) {
             DocumentReference taskReference = task.getReference();
             try {
-                if (!authorizationManager.hasAccess(Right.EDIT, taskReference)) {
+                if (!isChildOf(taskReference, document.getDocumentReference())
+                    && !authorizationManager.hasAccess(Right.EDIT, taskReference)) {
                     logger.warn(
                         "The user [{}] edited the macro with id [{}] but does not have edit rights over it's "
                             + "corresponding page.",
@@ -230,6 +237,17 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                     taskReference, ExceptionUtils.getRootCauseMessage(e));
             }
         }
+    }
+
+    private boolean isChildOf(DocumentReference possibleChild, DocumentReference possibleParent)
+    {
+        String webHome = referenceProvider.getDefaultReference(EntityType.DOCUMENT).getName();
+        if (!possibleParent.getName().equals(webHome)) {
+            return false;
+        }
+        EntityReference childParent = possibleChild.getName().equals(webHome)  && possibleChild.getParent() != null
+            ? possibleChild.getParent().getParent() : possibleChild.getParent();
+        return childParent != null && childParent.equals(possibleParent.getLastSpaceReference());
     }
 
     private void populateObjectWithMacroParams(XWikiContext context, Task task, BaseObject object)
