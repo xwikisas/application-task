@@ -23,6 +23,7 @@ package com.xwiki.task.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -208,7 +209,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             DocumentReference taskReference = task.getReference();
             try {
                 if (!isChildOf(taskReference, document.getDocumentReference())
-                    && !authorizationManager.hasAccess(Right.EDIT, taskReference)) {
+                    && !authorizationManager.hasAccess(Right.EDIT, taskReference))
+                {
                     logger.warn(
                         "The user [{}] edited the macro with id [{}] but does not have edit rights over it's "
                             + "corresponding page.",
@@ -243,11 +245,12 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     {
         String webHome = referenceProvider.getDefaultReference(EntityType.DOCUMENT).getName();
         if (!possibleParent.getName().equals(webHome)) {
+            // Terminal pages can't have child pages.
             return false;
         }
-        EntityReference childParent = possibleChild.getName().equals(webHome)  && possibleChild.getParent() != null
-            ? possibleChild.getParent().getParent() : possibleChild.getParent();
-        return childParent != null && childParent.equals(possibleParent.getLastSpaceReference());
+        EntityReference childParent =
+            possibleChild.getName().equals(webHome) ? possibleChild.getParent().getParent() : possibleChild.getParent();
+        return Objects.equals(childParent, possibleParent.getLastSpaceReference());
     }
 
     private void populateObjectWithMacroParams(XWikiContext context, Task task, BaseObject object)
