@@ -157,6 +157,8 @@ taskmanager.livetable.noRights=You don't have view rights for the document that 
 
 taskmanager.macro.tasks.noRights=Some tasks have no been displayed because you don't have the rights to view them.
 
+taskmanager.picker.taskpage.noValue=Choose a task.
+
 rendering.macro.task.name=Task Macro
 rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline.
 rendering.macro.task.parameter.status.name=The status of the task.
