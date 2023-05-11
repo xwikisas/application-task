@@ -26,9 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.SpaceReference;
-import org.xwiki.security.authorization.ContextualAuthorizationManager;
-import org.xwiki.security.authorization.Right;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
@@ -46,9 +43,6 @@ class DefaultTaskReferenceGeneratorTest
 {
     @InjectMockComponents
     private DefaultTaskReferenceGenerator referenceGenerator;
-
-    @MockComponent
-    private ContextualAuthorizationManager authorizationManager;
 
     @MockComponent
     private Provider<XWikiContext> contextProvider;
@@ -72,8 +66,6 @@ class DefaultTaskReferenceGeneratorTest
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getUserReference()).thenReturn(this.userReference);
         when(this.context.getWiki()).thenReturn(this.wiki);
-        when(this.authorizationManager.hasAccess(Right.EDIT, this.documentReference.getLastSpaceReference()))
-            .thenReturn(true);
     }
 
     @Test
@@ -99,21 +91,6 @@ class DefaultTaskReferenceGeneratorTest
         DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
 
         assertEquals(new DocumentReference("Task_1", documentReference.getLastSpaceReference()),
-            generatedReference);
-    }
-
-    @Test
-    void generateReferenceWhenTheUserDoesNotHaveEditRightsOnTheSpace() throws TaskException
-    {
-        when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
-        when(this.authorizationManager.hasAccess(Right.EDIT, this.documentReference.getLastSpaceReference()))
-            .thenReturn(false);
-        when(this.authorizationManager.hasAccess(Right.EDIT, new SpaceReference("xwiki", "TaskManager")))
-            .thenReturn(true);
-
-        DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
-
-        assertEquals(new DocumentReference("xwiki", "TaskManager", "Task_0"),
             generatedReference);
     }
 }

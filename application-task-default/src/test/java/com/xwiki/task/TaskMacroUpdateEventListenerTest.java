@@ -31,8 +31,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReferenceProvider;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -87,6 +89,9 @@ class TaskMacroUpdateEventListenerTest
     @MockComponent
     private DocumentReferenceResolver<String> resolver;
 
+    @MockComponent
+    private EntityReferenceProvider referenceProvider;
+
     @Mock
     private XWikiContext context;
 
@@ -137,6 +142,8 @@ class TaskMacroUpdateEventListenerTest
     @BeforeEach
     void setup() throws XWikiException
     {
+        when(this.referenceProvider.getDefaultReference(EntityType.DOCUMENT)).thenReturn(new DocumentReference(
+            "xwiki", "XWiki", "WebHome"));
         when(this.context.getWiki()).thenReturn(this.wiki);
         when(this.docWithTasks.getDocumentReference()).thenReturn(this.pageWithMacro);
         when(this.docWithTasks.getXDOM()).thenReturn(this.docXDOM);
