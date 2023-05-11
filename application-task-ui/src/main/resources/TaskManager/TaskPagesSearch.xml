@@ -36,24 +36,22 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
+  <content>{{velocity output="false"}}
 #if($xcontext.action == 'get' &amp;&amp; "$!{request.outputSyntax}" == 'plain')
-  $response.setContentType('application/json')
-  #set ($statement = "SELECT distinct doc.fullName, doc.name, doc.space FROM Document doc, doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' AND lower(doc.fullName) LIKE lower(:param)")
+  #set ($statement = "FROM doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' AND lower(doc.fullName) LIKE lower(:param)")
   #set ($param = $services.query.parameter().anyChars().literal("$!request.text").anyChars())
-  #set ($query = $services.query.xwql($statement).setLimit(10).bindValue('param', $param))
+  #set ($query = $services.query.xwql($statement).addFilter('unique').addFilter('document').setLimit(10).bindValue('param', $param))
   #set ($array = [])
-  #foreach ($item in $query.execute())
-    #set ($docRef = $services.model.resolveDocument($item[0]))
-    #if ($services.security.authorization.hasAccess("view", $docRef))
+  #foreach ($taskReference in $query.execute())
+    #if ($services.security.authorization.hasAccess("view", $taskReference))
       #set ($discard = $array.add({
-        'label': $item[1],
-        'value': $item[0],
-        'hint':  $item[2]
+        'label': $taskReference.name,
+        'value': $services.model.serialize($taskReference, 'compactwiki'),
+        'hint':  $services.model.serialize($taskReference.parent, 'compactwiki')
       }))
     #end
   #end
-  $jsontool.serialize($array)
+  #jsonResponse($array)
 #end
 {{/velocity}}</content>
   <object>
@@ -151,26 +149,34 @@
 });
 
 require(['jquery', 'xwiki-selectize'], function($) {
+  var searchServiceDocRef = XWiki.Model.resolve('TaskManager.TaskPagesSearch', XWiki.EntityType.DOCUMENT,
+    XWiki.currentDocument.getDocumentReference());
+  var searchServiceURL = new XWiki.Document(searchServiceDocRef).getURL('get', 'outputSyntax=plain');
+  var errorHandler = function(response, callback) {
+    console.log('Failed to get the JSON from [' + searchServiceURL + ']. Reason: ' + response.status + ' ' + response.statusText);
+    callback([]);
+  };
   var settings = {
     load: function(typedText, callback) {
-      $.getJSON(new XWiki.Document(XWiki.Model.resolve('TaskManager.TaskPagesSearch', XWiki.EntityType.DOCUMENT, XWiki.currentDocument.getDocumentReference())).getURL('get', 'outputSyntax=plain'), {
+      $.getJSON(searchServiceURL, {
         text: typedText
-      }).done(callback).fail(callback);
+      }).done(callback).fail(function (response) {
+        errorHandler(response, callback);
+      });
     },
     loadSelected: function(selectedValue, callback) {
-      $.getJSON(new XWiki.Document(XWiki.Model.resolve('TaskManager.TaskPagesSearch', XWiki.EntityType.DOCUMENT, XWiki.currentDocument.getDocumentReference())).getURL('get', 'outputSyntax=plain'), {
+      $.getJSON(searchServiceURL, {
         text: selectedValue,
         exactMatch: true
-      }).done(callback).fail(callback);
+      }).done(callback).fail(function (response) {
+        errorHandler(response, callback);
+      });
     }
   };
-  if ($('.suggest-task-pages').length) {
+  $('.suggest-task-pages').xwikiSelectize(settings);
+  $(document).on('shown.bs.modal', '.modal', function () {
     $('.suggest-task-pages').xwikiSelectize(settings);
-  } else {
-    $(document).on('shown.bs.modal', '.modal', function () {
-      $('.suggest-task-pages').xwikiSelectize(settings);
-    });
-  }
+  });
 });</code>
     </property>
     <property>
