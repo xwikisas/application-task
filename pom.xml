@@ -45,10 +45,10 @@
   </scm>
   <properties>
     <licensing.version>1.24.1</licensing.version>
-    <kanban-macro.version>1.2.5</kanban-macro.version>
+    <kanban-macro.version>1.2.6</kanban-macro.version>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
-    <confluence.xml.version>9.20.0</confluence.xml.version>
+    <confluence.xml.version>9.20.1</confluence.xml.version>
   </properties>
   <dependencyManagement>
     <!-- Fix "Require upper bound dependencies error" -->
