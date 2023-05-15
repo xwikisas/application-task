@@ -32,7 +32,7 @@
   <version>3.1-SNAPSHOT</version>
   <name>Task Manager Application - Parent POM</name>
   <packaging>pom</packaging>
-  <description>A simple task management application</description>
+  <description>The parent POM of the Task Manager Application (Pro).</description>
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/xwikisas/application-task/issues</url>
