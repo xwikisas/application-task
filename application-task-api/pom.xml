@@ -28,8 +28,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <name>Task Manager Application - API</name>
-  <description>The API of the Task Manager Application (Pro). This package is needed for the application to work
-    properly.</description>
+  <description>The API of the Task Manager Application (Pro). This package is needed for the application to work properly.</description>
   <artifactId>application-task-api</artifactId>
 
   <properties>

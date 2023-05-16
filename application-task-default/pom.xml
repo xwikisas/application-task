@@ -28,8 +28,7 @@
     <version>3.0.2-SNAPSHOT</version>
   </parent>
   <name>Task Manager Application - Default</name>
-  <description>The default implementation of the Task Manager Application API (Pro). This package is
-    needed for the application to work properly.</description>
+  <description>The default implementation of the Task Manager Application API (Pro). This package is needed for the application to work properly.</description>
   <artifactId>application-task-default</artifactId>
 
   <properties>

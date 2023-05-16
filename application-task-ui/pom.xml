@@ -30,9 +30,7 @@
   <artifactId>application-task-ui</artifactId>
   <name>Task Manager Application - UI</name>
   <packaging>xar</packaging>
-  <description>Task Manager Application allows for the creation and management of tasks inside a wiki. It provides
-    various macros to display single or multiple tasks filtered using numerous criteria. Supports migration of
-    Confluence tasks and reports to XWiki.</description>
+  <description>Task Manager Application allows for the creation and management of tasks inside a wiki. It provides various macros to display single or multiple tasks filtered using numerous criteria. Supports migration of Confluence tasks and reports to XWiki.</description>
   <properties>
     <!-- Don't run CLIRR or Revapi here since there's no Java code. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
