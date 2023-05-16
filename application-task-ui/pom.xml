@@ -34,7 +34,6 @@
     various macros to display single or multiple tasks filtered using numerous criteria. Supports migration of
     Confluence tasks and reports to XWiki.</description>
   <properties>
-    <xwiki.extension.features>org.xwiki.contrib:application-task</xwiki.extension.features>
     <!-- Don't run CLIRR or Revapi here since there's no Java code. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
     <xwiki.revapi.skip>true</xwiki.revapi.skip>
