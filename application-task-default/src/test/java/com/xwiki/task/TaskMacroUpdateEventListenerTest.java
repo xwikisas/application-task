@@ -55,8 +55,6 @@ import com.xwiki.task.internal.TaskMacroUpdateEventListener;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

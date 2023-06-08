@@ -19,12 +19,16 @@
  */
 package com.xwiki.task.internal;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.ModelContext;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -45,7 +49,11 @@ public class DefaultTaskCounter implements TaskCounter
     @Inject
     private QueryManager queryManager;
 
-    private int lastReturnedNumber = -1;
+    @Inject
+    private ModelContext modelContext;
+
+    @Inject
+    private final Map<String, Integer> counterMap = new HashMap<>();
 
     @Override
     public synchronized int getNextNumber() throws TaskException
@@ -54,15 +62,19 @@ public class DefaultTaskCounter implements TaskCounter
             "select max(taskObject.number) "
                 + "from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject";
         try {
-            List<Integer> result = queryManager.createQuery(statement, Query.XWQL).execute();
-
+            EntityReference reference = modelContext.getCurrentEntityReference();
+            if (reference == null) {
+                throw new TaskException("There is no object placed in the model context.");
+            }
+            String wiki = reference.getName();
+            List<Integer> result = queryManager.createQuery(statement, Query.XWQL).setWiki(wiki).execute();
             int number = 0;
             if (result.size() > 0 && result.get(0) != null) {
                 number = result.get(0);
             }
-            lastReturnedNumber = Integer.max(number, lastReturnedNumber) + 1;
-            return lastReturnedNumber;
-        } catch (QueryException e) {
+            counterMap.put(wiki, Integer.max(number, counterMap.getOrDefault(wiki, -1)) + 1);
+            return counterMap.get(wiki);
+        } catch (QueryException | TaskException e) {
             throw new TaskException("Failed to get the next valid number.", e);
         }
     }
