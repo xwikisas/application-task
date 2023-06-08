@@ -52,7 +52,6 @@ public class DefaultTaskCounter implements TaskCounter
     @Inject
     private ModelContext modelContext;
 
-    @Inject
     private final Map<String, Integer> counterMap = new HashMap<>();
 
     @Override
