@@ -54,7 +54,9 @@ public class TaskMacroConverter extends AbstractMacroConverter
     @Override
     protected String toXWikiContent(String confluenceId, Map<String, String> parameters, String confluenceContent)
     {
-        return confluenceContent.replace("(% class=\"placeholder-inline-tasks\" %)", "");
+        return confluenceContent != null
+            ? confluenceContent.replace("(% class=\"placeholder-inline-tasks\" %)", "")
+            : "";
     }
 
     @Override
