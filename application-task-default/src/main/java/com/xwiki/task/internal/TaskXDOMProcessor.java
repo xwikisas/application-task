@@ -39,6 +39,7 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.rendering.block.match.ClassBlockMatcher;
 import org.xwiki.rendering.block.match.MacroBlockMatcher;
 import org.xwiki.rendering.listener.MetaData;
 import org.xwiki.rendering.syntax.Syntax;
@@ -95,53 +96,103 @@ public class TaskXDOMProcessor
      */
     public List<Task> extract(XDOM content, DocumentReference contentSource)
     {
-        List<MacroBlock> macros = content.getBlocks(new MacroBlockMatcher(Task.MACRO_NAME), Block.Axes.DESCENDANT);
+        List<MacroBlock> macros = content.getBlocks(new ClassBlockMatcher(MacroBlock.class), Block.Axes.DESCENDANT);
         List<Task> tasks = new ArrayList<>();
 
         for (MacroBlock macro : macros) {
-            Map<String, String> macroParams = macro.getParameters();
-            String macroId = macroParams.get(Task.REFERENCE);
-            DocumentReference taskReference;
-            Task task = new Task();
-
-            if (macroId == null) {
-                try {
-                    taskReference = taskRefGenerator.generate(contentSource);
-                } catch (TaskException e) {
-                    logger.warn("Failed to extract a task from the page [{}]. Cause: [{}].", contentSource,
-                        ExceptionUtils.getRootCauseMessage(e));
+            if (Task.MACRO_NAME.equals(macro.getId())) {
+                Task task = initTask(content, contentSource, macro);
+                if (task == null) {
                     continue;
                 }
-                macro.setParameter(Task.REFERENCE, serializer.serialize(taskReference, contentSource));
-                task.setOwner(contentSource);
-            } else {
-                taskReference = resolver.resolve(macroId, contentSource);
+
+                tasks.add(task);
+            } else if (macro.getContent() != null && !macro.getContent().isEmpty()) {
+                Syntax syntax =
+                    (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
+                try {
+                    XDOM updatedContent = extract(macro, contentSource, syntax, tasks);
+                    updateMacroContent(macro,
+                        taskBlockProcessor.renderTaskContent(updatedContent.getChildren(), syntax));
+                } catch (TaskException ignored) {
+                }
             }
-
-            extractBasicProperties(macroParams, taskReference, task);
-
-            Syntax syntax =
-                (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
-
-            try {
-
-                XDOM macroContent = taskBlockProcessor.getTaskContentXDOM(macro, syntax);
-                task.setName(
-                    taskBlockProcessor.renderTaskContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
-                task.setAssignee(extractAssignedUser(macroContent));
-
-                Date deadline = extractDeadlineDate(macroContent);
-
-                task.setDuedate(deadline);
-            } catch (TaskException e) {
-                logger.warn("Failed to extract the task with reference [{}] from the content of the page [{}]: [{}].",
-                    taskReference, contentSource, ExceptionUtils.getRootCauseMessage(e));
-                continue;
-            }
-
-            tasks.add(task);
         }
         return tasks;
+    }
+
+    private Task initTask(XDOM content, DocumentReference contentSource, MacroBlock macro)
+    {
+        Map<String, String> macroParams = macro.getParameters();
+        String macroId = macroParams.get(Task.REFERENCE);
+        DocumentReference taskReference;
+        Task task = new Task();
+
+        try {
+            taskReference = getTaskReference(macroId, contentSource, macro, task);
+        } catch (TaskException e) {
+            logger.warn("Failed to extract a task from the page [{}]. Cause: [{}].", contentSource,
+                ExceptionUtils.getRootCauseMessage(e));
+            return null;
+        }
+
+        extractBasicProperties(macroParams, taskReference, task);
+
+        Syntax syntax =
+            (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
+
+        try {
+
+            XDOM macroContent = taskBlockProcessor.getTaskContentXDOM(macro, syntax);
+            task.setName(
+                taskBlockProcessor.renderTaskContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
+            task.setAssignee(extractAssignedUser(macroContent));
+
+            Date deadline = extractDeadlineDate(macroContent);
+
+            task.setDuedate(deadline);
+        } catch (TaskException e) {
+            logger.warn("Failed to extract the task with reference [{}] from the content of the page [{}]: [{}].",
+                taskReference, contentSource, ExceptionUtils.getRootCauseMessage(e));
+            return null;
+        }
+        return task;
+    }
+
+    private DocumentReference getTaskReference(String macroId, DocumentReference contentSource, MacroBlock macro,
+        Task task) throws TaskException
+    {
+        DocumentReference taskReference;
+        if (macroId == null) {
+            taskReference = taskRefGenerator.generate(contentSource);
+            macro.setParameter(Task.REFERENCE, serializer.serialize(taskReference, contentSource));
+            task.setOwner(contentSource);
+        } else {
+            taskReference = resolver.resolve(macroId, contentSource);
+        }
+        return taskReference;
+    }
+
+    private XDOM extract(MacroBlock macroBlock, DocumentReference contentSource, Syntax syntax, List<Task> tasks)
+        throws TaskException
+    {
+        XDOM taskContent = this.taskBlockProcessor.getTaskContentXDOM(macroBlock, syntax);
+        List<MacroBlock> macros = taskContent.getBlocks(new ClassBlockMatcher(MacroBlock.class),
+            Block.Axes.DESCENDANT_OR_SELF);
+        for (MacroBlock macro : macros) {
+            if (Task.MACRO_NAME.equals(macro.getId())) {
+                Task task = initTask(taskContent, contentSource, macro);
+                if (task == null) {
+                    continue;
+                }
+                tasks.add(task);
+            } else if (macro.getContent() != null && !macro.getContent().isEmpty()) {
+                XDOM updatedContent = extract(macro, contentSource, syntax, tasks);
+                updateMacroContent(macro,
+                    taskBlockProcessor.renderTaskContent(updatedContent.getChildren(), syntax));
+            }
+        }
+        return taskContent;
     }
 
     /**
@@ -170,9 +221,6 @@ public class TaskXDOMProcessor
                 setBasicMacroParameters(taskObject, storageFormat, macro);
 
                 try {
-                    List<Block> siblings = macro.getParent().getChildren();
-                    int macroIndex = siblings.indexOf(macro);
-                    siblings.remove(macroIndex);
                     Syntax syntax =
                         (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
@@ -184,9 +232,7 @@ public class TaskXDOMProcessor
 
                     String newContent = taskBlockProcessor.renderTaskContent(newTaskContentBlocks, syntax);
 
-                    MacroBlock newMacroBlock =
-                        new MacroBlock(macro.getId(), macro.getParameters(), newContent, macro.isInline());
-                    siblings.add(macroIndex, newMacroBlock);
+                    updateMacroContent(macro, newContent);
                 } catch (TaskException e) {
                     logger.warn("Failed to update the task macro call for the task with reference [{}]: [{}].",
                         taskDocRef, ExceptionUtils.getRootCauseMessage(e));
@@ -197,6 +243,16 @@ public class TaskXDOMProcessor
         ownerDocument.setContent(content);
         context.getWiki()
             .saveDocument(ownerDocument, String.format("Task [%s] has been updated!", taskDocRef), context);
+    }
+
+    private void updateMacroContent(MacroBlock macro, String newContent)
+    {
+        List<Block> siblings = macro.getParent().getChildren();
+        int macroIndex = siblings.indexOf(macro);
+        siblings.remove(macroIndex);
+        MacroBlock newMacroBlock =
+            new MacroBlock(macro.getId(), macro.getParameters(), newContent, macro.isInline());
+        siblings.add(macroIndex, newMacroBlock);
     }
 
     /**
