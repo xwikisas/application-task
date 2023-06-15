@@ -19,27 +19,36 @@
  */
 package com.xwiki.task;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import javax.inject.Named;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.block.match.ClassBlockMatcher;
 import org.xwiki.rendering.listener.MetaData;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
+import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.task.internal.MacroBlockVisitor;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
@@ -47,6 +56,7 @@ import com.xwiki.task.model.Task;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -60,10 +70,23 @@ public class TaskXDOMProcessorTest
     private DocumentReferenceResolver<String> resolver;
 
     @MockComponent
+    private TaskReferenceGenerator taskReferenceGenerator;
+
+    @MockComponent
     private TaskConfiguration configuration;
 
     @MockComponent
     private TaskBlockProcessor taskBlockProcessor;
+
+    @MockComponent
+    private MacroBlockVisitor blockVisitor;
+
+    @MockComponent
+    @Named("compactwiki")
+    private EntityReferenceSerializer<String> serializer;
+
+    @Captor
+    private ArgumentCaptor<Function<MacroBlock, Boolean>> visitorLambdaCaptor;
 
     @Mock
     private XDOM docContent;
@@ -72,25 +95,24 @@ public class TaskXDOMProcessorTest
     private XDOM taskContent;
 
     @Mock
-    private XDOM macroContent;
-
-    @Mock
     private MacroBlock taskMacro1;
 
     @Mock
     private MacroBlock taskMacro2;
 
     @Mock
-    private MacroBlock macroWithContent;
+    private MetaData metaData;
 
     @Mock
-    private MetaData metaData;
+    private BaseObject taskObject;
 
     private static final String TASK1_ID = "Task1";
 
     private static final String TASK2_ID = "Task2";
 
-    private static final String DEFAULT_TASK_DATE = "01/01/2023";
+    private static final String DEFAULT_TASK_DATE_STRING = "01/01/2023";
+
+    private static final Date DEFAULT_TASK_DATE = new Date(1672531200000L);
 
     private final DocumentReference task1Reference = new DocumentReference("xwiki", "XWiki", TASK1_ID);
 
@@ -103,14 +125,9 @@ public class TaskXDOMProcessorTest
     @BeforeEach
     void setup() throws TaskException
     {
-        Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE,
-            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE);
-        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
-        Map<String, String> taskMacro2Params = initTaskMacroParams(TASK2_ID, DEFAULT_TASK_DATE,
-            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE);
+        Map<String, String> taskMacro2Params = initTaskMacroParams(TASK2_ID, DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
         when(this.taskMacro2.getParameters()).thenReturn(taskMacro2Params);
-        when(this.taskMacro1.getId()).thenReturn(Task.MACRO_NAME);
-        when(this.taskMacro2.getId()).thenReturn(Task.MACRO_NAME);
         when(this.resolver.resolve(TASK1_ID, contentSource)).thenReturn(this.task1Reference);
         when(this.resolver.resolve(TASK2_ID, contentSource)).thenReturn(this.task2Reference);
         when(this.resolver.resolve(adminReference.toString())).thenReturn(adminReference);
@@ -120,18 +137,20 @@ public class TaskXDOMProcessorTest
         when(this.taskBlockProcessor.getTaskContentXDOM(this.taskMacro1, Syntax.XWIKI_2_1)).thenReturn(
             this.taskContent);
         when(this.taskBlockProcessor.renderTaskContent(any(List.class), any(Syntax.class))).thenReturn("TaskContent");
-        when(this.macroWithContent.getContent()).thenReturn("{{task /}}");
-        when(this.macroContent.getMetaData()).thenReturn(this.metaData);
     }
 
     @Test
-    void extractWhenThereAreTasksOnlyInDocumentContent()
+    void extract()
     {
-
-        when(docContent.getBlocks(any(ClassBlockMatcher.class), any(Block.Axes.class))).thenReturn(
-            Collections.singletonList(taskMacro1));
+        Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
+        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
 
         List<Task> result = this.processor.extract(this.docContent, this.contentSource);
+
+        callVisitorLambdaFunction();
+
+        verify(this.resolver).resolve(TASK1_ID, this.contentSource);
         assertEquals(1, result.size());
         Task task = result.get(0);
         assertEquals("TaskContent", task.getName());
@@ -139,26 +158,91 @@ public class TaskXDOMProcessorTest
     }
 
     @Test
-    void extractWhenThereAreTasksInsideMacroContent() throws TaskException
+    void extractWhenThereAreTasksWithNoReference() throws TaskException
     {
-        List<Block> macroChildren = Collections.singletonList(this.macroWithContent);
-        when(this.docContent.getBlocks(any(ClassBlockMatcher.class), any(Block.Axes.class))).thenReturn(macroChildren);
-        when(this.taskBlockProcessor.getTaskContentXDOM(eq(this.macroWithContent), eq(Syntax.XWIKI_2_1))).thenReturn(
-            this.macroContent);
-        when(this.macroContent.getBlocks(any(ClassBlockMatcher.class), any(Block.Axes.class))).thenReturn(
-            Collections.singletonList(this.taskMacro1));
-        when(this.taskBlockProcessor.renderTaskContent(macroChildren, Syntax.XWIKI_2_1)).thenReturn("{{task /}}");
-        when(this.macroWithContent.getParent()).thenReturn(this.docContent);
-        List<Block> contentChildren = new ArrayList<>(Collections.singletonList(this.macroWithContent));
-        when(this.docContent.getChildren()).thenReturn(contentChildren);
+        Map<String, String> taskMacro1Params = initTaskMacroParams("", DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
+        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
+
+        when(this.taskReferenceGenerator.generate(this.contentSource)).thenReturn(this.task1Reference);
+        when(this.serializer.serialize(this.task1Reference, this.contentSource)).thenReturn(
+            this.task1Reference.toString());
 
         List<Task> result = this.processor.extract(this.docContent, this.contentSource);
 
-        verify(this.docContent).getChildren();
+        callVisitorLambdaFunction();
+
+        verify(this.taskReferenceGenerator).generate(this.contentSource);
+        verify(this.taskMacro1).setParameter(Task.REFERENCE, this.task1Reference.toString());
+
         assertEquals(1, result.size());
         Task task = result.get(0);
         assertEquals("TaskContent", task.getName());
         assertEquals(this.task1Reference, task.getReference());
+        assertEquals(this.contentSource, task.getOwner());
+    }
+
+    @Test
+    void updateTaskMacroCall() throws TaskException
+    {
+        Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
+        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
+
+        when(this.taskObject.getDocumentReference()).thenReturn(this.task1Reference);
+        when(this.taskObject.getStringValue(Task.NAME)).thenReturn(TASK1_ID);
+        when(this.taskObject.getStringValue(Task.STATUS)).thenReturn(Task.STATUS_DONE);
+        when(this.taskObject.getLargeStringValue(Task.ASSIGNEE)).thenReturn(adminReference.toString());
+        when(this.taskObject.getLargeStringValue(Task.REPORTER)).thenReturn(adminReference.toString());
+        when(this.taskObject.getDateValue(Task.DUE_DATE)).thenReturn(DEFAULT_TASK_DATE);
+        when(this.taskObject.getDateValue(Task.COMPLETE_DATE)).thenReturn(DEFAULT_TASK_DATE);
+        when(this.taskObject.getDateValue(Task.CREATE_DATE)).thenReturn(DEFAULT_TASK_DATE);
+        when(this.taskObject.getIntValue(Task.NUMBER)).thenReturn(1);
+
+        when(this.taskBlockProcessor.generateTaskContentBlocks(eq(adminReference.toString()), eq(DEFAULT_TASK_DATE),
+            eq(TASK1_ID), any(SimpleDateFormat.class))).thenReturn(Collections.emptyList());
+        when(this.taskBlockProcessor.renderTaskContent(Collections.emptyList(), Syntax.XWIKI_2_1)).thenReturn(
+            "TaskContent");
+
+        when(this.taskMacro1.getParent()).thenReturn(this.docContent);
+        when(this.docContent.getChildren()).thenReturn(new ArrayList<>(Collections.singletonList(this.taskMacro1)));
+
+        this.processor.updateTaskMacroCall(this.contentSource, this.taskObject, this.docContent, Syntax.XWIKI_2_1);
+
+        callVisitorLambdaFunction();
+
+        verify(this.taskMacro1).setParameter(Task.STATUS, Task.STATUS_DONE);
+        verify(this.taskMacro1).setParameter(Task.CREATE_DATE, DEFAULT_TASK_DATE_STRING);
+        verify(this.taskMacro1).setParameter(Task.REPORTER, this.adminReference.toString());
+        verify(this.taskBlockProcessor).generateTaskContentBlocks(eq(adminReference.toString()), eq(DEFAULT_TASK_DATE),
+            eq(TASK1_ID), any(SimpleDateFormat.class));
+        verify(this.taskBlockProcessor).renderTaskContent(Collections.emptyList(), Syntax.XWIKI_2_1);
+    }
+
+    @Test
+    void removeTaskMacroCall()
+    {
+        Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
+        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
+        when(this.taskMacro1.getParent()).thenReturn(this.docContent);
+        List<Block> contentChildren = new ArrayList<>(Collections.singletonList(this.taskMacro1));
+        List<Block> spyContentChildren = spy(contentChildren);
+        when(this.docContent.getChildren()).thenReturn(spyContentChildren);
+
+        this.processor.removeTaskMacroCall(this.task1Reference, this.contentSource, this.docContent, Syntax.XWIKI_2_1);
+
+        callVisitorLambdaFunction();
+
+        verify(this.resolver).resolve(TASK1_ID, this.contentSource);
+        verify(spyContentChildren).remove(this.taskMacro1);
+    }
+
+    private void callVisitorLambdaFunction()
+    {
+        verify(this.blockVisitor).visit(eq(this.docContent), eq(Syntax.XWIKI_2_1), visitorLambdaCaptor.capture());
+        Function<MacroBlock, Boolean> extractLambda = visitorLambdaCaptor.getValue();
+        extractLambda.apply(this.taskMacro1);
     }
 
     Map<String, String> initTaskMacroParams(String ref, String createDate, String status, String reporter,

@@ -3,6 +3,8 @@ com.xwiki.task.internal.DefaultTaskCounter
 com.xwiki.task.internal.DefaultTaskConfiguration
 com.xwiki.task.internal.DefaultTaskManager
 com.xwiki.task.internal.DefaultTaskReferenceGenerator
+com.xwiki.task.internal.MacroBlockVisitor
+com.xwiki.task.internal.MacroDescriptorProcessor
 com.xwiki.task.internal.TaskBlockProcessor
 com.xwiki.task.internal.TaskDatesInitializer
 com.xwiki.task.internal.TaskListMacroConverter
