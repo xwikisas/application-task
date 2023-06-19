@@ -33,7 +33,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.LinkBlock;
@@ -45,14 +44,10 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.block.match.ClassBlockMatcher;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
-import org.xwiki.rendering.macro.MacroContentParser;
 import org.xwiki.rendering.macro.MacroExecutionException;
-import org.xwiki.rendering.renderer.BlockRenderer;
-import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
-import org.xwiki.rendering.renderer.printer.WikiPrinter;
 import org.xwiki.rendering.syntax.Syntax;
-import org.xwiki.rendering.transformation.MacroTransformationContext;
 
+import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 
 /**
@@ -72,47 +67,7 @@ public class TaskBlockProcessor
     private ComponentManager contextComponentManager;
 
     @Inject
-    private MacroContentParser contentParser;
-
-    /**
-     * Render the task content in the given syntax.
-     *
-     * @param taskBlocks the content of a task macro.
-     * @param syntax the syntax in which the taskBlocks need to be rendered.
-     * @return the result of rendering the content in the given syntax.
-     */
-    public String renderTaskContent(List<Block> taskBlocks, Syntax syntax) throws TaskException
-    {
-        try {
-            BlockRenderer renderer = contextComponentManager.getInstance(BlockRenderer.class, syntax.toIdString());
-            WikiPrinter printer = new DefaultWikiPrinter(new StringBuffer());
-            renderer.render(taskBlocks, printer);
-            return printer.toString();
-        } catch (ComponentLookupException e) {
-            throw new TaskException(String.format("Failed to render the task blocks into the syntax [%s].", syntax), e);
-        }
-    }
-
-    /**
-     * Get the XDOM of the content of a task macro.
-     *
-     * @param taskBlock the block whose content we want to retrieve.
-     * @param syntax The syntax in which the content is encoded.
-     * @return the XDOM of the task content.
-     * @throws TaskException if parsing fails.
-     */
-    public XDOM getTaskContentXDOM(MacroBlock taskBlock, Syntax syntax) throws TaskException
-    {
-        try {
-            MacroTransformationContext macroContext = new MacroTransformationContext();
-            macroContext.setCurrentMacroBlock(taskBlock);
-            macroContext.setSyntax(syntax);
-            return this.contentParser.parse(taskBlock.getContent(), macroContext, true, false);
-        } catch (MacroExecutionException e) {
-            throw new TaskException(String.format("Failed to parse the task block with id [%s].", taskBlock.getId()),
-                e);
-        }
-    }
+    private MacroUtils macroUtils;
 
     /**
      * Create a link block for a task.
@@ -143,9 +98,13 @@ public class TaskBlockProcessor
     public List<Block> generateTaskContentBlocks(String assignee, Date duedate, String text,
         SimpleDateFormat storageFormat) throws TaskException
     {
-        XDOM newTaskContentXDOM =
-            getTaskContentXDOM(new MacroBlock("temporaryMacro", new HashMap<>(), text == null ? "" : text, false),
-                Syntax.PLAIN_1_0);
+        XDOM newTaskContentXDOM = null;
+        try {
+            newTaskContentXDOM = macroUtils.getMacroContentXDOM(
+                new MacroBlock("temporaryMacro", new HashMap<>(), text == null ? "" : text, false), Syntax.PLAIN_1_0);
+        } catch (MacroExecutionException e) {
+            throw new TaskException(String.format("Failed to generate the XDOM for the given content [%s].", text), e);
+        }
 
         Block insertionPoint = newTaskContentXDOM.getFirstBlock(new ClassBlockMatcher(ParagraphBlock.class),
             Block.Axes.DESCENDANT_OR_SELF);

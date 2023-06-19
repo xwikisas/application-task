@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
@@ -42,6 +43,7 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
+import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
@@ -78,6 +80,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
 
     @Inject
     private ContextualLocalizationManager localizationManager;
+
+    @Inject
+    private MacroUtils macroUtils;
 
     /**
      * Default constructor.
@@ -120,7 +125,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = blockProcessor.renderTaskContent(
+                String taskContent = macroUtils.renderMacroContent(
                     blockProcessor.generateTaskContentBlocks(
                         task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null,
                         task.getDueDate(),
@@ -130,7 +135,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 );
 
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
-            } catch (NumberFormatException | TaskException e) {
+            } catch (NumberFormatException | ComponentLookupException | TaskException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }

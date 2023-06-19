@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
@@ -42,13 +43,14 @@ import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.listener.MetaData;
+import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
 import com.xpn.xwiki.objects.BaseObject;
-import com.xwiki.task.internal.MacroBlockVisitor;
+import com.xwiki.task.internal.MacroBlockFinder;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
@@ -79,14 +81,17 @@ public class TaskXDOMProcessorTest
     private TaskBlockProcessor taskBlockProcessor;
 
     @MockComponent
-    private MacroBlockVisitor blockVisitor;
+    private MacroBlockFinder blockVisitor;
+
+    @MockComponent
+    private MacroUtils macroUtils;
 
     @MockComponent
     @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
 
     @Captor
-    private ArgumentCaptor<Function<MacroBlock, Boolean>> visitorLambdaCaptor;
+    private ArgumentCaptor<Function<MacroBlock, MacroBlockFinder.Lookup>> visitorLambdaCaptor;
 
     @Mock
     private XDOM docContent;
@@ -123,7 +128,7 @@ public class TaskXDOMProcessorTest
     private final DocumentReference contentSource = new DocumentReference("xwiki", "XWiki", "Doc");
 
     @BeforeEach
-    void setup() throws TaskException
+    void setup() throws TaskException, MacroExecutionException, ComponentLookupException
     {
         Map<String, String> taskMacro2Params = initTaskMacroParams(TASK2_ID, DEFAULT_TASK_DATE_STRING,
             Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
@@ -134,9 +139,10 @@ public class TaskXDOMProcessorTest
         when(this.configuration.getStorageDateFormat()).thenReturn("dd/MM/yyyy");
         when(this.docContent.getMetaData()).thenReturn(this.metaData);
         when(this.metaData.getMetaData()).thenReturn(Collections.singletonMap(MetaData.SYNTAX, Syntax.XWIKI_2_1));
-        when(this.taskBlockProcessor.getTaskContentXDOM(this.taskMacro1, Syntax.XWIKI_2_1)).thenReturn(
+        when(this.macroUtils.getMacroContentXDOM(this.taskMacro1, Syntax.XWIKI_2_1)).thenReturn(
             this.taskContent);
-        when(this.taskBlockProcessor.renderTaskContent(any(List.class), any(Syntax.class))).thenReturn("TaskContent");
+        when(this.macroUtils.renderMacroContent(any(List.class), any(Syntax.class))).thenReturn("TaskContent");
+        when(this.taskMacro1.getId()).thenReturn(Task.MACRO_NAME);
     }
 
     @Test
@@ -183,7 +189,7 @@ public class TaskXDOMProcessorTest
     }
 
     @Test
-    void updateTaskMacroCall() throws TaskException
+    void updateTaskMacroCall() throws TaskException, ComponentLookupException
     {
         Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE_STRING,
             Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
@@ -201,7 +207,7 @@ public class TaskXDOMProcessorTest
 
         when(this.taskBlockProcessor.generateTaskContentBlocks(eq(adminReference.toString()), eq(DEFAULT_TASK_DATE),
             eq(TASK1_ID), any(SimpleDateFormat.class))).thenReturn(Collections.emptyList());
-        when(this.taskBlockProcessor.renderTaskContent(Collections.emptyList(), Syntax.XWIKI_2_1)).thenReturn(
+        when(this.macroUtils.renderMacroContent(Collections.emptyList(), Syntax.XWIKI_2_1)).thenReturn(
             "TaskContent");
 
         when(this.taskMacro1.getParent()).thenReturn(this.docContent);
@@ -216,7 +222,7 @@ public class TaskXDOMProcessorTest
         verify(this.taskMacro1).setParameter(Task.REPORTER, this.adminReference.toString());
         verify(this.taskBlockProcessor).generateTaskContentBlocks(eq(adminReference.toString()), eq(DEFAULT_TASK_DATE),
             eq(TASK1_ID), any(SimpleDateFormat.class));
-        verify(this.taskBlockProcessor).renderTaskContent(Collections.emptyList(), Syntax.XWIKI_2_1);
+        verify(this.macroUtils).renderMacroContent(Collections.emptyList(), Syntax.XWIKI_2_1);
     }
 
     @Test
@@ -241,7 +247,7 @@ public class TaskXDOMProcessorTest
     private void callVisitorLambdaFunction()
     {
         verify(this.blockVisitor).visit(eq(this.docContent), eq(Syntax.XWIKI_2_1), visitorLambdaCaptor.capture());
-        Function<MacroBlock, Boolean> extractLambda = visitorLambdaCaptor.getValue();
+        Function<MacroBlock, MacroBlockFinder.Lookup> extractLambda = visitorLambdaCaptor.getValue();
         extractLambda.apply(this.taskMacro1);
     }
 

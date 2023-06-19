@@ -33,7 +33,7 @@ import org.xwiki.rendering.listener.Listener;
  * Convert the confluence time macro into a date macro.
  *
  * @version $Id$
- * @since 1.0
+ * @since 3.0
  */
 @Component
 @Singleton

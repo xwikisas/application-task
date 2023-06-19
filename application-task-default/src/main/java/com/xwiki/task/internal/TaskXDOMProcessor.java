@@ -33,6 +33,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
@@ -41,16 +42,18 @@ import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.block.match.MacroBlockMatcher;
 import org.xwiki.rendering.listener.MetaData;
+import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskReferenceGenerator;
 import com.xwiki.task.model.Task;
 
 /**
- * Class that will handle the retrieval of tasks from different mediums.
+ * Class that will handle the management of tasks from different mediums.
  *
  * @version $Id$
  * @since 3.0
@@ -83,7 +86,10 @@ public class TaskXDOMProcessor
     private TaskBlockProcessor taskBlockProcessor;
 
     @Inject
-    private MacroBlockVisitor blockVisitor;
+    private MacroBlockFinder blockVisitor;
+
+    @Inject
+    private MacroUtils macroUtils;
 
     /**
      * Extracts the existing Tasks from a given XDOM.
@@ -99,12 +105,14 @@ public class TaskXDOMProcessor
         Syntax syntax =
             (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
         blockVisitor.visit(content, syntax, (macro) -> {
-            Task task = initTask(syntax, contentSource, macro);
-            if (task == null) {
-                return false;
+            if (Task.MACRO_NAME.equals(macro.getId())) {
+                Task task = initTask(syntax, contentSource, macro);
+                if (task == null) {
+                    return MacroBlockFinder.Lookup.SKIP;
+                }
+                tasks.add(task);
             }
-            tasks.add(task);
-            return false;
+            return MacroBlockFinder.Lookup.CONTINUE;
         });
         return tasks;
     }
@@ -123,8 +131,17 @@ public class TaskXDOMProcessor
     {
         DocumentReference taskDocRef = taskObject.getDocumentReference();
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
-        blockVisitor.visit(content, syntax, (macro) -> maybeUpdateTaskMacroCall(documentReference, taskObject,
-            taskDocRef, content, storageFormat, macro));
+        blockVisitor.visit(content, syntax, (macro) -> {
+            if (Task.MACRO_NAME.equals(macro.getId())) {
+                if (maybeUpdateTaskMacroCall(documentReference, taskObject, taskDocRef, content, storageFormat,
+                    macro))
+                {
+                    return MacroBlockFinder.Lookup.BREAK;
+                }
+                return MacroBlockFinder.Lookup.SKIP;
+            }
+            return MacroBlockFinder.Lookup.CONTINUE;
+        });
         return content;
     }
 
@@ -141,14 +158,17 @@ public class TaskXDOMProcessor
         Syntax syntax)
     {
         this.blockVisitor.visit(docContent, syntax, (macro) -> {
-            DocumentReference macroRef =
-                resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), hostReference);
-            if (macroRef.equals(taskReference)) {
-                List<Block> siblings = macro.getParent().getChildren();
-                siblings.remove(macro);
-                return true;
+            if (Task.MACRO_NAME.equals(macro.getId())) {
+                DocumentReference macroRef =
+                    resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), hostReference);
+                if (macroRef.equals(taskReference)) {
+                    List<Block> siblings = macro.getParent().getChildren();
+                    siblings.remove(macro);
+                    return MacroBlockFinder.Lookup.BREAK;
+                }
+                return MacroBlockFinder.Lookup.SKIP;
             }
-            return false;
+            return MacroBlockFinder.Lookup.CONTINUE;
         });
         return docContent;
     }
@@ -172,15 +192,14 @@ public class TaskXDOMProcessor
 
         try {
 
-            XDOM macroContent = taskBlockProcessor.getTaskContentXDOM(macro, syntax);
-            task.setName(
-                taskBlockProcessor.renderTaskContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
+            XDOM macroContent = macroUtils.getMacroContentXDOM(macro, syntax);
+            task.setName(macroUtils.renderMacroContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
             task.setAssignee(extractAssignedUser(macroContent));
 
             Date deadline = extractDeadlineDate(macroContent);
 
             task.setDuedate(deadline);
-        } catch (TaskException e) {
+        } catch (MacroExecutionException | ComponentLookupException e) {
             logger.warn("Failed to extract the task with reference [{}] from the content of the page [{}]: [{}].",
                 taskReference, contentSource, ExceptionUtils.getRootCauseMessage(e));
             return null;
@@ -221,10 +240,10 @@ public class TaskXDOMProcessor
                     taskObject.getStringValue(Task.NAME), storageFormat
                 );
 
-                String newContent = taskBlockProcessor.renderTaskContent(newTaskContentBlocks, syntax);
+                String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
 
-                MacroBlockVisitor.updateMacroContent(macro, newContent);
-            } catch (TaskException e) {
+                macroUtils.updateMacroContent(macro, newContent);
+            } catch (ComponentLookupException | TaskException e) {
                 logger.warn("Failed to update the task macro call for the task with reference [{}]: [{}].",
                     taskDocRef, ExceptionUtils.getRootCauseMessage(e));
             }

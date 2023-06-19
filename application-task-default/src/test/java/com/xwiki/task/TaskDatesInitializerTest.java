@@ -214,6 +214,5 @@ class TaskDatesInitializerTest
 
         verify(this.revisionProvider, never()).getRevision(any(XWikiDocument.class), any(String.class));
         verify(this.doc, never()).getContentDiff(any(String.class), any(String.class), any(XWikiContext.class));
-
     }
 }
