@@ -86,7 +86,7 @@ public class TaskXDOMProcessor
     private TaskBlockProcessor taskBlockProcessor;
 
     @Inject
-    private MacroBlockFinder blockVisitor;
+    private MacroBlockFinder blockFinder;
 
     @Inject
     private MacroUtils macroUtils;
@@ -104,7 +104,7 @@ public class TaskXDOMProcessor
         List<Task> tasks = new ArrayList<>();
         Syntax syntax =
             (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
-        blockVisitor.visit(content, syntax, (macro) -> {
+        blockFinder.find(content, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
                 Task task = initTask(syntax, contentSource, macro);
                 if (task == null) {
@@ -131,7 +131,7 @@ public class TaskXDOMProcessor
     {
         DocumentReference taskDocRef = taskObject.getDocumentReference();
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
-        blockVisitor.visit(content, syntax, (macro) -> {
+        blockFinder.find(content, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
                 if (maybeUpdateTaskMacroCall(documentReference, taskObject, taskDocRef, content, storageFormat,
                     macro))
@@ -157,7 +157,7 @@ public class TaskXDOMProcessor
     public XDOM removeTaskMacroCall(DocumentReference taskReference, DocumentReference hostReference, XDOM docContent,
         Syntax syntax)
     {
-        this.blockVisitor.visit(docContent, syntax, (macro) -> {
+        this.blockFinder.find(docContent, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
                 DocumentReference macroRef =
                     resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), hostReference);

@@ -82,7 +82,7 @@ public class MacroBlockFinder
      *     of the current macro should not be parsed; CONTINUE if the content of the current macro should be parsed.
      * @return the modified content.
      */
-    public XDOM visit(XDOM content, Syntax syntax, Function<MacroBlock, Lookup> function)
+    public XDOM find(XDOM content, Syntax syntax, Function<MacroBlock, Lookup> function)
     {
         List<MacroBlock> macros = content.getBlocks(new ClassBlockMatcher(MacroBlock.class), Block.Axes.DESCENDANT);
         for (MacroBlock macro : macros) {
@@ -98,7 +98,7 @@ public class MacroBlockFinder
             {
                 try {
                     XDOM updatedContent =
-                        visit(this.macroUtils.getMacroContentXDOM(macro, syntax), syntax, function);
+                        find(this.macroUtils.getMacroContentXDOM(macro, syntax), syntax, function);
                     macroUtils.updateMacroContent(macro,
                         macroUtils.renderMacroContent(updatedContent.getChildren(), syntax));
                 } catch (ComponentLookupException | MacroExecutionException e) {

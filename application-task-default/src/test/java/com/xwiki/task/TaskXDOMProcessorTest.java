@@ -81,7 +81,7 @@ public class TaskXDOMProcessorTest
     private TaskBlockProcessor taskBlockProcessor;
 
     @MockComponent
-    private MacroBlockFinder blockVisitor;
+    private MacroBlockFinder blockFinder;
 
     @MockComponent
     private MacroUtils macroUtils;
@@ -246,7 +246,7 @@ public class TaskXDOMProcessorTest
 
     private void callVisitorLambdaFunction()
     {
-        verify(this.blockVisitor).visit(eq(this.docContent), eq(Syntax.XWIKI_2_1), visitorLambdaCaptor.capture());
+        verify(this.blockFinder).find(eq(this.docContent), eq(Syntax.XWIKI_2_1), visitorLambdaCaptor.capture());
         Function<MacroBlock, MacroBlockFinder.Lookup> extractLambda = visitorLambdaCaptor.getValue();
         extractLambda.apply(this.taskMacro1);
     }
