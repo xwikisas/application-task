@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -48,6 +47,7 @@ import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.skinx.SkinExtension;
 
+import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
 import com.xwiki.task.internal.TaskBlockProcessor;
@@ -86,7 +86,7 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
     private DocumentReferenceResolver<String> resolver;
 
     @Inject
-    private Logger logger;
+    private MacroUtils macroUtils;
 
     @Inject
     @Named("macro")
@@ -117,16 +117,12 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         List<Block> contentBlocks = new ArrayList<>();
 
         if (content != null && !content.trim().isEmpty()) {
-            try {
-                List<Block> macroContent =
-                    taskBlockProcessor.getTaskContentXDOM(context.getCurrentMacroBlock(), context.getSyntax())
-                        .getChildren();
+            List<Block> macroContent =
+                this.macroUtils.getMacroContentXDOM(context.getCurrentMacroBlock(), context.getSyntax())
+                    .getChildren();
 
-                contentBlocks =
-                    Collections.singletonList(new MetaDataBlock(macroContent, this.getNonGeneratedContentMetaData()));
-            } catch (TaskException e) {
-                throw new MacroExecutionException("Failed to get the content of the task.", e);
-            }
+            contentBlocks =
+                Collections.singletonList(new MetaDataBlock(macroContent, this.getNonGeneratedContentMetaData()));
         }
 
         return createTaskStructure(parameters, context, contentBlocks);

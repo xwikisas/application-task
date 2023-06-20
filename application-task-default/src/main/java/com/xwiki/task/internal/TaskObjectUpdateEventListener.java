@@ -96,7 +96,14 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
         try {
             context.put(TASK_UPDATE_FLAG, true);
             if (!taskOwner.isEmpty()) {
-                taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, context);
+                XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
+                if (!ownerDocument.isNew()) {
+                    ownerDocument.setContent(
+                        taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
+                            ownerDocument.getSyntax()));
+                    context.getWiki().saveDocument(ownerDocument,
+                        String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
+                }
             }
             context.put(TASK_UPDATE_FLAG, null);
         } catch (XWikiException e) {
@@ -112,8 +119,13 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                 XWikiDocument actualDoc = context.getWiki().getDocument(document.getDocumentReference(), context);
                 BaseObject object = actualDoc.getXObject(TASK_CLASS_REFERENCE);
                 if (object != null && !object.getStringValue(Task.OWNER).isEmpty()) {
-                    taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
+                    XWikiDocument hostDocument = context.getWiki().getDocument(
                         resolver.resolve(object.getStringValue(Task.OWNER), document.getDocumentReference()), context);
+                    hostDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
+                        hostDocument.getDocumentReference(), hostDocument.getXDOM(), hostDocument.getSyntax()));
+                    context.getWiki().saveDocument(hostDocument,
+                        String.format("Removed the task with the reference of [%s]", document.getDocumentReference()),
+                        context);
                 }
             } catch (XWikiException e) {
                 logger.warn("Failed to remove the macro call from the owner document of the task [{}]: [{}].",
