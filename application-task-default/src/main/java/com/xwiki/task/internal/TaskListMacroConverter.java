@@ -65,7 +65,8 @@ public class TaskListMacroConverter implements MacroConverter
     {
         Map<String, String> taskListGroupParams = Collections.singletonMap("class", "task-list");
         listener.beginGroup(taskListGroupParams);
-        Syntax macroContentSyntax = context.getProperties().getMacroContentSyntax();
+        Syntax macroContentSyntax =
+            context.getProperties() != null ? context.getProperties().getMacroContentSyntax() : Syntax.XWIKI_2_1;
         String syntaxId = macroContentSyntax != null ? macroContentSyntax.toIdString() : Syntax.XWIKI_2_1.toIdString();
         try {
             Parser parser = componentManager.getInstance(Parser.class, syntaxId);
