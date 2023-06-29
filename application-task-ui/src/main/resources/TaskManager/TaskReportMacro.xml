@@ -276,9 +276,6 @@
   #set ($startDate = $xwiki.jodatime.dateTime.parse($createdAfter, $dateTimeFormatter))
   #set ($endDate = $startDate.plusYears(1000).millis)
 #end
-#if ($status != "Done")
-  #set ($status = "InProgress")
-#end
 #set ($extraParams = {
   'space': $spaceFilter,
   'status': $status,
