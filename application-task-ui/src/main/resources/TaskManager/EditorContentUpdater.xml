@@ -37,8 +37,7 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>hello there21
-sdfsf hello there asdasd how are you?</content>
+  <content/>
   <object>
     <name>TaskManager.EditorContentUpdater</name>
     <number>0</number>
@@ -128,6 +127,10 @@ sdfsf hello there asdasd how are you?</content>
     </property>
     <property>
       <code>require(['jquery', 'diff-dom'], function ($, diffDOM) {
+  let htmlDecode = function(content) {
+    let doc = new DOMParser().parseFromString(content, "text/html");
+    return doc.documentElement.textContent;
+  };
   let handleCKEWysiwyg = function (content, editor) {
     let currentHTMLContent = CKEDITOR.plugins.xwikiSource.getFullData(editor);
     let convertURL = XWiki.currentDocument.getURL('get', $.param({
@@ -211,7 +214,7 @@ sdfsf hello there asdasd how are you?</content>
       url: docURL
     })
       .done(function (content) {
-        content = $(content).find('content')[0].innerHTML;
+        content = htmlDecode($(content).find('content')[0].innerHTML);
         if (typeof CKEDITOR != 'undefined') {
           let currentCKEditor = CKEDITOR.instances.content || CKEDITOR.instances.xwikicontent;
           if (currentCKEditor) {
