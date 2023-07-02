@@ -28,6 +28,7 @@ import javax.inject.Singleton;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.rendering.block.AbstractMacroBlock;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -67,16 +68,25 @@ public class DefaultMacroUtils implements MacroUtils
     private MacroManager macroManager;
 
     @Override
-    public void updateMacroContent(MacroBlock macro, String newContent)
+    public void updateMacroContent(Block macro, String newContent)
     {
         if (macro.getParent() == null) {
             return;
         }
         List<Block> siblings = macro.getParent().getChildren();
-        int macroIndex = siblings.indexOf(macro);
+        int macroIndex = -1;
+        for (int i = 0; i < siblings.size(); i++) {
+            if (siblings.get(i) instanceof AbstractMacroBlock && macro.equals(siblings.get(i))) {
+                macroIndex = i;
+                break;
+            }
+        }
+        if (macroIndex == -1) {
+            return;
+        }
         siblings.remove(macroIndex);
-        MacroBlock newMacroBlock =
-            new MacroBlock(macro.getId(), macro.getParameters(), newContent, macro.isInline());
+        MacroBlock newMacroBlock = new MacroBlock(((MacroBlock) macro).getId(), macro.getParameters(), newContent,
+            ((MacroBlock) macro).isInline());
         siblings.add(macroIndex, newMacroBlock);
     }
 

@@ -44,7 +44,7 @@ public interface MacroUtils
      * @param macro the macro that needs to be updated. It has to have a parent.
      * @param newContent the new content that will replace the current content of the macro.
      */
-    void updateMacroContent(MacroBlock macro, String newContent);
+    void updateMacroContent(Block macro, String newContent);
 
     /**
      * Get the XDOM of the content of a macro.
