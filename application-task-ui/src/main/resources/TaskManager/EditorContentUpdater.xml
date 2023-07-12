@@ -132,94 +132,62 @@
     return doc.documentElement.textContent;
   };
   let handleCKEWysiwyg = function (content, editor) {
-    let currentHTMLContent = CKEDITOR.plugins.xwikiSource.getFullData(editor);
-    let convertURL = XWiki.currentDocument.getURL('get', $.param({
-      sheet: 'CKEditor.HTMLConverter',
-      outputSyntax: 'plain',
-      language: $('html').attr('lang') || '',
-      formToken: document.documentElement.dataset.xwikiFormToken || ''
-    }));
-    $.ajax({
-      url: convertURL,
-      method: 'POST',
-      data: {
-        sourceSyntax: 'xwiki/2.1',
-        // might be true if editing inline
-        stripHTMLEnvelope: editor.elementMode === CKEDITOR.ELEMENT_MODE_INLINE,
+    CKEDITOR.plugins.xwikiSource.convertHTML(editor, {
         fromHTML: false,
         toHTML: true,
         text: content
-      }
-    })
-      .done(function (content) {
-        let dd = new diffDOM.DiffDOM();
+    }).done(function (data) {
+      let editableContent = editor.editable().$;
+      let dd = new diffDOM.DiffDOM();
         let newContent;
         if (editor.elementMode === CKEDITOR.ELEMENT_MODE_INLINE) {
-          let tmpServerBody = $('&lt;body&gt;&lt;/body&gt;').append(content);
-          let tmpCurrentBody = $('&lt;body&gt;&lt;/body&gt;').append(currentHTMLContent);
+          let tmpServerBody = $('&lt;body&gt;&lt;/body&gt;').append(data);
+          let tmpCurrentBody = $('&lt;body&gt;&lt;/body&gt;').append($(editableContent).clone()[0].children);
           let diff = dd.diff(diffDOM.nodeToObj(tmpCurrentBody[0]), diffDOM.nodeToObj(tmpServerBody[0]))
-          dd.apply(tmpCurrentBody[0], diff);
-          newContent = tmpCurrentBody[0].innerHTML;
+          dd.apply(editableContent, diff);
         } else {
-          let currentDOM = $(new DOMParser().parseFromString(currentHTMLContent, 'text/html'));
-          let serverDOM = $(new DOMParser().parseFromString(content, 'text/html'));
+          let serverDOM = $(new DOMParser().parseFromString(data, 'text/html'));
           // Compare the content of the body and apply the diff. We want to preserve the head.
           let diffAgainst = serverDOM.find('body')[0];
-          let diffFrom = currentDOM.find('body')[0];
-          let diff = dd.diff(diffDOM.nodeToObj(diffFrom), diffDOM.nodeToObj(diffAgainst))
-          dd.apply(diffFrom, diff);
-          newContent = new XMLSerializer().serializeToString(currentDOM[0]);
+          let diff = dd.diff(diffDOM.nodeToObj(editableContent), diffDOM.nodeToObj(diffAgainst))
+          dd.apply(editableContent, diff);
         }
-        let cursorRanges = editor.getSelection().getRanges();
-        editor.setData(newContent);
-        editor.focus();
-        editor.getSelection(true).selectRanges(cursorRanges);
-
-      })
-  };
-  let handleCKESource = function (content, editor) {
-    let cursorPosition = $(editor.element.$).prop('selectionStart');
-    console.log(cursorPosition);
-    let editorData = editor.getData();
-    if (content == editorData) {
-      return;
-    }
-    editor.setData(content);
-    $(editor.element.$).focus();
-    $(editor.element.$).prop('selectionEnd', cursorPosition);
-  };
-  let handleWikiEditor = function (content, editor) {
+        editor.execCommand("xwiki-refresh");
+    });
+  }
+  let handleTextarea = function (content, editor) {
     let editorData = editor.val();
-    let cursor = editor.prop('selectionStart');
-    console.log(editor.prop('selectionStart'));
-    if (content == editorData) {
+    let cursorStart = editor.prop('selectionStart');
+    let cursorEnd = editor.prop('selectionEnd');
+    if (content === editorData) {
       return;
     }
     editor.val(content);
-    editor.prop('selectionEnd', cursor);
+    editor.prop('selectionStart', cursorStart);
+    editor.prop('selectionEnd', cursorEnd);
   };
   let handleWikiEditorWithHighlight = function (content, editor) {
     let editorData = editor.getValue();
-    if (content == editorData) {
+    if (content === editorData) {
       return;
     }
-    let cursor = editor.getCursor();
+    let cursorStart = editor.getCursor(true);
+    let cursorEnd = editor.getCursor(false);
     editor.setValue(content);
-    editor.setCursor(cursor);
+    editor.setSelection(cursorStart, cursorEnd);
   }
   // After the document is saved, retrieve it's content and check if there were any modifications on the server.
   $(document).on('xwiki:document:saved', function () {
     let docURL = XWiki.currentDocument.getRestURL();
-    $.ajax({
-      url: docURL
-    })
-      .done(function (content) {
-        content = htmlDecode($(content).find('content')[0].innerHTML);
-        if (typeof CKEDITOR != 'undefined') {
+  $.getJSON(docURL)
+      .done(function (data) {
+        let content = data.content;
+        if (window.CKEDITOR) {
           let currentCKEditor = CKEDITOR.instances.content || CKEDITOR.instances.xwikicontent;
           if (currentCKEditor) {
-            if (currentCKEditor.mode == 'source') {
-              handleCKESource(content, currentCKEditor);
+            if (currentCKEditor.mode ===   'source') {
+              let userTextarea = $(currentCKEditor.ui.contentsElement.$).find('textarea');
+              handleTextarea(content, userTextarea);
             } else {
               handleCKEWysiwyg(content, currentCKEditor);
             }
@@ -228,10 +196,11 @@
         }
         let wikiModeEditor = $('textarea#content');
         if (wikiModeEditor.length) {
-          if ($('#content ~ .CodeMirror').length &gt; 0) {
-            handleWikiEditorWithHighlight(content, $('#content ~ .CodeMirror').prop('CodeMirror'))
+          const codeMirrorEditor = wikiModeEditor.nextAll('.CodeMirror');
+          if (codeMirrorEditor.length) {
+            handleWikiEditorWithHighlight(content, codeMirrorEditor.prop('CodeMirror'))
           } else {
-            handleWikiEditor(content, wikiModeEditor);
+            handleTextarea(content, wikiModeEditor);
           }
         }
       })
@@ -378,7 +347,6 @@
     </property>
     <property>
       <content>{{velocity}}
-
 #set ($discard = $xwiki.jsx.use('TaskManager.EditorContentUpdater'))
 {{/velocity}}</content>
     </property>
@@ -389,9 +357,7 @@
       <name>com.xwiki.taskmanager.pageContentUpdate</name>
     </property>
     <property>
-      <parameters>id=diff-dom
-path=$services.webjars.url('org.webjars.bower:diff-dom', 'browser/diffDOM.js')
-exports=diffDOM</parameters>
+      <parameters/>
     </property>
     <property>
       <scope>wiki</scope>
