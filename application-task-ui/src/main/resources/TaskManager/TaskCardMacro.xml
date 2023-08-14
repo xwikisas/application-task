@@ -267,21 +267,21 @@
   height: 5ex;
   padding-left: 2ex;
   padding-right: 2ex;
-
-  background: ${xwikibordercolor};
+  left: 3.5ex;
+  background: none;
 }
 .task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip {
   display: inline-block;
-  margin-left: 2.5ex;
+  margin-left: 1ex;
 }
 .task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip::before {
   content: "";
   border-style: solid;
-  border-width: 2.5ex;
+  border-width: 1ex;
   border-color: transparent;
-  border-right-color: ${xwikibordercolor};
+  border-right-color: none;
   position: absolute;
-  margin: 0 0 0 -7ex; /* Size of the border (2.5ex) x2 plus the padding-left (2ex) of the .task-card-tooltip */
+  margin: 0 0 0 -3ex; /* Size of the border-wdith (1ex) x2 plus the margin-left (1ex) of the .task-card-tooltip */
 }
 </code>
     </property>
