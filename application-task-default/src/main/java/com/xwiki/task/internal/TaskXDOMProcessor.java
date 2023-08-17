@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -36,7 +35,6 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -49,7 +47,6 @@ import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
-import com.xwiki.task.TaskReferenceGenerator;
 import com.xwiki.task.model.Task;
 
 /**
@@ -70,17 +67,10 @@ public class TaskXDOMProcessor
     private DocumentReferenceResolver<String> resolver;
 
     @Inject
-    @Named("compactwiki")
-    private EntityReferenceSerializer<String> serializer;
-
-    @Inject
     private TaskConfiguration configuration;
 
     @Inject
     private Logger logger;
-
-    @Inject
-    private TaskReferenceGenerator taskRefGenerator;
 
     @Inject
     private TaskBlockProcessor taskBlockProcessor;
@@ -92,7 +82,7 @@ public class TaskXDOMProcessor
     private MacroUtils macroUtils;
 
     /**
-     * Extracts the existing Tasks from a given XDOM.
+     * Extracts the existing Tasks that have a reference from a given XDOM.
      *
      * @param content the XDOM from which one desires to extract or check for the existence of Tasks.
      * @param contentSource the source of the document.
@@ -177,18 +167,14 @@ public class TaskXDOMProcessor
     {
         Map<String, String> macroParams = macro.getParameters();
         String macroId = macroParams.get(Task.REFERENCE);
-        DocumentReference taskReference;
         Task task = new Task();
 
-        try {
-            taskReference = getTaskReference(macroId, contentSource, macro, task);
-        } catch (TaskException e) {
-            logger.warn("Failed to extract a task from the page [{}]. Cause: [{}].", contentSource,
-                ExceptionUtils.getRootCauseMessage(e));
+        if (macroId == null || macroId.isEmpty()) {
             return null;
         }
-
-        extractBasicProperties(macroParams, taskReference, task);
+        task.setReference(resolver.resolve(macroId, contentSource));
+        task.setOwner(contentSource);
+        extractBasicProperties(macroParams, task);
 
         try {
 
@@ -201,24 +187,10 @@ public class TaskXDOMProcessor
             task.setDuedate(deadline);
         } catch (MacroExecutionException | ComponentLookupException e) {
             logger.warn("Failed to extract the task with reference [{}] from the content of the page [{}]: [{}].",
-                taskReference, contentSource, ExceptionUtils.getRootCauseMessage(e));
+                task.getReference(), contentSource, ExceptionUtils.getRootCauseMessage(e));
             return null;
         }
         return task;
-    }
-
-    private DocumentReference getTaskReference(String macroId, DocumentReference contentSource, MacroBlock macro,
-        Task task) throws TaskException
-    {
-        DocumentReference taskReference;
-        if (macroId == null || macroId.isEmpty()) {
-            taskReference = taskRefGenerator.generate(contentSource);
-            macro.setParameter(Task.REFERENCE, serializer.serialize(taskReference, contentSource));
-            task.setOwner(contentSource);
-        } else {
-            taskReference = resolver.resolve(macroId, contentSource);
-        }
-        return taskReference;
     }
 
     private boolean maybeUpdateTaskMacroCall(DocumentReference documentReference, BaseObject taskObject,
@@ -273,10 +245,8 @@ public class TaskXDOMProcessor
         macro.setParameter(Task.REPORTER, taskObject.getLargeStringValue(Task.REPORTER));
     }
 
-    private void extractBasicProperties(Map<String, String> macroParams, DocumentReference macroId, Task task)
+    private void extractBasicProperties(Map<String, String> macroParams, Task task)
     {
-        task.setReference(macroId);
-
         String reporter = macroParams.getOrDefault(Task.REPORTER, "");
         if (!reporter.isEmpty()) {
             task.setReporter(resolver.resolve(reporter));

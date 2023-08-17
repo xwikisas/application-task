@@ -130,8 +130,14 @@
     'moment-jdateformatparser': "$services.webjars.url('moment-jdateformatparser', 'moment-jdateformatparser.min')"
   }
 });
+define('task-modal', {
+  prefix: 'taskmanager.notification.referenceGeneration.',
+  keys: [
+    'fail'
+  ]
+});
 require(['moment-setup'], function () {
-  require(['jquery', 'xwiki-meta', 'moment', 'moment-jdateformatparser'], function ($, xm, moment) {
+  require(['jquery', 'xwiki-l10n!task-modal', 'xwiki-meta', 'moment', 'moment-jdateformatparser'], function ($, l10n, xm, moment) {
     let initCompleteDate = function () {
       // TODO: Replace 'Done' with an user configurable value.
       if ($(this).val() == 'Done') {
@@ -150,6 +156,24 @@ require(['moment-setup'], function () {
         let idInput = modal.find("input[name='reference']");
         $('.modal select[name="status"]').each(initCompleteDate)
         if (idInput.val()) return;
+        let refGenURL = XWiki.currentDocument.getRestURL() + '/tasks/generate-reference';
+        idInput.prop('disabled', true);
+        idInput.addClass('loading');
+        $.ajax({
+          url: refGenURL,
+          method: 'GET',
+          dataType: 'text'
+        })
+          .done(function (ref) {
+            idInput.val(ref);
+          })
+          .fail(function (response) {
+            new XWiki.widgets.Notification(l10n.fail, 'error');
+          })
+          .always(function () {
+            idInput.prop('disabled', false);
+            idInput.removeClass('loading');
+          });
         let createDateInput = modal.find("input[name='createDate']");
         let creatorInput = modal.find("input[name='reporter']");
         var dateFormat = moment().toMomentFormatString($(idInput).data('dateformat'));

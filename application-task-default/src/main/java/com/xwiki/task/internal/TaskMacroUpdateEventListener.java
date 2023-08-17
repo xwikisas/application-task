@@ -143,14 +143,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                     ExceptionUtils.getRootCauseMessage(e));
             }
         }
-        if (tasks.size() > 0 || previousDocTasks.size() > 0) {
-            // TaskExtractor will add new IDs to the tasks if they don't have one, so we need to update the content.
-            try {
-                document.setContent(documentContent);
-            } catch (XWikiException e) {
-                logger.warn("Could not update the content of the document [{}]: [{}].",
-                    document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
-            }
+        if (!tasks.isEmpty() || !previousDocTasks.isEmpty()) {
             context.put(TASK_UPDATE_FLAG, true);
             deleteTaskPages(document, context, previousDocTasks);
             createOrUpdateTaskPages(document, context, tasks);
