@@ -173,7 +173,6 @@ public class TaskXDOMProcessor
             return null;
         }
         task.setReference(resolver.resolve(macroId, contentSource));
-        task.setOwner(contentSource);
         extractBasicProperties(macroParams, task);
 
         try {
