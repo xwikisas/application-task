@@ -267,21 +267,21 @@
   height: 5ex;
   padding-left: 2ex;
   padding-right: 2ex;
-  left: 3.5ex;
-  background: none;
+
+  background: ${xwikibordercolor};
 }
 .task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip {
   display: inline-block;
-  margin-left: 1ex;
+  margin-left: 2.5ex;
 }
 .task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip::before {
   content: "";
   border-style: solid;
-  border-width: 1ex;
+  border-width: 2.5ex;
   border-color: transparent;
-  border-right-color: none;
+  border-right-color: ${xwikibordercolor};
   position: absolute;
-  margin: 0 0 0 -3ex; /* Size of the border-wdith (1ex) x2 plus the margin-left (1ex) of the .task-card-tooltip */
+  margin: 0 0 0 -7ex; /* Size of the border (2.5ex) x2 plus the padding-left (2ex) of the .task-card-tooltip */
 }
 </code>
     </property>
@@ -492,13 +492,13 @@
       </visibility>
     </class>
     <property>
-      <async_cached/>
+      <async_cached>0</async_cached>
     </property>
     <property>
       <async_context/>
     </property>
     <property>
-      <async_enabled/>
+      <async_enabled>0</async_enabled>
     </property>
     <property>
       <code>{{velocity}}
@@ -591,7 +591,11 @@
           {{html clean='false'}}#largeUserAvatar(${assigneename}){{/html}}
           (% class="task-card-tooltip" %)
           (((
-            [[${assignee.getProperty('first_name').value} ${assignee.getProperty('last_name').value}&gt;&gt;${assigneename}]]
+            #if ($assignee.getProperty('first_name').value == '' &amp;&amp; $assignee.getProperty('last_name').value == '')
+              [[$assigneename]]
+            #else
+              [[${assignee.getProperty('first_name').value} ${assignee.getProperty('last_name').value}&gt;&gt;${assigneename}]]
+            #end
           )))
         )))
       #end
