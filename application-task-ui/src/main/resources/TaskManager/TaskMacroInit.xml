@@ -160,7 +160,8 @@ require(['moment-setup'], function () {
         let refGenURL = XWiki.currentDocument.getRestURL() + '/task-reference';
         idInput.prop('disabled', true);
         idInput.addClass('loading');
-        let not = new XWiki.widgets.Notification(l10n.get('referenceGeneration.inprogress'), 'inprogress')
+        modal.find('.btn-primary').prop('disabled', true);
+        let not = new XWiki.widgets.Notification(l10n.get('referenceGeneration.inprogress'), 'inprogress');
         $.ajax({
           url: refGenURL,
           method: 'GET',
@@ -176,6 +177,7 @@ require(['moment-setup'], function () {
           .always(function () {
             idInput.prop('disabled', false);
             idInput.removeClass('loading');
+            modal.find('.btn-primary').prop('disabled', false);
           });
         let createDateInput = modal.find("input[name='createDate']");
         let creatorInput = modal.find("input[name='reporter']");
