@@ -130,8 +130,15 @@
     'moment-jdateformatparser': "$services.webjars.url('moment-jdateformatparser', 'moment-jdateformatparser.min')"
   }
 });
+define('xwiki-task-notification-messages', {
+  prefix: 'taskmanager.notification.',
+  keys: [
+    'referenceGeneration.fail',
+    'referenceGeneration.inprogress'
+  ]
+});
 require(['moment-setup'], function () {
-  require(['jquery', 'xwiki-meta', 'moment', 'moment-jdateformatparser'], function ($, xm, moment) {
+  require(['jquery', 'xwiki-l10n!xwiki-task-notification-messages', 'xwiki-meta', 'moment', 'moment-jdateformatparser'], function ($, l10n, xm, moment) {
     let initCompleteDate = function () {
       // TODO: Replace 'Done' with an user configurable value.
       if ($(this).val() == 'Done') {
@@ -150,6 +157,28 @@ require(['moment-setup'], function () {
         let idInput = modal.find("input[name='reference']");
         $('.modal select[name="status"]').each(initCompleteDate)
         if (idInput.val()) return;
+        let refGenURL = XWiki.currentDocument.getRestURL() + '/task-reference';
+        idInput.prop('disabled', true);
+        idInput.addClass('loading');
+        modal.find('.btn-primary').prop('disabled', true);
+        let not = new XWiki.widgets.Notification(l10n.get('referenceGeneration.inprogress'), 'inprogress');
+        $.ajax({
+          url: refGenURL,
+          method: 'GET',
+          dataType: 'text'
+        })
+          .done(function (ref) {
+            not.hide();
+            idInput.val(ref);
+          })
+          .fail(function (response) {
+            not.replace(new XWiki.widgets.Notification(l10n.get('referenceGeneration.fail'), 'error'));
+          })
+          .always(function () {
+            idInput.prop('disabled', false);
+            idInput.removeClass('loading');
+            modal.find('.btn-primary').prop('disabled', false);
+          });
         let createDateInput = modal.find("input[name='createDate']");
         let creatorInput = modal.find("input[name='reporter']");
         var dateFormat = moment().toMomentFormatString($(idInput).data('dateformat'));

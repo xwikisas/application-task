@@ -178,14 +178,7 @@ public class TaskXDOMProcessorTest
 
         callVisitorLambdaFunction();
 
-        verify(this.taskReferenceGenerator).generate(this.contentSource);
-        verify(this.taskMacro1).setParameter(Task.REFERENCE, this.task1Reference.toString());
-
-        assertEquals(1, result.size());
-        Task task = result.get(0);
-        assertEquals("TaskContent", task.getName());
-        assertEquals(this.task1Reference, task.getReference());
-        assertEquals(this.contentSource, task.getOwner());
+        assertEquals(0, result.size());
     }
 
     @Test
