@@ -16,5 +16,5 @@ com.xwiki.task.internal.TaskObjectUpdateEventListener
 com.xwiki.task.internal.macro.TaskMacro
 com.xwiki.task.internal.macro.TasksMacro
 com.xwiki.task.internal.macro.DateMacro
-com.xwiki.task.internal.rest.DefaultTaskIdResource
+com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource

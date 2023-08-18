@@ -35,18 +35,18 @@ import org.xwiki.security.authorization.Right;
 
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskReferenceGenerator;
-import com.xwiki.task.rest.TaskIdResource;
+import com.xwiki.task.rest.TaskReferenceResource;
 
 /**
- * Default implementation of {@link TaskIdResource}.
+ * Default implementation of {@link TaskReferenceResource}.
  *
  * @version $Id$
  * @since 3.1
  */
 @Component
-@Named("com.xwiki.task.internal.rest.DefaultTaskIdResource")
+@Named("com.xwiki.task.internal.rest.DefaultTaskReferenceResource")
 @Singleton
-public class DefaultTaskIdResource extends XWikiResource implements TaskIdResource
+public class DefaultTaskReferenceResource extends XWikiResource implements TaskReferenceResource
 {
     @Inject
     private ContextualAuthorizationManager contextualAuthorizationManager;

@@ -28,14 +28,14 @@ import org.xwiki.rest.XWikiRestException;
 import org.xwiki.stability.Unstable;
 
 /**
- * Provides operations on the task macros of a page.
+ * Provides a way to generate task references.
  *
  * @version $Id$
  * @since 3.1
  */
-@Path("/wikis/{wikiName}/spaces/{spaceName: .+}/pages/{pageName}/tasks/generate-reference")
+@Path("/wikis/{wikiName}/spaces/{spaceName: .+}/pages/{pageName}/task-reference")
 @Unstable
-public interface TaskIdResource
+public interface TaskReferenceResource
 {
     /**
      * Generate an id for a task macro residing in a given page.

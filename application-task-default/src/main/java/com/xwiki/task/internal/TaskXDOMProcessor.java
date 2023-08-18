@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
@@ -166,13 +167,13 @@ public class TaskXDOMProcessor
     private Task initTask(Syntax syntax, DocumentReference contentSource, MacroBlock macro)
     {
         Map<String, String> macroParams = macro.getParameters();
-        String macroId = macroParams.get(Task.REFERENCE);
+        String taskReference = macroParams.get(Task.REFERENCE);
         Task task = new Task();
 
-        if (macroId == null || macroId.isEmpty()) {
+        if (StringUtils.isEmpty(taskReference)) {
             return null;
         }
-        task.setReference(resolver.resolve(macroId, contentSource));
+        task.setReference(resolver.resolve(taskReference, contentSource));
         extractBasicProperties(macroParams, task);
 
         try {

@@ -146,6 +146,8 @@ taskmanager.notification.statusChange.success=Task status changed successfully!
 taskmanager.notification.statusChange.restFail=Failed to change the status because of a server error!
 taskmanager.notification.statusChange.noId=Failed to change the status because the task doesn't have an ID.
 taskmanager.notification.statusChange.inprogress=Changing status..
+taskmanager.notification.referenceGeneration.fail=Failed to generate a task reference
+taskmanager.notification.referenceGeneration.inprogress=Generating task reference
 
 taskmanager.livetable.name=Task
 taskmanager.livetable.duedate=Deadline
