@@ -134,7 +134,7 @@
             (((
               ## Automatically set task name property from the document name
               ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
-                  $services.icon.render('font')
+                  $services.icon.render('book')
                   $escapetool.xml($doc.displayPrettyName('name', false, false))
                 &lt;/label&gt;
                 #set($taskName = $doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value)
