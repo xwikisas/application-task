@@ -49,8 +49,12 @@
     <assignee>
       <cache>0</cache>
       <customDisplay/>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>assignee</name>
       <number>9</number>
@@ -185,9 +189,13 @@
 {{/html}}
 
 {{/velocity}}</customDisplay>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>checkbox</displayType>
+      <freeText/>
+      <hint/>
       <idField/>
+      <largeStorage>0</largeStorage>
       <multiSelect>1</multiSelect>
       <name>dependencies</name>
       <number>10</number>
@@ -208,6 +216,7 @@
     <description>
       <customDisplay>{{include reference="AppWithinMinutes.Content"/}}</customDisplay>
       <disabled>0</disabled>
+      <hint/>
       <name>description</name>
       <number>4</number>
       <prettyName>Task description</prettyName>
@@ -222,6 +231,7 @@
       <dateFormat>dd/MM/yyyy HH:mm:ss</dateFormat>
       <disabled>0</disabled>
       <emptyIsToday>0</emptyIsToday>
+      <hint/>
       <name>duedate</name>
       <number>10</number>
       <picker>1</picker>
@@ -235,6 +245,7 @@
     <name>
       <customDisplay/>
       <disabled>0</disabled>
+      <hint/>
       <name>name</name>
       <number>1</number>
       <picker>0</picker>
@@ -309,11 +320,12 @@
         &lt;/div&gt;
       &lt;/div&gt;
   #else
-    &lt;input class="form-control" id="TaskManager.TaskManagerClass_0_progress" name="TaskManager.TaskManagerClass_0_progress" type="number" value="${value}" /&gt;
+    &lt;input class="form-control" id="TaskManager.TaskManagerClass_0_progress" name="TaskManager.TaskManagerClass_0_progress" type="number" min="0" oninput="validity.valid||(value='');" value="${value}" /&gt;
   #end
 {{/html}}
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
+      <hint/>
       <name>progress</name>
       <number>6</number>
       <numberType>integer</numberType>
@@ -356,9 +368,13 @@
   #end
 #end
 {{/velocity}}</customDisplay>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
       <idField>project</idField>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>project</name>
       <number>3</number>
@@ -379,8 +395,12 @@
     <reporter>
       <cache>0</cache>
       <customDisplay/>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>reporter</name>
       <number>8</number>
@@ -429,9 +449,13 @@
   #end
 #end
 {{/velocity}}</customDisplay>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
       <idField>severity</idField>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>severity</name>
       <number>7</number>
@@ -481,9 +505,13 @@
   #end
 #end
 {{/velocity}}</customDisplay>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
       <idField>status</idField>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>status</name>
       <number>5</number>
