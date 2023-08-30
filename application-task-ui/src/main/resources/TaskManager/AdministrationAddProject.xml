@@ -42,6 +42,7 @@
   #if(!$stringtool.isBlank($project) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
     #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Project_$project"))
     #set($document = $xwiki.getDocument($documentRef))
+    #set($discard = $document.setTitle("$project"))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.ProjectClass', true))
     $object.set('project', "$project")
