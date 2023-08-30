@@ -264,8 +264,10 @@ public class TaskXDOMProcessor
         try {
             createDate = dateFormat.parse(strCreateDate);
         } catch (ParseException e) {
-            logger.warn("Failed to parse the createDate macro parameter [{}]. Expected format is [{}]",
-                strCreateDate, configuration.getStorageDateFormat());
+            if (!strCreateDate.isEmpty()) {
+                logger.warn("Failed to parse the createDate macro parameter [{}]. Expected format is [{}]",
+                    strCreateDate, configuration.getStorageDateFormat());
+            }
             createDate = new Date();
         }
         task.setCreateDate(createDate);
@@ -273,10 +275,12 @@ public class TaskXDOMProcessor
         Date completeDate = null;
         if (taskStatus.equals(Task.STATUS_DONE)) {
             try {
-                completeDate = strCompletedDate.isEmpty() ? new Date() : dateFormat.parse(strCompletedDate);
+                completeDate = dateFormat.parse(strCompletedDate);
             } catch (ParseException e) {
-                logger.warn("Failed to parse the completeDate macro parameter [{}]. Expected format is [{}]",
-                    strCreateDate, configuration.getStorageDateFormat());
+                if (!strCompletedDate.isEmpty()) {
+                    logger.warn("Failed to parse the completeDate macro parameter [{}]. Expected format is [{}]",
+                        strCreateDate, configuration.getStorageDateFormat());
+                }
                 completeDate = new Date();
             }
         }

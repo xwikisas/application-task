@@ -120,6 +120,11 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (context.get(TASK_UPDATE_FLAG) != null) {
             return;
         }
+        updateTaskPages(document, context);
+    }
+
+    private void updateTaskPages(XWikiDocument document, XWikiContext context)
+    {
         XDOM documentContent = document.getXDOM();
 
         maybeInitDatesForTasks(document, documentContent, context);

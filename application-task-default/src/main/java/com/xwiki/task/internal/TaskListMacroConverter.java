@@ -33,6 +33,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.contrib.confluence.filter.MacroConverter;
 import org.xwiki.contrib.confluence.filter.input.ConfluenceInputContext;
+import org.xwiki.contrib.confluence.filter.input.ConfluenceInputProperties;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.listener.Listener;
@@ -65,7 +66,8 @@ public class TaskListMacroConverter implements MacroConverter
     {
         Map<String, String> taskListGroupParams = Collections.singletonMap("class", "task-list");
         listener.beginGroup(taskListGroupParams);
-        Syntax macroContentSyntax = context.getProperties().getMacroContentSyntax();
+        ConfluenceInputProperties inputProperties = context.getProperties();
+        Syntax macroContentSyntax = inputProperties == null ? null : inputProperties.getMacroContentSyntax();
         String syntaxId = macroContentSyntax != null ? macroContentSyntax.toIdString() : Syntax.XWIKI_2_1.toIdString();
         try {
             Parser parser = componentManager.getInstance(Parser.class, syntaxId);

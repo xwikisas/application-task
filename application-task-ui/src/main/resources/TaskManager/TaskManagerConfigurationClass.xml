@@ -60,6 +60,23 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </displayDateFormat>
+    <notSkippedFoldEvents>
+      <contenttype>---</contenttype>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <hint/>
+      <name>notSkippedFoldEvents</name>
+      <number>3</number>
+      <picker>1</picker>
+      <prettyName>notSkippedFoldEvents</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </notSkippedFoldEvents>
     <storageDateFormat>
       <customDisplay/>
       <disabled>0</disabled>

@@ -28,10 +28,13 @@ import org.slf4j.Logger;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.AbstractEventListener;
+import org.xwiki.observation.ObservationContext;
+import org.xwiki.observation.event.BeginFoldEvent;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xwiki.task.TaskConfiguration;
 
 /**
  * Base class for {@link TaskObjectUpdateEventListener} and {@link TaskMacroUpdateEventListener}.
@@ -54,6 +57,11 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
 
     protected static final String TASK_UPDATE_FLAG = "taskUpdating";
 
+    // TODO: Do something better than this hack. It does not skip when inside FoldEvent of the NestedPagedMigration.
+    private static final BeginFoldEvent IGNORED_EVENTS =
+        otherEvent -> otherEvent instanceof BeginFoldEvent && !otherEvent.getClass().getSimpleName()
+            .equals("BeginMigrationEvent");
+
     @Inject
     protected DocumentReferenceResolver<String> resolver;
 
@@ -62,6 +70,12 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
 
     @Inject
     protected Logger logger;
+
+    @Inject
+    private ObservationContext observationContext;
+
+    @Inject
+    private TaskConfiguration configuration;
 
     /**
      * @param name the name of the listener used to identify it.
@@ -75,6 +89,12 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
+        if (this.observationContext.isIn(
+            otherEvent -> otherEvent instanceof BeginFoldEvent && !configuration.getNotSkippedFoldEvents()
+                .contains(otherEvent.getClass().getName())))
+        {
+            return;
+        }
         XWikiContext context = (XWikiContext) data;
         XWikiDocument document = (XWikiDocument) source;
 

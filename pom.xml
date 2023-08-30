@@ -48,7 +48,7 @@
     <kanban-macro.version>1.2.6</kanban-macro.version>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
-    <confluence.xml.version>9.20.1</confluence.xml.version>
+    <confluence.xml.version>9.22.0</confluence.xml.version>
   </properties>
   <modules>
     <module>application-task-api</module>

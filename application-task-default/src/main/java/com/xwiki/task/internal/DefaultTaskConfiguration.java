@@ -19,6 +19,10 @@
  */
 package com.xwiki.task.internal;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -43,6 +47,8 @@ public class DefaultTaskConfiguration implements TaskConfiguration
     private static final String DISPLAY_FORMAT_KEY = "displayDateFormat";
 
     private static final String DEFAULT_DATE_FORMAT = "yyyy/MM/dd HH:mm";
+
+    private static final String NOT_SKIPPED_FOLD_EVENTS = "notSkippedFoldEvents";
 
     private static final String PROPERTIES_PREFIX = "task.";
 
@@ -73,6 +79,19 @@ public class DefaultTaskConfiguration implements TaskConfiguration
     private String getDefaultDateFormat()
     {
         return preferencesConfiguration.getProperty("dateformat", DEFAULT_DATE_FORMAT);
+    }
+
+    @Override
+    public List<String> getNotSkippedFoldEvents()
+    {
+        if (this.configurationSource.containsKey(NOT_SKIPPED_FOLD_EVENTS)) {
+            String notSkippedEventsString = configurationSource.getProperty(NOT_SKIPPED_FOLD_EVENTS);
+            List<String> notSkippedEvents = Arrays.asList(notSkippedEventsString.split("\\s*,\\s*"));
+            notSkippedEvents.removeIf(String::isEmpty);
+            return notSkippedEvents;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     private <T> T getProperty(String key, T defaultValue)
