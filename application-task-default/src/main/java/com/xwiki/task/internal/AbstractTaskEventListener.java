@@ -57,11 +57,6 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
 
     protected static final String TASK_UPDATE_FLAG = "taskUpdating";
 
-    // TODO: Do something better than this hack. It does not skip when inside FoldEvent of the NestedPagedMigration.
-    private static final BeginFoldEvent IGNORED_EVENTS =
-        otherEvent -> otherEvent instanceof BeginFoldEvent && !otherEvent.getClass().getSimpleName()
-            .equals("BeginMigrationEvent");
-
     @Inject
     protected DocumentReferenceResolver<String> resolver;
 
