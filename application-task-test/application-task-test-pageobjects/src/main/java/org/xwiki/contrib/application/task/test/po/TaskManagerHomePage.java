@@ -94,7 +94,7 @@ public class TaskManagerHomePage extends ViewPage
      */
     public LiveTableElement getTaskLiveTable()
     {
-        LiveTableElement lt = new LiveTableElement("faqs");
+        LiveTableElement lt = new LiveTableElement("taskmanager");
         lt.waitUntilReady();
         return lt;
     }
