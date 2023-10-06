@@ -19,6 +19,7 @@
  */
 package com.xwiki.task.macro;
 
+import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
 
 /**
@@ -41,6 +42,7 @@ public class TasksMacroParameters
     /**
      * @param ids see {@link #getIds()}.
      */
+    @PropertyMandatory
     public void setIds(String ids)
     {
         this.ids = ids;
