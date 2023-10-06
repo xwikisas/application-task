@@ -292,8 +292,11 @@
 }
 
 .task-macro {
-  display: flex;
-  align-items: center;
+  display: block;
+}
+
+.task-content {
+  display: inline-flex;
 }
 
 .task-status {
