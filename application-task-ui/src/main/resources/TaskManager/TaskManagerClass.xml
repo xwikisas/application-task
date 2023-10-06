@@ -320,7 +320,7 @@
         &lt;/div&gt;
       &lt;/div&gt;
   #else
-    &lt;input class="form-control" id="TaskManager.TaskManagerClass_0_progress" name="TaskManager.TaskManagerClass_0_progress" type="number" min="0" oninput="validity.valid||(value='');" value="${value}" /&gt;
+    &lt;input class="form-control" id="TaskManager.TaskManagerClass_0_progress" name="TaskManager.TaskManagerClass_0_progress" type="number" min="0" max="100" oninput="validity.valid||(value='');" value="${value}" /&gt;
   #end
 {{/html}}
 {{/velocity}}</customDisplay>
