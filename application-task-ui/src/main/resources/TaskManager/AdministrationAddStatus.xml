@@ -43,6 +43,7 @@
   #if($stringtool.isNotBlank($status) &amp;&amp; $stringtool.isNotBlank($order) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
     #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Status_$status"))
     #set($document = $xwiki.getDocument($documentRef))
+    #set($discard = $document.setTitle("$status"))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.StatusClass', true))
     #set($discard = $object.set('status', $status))
@@ -63,9 +64,9 @@
       &lt;/span&gt;
     &lt;/form&gt;
   {{/html}}
-  #set($columns = ['doc.name', 'order', 'doc.date', 'doc.author', '_actions'])
+  #set($columns = ['status', 'order', 'doc.date', 'doc.author', '_actions'])
   #set($columnsProperties = {
-    'doc.name'  : { 'displayName' : $services.localization.render('taskmanager.livetable.status'), 'type' : 'text' , 'size' : 30, 'link' : 'view', 'filterable' : false },
+    'status'  : { 'displayName' : $services.localization.render('taskmanager.livetable.status'), 'type' : 'text' , 'size' : 30, 'link' : 'view', 'filterable' : false },
     'order'     : { 'type' : 'number'},
     'doc.date'  : { 'type' : 'date', 'filterable' : false },
     'doc.author': { 'type' : 'text', 'link' : 'author', 'filterable' : false },

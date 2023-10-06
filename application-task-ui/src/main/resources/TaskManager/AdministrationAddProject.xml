@@ -42,6 +42,7 @@
   #if(!$stringtool.isBlank($project) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
     #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Project_$project"))
     #set($document = $xwiki.getDocument($documentRef))
+    #set($discard = $document.setTitle("$project"))
     #set($discard = $document.setHidden(true))
     #set($object = $document.getObject('TaskManager.ProjectClass', true))
     $object.set('project', "$project")
@@ -58,9 +59,9 @@
       &lt;/span&gt;
     &lt;/form&gt;
   {{/html}}
-  #set($columns = ['doc.name', 'doc.date', 'doc.author', '_actions'])
+  #set($columns = ['project', 'doc.date', 'doc.author', '_actions'])
   #set($columnsProperties = {
-    'doc.name'  : { 'displayName' : $services.localization.render('taskmanager.livetable.project'), 'type' : 'text', 'size' : 30, 'link' : 'view', 'filterable' : false },
+    'project'  : { 'displayName' : $services.localization.render('taskmanager.livetable.project'), 'type' : 'text', 'size' : 30, 'link' : 'view', 'filterable' : false },
     'doc.date'  : { 'type' : 'date', 'filterable' : false },
     'doc.author': { 'type' : 'text', 'link' : 'author', 'filterable' : false },
     '_actions'  : { 'actions' : ['delete'] }
