@@ -37,7 +37,6 @@ import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.filter.internal.job.FilterStreamConverterJob;
 import org.xwiki.job.Job;
-import org.xwiki.job.JobExecutor;
 import org.xwiki.job.event.status.JobStatus;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -80,9 +79,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     private DocumentRevisionProvider revisionProvider;
 
     @Inject
-    private JobExecutor executor;
-
-    @Inject
     private TaskDatesInitializer datesInitializer;
 
     @Inject
@@ -103,21 +99,29 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     @Override
     protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
     {
+        // Skip task pages. They will be handled by TaskObjectUpdateEventListener.
+        if (document.getXObject(TASK_CLASS_REFERENCE) != null) {
+            return;
+        }
         // Skip when inside filter-job because it generates a lot of save events for each version of the imported doc.
         if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null) {
             return;
         }
 
+        if (context.get(TASK_UPDATE_FLAG) != null) {
+            return;
+        }
+
         if (event instanceof DocumentDeletingEvent) {
             try {
+                context.put(TASK_UPDATE_FLAG, true);
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
             } catch (TaskException e) {
                 logger.warn("Failed to delete the tasks that have the current document as owner: [{}].",
                     ExceptionUtils.getRootCauseMessage(e));
+            } finally {
+                context.put(TASK_UPDATE_FLAG, null);
             }
-            return;
-        }
-        if (context.get(TASK_UPDATE_FLAG) != null) {
             return;
         }
         updateTaskPages(document, context);

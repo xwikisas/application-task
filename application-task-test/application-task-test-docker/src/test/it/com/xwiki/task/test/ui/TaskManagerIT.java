@@ -45,7 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @version $Id$
  * @since 2.6
  */
-@UITest
+@UITest(
+    extraJARs = {
+        "org.xwiki.platform:xwiki-platform-eventstream-store-solr"
+    }, resolveExtraJARs = true)
 class TaskManagerIT
 {
     private final DocumentReference pageWithTaskMacros = new DocumentReference("xwiki", "Main", "Test");

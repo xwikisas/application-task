@@ -19,7 +19,10 @@
  */
 package com.xwiki.task.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -30,7 +33,10 @@ import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.job.Job;
+import org.xwiki.job.JobGroupPath;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.event.Event;
 
@@ -71,21 +77,28 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
     @Override
     protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
     {
-        if (new LocalDocumentReference(document.getDocumentReference()).equals(TEMPLATE_REFERENCE)) {
-            return;
-        }
+        // Handle delete event before checking for the existence of task object because it does not exist on
+        // the given document when it is being deleted and need to call XWiki#getDocument(DocumentReference).
         if (handleDeleteEvent(document, context, event)) {
             return;
         }
-        BaseObject taskObj = document.getXObject(TASK_CLASS_REFERENCE);
 
+        BaseObject taskObj = document.getXObject(TASK_CLASS_REFERENCE);
         if (taskObj == null) {
             return;
         }
 
         maybeSetTaskNumber(context, taskObj);
 
-        if (context.get(TASK_UPDATE_FLAG) != null || taskObj.getStringValue(Task.OWNER).isEmpty()) {
+        if (new LocalDocumentReference(document.getDocumentReference()).equals(TEMPLATE_REFERENCE)) {
+            return;
+        }
+
+        if (context.get(TASK_UPDATE_FLAG) != null) {
+            return;
+        }
+
+        if (taskObj.getStringValue(Task.OWNER).isEmpty()) {
             return;
         }
 
@@ -105,35 +118,66 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                         String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
                 }
             }
-            context.put(TASK_UPDATE_FLAG, null);
         } catch (XWikiException e) {
             logger.warn("Failed to process the owner document of the task [{}]: [{}].", taskOwnerRef,
                 ExceptionUtils.getRootCauseMessage(e));
+        } finally {
+            context.put(TASK_UPDATE_FLAG, null);
         }
     }
 
     private boolean handleDeleteEvent(XWikiDocument document, XWikiContext context, Event event)
     {
         if (event instanceof DocumentDeletingEvent) {
+            if (context.get(TASK_UPDATE_FLAG) != null) {
+                return true;
+            }
             try {
+                // We can't use the doc provided to the listener because it does not contain the xwiki objects.
                 XWikiDocument actualDoc = context.getWiki().getDocument(document.getDocumentReference(), context);
                 BaseObject object = actualDoc.getXObject(TASK_CLASS_REFERENCE);
-                if (object != null && !object.getStringValue(Task.OWNER).isEmpty()) {
-                    XWikiDocument hostDocument = context.getWiki().getDocument(
-                        resolver.resolve(object.getStringValue(Task.OWNER), document.getDocumentReference()), context);
-                    hostDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
-                        hostDocument.getDocumentReference(), hostDocument.getXDOM(), hostDocument.getSyntax()));
-                    context.getWiki().saveDocument(hostDocument,
-                        String.format("Removed the task with the reference of [%s]", document.getDocumentReference()),
-                        context);
+                if (object == null || object.getStringValue(Task.OWNER).isEmpty()) {
+                    return true;
                 }
+                DocumentReference hostDocumentReference = resolver.resolve(object.getStringValue(Task.OWNER),
+                    document.getDocumentReference());
+                // If we are inside a refactoring job that also deletes the owner, no need to update the macro call.
+                List<String> deleteJobGroup = new ArrayList<>();
+                deleteJobGroup.add("refactoring");
+                for (EntityReference entityReference : document.getDocumentReference().getLastSpaceReference()
+                    .getReversedReferenceChain()) {
+                    deleteJobGroup.add(entityReference.getName());
+                }
+                Job deletingJob = executor.getCurrentJob(new JobGroupPath(deleteJobGroup));
+                if (deletingJob != null && deletingJob.getRequest()
+                    .getProperty("entityReferences", Collections.emptyList()).stream().anyMatch(
+                        e -> e instanceof EntityReference && isParentOrEqual((EntityReference) e,
+                            hostDocumentReference)))
+                {
+                    return true;
+                }
+
+                context.put(TASK_UPDATE_FLAG, true);
+                XWikiDocument hostDocument = context.getWiki().getDocument(hostDocumentReference, context);
+                hostDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
+                    hostDocument.getDocumentReference(), hostDocument.getXDOM(), hostDocument.getSyntax()));
+                context.getWiki().saveDocument(hostDocument,
+                    String.format("Removed the task with the reference of [%s]", document.getDocumentReference()),
+                    context);
             } catch (XWikiException e) {
                 logger.warn("Failed to remove the macro call from the owner document of the task [{}]: [{}].",
                     document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
+            } finally {
+                context.put(TASK_UPDATE_FLAG, null);
             }
             return true;
         }
         return false;
+    }
+
+    private boolean isParentOrEqual(EntityReference entity1, EntityReference entity2)
+    {
+        return entity1.equals(entity2) || entity2.hasParent(entity1);
     }
 
     private void maybeSetTaskNumber(XWikiContext context, BaseObject taskObj)
