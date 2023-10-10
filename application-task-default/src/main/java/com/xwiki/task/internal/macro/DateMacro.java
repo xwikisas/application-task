@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.FormatBlock;
+import org.xwiki.rendering.block.GroupBlock;
 import org.xwiki.rendering.block.WordBlock;
 import org.xwiki.rendering.listener.Format;
 import org.xwiki.rendering.macro.AbstractMacro;
@@ -106,7 +107,9 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
 
         String displayDate = new SimpleDateFormat(configuration.getDisplayDateFormat()).format(paramDate);
 
-        Block returnBlock = new FormatBlock(Collections.singletonList(new WordBlock(displayDate)), Format.NONE);
+        Block returnBlock =
+            context.isInline() ? new FormatBlock(Collections.singletonList(new WordBlock(displayDate)), Format.NONE)
+                : new GroupBlock(Collections.singletonList(new WordBlock(displayDate)));
         returnBlock.setParameters(Collections.singletonMap("class", "xwiki-date"));
 
         return Collections.singletonList(returnBlock);

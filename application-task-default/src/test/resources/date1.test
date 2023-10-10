@@ -9,12 +9,12 @@
 .#-----------------------------------------------------
 beginDocument
 beginMacroMarkerStandalone [date] [value=2021/09/07 00:00]
-beginFormat [NONE] [[class]=[xwiki-date]]
+beginGroup [[class]=[xwiki-date]]
 onWord [2021/09/07 00:00]
-endFormat [NONE] [[class]=[xwiki-date]]
+endGroup [[class]=[xwiki-date]]
 endMacroMarkerStandalone [date] [value=2021/09/07 00:00]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<span class="xwiki-date">2021/09/07 00:00</span>
+<div class="xwiki-date">2021/09/07 00:00</div>
