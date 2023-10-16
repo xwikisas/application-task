@@ -93,7 +93,8 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
         if (new LocalDocumentReference(document.getDocumentReference()).equals(TEMPLATE_REFERENCE)) {
             return;
         }
-
+        // If the flag is set, the listener was triggered as a result of a save made by TaskMacroUpdateEventListener
+        // which updated some task objects. Skip the execution.
         if (context.get(TASK_UPDATE_FLAG) != null) {
             return;
         }
@@ -139,29 +140,23 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                 if (object == null || object.getStringValue(Task.OWNER).isEmpty()) {
                     return true;
                 }
-                DocumentReference hostDocumentReference = resolver.resolve(object.getStringValue(Task.OWNER),
+                DocumentReference ownerDocumentReference = resolver.resolve(object.getStringValue(Task.OWNER),
                     document.getDocumentReference());
                 // If we are inside a refactoring job that also deletes the owner, no need to update the macro call.
-                List<String> deleteJobGroup = new ArrayList<>();
-                deleteJobGroup.add("refactoring");
-                for (EntityReference entityReference : document.getDocumentReference().getLastSpaceReference()
-                    .getReversedReferenceChain()) {
-                    deleteJobGroup.add(entityReference.getName());
-                }
-                Job deletingJob = executor.getCurrentJob(new JobGroupPath(deleteJobGroup));
+                Job deletingJob = getDeletingJob(document);
                 if (deletingJob != null && deletingJob.getRequest()
                     .getProperty("entityReferences", Collections.emptyList()).stream().anyMatch(
                         e -> e instanceof EntityReference && isParentOrEqual((EntityReference) e,
-                            hostDocumentReference)))
+                            ownerDocumentReference)))
                 {
                     return true;
                 }
 
                 context.put(TASK_UPDATE_FLAG, true);
-                XWikiDocument hostDocument = context.getWiki().getDocument(hostDocumentReference, context);
-                hostDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
-                    hostDocument.getDocumentReference(), hostDocument.getXDOM(), hostDocument.getSyntax()));
-                context.getWiki().saveDocument(hostDocument,
+                XWikiDocument ownerDocument = context.getWiki().getDocument(ownerDocumentReference, context);
+                ownerDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
+                    ownerDocument.getDocumentReference(), ownerDocument.getXDOM(), ownerDocument.getSyntax()));
+                context.getWiki().saveDocument(ownerDocument,
                     String.format("Removed the task with the reference of [%s]", document.getDocumentReference()),
                     context);
             } catch (XWikiException e) {
@@ -173,6 +168,21 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             return true;
         }
         return false;
+    }
+
+    private Job getDeletingJob(XWikiDocument document)
+    {
+        List<String> deleteJobGroup = new ArrayList<>();
+        deleteJobGroup.add("refactoring");
+        for (EntityReference entityReference : document.getDocumentReference().getLastSpaceReference()
+            .getReversedReferenceChain()) {
+            deleteJobGroup.add(entityReference.getName());
+            Job possibleJob = executor.getCurrentJob(new JobGroupPath(deleteJobGroup));
+            if (possibleJob != null) {
+                return possibleJob;
+            }
+        }
+        return null;
     }
 
     private boolean isParentOrEqual(EntityReference entity1, EntityReference entity2)

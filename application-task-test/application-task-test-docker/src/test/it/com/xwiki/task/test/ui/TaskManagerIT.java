@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @since 2.6
  */
 @UITest(
+    // Needed for the dependency to the mentions macro that uses solr.
     extraJARs = {
         "org.xwiki.platform:xwiki-platform-eventstream-store-solr"
     }, resolveExtraJARs = true)

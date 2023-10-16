@@ -107,7 +107,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null) {
             return;
         }
-
+        // If the flag is set, it means that the listener was triggered as a result of a save made by
+        // TaskObjectUpdateEventListener which updated some macro calls. Skip the execution.
         if (context.get(TASK_UPDATE_FLAG) != null) {
             return;
         }
