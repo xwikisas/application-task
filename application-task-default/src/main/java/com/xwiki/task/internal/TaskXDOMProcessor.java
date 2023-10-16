@@ -140,18 +140,18 @@ public class TaskXDOMProcessor
      * Remove the task macro call that has the given reference.
      *
      * @param taskReference the reference that identifies the task macro.
-     * @param hostReference the reference that identifies the document in which the task reference resides.
+     * @param ownerReference the reference that identifies the document in which the task reference resides.
      * @param docContent the XDOM of the document in which the task reference resides.
      * @param syntax the syntax of the document that contain the task macro.
      * @return the modified XDOM on the document.
      */
-    public XDOM removeTaskMacroCall(DocumentReference taskReference, DocumentReference hostReference, XDOM docContent,
+    public XDOM removeTaskMacroCall(DocumentReference taskReference, DocumentReference ownerReference, XDOM docContent,
         Syntax syntax)
     {
         this.blockFinder.find(docContent, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
                 DocumentReference macroRef =
-                    resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), hostReference);
+                    resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), ownerReference);
                 if (macroRef.equals(taskReference)) {
                     List<Block> siblings = macro.getParent().getChildren();
                     siblings.remove(macro);

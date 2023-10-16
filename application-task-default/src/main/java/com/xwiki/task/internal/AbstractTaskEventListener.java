@@ -25,6 +25,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
+import org.xwiki.job.JobExecutor;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.AbstractEventListener;
@@ -65,6 +66,9 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
 
     @Inject
     protected Logger logger;
+
+    @Inject
+    protected JobExecutor executor;
 
     @Inject
     private ObservationContext observationContext;
