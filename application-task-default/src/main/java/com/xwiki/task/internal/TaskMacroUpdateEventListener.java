@@ -236,6 +236,10 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
                 populateObjectWithMacroParams(context, task, taskObj);
 
+                if (taskDoc.isNew()) {
+                    taskDoc.setHidden(true);
+                }
+
                 context.getWiki().saveDocument(taskDoc, "Task updated!", context);
             } catch (XWikiException e) {
                 logger.warn("Failed to retrieve the document that contains the Task Object with id [{}]: [{}].",
