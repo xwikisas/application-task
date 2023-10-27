@@ -52,6 +52,7 @@ import org.xwiki.test.junit5.mockito.MockComponent;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.internal.MacroBlockFinder;
 import com.xwiki.task.internal.TaskBlockProcessor;
+import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
 
@@ -85,6 +86,9 @@ public class TaskXDOMProcessorTest
 
     @MockComponent
     private MacroUtils macroUtils;
+
+    @MockComponent
+    private TaskReferenceUtils taskReferenceUtils;
 
     @MockComponent
     @Named("compactwiki")
@@ -133,8 +137,8 @@ public class TaskXDOMProcessorTest
         Map<String, String> taskMacro2Params = initTaskMacroParams(TASK2_ID, DEFAULT_TASK_DATE_STRING,
             Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
         when(this.taskMacro2.getParameters()).thenReturn(taskMacro2Params);
-        when(this.resolver.resolve(TASK1_ID, contentSource)).thenReturn(this.task1Reference);
-        when(this.resolver.resolve(TASK2_ID, contentSource)).thenReturn(this.task2Reference);
+        when(this.taskReferenceUtils.resolveAsDocumentReference(TASK1_ID, contentSource)).thenReturn(this.task1Reference);
+        when(this.taskReferenceUtils.resolveAsDocumentReference(TASK2_ID, contentSource)).thenReturn(this.task2Reference);
         when(this.resolver.resolve(adminReference.toString())).thenReturn(adminReference);
         when(this.configuration.getStorageDateFormat()).thenReturn("dd/MM/yyyy");
         when(this.docContent.getMetaData()).thenReturn(this.metaData);
@@ -156,7 +160,7 @@ public class TaskXDOMProcessorTest
 
         callVisitorLambdaFunction();
 
-        verify(this.resolver).resolve(TASK1_ID, this.contentSource);
+        verify(this.taskReferenceUtils).resolveAsDocumentReference(TASK1_ID, this.contentSource);
         assertEquals(1, result.size());
         Task task = result.get(0);
         assertEquals("TaskContent", task.getName());
@@ -233,7 +237,7 @@ public class TaskXDOMProcessorTest
 
         callVisitorLambdaFunction();
 
-        verify(this.resolver).resolve(TASK1_ID, this.contentSource);
+        verify(this.taskReferenceUtils).resolveAsDocumentReference(TASK1_ID, this.contentSource);
         verify(spyContentChildren).remove(this.taskMacro1);
     }
 

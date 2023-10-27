@@ -157,7 +157,11 @@ require(['moment-setup'], function () {
         let idInput = modal.find("input[name='reference']");
         $('.modal select[name="status"]').each(initCompleteDate)
         if (idInput.val()) return;
-        let refGenURL = XWiki.currentDocument.getRestURL() + '/task-reference';
+        // Generate tasks in `Tasks` subspace.
+        let tasksSpaceList = XWiki.Model.resolve(XWiki.currentSpace, XWiki.EntityType.SPACE).getReversedReferenceChain();
+        tasksSpaceList.push('Tasks');
+        let tasksDocRef = new XWiki.DocumentReference(XWiki.currentWiki, tasksSpaceList, 'WebHome');
+        let refGenURL = new XWiki.Document(tasksDocRef).getRestURL() + '/task-reference';
         idInput.prop('disabled', true);
         idInput.addClass('loading');
         modal.find('.btn-primary').prop('disabled', true);

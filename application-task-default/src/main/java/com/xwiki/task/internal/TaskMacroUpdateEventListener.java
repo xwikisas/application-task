@@ -211,7 +211,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         for (Task task : tasks) {
             DocumentReference taskReference = task.getReference();
             try {
-                if (!isChildOf(taskReference, document.getDocumentReference())
+                // Create/Update the task page only if its a child of `Parent.Tasks` or if the user has edit rights
+                // over it.
+                if (!isChildOfTasksSubspace(taskReference, document.getDocumentReference())
                     && !authorizationManager.hasAccess(Right.EDIT, taskReference))
                 {
                     logger.warn(
@@ -248,16 +250,20 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         }
     }
 
-    private boolean isChildOf(DocumentReference possibleChild, DocumentReference possibleParent)
+    private boolean isChildOfTasksSubspace(EntityReference possibleChild, DocumentReference possibleParent)
     {
         String webHome = referenceProvider.getDefaultReference(EntityType.DOCUMENT).getName();
         if (!possibleParent.getName().equals(webHome)) {
             // Terminal pages can't have child pages.
             return false;
         }
-        EntityReference childParent =
+        EntityReference parentOfChild =
             possibleChild.getName().equals(webHome) ? possibleChild.getParent().getParent() : possibleChild.getParent();
-        return Objects.equals(childParent, possibleParent.getLastSpaceReference());
+        if (!Objects.equals(parentOfChild.getName(), "Tasks")) {
+            // If the task reference is not a child of subspace, the rights of the user should be checked.
+            return false;
+        }
+        return Objects.equals(parentOfChild.getParent(), possibleParent.getLastSpaceReference());
     }
 
     private void populateObjectWithMacroParams(XWikiContext context, Task task, BaseObject object)

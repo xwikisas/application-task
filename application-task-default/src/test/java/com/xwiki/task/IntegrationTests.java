@@ -31,6 +31,7 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
@@ -40,10 +41,12 @@ import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.model.Task;
 import com.xwiki.task.script.TaskScriptService;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
@@ -83,6 +86,15 @@ public class IntegrationTests
         DocumentReference ref2 = new DocumentReference("xwiki", "Sandbox", "Task2");
         DocumentReference ref3 = new DocumentReference("xwiki", "Sandbox", "Task3");
 
+        TaskReferenceUtils taskReferenceUtils =
+            componentManager.registerMockComponent(TaskReferenceUtils.class);
+        when(taskReferenceUtils.resolve("Sandbox.Task", null)).thenReturn(ref1);
+        when(taskReferenceUtils.resolve("Sandbox.Task2", null)).thenReturn(ref2);
+        when(taskReferenceUtils.resolve("Sandbox.Task3", null)).thenReturn(ref3);
+        when(taskReferenceUtils.serializeAsDocumentReference(eq(ref1), any())).thenReturn("Sandbox.Task");
+        when(taskReferenceUtils.serializeAsDocumentReference(eq(ref2), any())).thenReturn("Sandbox.Task2");
+        when(taskReferenceUtils.serializeAsDocumentReference(eq(ref3), any())).thenReturn("Sandbox.Task3");
+
         Task task = new Task();
         task.setReference(ref1);
         task.setName("Test name");
@@ -109,8 +121,8 @@ public class IntegrationTests
         when(taskManager.getTask(3)).thenReturn(task3);
         when(taskManager.getTask(2)).thenReturn(task2);
         when(taskManager.getTask(1)).thenReturn(task);
-        when(taskManager.getTask(ref1)).thenReturn(task);
-        when(taskManager.getTask(ref2)).thenReturn(task2);
+        when(taskManager.getTask((EntityReference) ref1)).thenReturn(task);
+        when(taskManager.getTask((EntityReference) ref2)).thenReturn(task2);
         when(context.getUserReference()).thenReturn(user);
         when(authorizationManager.hasAccess(Right.VIEW, ref1)).thenReturn(true);
         when(authorizationManager.hasAccess(Right.VIEW, ref2)).thenReturn(true);

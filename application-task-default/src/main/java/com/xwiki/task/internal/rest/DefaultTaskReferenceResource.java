@@ -27,7 +27,9 @@ import javax.ws.rs.core.Response;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.PageReferenceResolver;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
@@ -58,6 +60,9 @@ public class DefaultTaskReferenceResource extends XWikiResource implements TaskR
     @Named("compact")
     private EntityReferenceSerializer<String> serializer;
 
+    @Inject
+    private PageReferenceResolver<EntityReference> pageReferenceResolver;
+
     @Override
     public String generateId(String wikiName, String spaces, String pageName) throws XWikiRestException
     {
@@ -66,7 +71,7 @@ public class DefaultTaskReferenceResource extends XWikiResource implements TaskR
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
         try {
-            return serializer.serialize(taskReferenceGenerator.generate(docRef));
+            return serializer.serialize(pageReferenceResolver.resolve(taskReferenceGenerator.generate(docRef)), docRef);
         } catch (TaskException e) {
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
         }

@@ -22,11 +22,13 @@ package com.xwiki.task.internal;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.confluence.filter.internal.macros.AbstractMacroConverter;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import com.xwiki.task.model.Task;
 
@@ -47,7 +49,11 @@ public class TaskMacroConverter extends AbstractMacroConverter
 
     private static final String TASK_REFERENCE_PARAMETER = "reference";
 
-    private static final String TASK_REFERENCE_PREFIX = "Task_";
+    private static final String TASK_REFERENCE_PREFIX = "/Tasks/Task_";
+
+    @Inject
+    @Named("compact")
+    private EntityReferenceSerializer<String> serializer;
 
     // A workaround for issue XWIKI-20805 that causes the wysiwyg editor to delete the macros inside the content of
     // another macro when saving the page.

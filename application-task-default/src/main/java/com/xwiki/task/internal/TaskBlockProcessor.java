@@ -78,9 +78,22 @@ public class TaskBlockProcessor
      */
     public Block createTaskLinkBlock(String reference, int taskNumber)
     {
+        return createTaskLinkBlock(reference, taskNumber, ResourceType.DOCUMENT);
+    }
+
+    /**
+     * Create a link block for a task.
+     *
+     * @param reference the reference to the task page.
+     * @param taskNumber the number of the task, that uniquely identifies it.
+     * @param resourceType the resource type of the reference.
+     * @return a {@link LinkBlock} that points to the reference and the number of the task as content.
+     */
+    public Block createTaskLinkBlock(String reference, int taskNumber, ResourceType resourceType)
+    {
         return new LinkBlock(
             Arrays.asList(new SpecialSymbolBlock('#'), new WordBlock(String.valueOf(taskNumber))),
-            new ResourceReference(reference, ResourceType.DOCUMENT),
+            new ResourceReference(reference, resourceType),
             false);
     }
 

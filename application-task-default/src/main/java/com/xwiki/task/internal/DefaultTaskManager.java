@@ -30,6 +30,7 @@ import javax.inject.Singleton;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.query.Query;
@@ -75,6 +76,12 @@ public class DefaultTaskManager implements TaskManager
 
     @Override
     public Task getTask(DocumentReference reference) throws TaskException
+    {
+        return getTask((EntityReference) reference);
+    }
+
+    @Override
+    public Task getTask(EntityReference reference) throws TaskException
     {
         XWikiContext context = contextProvider.get();
         try {
