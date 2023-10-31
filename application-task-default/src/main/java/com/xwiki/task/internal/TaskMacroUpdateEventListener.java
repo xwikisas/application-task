@@ -23,7 +23,6 @@ package com.xwiki.task.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -38,11 +37,11 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.filter.internal.job.FilterStreamConverterJob;
 import org.xwiki.job.Job;
 import org.xwiki.job.event.status.JobStatus;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceProvider;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.event.Event;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
@@ -211,7 +210,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         for (Task task : tasks) {
             DocumentReference taskReference = task.getReference();
             try {
-                // Create/Update the task page only if its a child of `Parent.Tasks` or if the user has edit rights
+                // Create/Update the task page only if it's a child of `Parent.Tasks` or if the user has edit rights
                 // over it.
                 if (!isChildOfTasksSubspace(taskReference, document.getDocumentReference())
                     && !authorizationManager.hasAccess(Right.EDIT, taskReference))
@@ -252,18 +251,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     private boolean isChildOfTasksSubspace(EntityReference possibleChild, DocumentReference possibleParent)
     {
-        String webHome = referenceProvider.getDefaultReference(EntityType.DOCUMENT).getName();
-        if (!possibleParent.getName().equals(webHome)) {
-            // Terminal pages can't have child pages.
-            return false;
-        }
-        EntityReference parentOfChild =
-            possibleChild.getName().equals(webHome) ? possibleChild.getParent().getParent() : possibleChild.getParent();
-        if (!Objects.equals(parentOfChild.getName(), "Tasks")) {
-            // If the task reference is not a child of subspace, the rights of the user should be checked.
-            return false;
-        }
-        return Objects.equals(parentOfChild.getParent(), possibleParent.getLastSpaceReference());
+        SpaceReference expectedParent = new SpaceReference("Tasks", possibleParent.getLastSpaceReference());
+        return possibleChild.hasParent(expectedParent);
     }
 
     private void populateObjectWithMacroParams(XWikiContext context, Task task, BaseObject object)

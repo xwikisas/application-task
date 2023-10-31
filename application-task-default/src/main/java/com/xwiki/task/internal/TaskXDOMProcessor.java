@@ -36,7 +36,6 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.PageReferenceResolver;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -67,9 +66,6 @@ public class TaskXDOMProcessor
 
     @Inject
     private DocumentReferenceResolver<String> resolver;
-
-    @Inject
-    private PageReferenceResolver<String> pageReferenceResolver;
 
     @Inject
     private TaskReferenceUtils taskReferenceUtils;
