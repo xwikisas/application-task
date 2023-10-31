@@ -47,7 +47,7 @@ public class TaskMacroConverter extends AbstractMacroConverter
 
     private static final String TASK_REFERENCE_PARAMETER = "reference";
 
-    private static final String TASK_REFERENCE_PREFIX = "Task_";
+    private static final String TASK_REFERENCE_PREFIX = "/Tasks/Task_";
 
     // A workaround for issue XWIKI-20805 that causes the wysiwyg editor to delete the macros inside the content of
     // another macro when saving the page.

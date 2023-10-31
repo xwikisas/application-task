@@ -31,8 +31,8 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.FormatBlock;
 import org.xwiki.rendering.block.GroupBlock;
@@ -51,6 +51,7 @@ import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
 import com.xwiki.task.internal.TaskBlockProcessor;
+import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.macro.TaskMacroParameters;
 import com.xwiki.task.model.Task;
 
@@ -83,14 +84,14 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
     private TaskManager taskManager;
 
     @Inject
-    private DocumentReferenceResolver<String> resolver;
-
-    @Inject
     private MacroUtils macroUtils;
 
     @Inject
     @Named("macro")
     private DocumentReferenceResolver<String> macroDocumentReferenceResolver;
+
+    @Inject
+    private TaskReferenceUtils taskReferenceUtils;
 
     /**
      * Default constructor.
@@ -140,23 +141,31 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         if ((parameters.getStatus() != null && parameters.getStatus().equals(Task.STATUS_DONE))) {
             checked = "checked";
         }
+        // We need to serialize the reference as DocumentReference because the javascript api doesn't handle
+        // PageReference resolving.
+        EntityReference ownerDocRef = getOwnerDocument(context.getCurrentMacroBlock());
+        EntityReference taskRef = taskReferenceUtils.resolve(parameters.getReference(), ownerDocRef);
+        String taskId = taskReferenceUtils.serializeAsDocumentReference(taskRef, ownerDocRef);
         String htmlCheckbox = String.format("<input type=\"checkbox\" data-taskId=\"%s\" %s class=\"task-status\">",
-            parameters.getReference(),
+            taskId,
             checked);
         Block checkBoxBlock = new RawBlock(htmlCheckbox, Syntax.HTML_5_0);
 
         ret.addChild(new FormatBlock(Collections.singletonList(checkBoxBlock), Format.NONE));
+
         try {
-            Task task = taskManager.getTask(
-                resolver.resolve(parameters.getReference(), getOwnerDocument(context.getCurrentMacroBlock())));
-            ret.addChild(taskBlockProcessor.createTaskLinkBlock(parameters.getReference(), task.getNumber()));
+            Task task = taskManager.getTask(taskRef);
+            ret.addChild(
+                taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
         } catch (TaskException ignored) {
+            // The task page not existing is a valid scenario (when the user just added the task macro in the WYSIWYG).
         }
+
         ret.addChild(new GroupBlock(contentBlocks, Collections.singletonMap(HTML_CLASS, "task-content")));
         return Collections.singletonList(ret);
     }
 
-    private DocumentReference getOwnerDocument(MacroBlock block)
+    private EntityReference getOwnerDocument(MacroBlock block)
     {
         return this.macroDocumentReferenceResolver.resolve("", block);
     }

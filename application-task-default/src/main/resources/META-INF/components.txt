@@ -9,6 +9,7 @@ com.xwiki.task.internal.TaskBlockProcessor
 com.xwiki.task.internal.TaskDatesInitializer
 com.xwiki.task.internal.TaskListMacroConverter
 com.xwiki.task.internal.TaskMacroConverter
+com.xwiki.task.internal.TaskReferenceUtils
 com.xwiki.task.internal.TaskXDOMProcessor
 com.xwiki.task.internal.TaskMacroUpdateEventListener
 com.xwiki.task.internal.TaskManagerConfigurationSource

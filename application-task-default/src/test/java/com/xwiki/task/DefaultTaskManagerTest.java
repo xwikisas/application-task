@@ -110,6 +110,7 @@ class DefaultTaskManagerTest
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getWiki()).thenReturn(this.wiki);
         when(this.wiki.getDocument(this.documentReference, this.context)).thenReturn(this.document);
+        when(this.wiki.getDocument((EntityReference) this.documentReference, this.context)).thenReturn(this.document);
         when(this.document.getXObject(any(EntityReference.class))).thenReturn(this.taskObject);
         when(this.resolver.resolve(documentReference.toString())).thenReturn(documentReference);
         when(this.resolver.resolve(userReference.toString())).thenReturn(userReference);

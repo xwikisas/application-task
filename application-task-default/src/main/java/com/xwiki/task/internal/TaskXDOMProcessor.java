@@ -68,6 +68,9 @@ public class TaskXDOMProcessor
     private DocumentReferenceResolver<String> resolver;
 
     @Inject
+    private TaskReferenceUtils taskReferenceUtils;
+
+    @Inject
     private TaskConfiguration configuration;
 
     @Inject
@@ -150,8 +153,8 @@ public class TaskXDOMProcessor
     {
         this.blockFinder.find(docContent, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
-                DocumentReference macroRef =
-                    resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), ownerReference);
+                DocumentReference macroRef = taskReferenceUtils.resolveAsDocumentReference(
+                    macro.getParameters().getOrDefault(Task.REFERENCE, ""), ownerReference);
                 if (macroRef.equals(taskReference)) {
                     List<Block> siblings = macro.getParent().getChildren();
                     siblings.remove(macro);
@@ -173,7 +176,7 @@ public class TaskXDOMProcessor
         if (StringUtils.isEmpty(taskReference)) {
             return null;
         }
-        task.setReference(resolver.resolve(taskReference, contentSource));
+        task.setReference(taskReferenceUtils.resolveAsDocumentReference(taskReference, contentSource));
         extractBasicProperties(macroParams, task);
 
         try {
@@ -197,7 +200,8 @@ public class TaskXDOMProcessor
         DocumentReference taskDocRef, XDOM content, SimpleDateFormat storageFormat, MacroBlock macro)
     {
         DocumentReference taskRef =
-            resolver.resolve(macro.getParameters().getOrDefault(Task.REFERENCE, ""), documentReference);
+            taskReferenceUtils.resolveAsDocumentReference(macro.getParameters().getOrDefault(Task.REFERENCE, ""),
+                documentReference);
         if (taskRef.equals(taskDocRef)) {
 
             setBasicMacroParameters(taskObject, storageFormat, macro);

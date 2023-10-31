@@ -21,6 +21,7 @@ package com.xwiki.task;
 
 import org.xwiki.component.annotation.Role;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.stability.Unstable;
 
 import com.xwiki.task.model.Task;
@@ -41,6 +42,14 @@ public interface TaskManager
      * @throws TaskException if the page does not have a task.
      */
     Task getTask(DocumentReference reference) throws TaskException;
+
+    /**
+     * @param reference the reference of a page that contains a Task Object.
+     * @return the Task Model of the object inside the page.
+     * @throws TaskException if the page does not have a task.
+     * @since 3.3
+     */
+    Task getTask(EntityReference reference) throws TaskException;
 
     /**
      * @param id the ID of the task.
