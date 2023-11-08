@@ -200,7 +200,28 @@ rendering.macro.task-report.parameter.id.description=An unique identifier for th
 
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
 TaskManager.TaskManagerConfigurationClass_storageDateFormat=The format that will be used to store dates used in Task Manager.
-TaskManager.TaskManagerConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.</content>
+TaskManager.TaskManagerConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.
+
+## Incomplete tasks
+TaskManager.adminitration.incompleteTasks=Incomplete tasks
+taskmanager.incompleteTasks.find=Find incomplete tasks
+taskmanager.incompleteTasks.find.noTasks=There are no task macros with incomplete data.
+taskmanager.incompleteTasks.fixAll=Infer missing data for all tasks
+taskmanager.incompleteTasks.refresh=Refresh
+taskmanager.incompleteTasks.fix=Infer missing data
+taskmanager.incompleteTasks.job.finish.error=There was an error while trying to infer the missing data.
+taskmanager.incompleteTasks.job.finish.canceled=The inferring process was canceled.
+taskmanager.incompleteTasks.job.finish.warning=Missing data was inferred but some problems occurred.
+taskmanager.incompleteTasks.job.finish.success=Missing data was inferred successfully.
+taskmanager.incompleteTasks.notification.find.inprogress=Looking for incomplete task macros..
+taskmanager.incompleteTasks.notification.find.done=Lookup finished
+taskmanager.incompleteTasks.notification.find.error=Error while looking for incomplete task macros..
+taskmanager.incompleteTasks.notification.fix.inprogress=Inferring data..
+taskmanager.incompleteTasks.notification.fix.done=Data inferred succesfully
+taskmanager.incompleteTasks.notification.fix.error=Error while trying to infer data
+taskmanager.incompleteTasks.notification.fixAll.inprogress=Starting inferring process..
+taskmanager.incompleteTasks.notification.fixAll.done=Inferring process started
+taskmanager.incompleteTasks.notification.fixAll.error=Failed to start inferring process</content>
   <object>
     <name>TaskManager.TaskManagerTranslations</name>
     <number>0</number>
