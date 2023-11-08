@@ -232,9 +232,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     {
         object.set(Task.NAME, task.getName(), context);
 
-        object.set(Task.REPORTER,
-            serializer.serialize(task.getReporter() != null ? task.getReporter() : context.getUserReference()),
-            context);
+        object.set(Task.REPORTER, serializer.serialize(task.getReporter()), context);
 
         object.set(Task.STATUS, task.getStatus(), context);
 
