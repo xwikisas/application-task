@@ -98,13 +98,13 @@ class TaskManagerIT
         // Check first, unchecked macro.
         assertEquals("Do this", page.getTaskMacroContent(0));
         assertEquals("#1", page.getTaskMacroLink(0).getText());
-        assertTrue(page.getTaskMacroLink(0).getAttribute("href").endsWith("/xwiki/bin/view/Main/Task_1"));
+        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Task_1"));
         assertFalse(page.isTaskMacroCheckboxChecked(0));
         page.clickTaskMacroCheckbox(0);
         // Check second, checked macro.
         assertEquals("Do this as well", page.getTaskMacroContent(1));
         assertEquals("#2", page.getTaskMacroLink(1).getText());
-        assertTrue(page.getTaskMacroLink(1).getAttribute("href").endsWith("/xwiki/bin/view/Main/Task_2"));
+        assertTrue(page.getTaskMacroLink(1).getAttribute("href").contains("/xwiki/bin/view/Task_2"));
         assertTrue(page.isTaskMacroCheckboxChecked(1));
         page.clickTaskMacroCheckbox(1);
         // Refresh the page and make sure the changes are saved.
@@ -122,16 +122,13 @@ class TaskManagerIT
         LiveTableElement liveTableElement = taskManagerHomePage.getTaskLiveTable();
         int taskTileCellIndex = liveTableElement.getColumnIndex("Task") + 1;
         int taskStatusCellIndex = liveTableElement.getColumnIndex("Status") + 1;
-        int taskReporterCellIndex = liveTableElement.getColumnIndex("Reporter") + 1;
         assertEquals(2, liveTableElement.getRowCount());
         WebElement row = liveTableElement.getRow(1);
         assertEquals("Do this", liveTableElement.getCell(row, taskTileCellIndex).getText());
         assertEquals("Done", liveTableElement.getCell(row, taskStatusCellIndex).getText());
-        assertEquals("superadmin", liveTableElement.getCell(row, taskReporterCellIndex).getText());
         row = liveTableElement.getRow(2);
         assertEquals("Do this as well", liveTableElement.getCell(row, taskTileCellIndex).getText());
         assertEquals("In Progress", liveTableElement.getCell(row, taskStatusCellIndex).getText());
-        assertEquals("superadmin", liveTableElement.getCell(row, taskReporterCellIndex).getText());
     }
 
     @Test
@@ -142,7 +139,7 @@ class TaskManagerIT
         ViewPageWithTasks page = new ViewPageWithTasks();
         assertEquals("Do this @Admin as late as 2023/01/01 12:00", page.getTaskMacroContent(0));
         assertEquals("#3", page.getTaskMacroLink(0).getText());
-        assertTrue(page.getTaskMacroLink(0).getAttribute("href").endsWith("/xwiki/bin/view/Main/Task_3"));
+        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Task_3"));
         assertTrue(page.isTaskMacroCheckboxChecked(0));
         page.getTaskMacroLink(0).click();
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
@@ -205,11 +202,11 @@ class TaskManagerIT
     {
         // Deleting the page that contains task macros should also delete the task pages.
         setup.gotoPage(pageWithTaskMacros);
-        assertTrue(setup.pageExists("Main", "Task_1"));
-        assertTrue(setup.pageExists("Main", "Task_2"));
+        assertTrue(setup.pageExists("Task_1", "WebHome"));
+        assertTrue(setup.pageExists("Task_2", "WebHome"));
         setup.deletePage(pageWithTaskMacros);
-        assertFalse(setup.pageExists("Main", "Task_1"));
-        assertFalse(setup.pageExists("Main", "Task_2"));
+        assertFalse(setup.pageExists("Task_1", "WebHome"));
+        assertFalse(setup.pageExists("Task_2", "WebHome"));
     }
 
     @Test

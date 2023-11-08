@@ -51,6 +51,8 @@
   {{include reference="TaskManager.AdministrationAddStatus"/}}
   == $services.localization.render('TaskManager.adminitration.addSeverity') ==
   {{include reference="TaskManager.AdministrationAddSeverity"/}}
+  == $services.localization.render('TaskManager.adminitration.incompleteTasks') ==
+  {{include reference="TaskManager.AdministrationIncompleteTasks"/}}
 #end
 {{/velocity}}
 </content>
@@ -350,7 +352,9 @@
       <categoryIcon/>
     </property>
     <property>
-      <codeToExecute>{{include reference="TaskManager.Administration"/}}</codeToExecute>
+      <codeToExecute>{{include reference="TaskManager.Administration"/}}
+
+----</codeToExecute>
     </property>
     <property>
       <configurationClass>TaskManager.TaskManagerConfigurationClass</configurationClass>

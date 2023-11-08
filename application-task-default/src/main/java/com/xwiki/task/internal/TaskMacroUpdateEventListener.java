@@ -35,11 +35,8 @@ import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.filter.internal.job.FilterStreamConverterJob;
-import org.xwiki.job.Job;
-import org.xwiki.job.event.status.JobStatus;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceProvider;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.event.Event;
@@ -78,13 +75,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     private DocumentRevisionProvider revisionProvider;
 
     @Inject
-    private TaskDatesInitializer datesInitializer;
-
-    @Inject
     private TaskManager taskManager;
-
-    @Inject
-    private EntityReferenceProvider referenceProvider;
 
     /**
      * Default constructor.
@@ -131,8 +122,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     {
         XDOM documentContent = document.getXDOM();
 
-        maybeInitDatesForTasks(document, documentContent, context);
-
         List<Task> tasks = this.taskXDOMProcessor.extract(documentContent, document.getDocumentReference());
 
         String previousVersion = document.getPreviousVersion();
@@ -157,22 +146,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             deleteTaskPages(document, context, previousDocTasks);
             createOrUpdateTaskPages(document, context, tasks);
             context.put(TASK_UPDATE_FLAG, null);
-        }
-    }
-
-    private void maybeInitDatesForTasks(XWikiDocument document, XDOM processedContent, XWikiContext context)
-    {
-        // The job id is used in NestedPagesMigrator version 0.7.5.
-        Job npmigJob = executor.getJob(Arrays.asList("npmig", "executemigrationplan",
-            document.getDocumentReference().getWikiReference().getName()));
-        if (npmigJob != null && JobStatus.State.RUNNING.equals(npmigJob.getStatus().getState())) {
-            try {
-                this.datesInitializer.processDocument(document, processedContent, context);
-            } catch (TaskException e) {
-                logger.warn(
-                    "Attempted to init the creation and completion dates of the document [{}] but failed. Cause: [{}].",
-                    document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
-            }
         }
     }
 
@@ -259,9 +232,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     {
         object.set(Task.NAME, task.getName(), context);
 
-        object.set(Task.REPORTER,
-            serializer.serialize(task.getReporter() != null ? task.getReporter() : context.getUserReference()),
-            context);
+        object.set(Task.REPORTER, serializer.serialize(task.getReporter()), context);
 
         object.set(Task.STATUS, task.getStatus(), context);
 

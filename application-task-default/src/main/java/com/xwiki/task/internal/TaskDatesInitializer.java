@@ -62,12 +62,13 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskDatesInitializer
 {
-    // TODO: Create a more general pattern that can match a task macro regardless of the positions of the reference
-    //  and status parameters.
-    private static final String TASK_PATTERN_STRING =
-        "\\{\\{task\\s+reference=\"([^\"]+)\"\\s*(status=\"([^\"]+)\")?/?}}";
+    private static final String TASK_PATTERN_STRING = "\\{\\{task[^}]*/?}}";
 
-    private final Pattern refPattern = Pattern.compile(TASK_PATTERN_STRING);
+    private static final String TASK_PARAMETERS_PATTERN_STRING = "(\\w+)=['\"]([^'\"]*)['\"]";
+
+    private final Pattern taskPattern = Pattern.compile(TASK_PATTERN_STRING);
+
+    private final Pattern paramPattern = Pattern.compile(TASK_PARAMETERS_PATTERN_STRING);
 
     @Inject
     private TaskConfiguration configuration;
@@ -82,12 +83,25 @@ public class TaskDatesInitializer
     private Logger logger;
 
     /**
+     * @param content the parsed content of the document.
+     * @return true if the XDOM contains task macros with incomplete data. False otherwise.
+     */
+    public boolean doesDocumentContainIncompleteTasks(XDOM content)
+    {
+        List<Block> taskMacros =
+            content.getBlocks(new MacroBlockMatcher(Task.MACRO_NAME), Block.Axes.DESCENDANT_OR_SELF);
+        return taskMacros.stream().anyMatch(
+            macro -> macro.getParameter(Task.REPORTER) == null || "".equals(macro.getParameter(Task.REPORTER)));
+    }
+
+    /**
      * @param ownerDoc the document that contains tasks which are missing the create date and/or the complete date.
      * @param content the parsed content of the document.
      * @param context the current context.
-     * @throws TaskException if the extraction
+     * @throws TaskException if the extraction failed
+     * @return true if the xdom has been changed, false otherwise.
      */
-    public void processDocument(XWikiDocument ownerDoc, XDOM content, XWikiContext context) throws TaskException
+    public boolean processDocument(XWikiDocument ownerDoc, XDOM content, XWikiContext context) throws TaskException
     {
         Version[] versions;
         Map<String, Block> createDateTasks = new HashMap<>();
@@ -106,12 +120,16 @@ public class TaskDatesInitializer
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
 
         if (createDateTasks.isEmpty() && completeDateTasks.isEmpty()) {
-            return;
+            return false;
         }
+        int foundTasks = createDateTasks.size() + completeDateTasks.size();
         // Check also for the first version before comparing the versions.
         extractFromVersion1OfDoc(versions, createDateTasks, completeDateTasks, ownerDoc, storageFormat);
 
         compareVersionsAndExtract(context, versions, createDateTasks, completeDateTasks, ownerDoc, storageFormat);
+
+        // If tasks were found but they are still in the map, that means they weren't initialised properly.
+        return foundTasks != createDateTasks.size() + completeDateTasks.size();
     }
 
     private void compareVersionsAndExtract(XWikiContext context, Version[] versions, Map<String, Block> createDateTasks,
@@ -159,10 +177,19 @@ public class TaskDatesInitializer
     private void inferDateFromContent(Map<String, Block> createDateBlocks, Map<String, Block> completeDateBlocks,
         SimpleDateFormat storageFormat, Date date, String author, Delta delta)
     {
-        Matcher matcher = refPattern.matcher(delta.getRevised().toString());
+        Matcher matcher = taskPattern.matcher(delta.getRevised().toString());
         while (matcher.find()) {
-            String taskReference = matcher.group(1);
-            String status = matcher.group(3);
+            String task = matcher.group();
+            Matcher paramMatcher = paramPattern.matcher(task);
+            String taskReference = "";
+            String status = "";
+            while (paramMatcher.find()) {
+                if (paramMatcher.group(1).equals(Task.REFERENCE)) {
+                    taskReference = paramMatcher.group(2);
+                } else if (paramMatcher.group(1).equals(Task.STATUS)) {
+                    status = paramMatcher.group(2);
+                }
+            }
             if (delta instanceof AddDelta) {
                 if (createDateBlocks.containsKey(taskReference)) {
                     createDateBlocks.get(taskReference).setParameter(Task.REPORTER, author);

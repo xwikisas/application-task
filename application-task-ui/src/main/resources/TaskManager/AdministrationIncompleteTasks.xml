@@ -1,0 +1,411 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.4" reference="TaskManager.AdministrationIncompleteTasks" locale="">
+  <web>TaskManager</web>
+  <name>AdministrationIncompleteTasks</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>Main.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>AdministrationIncompleteTasks</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>
+{{velocity}}
+#set ($discard = $xwiki.jsx.use('TaskManager.AdministrationIncompleteTasks'))
+#set ($discard = $xwiki.ssx.use('TaskManager.AdministrationIncompleteTasks'))
+{{html clean="false"}}
+&lt;div class="incompleteTaskOwnersSection"&gt;
+  &lt;button class="fixAllTasks btn btn-primary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.fixAll'))&lt;/button&gt;
+  &lt;button class="refreshTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.refresh'))&lt;/button&gt;
+  &lt;div class="incompleteTaskOwners loading"&gt;
+    &lt;template id="incompleteTaskOwnerTemplate"&gt;
+      &lt;a class="incompleteTaskOwnerLink" href="#"&gt;&lt;/a&gt;
+      &lt;button class="incompleteTaskOwnerFix btn btn-secondary" type="button"&gt;&lt;/button&gt;
+    &lt;/template&gt;
+  &lt;/div&gt;
+  &lt;div class="hidden incompleteTaskOwnersSectionMessage"&gt;&lt;/div&gt;
+&lt;/div&gt;
+{{/html}}
+{{/velocity}}</content>
+  <object>
+    <name>TaskManager.AdministrationIncompleteTasks</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>181637d5-679e-4a1e-8f9e-d8c8827a0dab</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>define('taskmanager-incomplete-tasks-translation-keys', {
+  prefix: 'taskmanager.incompleteTasks.',
+  keys: [
+    'notification.find.inprogress',
+    'notification.find.done',
+    'notification.find.error',
+    'notification.fix.inprogress',
+    'notification.fix.done',
+    'notification.fix.error',
+    'notification.fixAll.inprogress',
+    'notification.fixAll.done',
+    'notification.fixAll.error',
+    'find.noTasks',
+    'fix'
+  ]
+});
+// TODO: Remove this when the parent version is greater or equal to 14.5.
+if (require.toUrl('xwiki-job-runner') === './xwiki-job-runner') {
+  require.config({
+    paths: {
+      'xwiki-job-runner': "$services.webjars.url('org.xwiki.platform:xwiki-platform-job-webjar', 'jobRunner.min')"
+    }
+  });
+}
+require(['jquery', 'xwiki-meta', 'xwiki-job-runner', 'xwiki-l10n!taskmanager-incomplete-tasks-translation-keys'], function ($, xcontext, JobRunner, l10n) {
+  let displayIncompleteTasks = function (pages, serviceDoc) {
+    $('.incompleteTaskOwnerLink').remove();
+    $('.incompleteTaskOwnerFix').remove();
+    let template = document.querySelector('#incompleteTaskOwnerTemplate').content;
+    pages.each(function (page) {
+      let element = $(template.cloneNode(true));
+      element.find('.incompleteTaskOwnerLink').attr('href', page.url).text(page.title);
+      element.find('.incompleteTaskOwnerFix').attr('data-url', serviceDoc.getURL('get', $.param({ docRef: page.ref }))).text(l10n.get('fix'));
+      $('.incompleteTaskOwners').append(element);
+    });
+  };
+  $(function () {
+    let serviceDocRef = XWiki.Model.resolve('TaskManager.IncompleteTasksService', XWiki.EntityType.DOCUMENT, XWiki.currentDocument.getDocumentReference());
+    let serviceDoc = new XWiki.Document(serviceDocRef);
+    $('.incompleteTaskOwnersSectionMessage').addClass('hidden');
+    // Load incomplete task owners on page load.
+    $.getJSON(serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', getPages: '1' })))
+      .done(function (pages) {
+        displayIncompleteTasks(pages, serviceDoc);
+        if (pages.length &lt;= 0) {
+          $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('&lt;div class="box infomessage"&gt;' + l10n.get('find.noTasks') + '&lt;/div&gt;');
+        }
+      })
+      .always(function () {
+        $('.incompleteTaskOwners').removeClass('loading');
+      });
+    // Find incomplete task owners and display them when clicking refresh.
+    $('.refreshTasks').on('click', function () {
+      var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', getPages: '1' }));
+      let notification = new XWiki.widgets.Notification(l10n.get('notification.find.inprogress'), "inprogress");
+      $('.incompleteTaskOwnersSectionMessage').addClass('hidden');
+      $.getJSON(serviceURL)
+        .done(function (pages) {
+          displayIncompleteTasks(pages, serviceDoc);
+          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.done'), "done"));
+          if (pages.length &lt;= 0) {
+            $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('&lt;div class="box infomessage"&gt;' + l10n.get('find.noTasks') + '&lt;/div&gt;');
+          }
+        })
+        .fail(function (err) {
+          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.error'), "error"));
+        });
+    });
+    // Start the job and create a jobrunner object to periodically check the status of the job.
+    $('.fixAllTasks').on('click', function () {
+      let button = $(this);
+      var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', fixAll: '1', form_token: xcontext.form_token }));
+      let notification = new XWiki.widgets.Notification(l10n.get('notification.fixAll.inprogress'), "inprogress");
+      $.getJSON(serviceURL)
+        .done(function (result) {
+          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fixAll.done'), "done"));
+          let url = serviceDoc.getURL('get', $.param({
+            xpage: 'job_status_json',
+            outputSyntax: 'plain',
+            jobId: result.jobId,
+            translationPrefix: 'taskmanager.incompleteTasks.job'
+          }));
+          var runnerConfig = {};
+
+          runnerConfig.createStatusRequest = function () {
+            return {
+              url: url.replaceAll('%5B%5D', '')
+            };
+          };
+          $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('').addClass('loading');
+          button.prop('disabled', true);
+          new JobRunner(runnerConfig).resume()
+            .progress(function () { })
+            .then(
+              function (job) {
+                button.prop('disabled', false);
+                $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').removeClass('loading').html(job.message);
+                displayIncompleteTasks([], '');
+              },
+              function () {
+                button.prop('disabled', false);
+                $('.incompleteTaskOwnersSectionMessage').removeClass('loading')
+              });
+        })
+        .fail(function (err) {
+          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fixAll.error'), "error"));
+        });
+    });
+    $(document).on('click', '.incompleteTaskOwnerFix', function (event) {
+      let button = $(this);
+      event.preventDefault();
+      var serviceURL = $(this).data('url') + '&amp;' + $.param({
+        'form_token': xcontext.form_token
+      });
+      let notification = new XWiki.widgets.Notification(l10n.get('notification.fix.inprogress'), "inprogress");
+      $.get(serviceURL)
+        .done(function () {
+          // Remove the associated link and the button.
+          button.prevAll()[0].remove();
+          button.remove();
+          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fix.done'), "done"));
+        })
+        .fail(function () {
+          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fix.error'), "error"));
+        });
+    });
+  });
+
+});</code>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.AdministrationIncompleteTasks</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>df27c7ea-abac-4ac1-b427-bc5a8fa74f92</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.incompleteTaskOwners {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1em 0;
+  grid-column-gap: 1em;
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+</xwikidoc>

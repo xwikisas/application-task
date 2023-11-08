@@ -264,31 +264,27 @@ public class TaskXDOMProcessor
 
         SimpleDateFormat dateFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
 
-        Date createDate;
         try {
-            createDate = dateFormat.parse(strCreateDate);
+            Date createDate = dateFormat.parse(strCreateDate);
+            task.setCreateDate(createDate);
         } catch (ParseException e) {
             if (!strCreateDate.isEmpty()) {
                 logger.warn("Failed to parse the createDate macro parameter [{}]. Expected format is [{}]",
                     strCreateDate, configuration.getStorageDateFormat());
             }
-            createDate = new Date();
         }
-        task.setCreateDate(createDate);
 
-        Date completeDate = null;
         if (taskStatus.equals(Task.STATUS_DONE)) {
             try {
-                completeDate = dateFormat.parse(strCompletedDate);
+                Date completeDate = dateFormat.parse(strCompletedDate);
+                task.setCompleteDate(completeDate);
             } catch (ParseException e) {
                 if (!strCompletedDate.isEmpty()) {
                     logger.warn("Failed to parse the completeDate macro parameter [{}]. Expected format is [{}]",
                         strCreateDate, configuration.getStorageDateFormat());
                 }
-                completeDate = new Date();
             }
         }
-        task.setCompleteDate(completeDate);
     }
 
     private DocumentReference extractAssignedUser(XDOM taskContent)
