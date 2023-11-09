@@ -157,15 +157,7 @@
     'fix'
   ]
 });
-// TODO: Remove this when the parent version is greater or equal to 14.5.
-if (require.toUrl('xwiki-job-runner') === './xwiki-job-runner') {
-  require.config({
-    paths: {
-      'xwiki-job-runner': "$services.webjars.url('org.xwiki.platform:xwiki-platform-job-webjar', 'jobRunner.min')"
-    }
-  });
-}
-require(['jquery', 'xwiki-meta', 'xwiki-job-runner', 'xwiki-l10n!taskmanager-incomplete-tasks-translation-keys'], function ($, xcontext, JobRunner, l10n) {
+require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-translation-keys'], function ($, xcontext, l10n) {
   let displayIncompleteTasks = function (pages, serviceDoc) {
     $('.incompleteTaskOwnerLink').remove();
     $('.incompleteTaskOwnerFix').remove();
@@ -212,42 +204,46 @@ require(['jquery', 'xwiki-meta', 'xwiki-job-runner', 'xwiki-l10n!taskmanager-inc
     // Start the job and create a jobrunner object to periodically check the status of the job.
     $('.fixAllTasks').on('click', function () {
       let button = $(this);
-      var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', fixAll: '1', form_token: xcontext.form_token }));
-      let notification = new XWiki.widgets.Notification(l10n.get('notification.fixAll.inprogress'), "inprogress");
-      $.getJSON(serviceURL)
-        .done(function (result) {
-          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fixAll.done'), "done"));
-          let url = serviceDoc.getURL('get', $.param({
-            xpage: 'job_status_json',
-            outputSyntax: 'plain',
-            jobId: result.jobId,
-            translationPrefix: 'taskmanager.incompleteTasks.job'
-          }));
-          var runnerConfig = {};
+      // TODO: Remove this when the parent version is greater or equal to 14.5. On versions lower than 14.5, we use the JobRunner that happens to be defined
+      // by the displayer of the TextArea. On versions greater than 14.5, xwiki-job-runner is defined globally.
+      require([#if("$!services.resource.temporary" != '')'xwiki-job-runner'#else'JobRunner'#end], function (JobRunner) {
+        var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', fixAll: '1', form_token: xcontext.form_token }));
+        let notification = new XWiki.widgets.Notification(l10n.get('notification.fixAll.inprogress'), "inprogress");
+        $.getJSON(serviceURL)
+          .done(function (result) {
+            notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fixAll.done'), "done"));
+            let url = serviceDoc.getURL('get', $.param({
+              xpage: 'job_status_json',
+              outputSyntax: 'plain',
+              jobId: result.jobId,
+              translationPrefix: 'taskmanager.incompleteTasks.job'
+            }));
+            var runnerConfig = {};
 
-          runnerConfig.createStatusRequest = function () {
-            return {
-              url: url.replaceAll('%5B%5D', '')
+            runnerConfig.createStatusRequest = function () {
+              return {
+                url: url.replaceAll('%5B%5D', '')
+              };
             };
-          };
-          $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('').addClass('loading');
-          button.prop('disabled', true);
-          new JobRunner(runnerConfig).resume()
-            .progress(function () { })
-            .then(
-              function (job) {
-                button.prop('disabled', false);
-                $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').removeClass('loading').html(job.message);
-                displayIncompleteTasks([], '');
-              },
-              function () {
-                button.prop('disabled', false);
-                $('.incompleteTaskOwnersSectionMessage').removeClass('loading')
-              });
-        })
-        .fail(function (err) {
-          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fixAll.error'), "error"));
-        });
+            $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('').addClass('loading');
+            button.prop('disabled', true);
+            new JobRunner(runnerConfig).resume()
+              .progress(function () { })
+              .then(
+                function (job) {
+                  button.prop('disabled', false);
+                  $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').removeClass('loading').html(job.message);
+                  displayIncompleteTasks([], '');
+                },
+                function () {
+                  button.prop('disabled', false);
+                  $('.incompleteTaskOwnersSectionMessage').removeClass('loading')
+                });
+          })
+          .fail(function (err) {
+            notification.replace(new XWiki.widgets.Notification(l10n.get('notification.fixAll.error'), "error"));
+          });
+      });
     });
     $(document).on('click', '.incompleteTaskOwnerFix', function (event) {
       let button = $(this);
