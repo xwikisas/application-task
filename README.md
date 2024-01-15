@@ -3,7 +3,7 @@
 XWiki Task Manager Application let users create and assign tasks.
 
 * Project Lead: [Teo Caras](https://github.com/trrenty)
-* [Documentation](https://store.xwiki.com/xwiki/bin/view/Extension/TaskManagerApplication)
+* [Documentation](https://store.xwiki.com/xwiki/bin/view/Extension/TaskApplication)
 * Communication: [Forum and mailing list](http://dev.xwiki.org/xwiki/bin/view/Community/MailingLists), [chat](http://dev.xwiki.org/xwiki/bin/view/Community/IRC)
 * [Development Practices](http://dev.xwiki.org)
 * License: LGPL 2.1+
