@@ -243,18 +243,21 @@
       <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
     </duedate>
     <name>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
+      <editor>PureText</editor>
       <hint/>
       <name>name</name>
       <number>1</number>
       <picker>0</picker>
       <prettyName>Task name</prettyName>
-      <size>30</size>
+      <rows>5</rows>
+      <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
     </name>
     <number>
       <customDisplay/>
