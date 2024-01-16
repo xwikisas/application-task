@@ -59,7 +59,8 @@ public class DefaultTaskCounter implements TaskCounter
     {
         String statement =
             "select max(taskObject.number) "
-                + "from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject";
+                + "from Document doc, doc.object(TaskManager.TaskManagerClass) as taskObject "
+                + "where taskObject.number is not null";
         try {
             EntityReference reference = modelContext.getCurrentEntityReference();
             if (reference == null) {
