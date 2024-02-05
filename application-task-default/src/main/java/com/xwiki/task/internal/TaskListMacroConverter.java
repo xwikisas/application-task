@@ -72,7 +72,7 @@ public class TaskListMacroConverter implements MacroConverter
         try {
             Parser parser = componentManager.getInstance(Parser.class, syntaxId);
             XDOM contentXDOM = parser.parse(new StringReader(content));
-            contentXDOM.traverse(listener);
+            contentXDOM.getChildren().forEach(child -> child.traverse(listener));
         } catch (ComponentLookupException | ParseException e) {
             new MacroBlock("error", Collections.emptyMap(),
                 String.format("Failed to parse the content of the [%s] macro with the syntax [%s].", id, syntaxId),
