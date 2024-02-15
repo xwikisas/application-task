@@ -36,11 +36,10 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include reference="Licenses.Code.VelocityMacros"/}}
-{{velocity}}
+  <content>{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
-  {{error}}#getMissingLicenseMessage('taskmanager.extension.name'){{/error}}
+  {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
 #else
 #set ($discard = $xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css'))
 #set ($columnsProperties = {

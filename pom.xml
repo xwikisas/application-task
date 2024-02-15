@@ -44,7 +44,7 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <licensing.version>1.24.3</licensing.version>
+    <licensing.version>1.25</licensing.version>
     <kanban-macro.version>1.2.6</kanban-macro.version>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
