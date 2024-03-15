@@ -37,6 +37,8 @@ public class DateMacroParameters
 
     private String format;
 
+    private String displayFormat;
+
     /**
      * @return the string representation of the date.
      */
@@ -69,5 +71,21 @@ public class DateMacroParameters
     public void setFormat(String format)
     {
         this.format = format;
+    }
+
+    /**
+     * @return the format in which the value parameter will be displayed.
+     */
+    public String getDisplayFormat()
+    {
+        return displayFormat;
+    }
+
+    /**
+     * @param displayFormat see {@link #getDisplayFormat()}
+     */
+    public void setDisplayFormat(String displayFormat)
+    {
+        this.displayFormat = displayFormat;
     }
 }

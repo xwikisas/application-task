@@ -105,7 +105,9 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
                 String.format("Failed to parse the given date, expected format [%s]!", format));
         }
 
-        String displayDate = new SimpleDateFormat(configuration.getDisplayDateFormat()).format(paramDate);
+        String displayFormat = StringUtils.isEmpty(parameters.getDisplayFormat())
+            ? configuration.getDisplayDateFormat() : parameters.getDisplayFormat();
+        String displayDate = new SimpleDateFormat(displayFormat).format(paramDate);
 
         Block returnBlock =
             context.isInline() ? new FormatBlock(Collections.singletonList(new WordBlock(displayDate)), Format.NONE)

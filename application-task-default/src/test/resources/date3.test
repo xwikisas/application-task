@@ -1,0 +1,20 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.0
+.# Verify that the displayFormat parameter functions correctly.
+.#-----------------------------------------------------
+{{date value="2021/09/07 00:00" displayFormat="dd MM"/}}
+.#-----------------------------------------------------
+.expect|event/1.0
+.#-----------------------------------------------------
+beginDocument
+beginMacroMarkerStandalone [date] [value=2021/09/07 00:00|displayFormat=dd MM]
+beginGroup [[class]=[xwiki-date]]
+onWord [07 09]
+endGroup [[class]=[xwiki-date]]
+endMacroMarkerStandalone [date] [value=2021/09/07 00:00|displayFormat=dd MM]
+endDocument
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+<div class="xwiki-date">07 09</div>
