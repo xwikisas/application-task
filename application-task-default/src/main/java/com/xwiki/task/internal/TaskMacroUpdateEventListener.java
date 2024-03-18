@@ -130,11 +130,13 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (previousVersion != null) {
             try {
                 XWikiDocument previousVersionDoc = revisionProvider.getRevision(document, previousVersion);
-                XDOM previousContent = previousVersionDoc.getXDOM();
-                previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference());
-                List<DocumentReference> currentTasksIds =
-                    tasks.stream().map(Task::getReference).collect(Collectors.toList());
-                previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
+                if (previousVersionDoc != null) {
+                    XDOM previousContent = previousVersionDoc.getXDOM();
+                    previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference());
+                    List<DocumentReference> currentTasksIds =
+                        tasks.stream().map(Task::getReference).collect(Collectors.toList());
+                    previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
+                }
             } catch (XWikiException e) {
                 logger.warn("There was an exception when attempting to remove the task pages associated to the task "
                         + "macros present in the previous version of the document: [{}].",
