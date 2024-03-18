@@ -880,16 +880,16 @@
     </property>
     <property>
       <code>.task-manager-status-Late {
-    color: red;
+    color: @alert-danger-text;
+}
+.task-manager-status-InProgress {
+    color: @alert-info-text;
 }
 .task-manager-status-ToDo {
-    color: #2173AF;
-}
-.task-manager-status-ToDo {
-    color: green;
+    color: @alert-success-text;
 }
 .task-manager-status-Done {
-    color: gray;
+    color: @text-muted;
 }</code>
     </property>
     <property>
