@@ -31,7 +31,7 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>#set($name = $!{doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value})#if("$!name" != '')$name#elseif("$!request.title"!='')$request.title#elseif($doc.documentReference.name != 'WebHome')$doc.documentReference.name#else$doc.documentReference.parent.name#end</title>
+  <title>#set($name = $!{doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value})#if("$!name" != '')$stringtool.abbreviate($name.trim(), 30)#elseif("$!request.title"!='')$request.title#elseif($doc.documentReference.name != 'WebHome')$doc.documentReference.name#else$doc.documentReference.parent.name#end</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
