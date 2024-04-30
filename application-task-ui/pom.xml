@@ -41,7 +41,8 @@
       TaskManager.WebHome
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
-      TaskManager.Administration
+      TaskManager.Administration,
+      TaskManager.WebPreferences
     </xwiki.extension.licensing.excludedDocuments>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
   </properties>
