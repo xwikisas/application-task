@@ -1,4 +1,3 @@
-com.xwiki.task.internal.DateMacroConverter
 com.xwiki.task.internal.DefaultMacroUtils
 com.xwiki.task.internal.DefaultTaskCounter
 com.xwiki.task.internal.DefaultTaskConfiguration
@@ -8,8 +7,6 @@ com.xwiki.task.internal.DefaultTaskReferenceGenerator
 com.xwiki.task.internal.MacroBlockFinder
 com.xwiki.task.internal.TaskBlockProcessor
 com.xwiki.task.internal.TaskDatesInitializer
-com.xwiki.task.internal.TaskListMacroConverter
-com.xwiki.task.internal.TaskMacroConverter
 com.xwiki.task.internal.TaskReferenceUtils
 com.xwiki.task.internal.TaskXDOMProcessor
 com.xwiki.task.internal.TaskMacroUpdateEventListener
