@@ -116,7 +116,7 @@
       <displayDateFormat/>
     </property>
     <property>
-      <notSkippedFoldEvents>org.xwiki.contrib.nestedpagesmigrator.internal.executor.BeginMigrationEvent</notSkippedFoldEvents>
+      <notSkippedFoldEvents>org.xwiki.filter.job.FilterConversionStarted</notSkippedFoldEvents>
     </property>
     <property>
       <storageDateFormat/>
