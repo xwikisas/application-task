@@ -270,7 +270,7 @@
 #set ($rowCount = $numbertool.toNumber($rowCount).intValue())
 #set ($startDate = '')
 #if ($createdAfter)
-  #set ($dateFormat = $services.task.configuration.storageDateFormat)
+  #set ($dateFormat = $services.datemacro.configuration.storageDateFormat)
   #set ($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
   #set ($startDate = $xwiki.jodatime.dateTime.parse($createdAfter, $dateTimeFormatter))
   #set ($endDate = $startDate.plusYears(1000).millis)
@@ -758,7 +758,7 @@
       <name>createdAfter</name>
     </property>
     <property>
-      <type>com.xwiki.task.TaskDate</type>
+      <type>com.xwiki.task.date.DateType</type>
     </property>
   </object>
   <object>

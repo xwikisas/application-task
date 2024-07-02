@@ -20,48 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.TaskManagerConfigurationClass" locale="">
-  <web>TaskManager</web>
-  <name>TaskManagerConfigurationClass</name>
+<xwikidoc version="1.4" reference="DateMacro.WebHome" locale="">
+  <web>DateMacro</web>
+  <name>WebHome</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>TaskManager.WebHome</parent>
+  <parent>Main.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>TaskManagerConfigurationClass</title>
+  <title>DateMacro</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content/>
-  <class>
-    <name>TaskManager.TaskManagerConfigurationClass</name>
-    <customClass/>
-    <customMapping/>
-    <defaultViewSheet/>
-    <defaultEditSheet/>
-    <defaultWeb/>
-    <nameField/>
-    <validationScript/>
-    <notSkippedFoldEvents>
-      <contenttype>---</contenttype>
-      <customDisplay/>
-      <disabled>0</disabled>
-      <editor>---</editor>
-      <hint/>
-      <name>notSkippedFoldEvents</name>
-      <number>3</number>
-      <picker>1</picker>
-      <prettyName>notSkippedFoldEvents</prettyName>
-      <rows>5</rows>
-      <size>40</size>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-    </notSkippedFoldEvents>
-  </class>
+  <content>Example:
+
+##{{{{{date value="2024-07-02 17:06" displayFormat="yyyy.MM.dd" format="yyyy-MM-dd hh:mm"/}}}}}##
+
+* ##value## [mandatory] is the value of the date
+* ##displayFormat## [optional] is for adding a custom format for the date to be displayed in
+* ##format## [optional] is for the accepted input format
+
+{{date value="2024-07-02 17:06" displayFormat="yyyy.MM.dd" format="yyyy-MM-dd hh:mm"/}}
+</content>
 </xwikidoc>

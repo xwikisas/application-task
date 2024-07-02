@@ -265,7 +265,7 @@
 #end
 #if ("$!createdAfter" != '')
   #set ($createdAfter = $datetool.toDate('dd-MM-yyyy', $createdAfter))
-  #set ($createdAfter = $datetool.format($services.task.configuration.storageDateFormat, $createdAfter))
+  #set ($createdAfter = $datetool.format($services.datemacro.configuration.storageDateFormat, $createdAfter))
   #set ($discard = $paramMap.put('createdAfter', $createdAfter))
 #end
 #if ("$!status" != '')

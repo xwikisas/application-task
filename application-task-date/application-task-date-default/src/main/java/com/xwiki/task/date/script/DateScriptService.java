@@ -17,27 +17,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.xwiki.task;
+package com.xwiki.task.date.script;
 
-import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
-import org.xwiki.component.annotation.Role;
+import org.xwiki.component.annotation.Component;
+import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.task.date.DateMacroConfiguration;
+
 /**
- * The configuration of the Task Manager Application for the current wiki.
+ * Script service for retrieving information about the Date macro.
  *
  * @version $Id$
- * @since 3.0
+ * @since 3.4.5
  */
-@Role
+@Component
+@Named("datemacro")
+@Singleton
 @Unstable
-public interface TaskConfiguration
+public class DateScriptService implements ScriptService
 {
+    @Inject
+    private DateMacroConfiguration configuration;
+
     /**
-     * @return a list of fold events during which the task listeners should execute. By default, the listeners do not
-     * execute during fold events.
-     * @since 3.1.1
+     * @return the configuration of the Date macro.
      */
-    List<String> getNotSkippedFoldEvents();
+    public DateMacroConfiguration getConfiguration()
+    {
+        return this.configuration;
+    }
 }

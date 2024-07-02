@@ -48,8 +48,8 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
-import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
+import com.xwiki.task.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
@@ -71,7 +71,7 @@ public class TaskDatesInitializer
     private final Pattern paramPattern = Pattern.compile(TASK_PARAMETERS_PATTERN_STRING);
 
     @Inject
-    private TaskConfiguration configuration;
+    private DateMacroConfiguration configuration;
 
     @Inject
     private EntityReferenceSerializer<String> serializer;

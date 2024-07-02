@@ -53,6 +53,8 @@
     <module>application-task-api</module>
     <module>application-task-default</module>
     <module>application-task-ui</module>
+    <module>application-task-date</module>
+    <module>application-task-date/application-task-date-default</module>
   </modules>
   <profiles>
     <profile>

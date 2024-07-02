@@ -21,7 +21,7 @@
 #set ($discard = $xwiki.jsx.use('TaskManager.TaskMacroInit', {'minify': $services.debug.isMinify()}))
 
 <input
-  data-dateformat="$escapetool.xml($!services.task.configuration.storageDateFormat)" type="text" class="task-reference"
+  data-dateformat="$!escapetool.xml($services.datemacro.configuration.storageDateFormat)" type="text" class="task-reference"
   #foreach ($parameter in $displayer.parameters.entrySet())
     $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
   #end

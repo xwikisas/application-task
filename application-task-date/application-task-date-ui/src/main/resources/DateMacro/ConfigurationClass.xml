@@ -20,25 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.TaskManagerConfigurationClass" locale="">
-  <web>TaskManager</web>
-  <name>TaskManagerConfigurationClass</name>
+<xwikidoc version="1.4" reference="DateMacro.ConfigurationClass" locale="">
+  <web>DateMacro</web>
+  <name>ConfigurationClass</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>TaskManager.WebHome</parent>
+  <parent>DateMacro.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>TaskManagerConfigurationClass</title>
+  <title>ConfigurationClass</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <class>
-    <name>TaskManager.TaskManagerConfigurationClass</name>
+    <name>DateMacro.ConfigurationClass</name>
     <customClass/>
     <customMapping/>
     <defaultViewSheet/>
@@ -46,22 +46,33 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
-    <notSkippedFoldEvents>
-      <contenttype>---</contenttype>
+    <displayDateFormat>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>---</editor>
       <hint/>
-      <name>notSkippedFoldEvents</name>
-      <number>3</number>
+      <name>displayDateFormat</name>
+      <number>1</number>
       <picker>1</picker>
-      <prettyName>notSkippedFoldEvents</prettyName>
-      <rows>5</rows>
-      <size>40</size>
+      <prettyName>displayDateFormat</prettyName>
+      <size>30</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-    </notSkippedFoldEvents>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </displayDateFormat>
+    <storageDateFormat>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <hint/>
+      <name>storageDateFormat</name>
+      <number>2</number>
+      <picker>1</picker>
+      <prettyName>storageDateFormat</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </storageDateFormat>
   </class>
 </xwikidoc>

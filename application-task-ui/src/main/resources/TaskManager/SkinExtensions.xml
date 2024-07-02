@@ -274,16 +274,7 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>.xwiki-date {
-  font-size: 1.1em;
-  background: @btn-default-bg;
-  color: @btn-default-color;
-  border-radius: 3px;
-  margin: 0 3px;
-  padding: 2px 4px;
-  display: inline-block;
-}
-.task-macro p {
+      <code>.task-macro p {
   margin: 0;
 }
 

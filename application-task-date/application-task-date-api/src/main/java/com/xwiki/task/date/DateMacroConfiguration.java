@@ -17,27 +17,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.xwiki.task;
-
-import java.util.List;
+package com.xwiki.task.date;
 
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
 /**
- * The configuration of the Task Manager Application for the current wiki.
+ * The configuration of the Date macro for the current wiki.
  *
  * @version $Id$
- * @since 3.0
+ * @since 3.4.5
  */
 @Role
 @Unstable
-public interface TaskConfiguration
+public interface DateMacroConfiguration
 {
     /**
-     * @return a list of fold events during which the task listeners should execute. By default, the listeners do not
-     * execute during fold events.
-     * @since 3.1.1
+     * @return the date format that should be used for storage.
      */
-    List<String> getNotSkippedFoldEvents();
+    String getStorageDateFormat();
+
+    /**
+     * @return the date format that should be used for displaying purposes.
+     */
+    String getDisplayDateFormat();
 }

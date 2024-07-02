@@ -22,33 +22,40 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>application-task</artifactId>
     <groupId>com.xwiki.task</groupId>
+    <artifactId>application-task-date</artifactId>
     <version>3.4.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <name>Task Manager Application - API</name>
-  <description>The API of the Task Manager Application (Pro). This package is needed for the application to work properly.</description>
-  <artifactId>application-task-api</artifactId>
 
-  <properties>
-    <xwiki.jacoco.instructionRatio>0.88</xwiki.jacoco.instructionRatio>
-  </properties>
-
+  <artifactId>application-task-date-ui</artifactId>
+  <name>Task Manager Application Date - UI</name>
+  <packaging>xar</packaging>
   <dependencies>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-rest-server</artifactId>
-      <version>${platform.version}</version>
-    </dependency>
     <dependency>
       <groupId>com.xwiki.task</groupId>
       <artifactId>application-task-date-default</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>jsr311-api</artifactId>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-sheet-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-uiextension-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-display-macro</artifactId>
+      <version>${platform.version}</version>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

@@ -48,6 +48,12 @@
   </properties>
   <dependencies>
     <dependency>
+      <groupId>com.xwiki.task</groupId>
+      <artifactId>application-task-date-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
       <groupId>com.xwiki.licensing</groupId>
       <artifactId>application-licensing-licensor-api</artifactId>
       <version>${licensing.version}</version>

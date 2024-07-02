@@ -44,9 +44,9 @@ import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
 import com.xwiki.task.MacroUtils;
-import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
+import com.xwiki.task.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -69,7 +69,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
     private TaskManager taskManager;
 
     @Inject
-    private TaskConfiguration configuration;
+    private DateMacroConfiguration dateMacroConfiguration;
 
     @Inject
     @Named("compactwiki")
@@ -106,7 +106,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
 
         List<Block> blocks = new ArrayList<>();
 
-        SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
+        SimpleDateFormat storageFormat = new SimpleDateFormat(dateMacroConfiguration.getStorageDateFormat());
         List<Block> errorList = new ArrayList<>();
         boolean noViewRights = false;
         for (String id : ids.split("\\s*,\\s*")) {
@@ -125,14 +125,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = macroUtils.renderMacroContent(
-                    blockProcessor.generateTaskContentBlocks(
-                        task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null,
-                        task.getDueDate(),
-                        task.getName(),
-                        storageFormat),
-                    context.getSyntax()
-                );
+                String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+                    task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
+                    task.getName(), storageFormat), context.getSyntax());
 
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
             } catch (NumberFormatException | ComponentLookupException | TaskException e) {
