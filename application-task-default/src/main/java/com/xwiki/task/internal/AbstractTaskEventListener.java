@@ -76,6 +76,8 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
     @Inject
     private TaskConfiguration configuration;
 
+    private boolean executingInFoldEvent;
+
     /**
      * @param name the name of the listener used to identify it.
      * @param events the list of events the listener will be configured to receive.
@@ -88,9 +90,12 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        if (this.observationContext.isIn(
-            otherEvent -> otherEvent instanceof BeginFoldEvent && !configuration.getNotSkippedFoldEvents()
-                .contains(otherEvent.getClass().getName())))
+        if (this.observationContext.isIn(otherEvent -> {
+            executingInFoldEvent =
+                executingInFoldEvent
+                    || configuration.getNotSkippedFoldEvents().contains(otherEvent.getClass().getName());
+            return otherEvent instanceof BeginFoldEvent && !executingInFoldEvent;
+        }))
         {
             return;
         }
@@ -98,6 +103,12 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
         XWikiDocument document = (XWikiDocument) source;
 
         processEvent(document, context, event);
+        executingInFoldEvent = false;
+    }
+
+    protected boolean isExecutingInFoldEvent()
+    {
+        return this.executingInFoldEvent;
     }
 
     protected abstract void processEvent(XWikiDocument document, XWikiContext context, Event event);

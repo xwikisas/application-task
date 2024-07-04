@@ -64,6 +64,8 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 {
+    private static final String EXCEPTION_DOCUMENT_RETRIEVAL = "Could not retrieve the document [{}]. Cause: [{}].";
+
     @Inject
     private ContextualAuthorizationManager authorizationManager;
 
@@ -76,6 +78,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     @Inject
     private TaskManager taskManager;
+
+    private DocumentReference lastFoldDocumentReference;
 
     /**
      * Default constructor.
@@ -99,6 +103,10 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
+        if (maybeHandleFoldEvent(document, context)) {
+            return;
+        }
+
         if (event instanceof DocumentDeletingEvent) {
             try {
                 context.put(TASK_UPDATE_FLAG, true);
@@ -112,6 +120,40 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             return;
         }
         updateTaskPages(document, context);
+    }
+
+    private boolean maybeHandleFoldEvent(XWikiDocument document, XWikiContext context)
+    {
+        // If inside a fold event, ignore the various versions of the same document and process only the last revision.
+        if (isExecutingInFoldEvent()) {
+            if (lastFoldDocumentReference != null && !document.getDocumentReference()
+                .equals(lastFoldDocumentReference))
+            {
+                try {
+                    updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
+                } catch (XWikiException e) {
+                    logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
+                        ExceptionUtils.getRootCauseMessage(e));
+                } finally {
+                    lastFoldDocumentReference = document.getDocumentReference();
+                }
+            } else {
+                lastFoldDocumentReference = document.getDocumentReference();
+            }
+            return true;
+        }
+        // If not in fold event, process the last remaining document.
+        if (lastFoldDocumentReference != null) {
+            try {
+                updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
+            } catch (XWikiException e) {
+                logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
+                    ExceptionUtils.getRootCauseMessage(e));
+            } finally {
+                lastFoldDocumentReference = null;
+            }
+        }
+        return false;
     }
 
     private void updateTaskPages(XWikiDocument document, XWikiContext context)
