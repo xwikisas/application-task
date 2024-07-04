@@ -26,7 +26,7 @@ import org.xwiki.stability.Unstable;
  * The configuration of the Date macro for the current wiki.
  *
  * @version $Id$
- * @since 3.4.5
+ * @since 3.5
  */
 @Role
 @Unstable

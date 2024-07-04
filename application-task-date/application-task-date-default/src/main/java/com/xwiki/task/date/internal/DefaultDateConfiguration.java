@@ -33,7 +33,7 @@ import com.xwiki.task.date.DateMacroConfiguration;
  * The default implementation of {@link DateMacroConfiguration}.
  *
  * @version $Id$
- * @since 3.4.5
+ * @since 3.5
  */
 @Component
 @Singleton

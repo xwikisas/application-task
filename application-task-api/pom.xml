@@ -43,7 +43,7 @@
     </dependency>
     <dependency>
       <groupId>com.xwiki.task</groupId>
-      <artifactId>application-task-date-default</artifactId>
+      <artifactId>application-task-date-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

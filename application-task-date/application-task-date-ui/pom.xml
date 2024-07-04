@@ -29,7 +29,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>application-task-date-ui</artifactId>
-  <name>Task Manager Application Date - UI</name>
+  <name>Date Macro - UI</name>
   <packaging>xar</packaging>
   <dependencies>
     <dependency>
@@ -58,4 +58,17 @@
       <scope>runtime</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
+        <configuration>
+          <visibleTechnicalPages>
+            <visibleTechnicalPage>.*/DateMacro/WebHome\.xml</visibleTechnicalPage>
+          </visibleTechnicalPages>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -29,7 +29,7 @@
   </parent>
 
   <artifactId>application-task-date-default</artifactId>
-  <name>Task Manager Application Date - Default</name>
+  <name>Date Macro - Default</name>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>

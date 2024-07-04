@@ -17,38 +17,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.xwiki.task.date.script;
+package com.xwiki.task;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import org.xwiki.component.annotation.Component;
-import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
-import com.xwiki.task.date.DateMacroConfiguration;
+import com.xwiki.task.date.DateType;
 
 /**
- * Script service for retrieving information about the Date macro.
+ * The date macro pickers will need to use the date format from the {@link TaskConfiguration}.
  *
  * @version $Id$
- * @since 3.4.5
+ * @since 3.0
+ * @deprecated since 3.5.0 use {@link DateType} instead
  */
-@Component
-@Named("datemacro")
-@Singleton
 @Unstable
-public class DateScriptService implements ScriptService
+@Deprecated
+public interface TaskDate
 {
-    @Inject
-    private DateMacroConfiguration configuration;
-
-    /**
-     * @return the configuration of the Date macro.
-     */
-    public DateMacroConfiguration getConfiguration()
-    {
-        return this.configuration;
-    }
 }

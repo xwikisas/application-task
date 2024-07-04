@@ -20,8 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="DateMacro.Configuration" locale="">
-  <web>DateMacro</web>
+<xwikidoc version="1.4" reference="DateMacro.Code.Configuration" locale="">
+  <web>DateMacro.Code</web>
   <name>Configuration</name>
   <language/>
   <defaultLanguage/>
@@ -38,12 +38,12 @@
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>DateMacro.Configuration</name>
+    <name>DateMacro.Code.Configuration</name>
     <number>0</number>
-    <className>DateMacro.ConfigurationClass</className>
+    <className>DateMacro.Code.ConfigurationClass</className>
     <guid>30d4d1cc-99ee-4d47-ac86-ccc7f7403619</guid>
     <class>
-      <name>DateMacro.ConfigurationClass</name>
+      <name>DateMacro.Code.ConfigurationClass</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -88,7 +88,7 @@
     </property>
   </object>
   <object>
-    <name>DateMacro.Configuration</name>
+    <name>DateMacro.Code.Configuration</name>
     <number>0</number>
     <className>XWiki.ConfigurableClass</className>
     <guid>a6c7a335-6d9f-4b94-8c99-4e741284909e</guid>
@@ -316,7 +316,7 @@
       <codeToExecute/>
     </property>
     <property>
-      <configurationClass>DateMacro.ConfigurationClass</configurationClass>
+      <configurationClass>DateMacro.Code.ConfigurationClass</configurationClass>
     </property>
     <property>
       <displayBeforeCategory/>

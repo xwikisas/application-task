@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
@@ -44,9 +45,17 @@ public class DefaultTaskConfiguration implements TaskConfiguration
 {
     private static final String NOT_SKIPPED_FOLD_EVENTS = "notSkippedFoldEvents";
 
+    private static final String METHOD_DEPRECATED = "Method is deprecated";
+
     @Inject
     @Named("taskmanager")
     private ConfigurationSource configurationSource;
+
+    @Override
+    public String getStorageDateFormat()
+    {
+        throw new NotImplementedException(METHOD_DEPRECATED);
+    }
 
     @Override
     public List<String> getNotSkippedFoldEvents()
@@ -59,5 +68,11 @@ public class DefaultTaskConfiguration implements TaskConfiguration
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public String getDisplayDateFormat()
+    {
+        throw new NotImplementedException(METHOD_DEPRECATED);
     }
 }

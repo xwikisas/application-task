@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="DateMacro.ConfigurationClass" locale="">
+<xwikidoc version="1.4" reference="DateMacro.Code.ConfigurationClass" locale="">
   <web>DateMacro</web>
   <name>ConfigurationClass</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>DateMacro.WebHome</parent>
+  <parent>DateMacro.Code.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content/>
   <class>
-    <name>DateMacro.ConfigurationClass</name>
+    <name>DateMacro.Code.ConfigurationClass</name>
     <customClass/>
     <customMapping/>
     <defaultViewSheet/>

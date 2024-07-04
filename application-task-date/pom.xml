@@ -30,9 +30,10 @@
 
   <artifactId>application-task-date</artifactId>
   <packaging>pom</packaging>
-  <name>Application Task - Date</name>
+  <name>Date Macro</name>
   <modules>
     <module>application-task-date-api</module>
     <module>application-task-date-ui</module>
+    <module>application-task-date-default</module>
   </modules>
 </project>

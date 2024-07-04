@@ -41,7 +41,6 @@ import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xwiki.task.date.internal.DateMacroConfigurationSource;
 import com.xwiki.task.date.script.DateScriptService;
 import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.model.Task;
@@ -68,7 +67,7 @@ public class IntegrationTests
         componentManager.registerMockComponent(SkinExtension.class, "ssx");
         componentManager.registerMockComponent(SkinExtension.class, "jsx");
         componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
-        componentManager.registerMockComponent(ConfigurationSource.class, DateMacroConfigurationSource.HINT);
+        componentManager.registerMockComponent(ConfigurationSource.class, "datemacro");
         componentManager.registerMockComponent(ScriptService.class, "taskmanager");
         componentManager.registerMockComponent(ScriptService.class, "datemacro");
         componentManager.registerMockComponent(TaskScriptService.class);

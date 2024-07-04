@@ -64,7 +64,7 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     /**
      * The reference to the document that contains the necessary CSS for the Date macro.
      */
-    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "DateMacro.SkinExtension";
+    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "DateMacro.Code.SkinExtension";
 
     @Inject
     private DateMacroConfiguration configuration;

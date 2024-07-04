@@ -19,7 +19,7 @@
  */
 package com.xwiki.task.date.internal;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Named;
@@ -35,7 +35,7 @@ import org.xwiki.stability.Unstable;
  * Configuration source for Date macro.
  *
  * @version $Id$
- * @since 3.4.5
+ * @since 3.5
  */
 @Component
 @Named(DateMacroConfigurationSource.HINT)
@@ -46,9 +46,9 @@ public class DateMacroConfigurationSource extends AbstractDocumentConfigurationS
     /**
      * The hint for this component.
      */
-    public static final String HINT = "datemacro.configuration.current";
+    public static final String HINT = "datemacro";
 
-    private static final List<String> SPACE_NAMES = Collections.singletonList("DateMacro");
+    private static final List<String> SPACE_NAMES = Arrays.asList("DateMacro", "Code");
 
     private static final LocalDocumentReference DOCUMENT_REFERENCE =
         new LocalDocumentReference(SPACE_NAMES, "Configuration");

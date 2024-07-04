@@ -1,3 +1,4 @@
+com.xwiki.task.internal.DateFormatOverrideListener
 com.xwiki.task.internal.DefaultMacroUtils
 com.xwiki.task.internal.DefaultTaskCounter
 com.xwiki.task.internal.DefaultTaskConfiguration

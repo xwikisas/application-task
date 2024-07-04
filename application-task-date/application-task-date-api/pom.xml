@@ -30,13 +30,18 @@
 
   <artifactId>application-task-date-api</artifactId>
   <packaging>jar</packaging>
-  <name>Application Task Date - Api</name>
+  <name>Date Macro - Api</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.xwiki.rendering</groupId>
-      <artifactId>xwiki-rendering-transformation-macro</artifactId>
-      <version>${rendering.version}</version>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-properties</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-script</artifactId>
+      <version>${commons.version}</version>
     </dependency>
   </dependencies>
 </project>

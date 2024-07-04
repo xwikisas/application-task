@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="DateMacro.SkinExtension" locale="">
+<xwikidoc version="1.4" reference="DateMacro.Code.SkinExtension" locale="">
   <web>DateMacro</web>
   <name>SkinExtension</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>DateMacro.WebHome</parent>
+  <parent>DateMacro.Code.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>DateMacro.SkinExtension</name>
+    <name>DateMacro.Code.SkinExtension</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>3ad9828b-740f-48e8-8ac7-2428208fd648</guid>
