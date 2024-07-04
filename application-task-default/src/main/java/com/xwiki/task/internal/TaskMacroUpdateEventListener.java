@@ -93,10 +93,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (document.getXObject(TASK_CLASS_REFERENCE) != null) {
             return;
         }
-        // Skip when inside filter-job because it generates a lot of save events for each version of the imported doc.
-        if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null) {
-            return;
-        }
         // If the flag is set, it means that the listener was triggered as a result of a save made by
         // TaskObjectUpdateEventListener which updated some macro calls. Skip the execution.
         if (context.get(TASK_UPDATE_FLAG) != null) {
