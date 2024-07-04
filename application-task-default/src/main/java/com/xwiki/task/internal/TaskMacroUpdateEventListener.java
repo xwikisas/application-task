@@ -64,6 +64,8 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 {
+    private static final String EXCEPTION_DOCUMENT_RETRIEVAL = "Could not retrieve the document [{}]. Cause: [{}].";
+
     @Inject
     private ContextualAuthorizationManager authorizationManager;
 
@@ -76,6 +78,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     @Inject
     private TaskManager taskManager;
+
+    private DocumentReference lastFoldDocumentReference;
 
     /**
      * Default constructor.
@@ -93,13 +97,13 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (document.getXObject(TASK_CLASS_REFERENCE) != null) {
             return;
         }
-        // Skip when inside filter-job because it generates a lot of save events for each version of the imported doc.
-        if (executor.getCurrentJob(FilterStreamConverterJob.ROOT_GROUP) != null) {
-            return;
-        }
         // If the flag is set, it means that the listener was triggered as a result of a save made by
         // TaskObjectUpdateEventListener which updated some macro calls. Skip the execution.
         if (context.get(TASK_UPDATE_FLAG) != null) {
+            return;
+        }
+
+        if (maybeHandleFoldEvent(document, context)) {
             return;
         }
 
@@ -116,6 +120,40 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             return;
         }
         updateTaskPages(document, context);
+    }
+
+    private boolean maybeHandleFoldEvent(XWikiDocument document, XWikiContext context)
+    {
+        // If inside a fold event, ignore the various versions of the same document and process only the last revision.
+        if (isExecutingInFoldEvent()) {
+            if (lastFoldDocumentReference != null && !document.getDocumentReference()
+                .equals(lastFoldDocumentReference))
+            {
+                try {
+                    updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
+                } catch (XWikiException e) {
+                    logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
+                        ExceptionUtils.getRootCauseMessage(e));
+                } finally {
+                    lastFoldDocumentReference = document.getDocumentReference();
+                }
+            } else {
+                lastFoldDocumentReference = document.getDocumentReference();
+            }
+            return true;
+        }
+        // If not in fold event, process the last remaining document.
+        if (lastFoldDocumentReference != null) {
+            try {
+                updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
+            } catch (XWikiException e) {
+                logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
+                    ExceptionUtils.getRootCauseMessage(e));
+            } finally {
+                lastFoldDocumentReference = null;
+            }
+        }
+        return false;
     }
 
     private void updateTaskPages(XWikiDocument document, XWikiContext context)
