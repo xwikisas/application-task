@@ -50,6 +50,154 @@ Example:
   <object>
     <name>TaskManager.KanbanBoardMacro</name>
     <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>95c7dae2-83dd-4870-b65b-821fdb18db32</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>require(['jquery'], function ($) {
+
+  /**
+   * Handles the fetching of the modal and the lazy loading of the css/js.
+   */
+  $(document).on('click', '.space-picker-kanban-parameter', function () {
+    let URL = new XWiki.Document('SpacePicker', 'TaskManager').getURL('get');
+    $.get(URL)
+      .done(function (data) {
+        $('body').append(`&lt;div class='spacePickerKnbModal'&gt; ${data} &lt;/div&gt;`);
+        $('.kanbanSpacePicker').modal('show');
+        // Initialize UI elements that are lazy loaded.
+        $(document).trigger('xwiki:dom:updated', { 'elements': $('.spacePickerKnbModal').toArray()});
+      })
+      .fail(function(){
+        console.error('Failed to retrieve the space picker modal');
+      });
+  })
+
+  $(document).on('show.bs.modal', '.kanbanSpacePicker', function () {
+    $('.modal.macro-editor-modal.in').hide();
+  })
+
+  $(document).on('hidden.bs.modal', '.kanbanSpacePicker', function () {
+    $('.modal.macro-editor-modal.in').show();
+    // We remove the modal from the page
+    $('.spacePickerKnbModal').remove();
+  })
+  /**
+   * Handles the select button of the modal. If a space is selected it will return it's reference otherwise it will
+   * return an empty string.
+   */
+  $(document).on('click', '.kanbanSpaceSelector', function () {
+    // We remove the modal again
+    selectedSpace = $('.xtree .jstree-clicked:last').attr('id');
+    //Root element and we need to replace with an empty string so we can select all the tasks.
+    if (selectedSpace === 'wiki:xwiki_anchor' || selectedSpace === 'document:xwiki:Main.WebHome_anchor') {
+      selectedSpace = "";
+    }
+    else {
+      selectedSpace = selectedSpace.replace('space:xwiki:', "").replace("_anchor", "");
+
+    }
+    $('.space-picker-kanban-parameter').val(selectedSpace);
+    $('.kanbanSpacePicker').modal('hide');
+    $('.modal.macro-editor-modal.in').show();
+  })
+});
+</code>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>7454fc45-d7b0-4d46-aa17-5fd6662a49e9</guid>
     <class>
@@ -87,6 +235,7 @@ Example:
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
+        <restricted>0</restricted>
         <rows>20</rows>
         <size>50</size>
         <unmodifiable>0</unmodifiable>
@@ -398,6 +547,7 @@ Example:
     </property>
     <property>
       <code>{{velocity}}
+#set($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
 ## The xwql variable is used by the awmkanban macro called from this one.
 #set ($xwql = '')
 #set($user = "$!{xcontext.macro.params.user}")
@@ -528,7 +678,7 @@ Example:
       <name>user</name>
     </property>
     <property>
-      <type/>
+      <type>org.xwiki.user.UserReference</type>
     </property>
   </object>
   <object>
@@ -606,7 +756,7 @@ Example:
       <name>space</name>
     </property>
     <property>
-      <type/>
+      <type>com.xwiki.task.SpaceReference</type>
     </property>
   </object>
   <object>
@@ -684,7 +834,7 @@ Example:
       <name>project</name>
     </property>
     <property>
-      <type/>
+      <type>com.xwiki.task.ProjectReference</type>
     </property>
   </object>
   <object>
