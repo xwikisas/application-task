@@ -41,12 +41,12 @@ import org.xwiki.observation.event.Event;
  * from the task application configuration to the new Date macro configuration.
  *
  * @version $Id$
- * @since 3.0
+ * @since 3.5.0
  */
 @Component
-@Named(DateFormatOverrideListener.ROLE_HINT)
+@Named(DateFormatMigrationListener.ROLE_HINT)
 @Singleton
-public class DateFormatOverrideListener extends AbstractEventListener implements Initializable
+public class DateFormatMigrationListener extends AbstractEventListener implements Initializable
 {
     /**
      * The role hint.
@@ -68,7 +68,7 @@ public class DateFormatOverrideListener extends AbstractEventListener implements
     /**
      * Default constructor.
      */
-    public DateFormatOverrideListener()
+    public DateFormatMigrationListener()
     {
         super(ROLE_HINT, Collections.emptyList());
     }
@@ -76,8 +76,8 @@ public class DateFormatOverrideListener extends AbstractEventListener implements
     @Override
     public void initialize() throws InitializationException
     {
-        // When this component is initialized (on instance start up / new version install) it should replace the
-        // DocumentInstanceOutputFilterStream from the component manager.
+        // When this component is initialized (on instance start up / new version install) it should migrate the date
+        // format preferences from the task application configuration to the new Date macro configuration.
         try {
             maybeReplaceDateFormat();
         } catch (ConfigurationSaveException e) {
@@ -104,8 +104,10 @@ public class DateFormatOverrideListener extends AbstractEventListener implements
         if (displayDateFormatProperty != null) {
             properties.put(DATE_DISPLAY_FORMAT_KEY, displayDateFormatProperty);
         }
-        dateMacroConfigurationSource.setProperties(properties);
-        clearOldDateFormatConfiguration(configurationSource);
+        if (!properties.isEmpty()) {
+            dateMacroConfigurationSource.setProperties(properties);
+            clearOldDateFormatConfiguration(configurationSource);
+        }
     }
 
     private void clearOldDateFormatConfiguration(ConfigurationSource configurationSource)

@@ -25,7 +25,7 @@ import org.xwiki.stability.Unstable;
  * The date macro pickers will need to use the date format from the {@link DateMacroConfiguration}.
  *
  * @version $Id$
- * @since 3.5
+ * @since 3.5.0
  */
 @Unstable
 public interface DateType

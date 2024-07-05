@@ -22,13 +22,13 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>com.xwiki.task</groupId>
-    <artifactId>application-task-date</artifactId>
+    <groupId>com.xwiki.date</groupId>
+    <artifactId>macro-date</artifactId>
     <version>3.4.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>application-task-date-api</artifactId>
+  <artifactId>macro-date-api</artifactId>
   <packaging>jar</packaging>
   <name>Date Macro - Api</name>
 

@@ -48,8 +48,8 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>com.xwiki.task</groupId>
-      <artifactId>application-task-date-ui</artifactId>
+      <groupId>com.xwiki.date</groupId>
+      <artifactId>macro-date-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>

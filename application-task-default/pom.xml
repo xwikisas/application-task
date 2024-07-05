@@ -43,8 +43,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.xwiki.task</groupId>
-      <artifactId>application-task-date-default</artifactId>
+      <groupId>com.xwiki.date</groupId>
+      <artifactId>macro-date-default</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

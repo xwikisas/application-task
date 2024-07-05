@@ -27,8 +27,8 @@
     <version>3.4.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
-  <artifactId>application-task-date</artifactId>
+  <groupId>com.xwiki.date</groupId>
+  <artifactId>macro-date</artifactId>
   <packaging>pom</packaging>
   <name>Date Macro</name>
   <modules>

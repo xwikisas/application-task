@@ -35,7 +35,7 @@ import org.xwiki.stability.Unstable;
  * Configuration source for Date macro.
  *
  * @version $Id$
- * @since 3.5
+ * @since 3.5.0
  */
 @Component
 @Named(DateMacroConfigurationSource.HINT)

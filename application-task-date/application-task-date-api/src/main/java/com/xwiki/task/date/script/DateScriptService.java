@@ -33,7 +33,7 @@ import com.xwiki.task.date.DateMacroConfiguration;
  * Script service for retrieving information about the Date macro.
  *
  * @version $Id$
- * @since 3.5
+ * @since 3.5.0
  */
 @Component
 @Named("datemacro")
