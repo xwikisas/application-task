@@ -21,13 +21,17 @@ package com.xwiki.task;
 
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.task.date.DateType;
+
 /**
  * The date macro pickers will need to use the date format from the {@link TaskConfiguration}.
  *
  * @version $Id$
  * @since 3.0
+ * @deprecated since 3.5.0 use {@link DateType} instead
  */
 @Unstable
+@Deprecated
 public interface TaskDate
 {
 }

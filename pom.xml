@@ -51,6 +51,7 @@
   </properties>
   <modules>
     <module>application-task-api</module>
+    <module>application-task-date</module>
     <module>application-task-default</module>
     <module>application-task-ui</module>
   </modules>

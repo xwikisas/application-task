@@ -46,8 +46,8 @@ import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.MacroUtils;
-import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
+import com.xwiki.task.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
@@ -71,7 +71,7 @@ public class TaskXDOMProcessor
     private TaskReferenceUtils taskReferenceUtils;
 
     @Inject
-    private TaskConfiguration configuration;
+    private DateMacroConfiguration configuration;
 
     @Inject
     private Logger logger;
@@ -96,8 +96,7 @@ public class TaskXDOMProcessor
     public List<Task> extract(XDOM content, DocumentReference contentSource)
     {
         List<Task> tasks = new ArrayList<>();
-        Syntax syntax =
-            (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
+        Syntax syntax = (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
         blockFinder.find(content, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
                 Task task = initTask(syntax, contentSource, macro);
@@ -210,18 +209,16 @@ public class TaskXDOMProcessor
                 Syntax syntax =
                     (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
-                List<Block> newTaskContentBlocks = taskBlockProcessor.generateTaskContentBlocks(
-                    taskObject.getLargeStringValue(Task.ASSIGNEE),
-                    taskObject.getDateValue(Task.DUE_DATE),
-                    taskObject.getStringValue(Task.NAME), storageFormat
-                );
+                List<Block> newTaskContentBlocks =
+                    taskBlockProcessor.generateTaskContentBlocks(taskObject.getLargeStringValue(Task.ASSIGNEE),
+                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getStringValue(Task.NAME), storageFormat);
 
                 String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
 
                 macroUtils.updateMacroContent(macro, newContent);
             } catch (ComponentLookupException | TaskException e) {
-                logger.warn("Failed to update the task macro call for the task with reference [{}]: [{}].",
-                    taskDocRef, ExceptionUtils.getRootCauseMessage(e));
+                logger.warn("Failed to update the task macro call for the task with reference [{}]: [{}].", taskDocRef,
+                    ExceptionUtils.getRootCauseMessage(e));
             }
             return true;
         }
@@ -289,8 +286,7 @@ public class TaskXDOMProcessor
 
     private DocumentReference extractAssignedUser(XDOM taskContent)
     {
-        MacroBlock macro =
-            taskContent.getFirstBlock(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
+        MacroBlock macro = taskContent.getFirstBlock(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
 
         if (macro == null) {
             return null;
@@ -302,8 +298,7 @@ public class TaskXDOMProcessor
     {
         Date deadline = null;
 
-        MacroBlock macro =
-            taskContent.getFirstBlock(new MacroBlockMatcher(DATE_MACRO_ID), Block.Axes.DESCENDANT);
+        MacroBlock macro = taskContent.getFirstBlock(new MacroBlockMatcher(DATE_MACRO_ID), Block.Axes.DESCENDANT);
 
         if (macro == null) {
             return deadline;
@@ -315,8 +310,8 @@ public class TaskXDOMProcessor
             deadline = new SimpleDateFormat(formatParam != null && !formatParam.isEmpty() ? formatParam
                 : configuration.getStorageDateFormat()).parse(dateValue);
         } catch (ParseException e) {
-            logger.warn("Failed to parse the deadline date [{}] of the Task macro! Expected format is [{}]",
-                dateValue, configuration.getStorageDateFormat());
+            logger.warn("Failed to parse the deadline date [{}] of the Task macro! Expected format is [{}]", dateValue,
+                configuration.getStorageDateFormat());
         }
         return deadline;
     }

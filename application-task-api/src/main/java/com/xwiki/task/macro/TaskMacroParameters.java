@@ -25,9 +25,9 @@ import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
 
-import com.xwiki.task.TaskDate;
 import com.xwiki.task.TaskReference;
 import com.xwiki.task.TaskStatus;
+import com.xwiki.task.date.DateType;
 
 /**
  * @version $Id$
@@ -126,7 +126,7 @@ public class TaskMacroParameters
     /**
      * @param completeDate the date when the task has been completed.
      */
-    @PropertyDisplayType(TaskDate.class)
+    @PropertyDisplayType(DateType.class)
     public void setCompleteDate(String completeDate)
     {
         this.completeDate = completeDate;

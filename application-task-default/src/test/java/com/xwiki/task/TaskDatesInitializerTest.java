@@ -49,6 +49,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
+import com.xwiki.task.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskDatesInitializer;
 import com.xwiki.task.model.Task;
 
@@ -68,7 +69,7 @@ class TaskDatesInitializerTest
     private TaskDatesInitializer taskInit;
 
     @MockComponent
-    private TaskConfiguration configuration;
+    private DateMacroConfiguration configuration;
 
     @MockComponent
     private DocumentRevisionProvider revisionProvider;

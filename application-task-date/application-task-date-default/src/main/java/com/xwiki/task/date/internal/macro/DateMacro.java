@@ -1,5 +1,3 @@
-package com.xwiki.task.internal.macro;
-
 /*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,6 +17,7 @@ package com.xwiki.task.internal.macro;
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package com.xwiki.task.date.internal.macro;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,11 +41,12 @@ import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.skinx.SkinExtension;
 
-import com.xwiki.task.TaskConfiguration;
-import com.xwiki.task.macro.DateMacroParameters;
+import com.xwiki.task.date.DateMacroConfiguration;
+import com.xwiki.task.date.DateType;
+import com.xwiki.task.date.macro.DateMacroParameters;
 
 /**
- * A date macro that will display a specified date in pretty way and a configurable format.
+ * A Date macro that will display a specified {@link DateType} in a pretty way and a configurable format.
  *
  * @version $Id$
  * @since 3.0
@@ -62,12 +62,12 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     public static final String MACRO_NAME = "date";
 
     /**
-     * The reference to the document that contains the necessary CSS for TaskManager macros.
+     * The reference to the document that contains the necessary CSS for the Date macro.
      */
-    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "TaskManager.SkinExtensions";
+    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "DateMacro.Code.SkinExtension";
 
     @Inject
-    private TaskConfiguration configuration;
+    private DateMacroConfiguration configuration;
 
     @Inject
     @Named("ssx")
@@ -92,8 +92,7 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
         throws MacroExecutionException
     {
         this.ssx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
-
-        Date paramDate = null;
+        Date paramDate;
         String format = configuration.getStorageDateFormat();
         try {
             if (!StringUtils.isEmpty(parameters.getFormat())) {
@@ -105,8 +104,9 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
                 String.format("Failed to parse the given date, expected format [%s]!", format));
         }
 
-        String displayFormat = StringUtils.isEmpty(parameters.getDisplayFormat())
-            ? configuration.getDisplayDateFormat() : parameters.getDisplayFormat();
+        String displayFormat =
+            StringUtils.isEmpty(parameters.getDisplayFormat()) ? configuration.getDisplayDateFormat()
+                : parameters.getDisplayFormat();
         String displayDate = new SimpleDateFormat(displayFormat).format(paramDate);
 
         Block returnBlock =
@@ -117,3 +117,4 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
         return Collections.singletonList(returnBlock);
     }
 }
+

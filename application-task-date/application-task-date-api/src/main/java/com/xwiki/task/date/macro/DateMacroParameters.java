@@ -1,5 +1,3 @@
-package com.xwiki.task.macro;
-
 /*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,12 +17,13 @@ package com.xwiki.task.macro;
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package com.xwiki.task.date.macro;
 
 import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
 
-import com.xwiki.task.TaskDate;
+import com.xwiki.task.date.DateType;
 
 /**
  * @version $Id$
@@ -40,7 +39,7 @@ public class DateMacroParameters
     private String displayFormat;
 
     /**
-     * @return the string representation of the date.
+     * @return the string representation of the datetype.
      */
     public String getValue()
     {
@@ -48,9 +47,9 @@ public class DateMacroParameters
     }
 
     /**
-     * @param value the string representation of the date.
+     * @param value the string representation of the datetype.
      */
-    @PropertyDisplayType(TaskDate.class)
+    @PropertyDisplayType(DateType.class)
     @PropertyMandatory
     public void setValue(String value)
     {
@@ -58,7 +57,7 @@ public class DateMacroParameters
     }
 
     /**
-     * @return the format that will be used to parse the date parameter.
+     * @return the format that will be used to parse the datetype parameter.
      */
     public String getFormat()
     {

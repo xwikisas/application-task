@@ -37,12 +37,8 @@ public interface TaskConfiguration
     /**
      * @return the date format that should be used for storage.
      */
+    @Deprecated
     String getStorageDateFormat();
-
-    /**
-     * @return the date format that should be used for displaying purposes.
-     */
-    String getDisplayDateFormat();
 
     /**
      * @return a list of fold events during which the task listeners should execute. By default, the listeners do not
@@ -50,4 +46,10 @@ public interface TaskConfiguration
      * @since 3.1.1
      */
     List<String> getNotSkippedFoldEvents();
+
+    /**
+     * @return the date format that should be used for displaying purposes.
+     */
+    @Deprecated
+    String getDisplayDateFormat();
 }

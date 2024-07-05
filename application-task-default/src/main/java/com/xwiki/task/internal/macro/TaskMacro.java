@@ -67,6 +67,11 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskMacro extends AbstractMacro<TaskMacroParameters>
 {
+    /**
+     * The reference to the document that contains the necessary CSS for TaskManager macros.
+     */
+    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "TaskManager.SkinExtensions";
+
     private static final String HTML_CLASS = "class";
 
     @Inject
@@ -98,8 +103,8 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
      */
     public TaskMacro()
     {
-        super("name", "description", new DefaultContentDescriptor("Content of the task.", false,
-            Block.LIST_BLOCK_TYPE), TaskMacroParameters.class);
+        super("name", "description", new DefaultContentDescriptor("Content of the task.", false, Block.LIST_BLOCK_TYPE),
+            TaskMacroParameters.class);
     }
 
     @Override
@@ -112,15 +117,14 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
     public List<Block> execute(TaskMacroParameters parameters, String content, MacroTransformationContext context)
         throws MacroExecutionException
     {
-        this.ssx.use(DateMacro.SKIN_RESOURCES_DOCUMENT_REFERENCE);
-        this.jsx.use(DateMacro.SKIN_RESOURCES_DOCUMENT_REFERENCE);
+        this.ssx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
+        this.jsx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
 
         List<Block> contentBlocks = new ArrayList<>();
 
         if (content != null && !content.trim().isEmpty()) {
             List<Block> macroContent =
-                this.macroUtils.getMacroContentXDOM(context.getCurrentMacroBlock(), context.getSyntax())
-                    .getChildren();
+                this.macroUtils.getMacroContentXDOM(context.getCurrentMacroBlock(), context.getSyntax()).getChildren();
 
             contentBlocks =
                 Collections.singletonList(new MetaDataBlock(macroContent, this.getNonGeneratedContentMetaData()));
@@ -146,17 +150,15 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         EntityReference ownerDocRef = getOwnerDocument(context.getCurrentMacroBlock());
         EntityReference taskRef = taskReferenceUtils.resolve(parameters.getReference(), ownerDocRef);
         String taskId = taskReferenceUtils.serializeAsDocumentReference(taskRef, ownerDocRef);
-        String htmlCheckbox = String.format("<input type=\"checkbox\" data-taskId=\"%s\" %s class=\"task-status\">",
-            taskId,
-            checked);
+        String htmlCheckbox =
+            String.format("<input type=\"checkbox\" data-taskId=\"%s\" %s class=\"task-status\">", taskId, checked);
         Block checkBoxBlock = new RawBlock(htmlCheckbox, Syntax.HTML_5_0);
 
         ret.addChild(new FormatBlock(Collections.singletonList(checkBoxBlock), Format.NONE));
 
         try {
             Task task = taskManager.getTask(taskRef);
-            ret.addChild(
-                taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
+            ret.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
         } catch (TaskException ignored) {
             // The task page not existing is a valid scenario (when the user just added the task macro in the WYSIWYG).
         }

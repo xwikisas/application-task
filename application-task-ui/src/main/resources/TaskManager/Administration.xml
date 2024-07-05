@@ -66,20 +66,6 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <displayDateFormat>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <hint/>
-        <name>displayDateFormat</name>
-        <number>1</number>
-        <picker>1</picker>
-        <prettyName>displayDateFormat</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </displayDateFormat>
       <notSkippedFoldEvents>
         <contenttype>---</contenttype>
         <customDisplay/>
@@ -97,29 +83,9 @@
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </notSkippedFoldEvents>
-      <storageDateFormat>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <hint/>
-        <name>storageDateFormat</name>
-        <number>2</number>
-        <picker>1</picker>
-        <prettyName>storageDateFormat</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </storageDateFormat>
     </class>
     <property>
-      <displayDateFormat/>
-    </property>
-    <property>
       <notSkippedFoldEvents>org.xwiki.filter.job.FilterConversionStarted</notSkippedFoldEvents>
-    </property>
-    <property>
-      <storageDateFormat/>
     </property>
   </object>
   <object>

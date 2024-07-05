@@ -1,3 +1,4 @@
+com.xwiki.task.internal.DateFormatMigrationListener
 com.xwiki.task.internal.DefaultMacroUtils
 com.xwiki.task.internal.DefaultTaskCounter
 com.xwiki.task.internal.DefaultTaskConfiguration
@@ -15,6 +16,5 @@ com.xwiki.task.internal.TaskObjectUpdateEventListener
 com.xwiki.task.internal.job.TaskDataInferringJob
 com.xwiki.task.internal.macro.TaskMacro
 com.xwiki.task.internal.macro.TasksMacro
-com.xwiki.task.internal.macro.DateMacro
 com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource

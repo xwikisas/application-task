@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
@@ -42,23 +43,9 @@ import com.xwiki.task.TaskConfiguration;
 @Singleton
 public class DefaultTaskConfiguration implements TaskConfiguration
 {
-    private static final String STORAGE_FORMAT_KEY = "storageDateFormat";
-
-    private static final String DISPLAY_FORMAT_KEY = "displayDateFormat";
-
-    private static final String DEFAULT_DATE_FORMAT = "yyyy/MM/dd HH:mm";
-
     private static final String NOT_SKIPPED_FOLD_EVENTS = "notSkippedFoldEvents";
 
-    private static final String PROPERTIES_PREFIX = "task.";
-
-    @Inject
-    @Named("xwikiproperties")
-    private ConfigurationSource xwikiProperties;
-
-    @Inject
-    @Named("wiki")
-    private ConfigurationSource preferencesConfiguration;
+    private static final String METHOD_DEPRECATED = "Method is deprecated";
 
     @Inject
     @Named("taskmanager")
@@ -67,18 +54,7 @@ public class DefaultTaskConfiguration implements TaskConfiguration
     @Override
     public String getStorageDateFormat()
     {
-        return getProperty(STORAGE_FORMAT_KEY, getDefaultDateFormat());
-    }
-
-    @Override
-    public String getDisplayDateFormat()
-    {
-        return getProperty(DISPLAY_FORMAT_KEY, getDefaultDateFormat());
-    }
-
-    private String getDefaultDateFormat()
-    {
-        return preferencesConfiguration.getProperty("dateformat", DEFAULT_DATE_FORMAT);
+        throw new NotImplementedException(METHOD_DEPRECATED);
     }
 
     @Override
@@ -94,12 +70,9 @@ public class DefaultTaskConfiguration implements TaskConfiguration
         }
     }
 
-    private <T> T getProperty(String key, T defaultValue)
+    @Override
+    public String getDisplayDateFormat()
     {
-        if (this.configurationSource.containsKey(key)) {
-            return this.configurationSource.getProperty(key, defaultValue);
-        } else {
-            return this.xwikiProperties.getProperty(PROPERTIES_PREFIX + key, defaultValue);
-        }
+        throw new NotImplementedException(METHOD_DEPRECATED);
     }
 }
