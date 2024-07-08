@@ -41,7 +41,7 @@ import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xwiki.task.date.script.DateScriptService;
+import com.xwiki.date.script.DateScriptService;
 import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.model.Task;
 import com.xwiki.task.script.TaskScriptService;

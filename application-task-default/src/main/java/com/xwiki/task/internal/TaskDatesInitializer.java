@@ -49,7 +49,7 @@ import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
 import com.xwiki.task.TaskException;
-import com.xwiki.task.date.DateMacroConfiguration;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**

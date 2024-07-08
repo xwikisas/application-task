@@ -1,3 +1,0 @@
-com.xwiki.task.date.internal.macro.DateMacro
-com.xwiki.task.date.internal.DefaultDateConfiguration
-com.xwiki.task.date.internal.DateMacroConfigurationSource

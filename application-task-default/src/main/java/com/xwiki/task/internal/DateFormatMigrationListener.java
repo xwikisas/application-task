@@ -28,6 +28,8 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
@@ -37,8 +39,8 @@ import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
 /**
- * Listener that assures the compatibility with older versions that upgrade. Migrates the date format preferences
- * from the task application configuration to the new Date macro configuration.
+ * Listener that assures the compatibility with older versions that upgrade. Migrates the date format preferences from
+ * the task application configuration to the new Date macro configuration.
  *
  * @version $Id$
  * @since 3.5.0
@@ -51,7 +53,7 @@ public class DateFormatMigrationListener extends AbstractEventListener implement
     /**
      * The role hint.
      */
-    public static final String ROLE_HINT = "com.xwiki.task.internal.DateFormatOverrideListener";
+    public static final String ROLE_HINT = "com.xwiki.task.internal.DateFormatMigrationListener";
 
     private static final String DATE_STORAGE_FORMAT_KEY = "storageDateFormat";
 
@@ -64,6 +66,9 @@ public class DateFormatMigrationListener extends AbstractEventListener implement
     @Inject
     @Named("datemacro")
     private Provider<ConfigurationSource> dateMacroConfigurationSourceProvider;
+
+    @Inject
+    private Logger logger;
 
     /**
      * Default constructor.
@@ -80,8 +85,9 @@ public class DateFormatMigrationListener extends AbstractEventListener implement
         // format preferences from the task application configuration to the new Date macro configuration.
         try {
             maybeReplaceDateFormat();
-        } catch (ConfigurationSaveException e) {
-            throw new InitializationException(e.getMessage());
+        } catch (Exception e) {
+            logger.warn("Failed to migrate the date configuration. Cause: [{}].",
+                ExceptionUtils.getRootCauseMessage(e));
         }
     }
 

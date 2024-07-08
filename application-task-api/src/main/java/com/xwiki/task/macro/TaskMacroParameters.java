@@ -27,7 +27,7 @@ import org.xwiki.stability.Unstable;
 
 import com.xwiki.task.TaskReference;
 import com.xwiki.task.TaskStatus;
-import com.xwiki.task.date.DateType;
+import com.xwiki.date.DateType;
 
 /**
  * @version $Id$

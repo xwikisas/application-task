@@ -46,14 +46,13 @@
   <properties>
     <licensing.version>1.25</licensing.version>
     <kanban-macro.version>1.2.6</kanban-macro.version>
-    <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
   </properties>
   <modules>
     <module>application-task-api</module>
-    <module>application-task-date</module>
     <module>application-task-default</module>
     <module>application-task-ui</module>
+    <module>macro-date</module>
   </modules>
   <profiles>
     <profile>

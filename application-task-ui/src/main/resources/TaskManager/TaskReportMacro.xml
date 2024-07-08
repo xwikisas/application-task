@@ -758,7 +758,7 @@
       <name>createdAfter</name>
     </property>
     <property>
-      <type>com.xwiki.task.date.DateType</type>
+      <type>com.xwiki.date.DateType</type>
     </property>
   </object>
   <object>

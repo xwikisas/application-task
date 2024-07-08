@@ -46,7 +46,7 @@ import org.xwiki.security.authorization.Right;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
-import com.xwiki.task.date.DateMacroConfiguration;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;

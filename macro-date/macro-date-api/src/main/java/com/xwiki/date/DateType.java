@@ -17,21 +17,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.xwiki.task;
+package com.xwiki.date;
 
 import org.xwiki.stability.Unstable;
 
-import com.xwiki.date.DateType;
-
 /**
- * The date macro pickers will need to use the date format from the {@link TaskConfiguration}.
+ * The date macro pickers will need to use the date format from the {@link DateMacroConfiguration}.
  *
  * @version $Id$
- * @since 3.0
- * @deprecated since 3.5.0 use {@link DateType} instead
+ * @since 3.5.0
  */
 @Unstable
-@Deprecated
-public interface TaskDate
+public interface DateType
 {
 }

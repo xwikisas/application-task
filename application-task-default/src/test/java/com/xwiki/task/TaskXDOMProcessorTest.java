@@ -50,7 +50,7 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
 import com.xpn.xwiki.objects.BaseObject;
-import com.xwiki.task.date.DateMacroConfiguration;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.MacroBlockFinder;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.internal.TaskReferenceUtils;

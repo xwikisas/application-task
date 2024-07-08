@@ -47,7 +47,7 @@ import org.xwiki.rendering.syntax.Syntax;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
-import com.xwiki.task.date.DateMacroConfiguration;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
