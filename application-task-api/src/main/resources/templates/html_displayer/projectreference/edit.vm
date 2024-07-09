@@ -25,16 +25,16 @@
   $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
 #end
 >
-<option value="">$escapetool.xml($services.localization.render('TaskManager.TaskManagerProjectPickerDefault'))</option>
+<option value="">$escapetool.xml($services.localization.render('TaskManager.TaskManagerClass_project_empty'))</option>
 #foreach ($rValue in $projects_names)
   #set ($key = "TaskManager.TaskManagerClass_project_$rValue")
   #set ($translation = $services.localization.render($key))
-<option value="$rValue">
-  #if ($translation == $key)
-    $rValue
-  #else
-    $translation
-  #end
-</option>
+  <option value="$rValue">
+    #if ($translation == $key)
+      $rValue
+    #else
+      $translation
+    #end
+  </option>
 #end
 </select>

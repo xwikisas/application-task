@@ -233,10 +233,10 @@ taskmanager.incompleteTasks.notification.fixAll.done=Inferring process started
 taskmanager.incompleteTasks.notification.fixAll.error=Failed to start inferring process
 
 ## Pickers translations
-TaskManager.TaskManagerProjectPickerDefault=None
-TaskManager.TaskManagerSpacePickerModalTitle=Space Picker
-TaskManager.TaskManagerSpacePickerModalClose=Close
-TaskManager.TaskManagerSpacePickerModalSelect=Select space
+TaskManager.TaskManagerClass_project_empty=None
+taskmanager.spacepicker.modal.title=Space Picker
+taskmanager.spacepicker.modal.close=Close
+taskmanager.spacepicker.modal.select=Select space
   </content>
   <object>
     <name>TaskManager.TaskManagerTranslations</name>

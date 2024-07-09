@@ -26,7 +26,7 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * Space reference for picker.
  *
  * @version $Id$
- * @since 3.4.4
+ * @since 3.5.0
  */
 public class SpaceReference extends ResourceReference
 {
