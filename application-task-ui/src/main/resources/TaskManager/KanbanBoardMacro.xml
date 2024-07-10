@@ -409,7 +409,7 @@ Example:
   #if ($xwql.length() &gt; 0)
     #set ($xwql = "$xwql and")
   #end
-  #set($xwql = "${xwql} doc.space like '$escapetool.sql($space).%'")
+  #set($xwql = "${xwql} (doc.space like '$escapetool.sql($space).%' or doc.space = '$escapetool.sql($space)')")
 #end
 #set($project = "$!{xcontext.macro.params.project}")
 #if($project != '')
