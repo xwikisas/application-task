@@ -211,6 +211,17 @@ TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events d
 TaskManager.TaskManagerConfigurationClass_storageDateFormat=The format that will be used to store dates used in Task Manager.
 TaskManager.TaskManagerConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.
 
+## Kanban Board
+rendering.macro.kanbanboard.parameter.columns.name=Columns
+rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
+rendering.macro.kanbanboard.name=Kanban board - task manager
+rendering.macro.kanbanboard.parameter.project.name=Project
+rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to this project.
+rendering.macro.kanbanboard.parameter.space.name=Space
+rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
+rendering.macro.kanbanboard.parameter.user.name=User
+rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to this user.
+
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks
 taskmanager.incompleteTasks.find=Find incomplete tasks
