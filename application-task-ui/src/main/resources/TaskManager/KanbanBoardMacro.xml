@@ -87,6 +87,7 @@ Example:
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
+        <restricted>0</restricted>
         <rows>20</rows>
         <size>50</size>
         <unmodifiable>0</unmodifiable>
@@ -234,6 +235,7 @@ Example:
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
+        <restricted>0</restricted>
         <rows>20</rows>
         <size>50</size>
         <unmodifiable>0</unmodifiable>
@@ -569,7 +571,6 @@ Example:
 #end
 {{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="32%" colors=$colors/}}
 {{/velocity}}
-
 </code>
     </property>
     <property>
