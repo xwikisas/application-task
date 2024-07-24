@@ -37,6 +37,7 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity output="false"}}
+#set($discard = $xwiki.jsx.use('TaskManager.TaskManagerSheet')) ## For auto-updating Status and Progress
 #macro(displayPropertyCol $name $icon)
 (% class="col-xs-12 col-sm-6" %)
 (((
@@ -320,7 +321,7 @@
         var status = "ToDo";
         if(val &amp;&amp; val != ""){
             val = parseInt(val);
-            if(val &gt; 0 &amp;&amp; val &lt; 100){
+            if(val &lt; 100){
                status = "InProgress";
             }
             else if(val &gt;= 100){
@@ -328,6 +329,12 @@
            }
         }
          $("select[name='TaskManager.TaskManagerClass_0_status']").val(status);
+      });
+      $("select[id='TaskManager.TaskManagerClass_0_status']").change(function(event){
+        var status = this.options[this.options.selectedIndex].value
+        if (status == "Done") {
+          $("input[name='TaskManager.TaskManagerClass_0_progress']").val(100);
+        }
       });
    });
 });</code>
