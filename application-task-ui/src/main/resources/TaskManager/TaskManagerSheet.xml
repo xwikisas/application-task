@@ -59,6 +59,7 @@
 #if(!$isGuest)
   {{html wiki="true"}}
     #set ($discard = $doc.use('TaskManager.TaskManagerClass'))
+    #set ($discard = $xwiki.jsx.use('TaskManager.TaskManagerSheet')) ## For auto-updating Status and Progress
     #set($isEdit = ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
     #if(!$isEdit)
       (% class="xform" %)
@@ -320,14 +321,20 @@
         var status = "ToDo";
         if(val &amp;&amp; val != ""){
             val = parseInt(val);
-            if(val &gt; 0 &amp;&amp; val &lt; 100){
+            if(val &lt; 100){
                status = "InProgress";
             }
-            else if(val &gt;= 100){
+            else {
                status = "Done";
            }
         }
          $("select[name='TaskManager.TaskManagerClass_0_status']").val(status);
+      });
+      $("select[id='TaskManager.TaskManagerClass_0_status']").change(function(event){
+        var status = $(this).val();
+        if (status == "Done") {
+          $("input[name='TaskManager.TaskManagerClass_0_progress']").val(100);
+        }
       });
    });
 });</code>
