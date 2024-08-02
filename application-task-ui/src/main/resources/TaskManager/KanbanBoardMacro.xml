@@ -569,7 +569,7 @@ Example:
   #end
   #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
 #end
-{{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="32%" colors=$colors/}}
+{{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="32%" colors=$escapetool.xml($colors)/}}
 {{/velocity}}
 </code>
     </property>
