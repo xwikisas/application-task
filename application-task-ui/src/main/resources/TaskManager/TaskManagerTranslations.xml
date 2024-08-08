@@ -202,6 +202,8 @@ TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events d
 
 ## Kanban Board
 rendering.macro.kanbanboard.parameter.columns.name=Columns
+rendering.macro.kanbanboard.parameter.colors.name=Colors
+rendering.macro.kanbanboard.parameter.colors.description=Define the colors that you want to use for the columns. The list must be comma separated, e.g., red,#00d126,yellow.
 rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
 rendering.macro.kanbanboard.name=Kanban board - Task Manager
 rendering.macro.kanbanboard.parameter.project.name=Project
