@@ -59,6 +59,11 @@
       <version>${licensing.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>frappe-gantt</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.xwiki.contrib</groupId>
       <artifactId>macro-kanban</artifactId>
       <type>xar</type>

@@ -476,6 +476,22 @@
       <valueField>severity</valueField>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </severity>
+    <startDate>
+      <customDisplay/>
+      <dateFormat>dd/MM/yyyy HH:mm:ss</dateFormat>
+      <disabled>0</disabled>
+      <emptyIsToday>1</emptyIsToday>
+      <hint/>
+      <name>startDate</name>
+      <number>15</number>
+      <picker>1</picker>
+      <prettyName>Start Date</prettyName>
+      <size>20</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+    </startDate>
     <status>
       <cache>0</cache>
       <classname>TaskManager.StatusClass</classname>
