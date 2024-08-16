@@ -31,49 +31,130 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>JSONTaskSource</title>
+  <title/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity}}
-#set($discard = $response.setContentType("application/json"))
-#set($query = "from doc.object(TaskManager.TaskManagerClass) as obj where doc.fullName not like '%Template'")
-#set($queryResult = $services.query.xwql($query).setLimit(50).execute())
-
-#macro(putOrDefault $map $propertyName $value $default)
-  #if ($!value)
-    #set($discard = $map.put($propertyName, $escapetool.xml($value)))
+#macro(putOrDefault $map $propertyName $value $default1 $default2)
+  #if ($value)
+    #set($discard = $map.put($propertyName, $value))
+  #elseif ($default1)
+    #set($discard = $map.put($propertyName, $default1))
   #else
-    #set($discard = $map.put($propertyName, $escapetool.xml($default)))
+    #set($discard = $map.put($propertyName, $default2))
   #end
 #end
 
-#set($tasks = [])
-#foreach($taskDocument in $queryResult)
-  #set($taskXDoc = $xwiki.getDocument($taskDocument))
-  #set($task = $taskXDoc.getObjects('TaskManager.TaskManagerClass')[0])
-  #set($taskObj = {})
-  #set($customClasses = '')
-
-  #putOrDefault($taskObj 'id'           $taskXDoc.getFullName() 'Unknown Task')
-  #putOrDefault($taskObj 'name'         $taskXDoc.getDisplayTitle() 'Unknown Task')
-  #putOrDefault($taskObj 'start'        $xwiki.jodatime.getDateTime($task.getValue('startDate')) $xwiki.jodatime.getDateTime($task.getValue('createDate')))
-  #putOrDefault($taskObj 'end'          $xwiki.jodatime.getDateTime($task.getValue('completeDate')) $taskObj['start'])
-  #putOrDefault($taskObj 'progress'     $task.getValue('progress') 0)
-  #if (! $!task.displayPrettyName('endDate'))
-    #set($customClasses = $customClasses + ' noEndDate')
+#macro(csvToArray $csvString $return)
+  ## When a project name contains a comma, it can be escaped with a backslash
+  #set($csv = $csvString.split('(?&lt;!\\),'))
+  #set($newArray = [])
+  #foreach($elem in $csv)
+    #set($discard = $newArray.add($escapetool.json($elem.replace('\,',','))))
   #end
-  #putOrDefault($taskObj 'dependencies' $task.getValue('dependencies') '')
-  
-  #set($customClasses = $customClasses + 
-      ' status' + $task.getValue('status') + 
-      ' project' + $task.getValue('project') + 
-      ' severity' + $task.getValue('severity')
-      )
-  #putOrDefault($taskObj 'custom_class' $customClasses '')
-  #set($discard = $tasks.add($taskObj))
+  #set($discard = $return.put('csvReturn', $newArray))
 #end
-$jsontool.serialize($tasks)
+
+#if ($xcontext.action == 'get')
+  #set($discard = $response.setContentType('application/json'))
+  #set($dateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
+  #if($request.assignees)
+    #set($assignees = {})
+    #csvToArray($request.assignees $assignees)
+    #set($assignees = $assignees['csvReturn'])
+    #set($query = $query + " and task.assignee in (:assignees)")
+  #end
+  #if($request.reporters)
+    #set($reporters = {})
+    #csvToArray($request.reporters $reporters)
+    #set($reporters = $reporters['csvReturn'])
+    #set($query = $query + " and task.reporter in (:reporters)")
+  #end
+  #if($request.projects)
+    #set($projects = {})
+    #csvToArray($request.projects $projects)
+    #set($projects = $projects['csvReturn'])
+    #set($query = $query + " and task.project in (:projects)")
+  #end
+  #if($request.from)
+    #set($from = $datetool.toDate("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "$dateFormatter.parseDateTime('$request.from')"))
+    #set($query = $query + ' and (' +
+        '(task.startDate is not NULL and task.startDate  &gt;= :from) or ' +
+        '(task.startDate is     NULL and task.createDate &gt;= :from))'
+    )
+  #end
+  #if($request.to)
+    #set($to = $datetool.toDate("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "$dateFormatter.parseDateTime($request.to)"))
+    #set($query = $query + ' and (' +
+        '(task.completeDate is not NULL and task.completeDate &lt;= :to) or ' +
+        '(task.completeDate is     NULL and (' +
+            '(task.duedate is not NULL and task.duedate &lt;= :to) or ' +
+            '(task.duedate is     NULL and (' +
+              '(task.startDate is not NULL and task.startDate  &lt;= :to) or ' +
+              '(task.startDate is     NULL and task.createDate &lt;= :to))' +
+            '))' +
+        '))'
+    )
+  #end
+  #set($query = $services.query.xwql($query).setLimit(50))
+  #if($assignees)#set($query = $query.bindValue('assignees', $assignees))#end
+  #if($projects)#set($query = $query.bindValue('projects', $projects))#end
+  #if($reporters)#set($query = $query.bindValue('reporters', $reporters))#end
+  #if($from)#set($query = $query.bindValue('from', $from))#end
+  #if($to)#set($query = $query.bindValue('to', $to))#end
+  #set($queryResult = $query.execute())
+
+  #set($tasks = [])
+  #foreach($taskDocument in $queryResult)
+    #set($taskXDoc = $xwiki.getDocument($taskDocument))
+    #set($task = $taskXDoc.getObjects('TaskManager.TaskManagerClass')[0])
+    #set($taskObj = {})
+    #set($customClasses = '')
+
+    #set($discard = $taskObj.put('id', $escapetool.json($taskXDoc.getFullName())))
+    #set($discard = $taskObj.put('link', $taskXDoc.getURL()))
+    #putOrDefault($taskObj 'name'
+      $escapetool.xml($taskXDoc.getDisplayTitle())
+      'Unknown Task'
+    )
+    #putOrDefault($taskObj 'progress'
+      $escapetool.json($task.getValue('progress'))
+      0
+    )
+    #putOrDefault($taskObj 'project'  $escapetool.json($task.getValue('project'))  '')
+    #putOrDefault($taskObj 'assignee' $escapetool.json($task.getValue('assignee')) '')
+    #putOrDefault($taskObj 'reporter' $escapetool.json($task.getValue('reporter')) '')
+    #putOrDefault($taskObj 'start'
+      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('startDate')))
+      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('createDate')))
+    )
+    #putOrDefault($taskObj 'end'
+      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('completeDate')))
+      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('duedate')))
+      $taskObj['start']
+    )
+    #if (! $task.getValue('completeDate'))
+      #set($customClasses = $customClasses + ' noEndDate')
+    #end
+    #set($discard = $taskObj.put('dependencies', $task.getValue('dependencies')))
+
+    #set($customClasses = $customClasses +
+        ' status' + $escapetool.json($task.getValue('status').replace(' ', '-')) +
+        ' severity' + $escapetool.json($task.getValue('severity').replace(' ', '-'))
+        )
+    #set($discard = $taskObj.put('custom_class', $escapetool.xml($customClasses)))
+    #set($editHack = {
+      'oldProgress': $escapetool.json($taskObj['progress'])
+    })
+    #set($discard = $taskObj.put('editHack', $editHack))
+    ##set($discard = $taskObj.put('_index', 1)) ##Display order
+
+    #set($discard = $tasks.add($taskObj))
+  #end
+  $jsontool.serialize($tasks)
+#end
 {{/velocity}}</content>
 </xwikidoc>

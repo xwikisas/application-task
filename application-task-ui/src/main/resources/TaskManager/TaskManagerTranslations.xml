@@ -117,6 +117,12 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
+# Gantt Diagram
+taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task.
+taskmanager.gantt.taskEdit.error.xdata=The XWiki data could not be updated.
+taskmanager.gantt.taskEdit.error.readonly=This diagram is read only.
+taskmanager.gantt.taskEdit.success=The XWiki data has been updated.
+
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until

@@ -480,7 +480,7 @@
       <customDisplay/>
       <dateFormat>dd/MM/yyyy HH:mm:ss</dateFormat>
       <disabled>0</disabled>
-      <emptyIsToday>1</emptyIsToday>
+      <emptyIsToday>0</emptyIsToday>
       <hint/>
       <name>startDate</name>
       <number>15</number>

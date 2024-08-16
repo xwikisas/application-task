@@ -40,146 +40,6 @@
   <object>
     <name>TaskManager.GanttMacro.Macro</name>
     <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>08c846e2-f079-4161-b964-02845ddc4b4a</guid>
-    <class>
-      <name>XWiki.JavaScriptExtension</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <cache>
-        <cache>0</cache>
-        <defaultValue>long</defaultValue>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <freeText>forbidden</freeText>
-        <largeStorage>0</largeStorage>
-        <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </cache>
-      <code>
-        <contenttype>PureText</contenttype>
-        <disabled>0</disabled>
-        <editor>PureText</editor>
-        <name>code</name>
-        <number>2</number>
-        <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <parse>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>parse</name>
-        <number>4</number>
-        <prettyName>Parse content</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </parse>
-      <use>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <freeText>forbidden</freeText>
-        <largeStorage>0</largeStorage>
-        <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>currentPage|onDemand|always</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </use>
-    </class>
-    <property>
-      <cache>forbid</cache>
-    </property>
-    <property>
-      <code>const urlParams = new URLSearchParams(window.location.search);
-const minify = urlParams.get('minify');
-const require_js_path = (minify === 'false') ?
-      "$services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.js')" :
-      "$services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.min.js')";
-
-function escapeXml(unsafe) {
-    return unsafe.replace(/[&lt;&gt;&amp;'"]/g, function (c) {
-        switch (c) {
-            case '&lt;': return '&amp;lt;';
-            case '&gt;': return '&amp;gt;';
-            case '&amp;': return '&amp;amp;';
-            case '\'': return '&amp;apos;';
-            case '"': return '&amp;quot;';
-        }
-    });
-}
-
-require([require_js_path], function(){
-  // Fetch tasks
-  // ...
-  fetch('/xwiki/bin/get/TaskManager/GanttMacro/JSONTaskSource?xpage=plain&amp;outputSyntax=plain')
-      .then(response =&gt; response.json()).then(tasks =&gt; {
-    console.log(tasks);
-    var gantt = new Gantt('#gantt', tasks, {
-      view_mode_select: true,
-      //readonly: true, //doesn't work
-      view_mode: 'Day',
-      //today_button: true, //doesn't work
-      //view_mode_select: true, //doesn't work
-      show_expected_progress: true,
-      view_mode_padding: {
-        Day: '3d',
-        MONTH: '1m',
-      },
-      on_click: function (task) {
-          console.log(task);
-      },
-      date_format: "YYYY-MM-DD[T]HH:mm:ss.SSSZ",
-  });
-  })
-});</code>
-    </property>
-    <property>
-      <name>Include Frappe Gantt</name>
-    </property>
-    <property>
-      <parse>1</parse>
-    </property>
-    <property>
-      <use>onDemand</use>
-    </property>
-  </object>
-  <object>
-    <name>TaskManager.GanttMacro.Macro</name>
-    <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>d0ae2c28-2352-4c27-88c8-2f7931d74a5c</guid>
     <class>
@@ -527,24 +387,160 @@ require([require_js_path], function(){
       <async_enabled>0</async_enabled>
     </property>
     <property>
-      <code>{{html}}&lt;div id='gantt'&gt;&lt;/div&gt;{{/html}}
-
-{{velocity}}
+      <code>{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
-  #{{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
+  {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
 #else
-  #if($!request.minify)
-    #set($minify='.min')
+  #if(!$ganttCounter)
+   #set($ganttCounter = 0)
+  #else
+   #set($ganttCounter = $ganttCounter + 1)
   #end
-  #set($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro'))
+  #set ($divId = "gantt${ganttCounter}")
+
+  #set($minify = '.min')
+  #if("$!request.minify" == 'false')
+    #set($minify = '')
+  #end
+
   #set($discard = $xwiki.linkx.use(
       $services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.css'),
       {'type': 'text/css', 'rel': 'stylesheet'}
   ))
   #set($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro')) ## Override default frappe styles
+  #set($frappe_js_path = $services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt${minify}.js"))
 
-  ##set ($pages = $xcontext.macro.params.pages)
+  #set($query = '?xpage=plain&amp;outputSyntax=plain')
+  #if ($xcontext.macro.params.projects)
+    #set($query = $query + "&amp;projects=$escapetool.url($xcontext.macro.params.projects)")
+  #end
+  #if ($xcontext.macro.params.assignees)
+    #set($query = $query + "&amp;assignees=$escapetool.url($xcontext.macro.params.assignees)")
+  #end
+  #if ($xcontext.macro.params.reporters)
+    #set($query = $query + "&amp;reporters=$escapetool.url($xcontext.macro.params.reporters)")
+  #end
+  #if ($xcontext.macro.params.from)
+    #set($query = $query + "&amp;from=$escapetool.url($xcontext.macro.params.from)")
+  #end
+  #if ($xcontext.macro.params.to)
+    #set($query = $query + "&amp;to=$escapetool.url($xcontext.macro.params.to)")
+  #end
+
+  #set ($userName = $xwiki.getUser().getUser().getFullName())
+
+{{html}}
+&lt;div id="${divId}"&gt;
+&lt;script type='text/javascript'&gt;
+//&lt;![CDATA[
+var gantt;
+function canEdit(task) {
+  const userName = "$userName";
+  #if ($xcontext.macro.params.readonly == true)
+    #set($errorOnEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.readonly")))
+  #else
+    #set($errorOnEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.permissions")))
+  #end
+  return (!$xcontext.macro.params.readonly &amp;&amp; userName != '' &amp;&amp; (
+      userName == task.assignee ||
+      userName == task.reporter ||
+      $isSuperAdmin
+  ));
+}
+require(['jquery', "$frappe_js_path"], function(jQuery){
+  fetch("${xwiki.getDocument('TaskManager.GanttMacro.JSONTaskSource').getURL('get')}${query}")
+      .then(response =&gt; response.json()).then(tasks =&gt; {
+    console.log(tasks);
+    if(tasks.length == 0) {
+      console.log('No tasks to show');
+      jQuery("#${divId}").html('No tasks to show');
+      return;
+    }
+    gantt = new Gantt("#${divId}", tasks, {
+      view_mode_select: true,
+      readonly: true, //doesn't work
+      view_mode: 'Day',
+      //popup_trigger: 'mouseover',
+      //today_button: true, //doesn't work
+      //view_mode_select: true, //doesn't work
+      show_expected_progress: true,
+      view_mode_padding: {
+        Day: '3d',
+        MONTH: '1m',
+      },
+      on_click: function (task) {
+        console.log('clicked:');
+        console.log(task);
+        window.location = task.link;
+      },
+      on_progress_change: function (task, newProgress) {
+        if (newProgress == task.editHack.oldProgress) {
+          return;
+        }
+        if (!canEdit(task)) {
+          task.progress = task.editHack.oldProgress;
+          gantt.bars.forEach(bar =&gt; {
+            if (bar.task === task) {
+              bar.update_progressbar_position();
+              bar.update_handle_position();
+            }
+          });
+          new XWiki.widgets.Notification('$errorOnEdit', 'error', '20');
+          return;
+        }
+        task.editHack.oldProgress = newProgress;
+        #set($successEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.success")))
+        //new XWiki.widgets.Notification('$successEdit', 'info', '20');
+      },
+      on_date_change: function (task, newStartDate, newEndDate) {
+        if (!canEdit(task)) {
+          gantt.bars.forEach(bar =&gt; {
+            if (bar.task === task) {
+              bar.update_bar_position({
+                x: bar.$bar.ox,
+                width: bar.$bar.owidth,
+              });
+              bar.update_handle_position();
+            }
+          });
+          new XWiki.widgets.Notification('$errorOnEdit', 'error', '20');
+          return;
+        }
+        console.log('date changed:' + newStartDate + ' ' + newEndDate);
+        console.log(task);
+        /*var posting = jQuery.post( updateService, { page : page, nb : counter, content : newBoards } );
+        posting.success(function(data) {
+        if (data.indexOf('SUCCESS')&gt;=0 &amp;&amp; data.indexOf('SUCCESS')&lt;10) {
+          #set($successEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.success")))
+          new XWiki.widgets.Notification('$successEdit', 'info', '20');
+          currentBoards = newBoards;
+        } else {
+          #set($error = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.xdata")))
+          new XWiki.widgets.Notification('$error', 'error', '20');
+          }
+        });*/
+      },
+      date_format: "YYYY-MM-DD[T]HH:mm:ss.SSSZ",
+    });
+    //Include custom patterns
+    /*jQuery("#${divId} svg.gantt .bar-wrapper.statusInProgress .bar-progress").attr('mask', 'url("#fade-to-nothing")')
+    jQuery("#${divId} svg.gantt").append('&lt;defs&gt;\
+    &lt;linearGradient id="fadeGrad" x1="0" y1="0.5" x2="1" y2="0.5"&gt;\
+      &lt;stop offset="0.5" stop-color="white" stop-opacity="0"/&gt;\
+      &lt;stop offset="1" stop-color="white" stop-opacity=".5"/&gt;\
+    &lt;/linearGradient&gt;\
+    &lt;mask id="fade-to-nothing" maskContentUnits="objectBoundingBox"&gt;\
+      &lt;rect width="1" height="1" fill="url(#fadeGrad)"/&gt;\
+    &lt;/mask&gt;\
+    &lt;/defs&gt;\
+  ');*/
+  })
+});
+// ]]&gt;
+&lt;/script&gt;
+&lt;/div&gt;
+{{/html}}
 #end
 {{/velocity}}</code>
     </property>
@@ -645,13 +641,13 @@ require([require_js_path], function(){
       <defaultValue/>
     </property>
     <property>
-      <description>The period of time to show tasks in.</description>
+      <description>Only show tasks which started after the specified date.</description>
     </property>
     <property>
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>start</name>
+      <name>from</name>
     </property>
     <property>
       <type>com.xwiki.date.DateType</type>
@@ -723,7 +719,7 @@ require([require_js_path], function(){
       <defaultValue/>
     </property>
     <property>
-      <description>Only show Tasks assigned to these Users.</description>
+      <description>Only show Tasks assigned to these Users. Comma separated format: "XWiki.User1,XWiki.User2"</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -879,16 +875,94 @@ require([require_js_path], function(){
       <defaultValue/>
     </property>
     <property>
-      <description/>
+      <description>Only show tasks which end before the specified date.</description>
     </property>
     <property>
       <mandatory>0</mandatory>
     </property>
     <property>
-      <name>end</name>
+      <name>to</name>
     </property>
     <property>
       <type>com.xwiki.date.DateType</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>4</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>2ed2ab1f-83c1-4d15-9674-c2d08b311356</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>true</defaultValue>
+    </property>
+    <property>
+      <description>Whether users can modify tasks using the Gantt Diagram UI.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>readonly</name>
+    </property>
+    <property>
+      <type>java.lang.Boolean</type>
     </property>
   </object>
 </xwikidoc>
