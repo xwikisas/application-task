@@ -78,6 +78,7 @@
             (% class="row" %)
             (((
               #displayPropertyCol('startDate', 'calendar')
+              #displayPropertyCol('createDate', 'calendar')
               #displayPropertyCol('duedate', 'time')
               #if ("$!doc.display('completeDate')" != '')
                 #displayPropertyCol('completeDate', 'check')
@@ -168,6 +169,7 @@
             (% class="row" %)
             (((
               #displayPropertyCol('startDate', 'calendar')
+              #displayPropertyCol('createDate', 'calendar')
               #displayPropertyCol('duedate', 'time')
               (% class="col-xs-12 col-sm-6" %)
               (((

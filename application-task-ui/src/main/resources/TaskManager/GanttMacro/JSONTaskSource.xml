@@ -36,14 +36,12 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
-#macro(putOrDefault $map $propertyName $value $default1 $default2)
+  <content>{{velocity wiki="false"}}
+#macro(putOrDefault $map $propertyName $value $default1)
   #if ($value)
     #set($discard = $map.put($propertyName, $value))
   #elseif ($default1)
     #set($discard = $map.put($propertyName, $default1))
-  #else
-    #set($discard = $map.put($propertyName, $default2))
   #end
 #end
 
@@ -52,107 +50,134 @@
   #set($csv = $csvString.split('(?&lt;!\\),'))
   #set($newArray = [])
   #foreach($elem in $csv)
-    #set($discard = $newArray.add($escapetool.json($elem.replace('\,',','))))
+    #set($discard = $newArray.add($elem.replace('\,', ',')))
   #end
   #set($discard = $return.put('csvReturn', $newArray))
 #end
 
 #if ($xcontext.action == 'get')
   #set($discard = $response.setContentType('application/json'))
-  #set($dateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
   #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
-  #if($request.assignees)
-    #set($assignees = {})
-    #csvToArray($request.assignees $assignees)
-    #set($assignees = $assignees['csvReturn'])
-    #set($query = $query + " and task.assignee in (:assignees)")
+  #if($request.taskId)
+    ## short-circuit if the request is for a specific task
+    #set($query = $query + ' and doc.fullName = (:taskId)')
+    #set($query = $services.query.xwql($query).setLimit(50))
+    #set($query = $query.bindValue('taskId', $request.taskId))
+  #else
+    #if($request.spaces)
+      #set($spaces = {})
+      #csvToArray($request.spaces $spaces)
+      #set($spaces = $spaces['csvReturn'])
+      ## if the space is specified in full:
+      #set($query = $query + ' and (doc.space in (:spaces)')
+      ## if a parent space is specified:
+      #set($index = 0)
+      ## no 0 size array since if the spaces parameter is present, '' will be treated as a space name
+      #foreach($space in $spaces)
+        #set($query = $query + " or doc.space like :spaces${index}")
+        #set($index = $index + 1)
+      #end
+      #set($query = $query + ')')
+    #end
+    #if($request.assignees)
+      #set($assignees = {})
+      #csvToArray($request.assignees $assignees)
+      #set($assignees = $assignees['csvReturn'])
+      #set($query = $query + " and task.assignee in (:assignees)")
+    #end
+    #if($request.reporters)
+      #set($reporters = {})
+      #csvToArray($request.reporters $reporters)
+      #set($reporters = $reporters['csvReturn'])
+      #set($query = $query + " and task.reporter in (:reporters)")
+    #end
+    #if($request.projects)
+      #set($projects = {})
+      #csvToArray($request.projects $projects)
+      #set($projects = $projects['csvReturn'])
+      #set($query = $query + " and task.project in (:projects)")
+    #end
+    #if($request.from)
+      #set($from = $datetool.toDate($numbertool.toNumber($request.from).longValue()))
+      #set($query = $query + ' and (' +
+          '(task.startDate is not NULL and task.startDate  &gt;= :from) or ' +
+          '(task.startDate is     NULL and task.createDate &gt;= :from))'
+      )
+    #end
+    #if($request.hideNoDueDate != 'false')
+      #set($query = $query + ' and task.duedate is not NULL')
+    #end
+    #if($request.to)
+      #set($to = $datetool.toDate($numbertool.toNumber($request.to).longValue()))
+      #set($query = $query + ' and (' +
+              '(task.duedate is not NULL and task.duedate &lt;= :to) or ' +
+              '(task.duedate is     NULL and (' +
+                '(task.startDate is not NULL and task.startDate  &lt;= :to) or ' +
+                '(task.startDate is     NULL and task.createDate &lt;= :to))' +
+            '))'
+      )
+    #end
+    #set($query = $query + ' order by UPPER(task.project), task.project, UPPER(task.name), task.name')
+    #set($query = $services.query.xwql($query).setLimit(50))
+    #if($spaces)
+      #set($query = $query.bindValue("spaces", $spaces))
+      #set($index = 0)
+      #foreach($space in $spaces)
+        #set($space = $space + '.%')
+        #set($query = $query.bindValue("spaces${index}", $space))
+        #set($index = $index + 1)
+      #end
+    #end
+    #if($assignees)#set($query = $query.bindValue('assignees', $assignees))#end
+    #if($projects)#set($query = $query.bindValue('projects', $projects))#end
+    #if($reporters)#set($query = $query.bindValue('reporters', $reporters))#end
+    #if($from)#set($query = $query.bindValue('from', $from))#end
+    #if($to)#set($query = $query.bindValue('to', $to))#end
   #end
-  #if($request.reporters)
-    #set($reporters = {})
-    #csvToArray($request.reporters $reporters)
-    #set($reporters = $reporters['csvReturn'])
-    #set($query = $query + " and task.reporter in (:reporters)")
-  #end
-  #if($request.projects)
-    #set($projects = {})
-    #csvToArray($request.projects $projects)
-    #set($projects = $projects['csvReturn'])
-    #set($query = $query + " and task.project in (:projects)")
-  #end
-  #if($request.from)
-    #set($from = $datetool.toDate("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "$dateFormatter.parseDateTime('$request.from')"))
-    #set($query = $query + ' and (' +
-        '(task.startDate is not NULL and task.startDate  &gt;= :from) or ' +
-        '(task.startDate is     NULL and task.createDate &gt;= :from))'
-    )
-  #end
-  #if($request.to)
-    #set($to = $datetool.toDate("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "$dateFormatter.parseDateTime($request.to)"))
-    #set($query = $query + ' and (' +
-        '(task.completeDate is not NULL and task.completeDate &lt;= :to) or ' +
-        '(task.completeDate is     NULL and (' +
-            '(task.duedate is not NULL and task.duedate &lt;= :to) or ' +
-            '(task.duedate is     NULL and (' +
-              '(task.startDate is not NULL and task.startDate  &lt;= :to) or ' +
-              '(task.startDate is     NULL and task.createDate &lt;= :to))' +
-            '))' +
-        '))'
-    )
-  #end
-  #set($query = $services.query.xwql($query).setLimit(50))
-  #if($assignees)#set($query = $query.bindValue('assignees', $assignees))#end
-  #if($projects)#set($query = $query.bindValue('projects', $projects))#end
-  #if($reporters)#set($query = $query.bindValue('reporters', $reporters))#end
-  #if($from)#set($query = $query.bindValue('from', $from))#end
-  #if($to)#set($query = $query.bindValue('to', $to))#end
   #set($queryResult = $query.execute())
 
   #set($tasks = [])
   #foreach($taskDocument in $queryResult)
     #set($taskXDoc = $xwiki.getDocument($taskDocument))
     #set($task = $taskXDoc.getObjects('TaskManager.TaskManagerClass')[0])
-    #set($taskObj = {})
-    #set($customClasses = '')
+    #if($services.security.authorization.hasAccess('view', $taskDocument))
+      #set($discard = $taskDocument.use('TaskManager.TaskManagerClass'))
+      #set($taskObj = {})
+      #set($customClasses = '')
+      #set($discard = $taskObj.put('id', $services.model.serialize($taskXDoc.getDocumentReference())))
+      #set($discard = $taskObj.put('link', $taskXDoc.getURL()))
+      #putOrDefault($taskObj 'actualName'
+        $escapetool.xml($task.getValue('name'))
+        'Unknown Task'
+      )
+      #putOrDefault($taskObj 'progress'
+        $task.getValue('progress')
+        0
+      )
+      #putOrDefault($taskObj 'project'  $task.getValue('project')  '')
+      #putOrDefault($taskObj 'assignee' $task.getValue('assignee') '')
+      #putOrDefault($taskObj 'reporter' $task.getValue('reporter') '')
+      #putOrDefault($taskObj 'start'
+        $task.getValue('startDate').getTime()
+        $task.getValue('createDate').getTime()
+      )
+      #putOrDefault($taskObj 'end'
+        $task.getValue('duedate').getTime()
+        $xwiki.jodatime.getDateTime($taskObj['start']).plusWeeks(1).getMillis()
+      )
+      #if ("$!task.getValue('duedate').getTime()" == '')
+        #set($customClasses = $customClasses + ' noDueDate')
+      #end
+      #set($discard = $taskObj.put('dependencies', $task.getValue('dependencies')))
 
-    #set($discard = $taskObj.put('id', $escapetool.json($taskXDoc.getFullName())))
-    #set($discard = $taskObj.put('link', $taskXDoc.getURL()))
-    #putOrDefault($taskObj 'name'
-      $escapetool.xml($taskXDoc.getDisplayTitle())
-      'Unknown Task'
-    )
-    #putOrDefault($taskObj 'progress'
-      $escapetool.json($task.getValue('progress'))
-      0
-    )
-    #putOrDefault($taskObj 'project'  $escapetool.json($task.getValue('project'))  '')
-    #putOrDefault($taskObj 'assignee' $escapetool.json($task.getValue('assignee')) '')
-    #putOrDefault($taskObj 'reporter' $escapetool.json($task.getValue('reporter')) '')
-    #putOrDefault($taskObj 'start'
-      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('startDate')))
-      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('createDate')))
-    )
-    #putOrDefault($taskObj 'end'
-      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('completeDate')))
-      $escapetool.json($xwiki.jodatime.getDateTime($task.getValue('duedate')))
-      $taskObj['start']
-    )
-    #if (! $task.getValue('completeDate'))
-      #set($customClasses = $customClasses + ' noEndDate')
+      #set($customClasses = $customClasses +
+          ' status' + $task.getValue('status').replace(' ', '-') +
+          ' severity' + $task.getValue('severity').replace(' ', '-')
+          )
+      #set($discard = $taskObj.put('custom_class', $escapetool.html($customClasses)))
+
+      #set($discard = $tasks.add($taskObj))
     #end
-    #set($discard = $taskObj.put('dependencies', $task.getValue('dependencies')))
-
-    #set($customClasses = $customClasses +
-        ' status' + $escapetool.json($task.getValue('status').replace(' ', '-')) +
-        ' severity' + $escapetool.json($task.getValue('severity').replace(' ', '-'))
-        )
-    #set($discard = $taskObj.put('custom_class', $escapetool.xml($customClasses)))
-    #set($editHack = {
-      'oldProgress': $escapetool.json($taskObj['progress'])
-    })
-    #set($discard = $taskObj.put('editHack', $editHack))
-    ##set($discard = $taskObj.put('_index', 1)) ##Display order
-
-    #set($discard = $tasks.add($taskObj))
   #end
   $jsontool.serialize($tasks)
 #end

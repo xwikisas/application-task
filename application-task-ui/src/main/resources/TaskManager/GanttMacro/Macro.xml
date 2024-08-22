@@ -40,6 +40,131 @@
   <object>
     <name>TaskManager.GanttMacro.Macro</name>
     <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>20ebfcab-84f8-4525-b1b5-c053c1e425f0</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>forbid</cache>
+    </property>
+    <property>
+      <code>function addStyles(svgElem) {
+  var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML += `
+&lt;linearGradient id="fadeGrad" fill="white"&gt;
+  &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
+  &lt;stop offset="60%" stop-color="white" stop-opacity=".4" /&gt;
+  &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
+&lt;/linearGradient&gt;
+&lt;mask id="fademask" maskContentUnits="objectBoundingBox"&gt;
+  &lt;rect width="1" height="1" fill="url(#fadeGrad)"/&gt;
+&lt;/mask&gt;
+
+&lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
+  &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
+  &lt;feGaussianBlur stdDeviation="4"/&gt;
+  &lt;feComponentTransfer&gt;
+    &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
+  &lt;/feComponentTransfer&gt;
+  &lt;feComponentTransfer&gt;
+    &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
+  &lt;/feComponentTransfer&gt;
+  &lt;feComposite operator="over" in="SourceGraphic"/&gt;
+&lt;/filter&gt;
+`;
+  svgElem.setAttribute('height', svgElem.getAttribute('height') - 100);
+  svgElem.appendChild(defs);
+}</code>
+    </property>
+    <property>
+      <name>Add svg styles</name>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>d0ae2c28-2352-4c27-88c8-2f7931d74a5c</guid>
     <class>
@@ -142,37 +267,39 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>.gantt .bar-label {
-  fill: #000000;
-  font-weight: bold;
-}
-
-.gantt .bar-wrapper:hover.statusToDo .bar-progress {
-  fill: green;
-}
-.gantt .bar-wrapper.statusToDo .bar-progress {
-  fill: lightgreen;
-}
-
-
-.gantt .bar-wrapper:hover.statusDone .bar-progress {
-  fill: gold;
-}
-.gantt .bar-wrapper.statusDone .bar-progress {
-  fill: #f4e64b;
-}
-
-
-.gantt .bar-wrapper:hover.statusInProgress .bar-progress {
-  fill: blue;
-}
-.gantt .bar-wrapper.statusInProgress .bar-progress {
-  fill: lightblue;
-  //background-image: linear-gradient(45deg, #98CD8D 25%, #F6F0CF 25%, #F6F0CF 50%, #98CD8D 50%, #98CD8D 75%, #F6F0CF 75%, #F6F0CF 100%);
+      <code>.gantt {
+  .bar-label {
+    fill: #000000;
+    font-weight: bold;
+  }
+  .bar-wrapper:hover.statusToDo .bar-progress {
+    fill: #5ed65e;
+  }
+  .bar-wrapper.statusToDo .bar-progress {
+    fill: lightgreen;
+  }
+  .bar-wrapper:hover.statusDone .bar-progress {
+    fill: gold;
+  }
+  .bar-wrapper.statusDone .bar-progress {
+    fill: #f4e64b;
+  }
+  .bar-wrapper.statusInProgress {
+    fill: lightblue;
+  }
+  .bar-wrapper.noDueDate {
+    text, text.big {
+      filter:url(#rounded-corners);
+      fill:white;
+    }
+    .bar, .bar-progress {
+      mask: url('#fademask');
+    }
+  }
 }</code>
     </property>
     <property>
-      <contentType>CSS</contentType>
+      <contentType>LESS</contentType>
     </property>
     <property>
       <name>Override Frappe Gantt styles</name>
@@ -397,11 +524,12 @@
   #else
    #set($ganttCounter = $ganttCounter + 1)
   #end
-  #set ($divId = "gantt${ganttCounter}")
+  #set ($ganttId = "gantt${ganttCounter}")
 
-  #set($minify = '.min')
   #if("$!request.minify" == 'false')
-    #set($minify = '')
+    #set($frappe_js_path = $services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.js"))
+  #else
+    #set($frappe_js_path = $services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.min.js"))
   #end
 
   #set($discard = $xwiki.linkx.use(
@@ -409,9 +537,16 @@
       {'type': 'text/css', 'rel': 'stylesheet'}
   ))
   #set($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro')) ## Override default frappe styles
-  #set($frappe_js_path = $services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt${minify}.js"))
+  #set($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro')) ## Override default frappe styles for svg styles/patterns
+  #set($dateFormat = $services.datemacro.configuration.storageDateFormat)
+  #set($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
 
-  #set($query = '?xpage=plain&amp;outputSyntax=plain')
+  #set($baseQuery = '?xpage=plain&amp;outputSyntax=plain')
+  #set($jsonSourceURL = "${xwiki.getDocument('TaskManager.GanttMacro.JSONTaskSource').getURL('get')}${baseQuery}")
+  #set($query = '')
+  #if ($xcontext.macro.params.hideNoDueDate)
+    #set($query = $query + "&amp;hideNoDueDate=$escapetool.url($xcontext.macro.params.hideNoDueDate)")
+  #end
   #if ($xcontext.macro.params.projects)
     #set($query = $query + "&amp;projects=$escapetool.url($xcontext.macro.params.projects)")
   #end
@@ -422,123 +557,212 @@
     #set($query = $query + "&amp;reporters=$escapetool.url($xcontext.macro.params.reporters)")
   #end
   #if ($xcontext.macro.params.from)
-    #set($query = $query + "&amp;from=$escapetool.url($xcontext.macro.params.from)")
+    #set($fromDate = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.from, $dateTimeFormatter).getMillis())
+    #set($query = $query + "&amp;from=$escapetool.url($fromDate)")
   #end
   #if ($xcontext.macro.params.to)
-    #set($query = $query + "&amp;to=$escapetool.url($xcontext.macro.params.to)")
+    #set($toDate = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.to, $dateTimeFormatter).getMillis())
+    #set($query = $query + "&amp;to=$escapetool.url($toDate)")
+  #end
+  #if ($xcontext.macro.params.spaces)
+    #set($query = $query + "&amp;spaces=${escapetool.url($xcontext.macro.params.spaces).replace('\','%5C')}")
   #end
 
-  #set ($userName = $xwiki.getUser().getUser().getFullName())
+  #set($readonlyError = $escapetool.html($escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.readonly"))))
+  #set($successMessage = $escapetool.html($escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.success"))))
+  #set($genericError = $escapetool.javascript($escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.error.generic'))))
+  #set($noDueDateMessage = $escapetool.javascript($escapetool.html($services.localization.render('taskmanager.gantt.task.noDueDate'))))
 
 {{html}}
-&lt;div id="${divId}"&gt;
+&lt;div id="${ganttId}"&gt;
 &lt;script type='text/javascript'&gt;
 //&lt;![CDATA[
-var gantt;
+var ${ganttId};
+const updateService = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
 function canEdit(task) {
-  const userName = "$userName";
-  #if ($xcontext.macro.params.readonly == true)
-    #set($errorOnEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.readonly")))
-  #else
-    #set($errorOnEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.permissions")))
-  #end
-  return (!$xcontext.macro.params.readonly &amp;&amp; userName != '' &amp;&amp; (
-      userName == task.assignee ||
-      userName == task.reporter ||
-      $isSuperAdmin
-  ));
+  return (!$xcontext.macro.params.readonly);
 }
+
+function formatTask(task) {
+  if(task.custom_class.split(/\s+/).includes('noDueDate')) {
+    task.name = task.actualName + " - $noDueDateMessage";
+  } else {
+    task.name = task.actualName;
+  }
+  task.start = new Date(task.start);
+  task.end = new Date(task.end);
+  task.editHack = {
+    oldProgress:task.progress,
+    oldStartDate:task.start,
+    oldEndDate:task.end,
+  };
+}
+
+function escapeHTML(originalString) {
+  return originalString.replace(/&amp;/g, '&amp;amp;')
+  .replace(/&lt;/g, '&amp;lt;')
+  .replace(/&gt;/g, '&amp;gt;')
+  .replace(/"/g, '&amp;quot;')
+  .replace(/'/g, '&amp;#39;');
+}
+function unescapeHTML(originalString) {
+  return originalString.replace('&amp;amp;', /&amp;/g)
+  .replace('&amp;lt;', /&lt;/g)
+  .replace('&amp;gt;', /&gt;/g)
+  .replace('&amp;quot;', /"/g)
+  .replace('&amp;#39;', /'/g);
+}
+
 require(['jquery', "$frappe_js_path"], function(jQuery){
-  fetch("${xwiki.getDocument('TaskManager.GanttMacro.JSONTaskSource').getURL('get')}${query}")
-      .then(response =&gt; response.json()).then(tasks =&gt; {
+  function redrawBar(task) {
+    formatTask(task); // rename if noDueDate
+    let _bar = ${ganttId}.bars.find((bar) =&gt; bar.task === task);
+    console.log(task)
+    _bar.update_bar_position({x:_bar.compute_x()});
+    _bar.group.setAttribute('class', 'bar-wrapper ' + (task.custom_class || ''));
+    _bar.bar_group.getElementsByClassName('bar-label')[0].innerHTML = task.name;
+    task.editHack.oldStartDate = task.start;
+    task.editHack.oldEndDate = task.end;
+    task.editHack.oldProgress = task.progress;
+  }
+  function fetch_and_redraw(task) {
+    return fetch("${jsonSourceURL}&amp;taskId=" + encodeURIComponent(unescapeHTML(task.id)))
+      .then(response =&gt; response.json()).then(newTaskData =&gt; {
+        if(newTaskData.length != 1) {
+          redrawBar(task);
+          new XWiki.widgets.Notification("$genericError", 'error', '20');
+          return;
+        }
+        newTaskData = newTaskData[0];
+        formatTask(newTaskData);
+        let updateHappened = !(task.editHack.oldStartDate.getTime() == newTaskData.start.getTime() &amp;&amp;
+                               task.editHack.oldEndDate.getTime() == newTaskData.end.getTime() &amp;&amp;
+                               task.editHack.oldProgress == newTaskData.progress);
+
+        Object.assign(task, newTaskData);
+        redrawBar(task);
+
+        if (!updateHappened) {
+          // data.success is true even if the document could not be saved with the new data
+          // (eg. malformed parameters)
+          new XWiki.widgets.Notification("$genericError", 'error', '20');
+        } else {
+          new XWiki.widgets.Notification("$successMessage", 'info', '20');
+        }
+    });
+  }
+  //Add custom svg markup when rendering Gantt
+  Gantt.prototype['_render'] = Gantt.prototype['render'];
+  Gantt.prototype['render'] = function() {
+    const result = this['_render'](...arguments);
+    addStyles(this['$svg']);
+    return result;
+  };
+
+  fetch("${jsonSourceURL}${query}").then(response =&gt; response.json()).then(tasks =&gt; {
+    tasks.forEach(formatTask);
     console.log(tasks);
+
     if(tasks.length == 0) {
-      console.log('No tasks to show');
-      jQuery("#${divId}").html('No tasks to show');
+      jQuery("#${ganttId}").append('Gantt: No tasks to show');
       return;
     }
-    gantt = new Gantt("#${divId}", tasks, {
+    ${ganttId} = new Gantt("#${ganttId}", tasks, {
       view_mode_select: true,
-      readonly: true, //doesn't work
       view_mode: 'Day',
-      //popup_trigger: 'mouseover',
-      //today_button: true, //doesn't work
-      //view_mode_select: true, //doesn't work
-      show_expected_progress: true,
-      view_mode_padding: {
-        Day: '3d',
-        MONTH: '1m',
-      },
+      popup_trigger: null,
+      padding: 10,
+      column_width: 24,
+      language: "$xwiki.getLocalePreference()",
       on_click: function (task) {
-        console.log('clicked:');
-        console.log(task);
-        window.location = task.link;
+        window.open(task.link).focus();
       },
       on_progress_change: function (task, newProgress) {
         if (newProgress == task.editHack.oldProgress) {
+          // useless progress change (event fires on any click, quirk of frappe-gantt)
           return;
         }
         if (!canEdit(task)) {
           task.progress = task.editHack.oldProgress;
-          gantt.bars.forEach(bar =&gt; {
-            if (bar.task === task) {
-              bar.update_progressbar_position();
-              bar.update_handle_position();
-            }
-          });
-          new XWiki.widgets.Notification('$errorOnEdit', 'error', '20');
+          redrawBar(task);
+          new XWiki.widgets.Notification("$errorOnEdit", 'error', '20');
           return;
         }
-        task.editHack.oldProgress = newProgress;
-        #set($successEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.success")))
-        //new XWiki.widgets.Notification('$successEdit', 'info', '20');
+
+        let params = new URLSearchParams({
+          taskDocument: task.id,
+          progress: newProgress
+        });
+        jQuery.ajax( updateService + params ).success(function(data) {
+          if (data.success == true) {
+            fetch_and_redraw(task);
+          } else {
+            console.log(data);
+            new XWiki.widgets.Notification(escapeHTML(data.reason), 'error', '20');
+          }
+        }).error(e =&gt; console.log('Error when updating progress:', e));
+      },
+      on_view_change: function(mode) {
+        //empty
       },
       on_date_change: function (task, newStartDate, newEndDate) {
+        // (Frappe automatically subtracts 1s from the real end date)
+        newEndDate.setSeconds(newEndDate.getSeconds() + 1);
+        if (newStartDate.getTime() == task.editHack.oldStartDate.getTime() &amp;&amp;
+            newEndDate.getTime() == task.editHack.oldEndDate.getTime()) {
+          // Useless progress change (event fires on any click, quirk of frappe-gantt)
+          return;
+        }
         if (!canEdit(task)) {
-          gantt.bars.forEach(bar =&gt; {
-            if (bar.task === task) {
-              bar.update_bar_position({
-                x: bar.$bar.ox,
-                width: bar.$bar.owidth,
-              });
-              bar.update_handle_position();
-            }
-          });
+          task.start = task.editHack.oldStartDate;
+          task.end = task.editHack.oldEndDate;
+          redrawBar(task);
           new XWiki.widgets.Notification('$errorOnEdit', 'error', '20');
           return;
         }
-        console.log('date changed:' + newStartDate + ' ' + newEndDate);
-        console.log(task);
-        /*var posting = jQuery.post( updateService, { page : page, nb : counter, content : newBoards } );
-        posting.success(function(data) {
-        if (data.indexOf('SUCCESS')&gt;=0 &amp;&amp; data.indexOf('SUCCESS')&lt;10) {
-          #set($successEdit = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.success")))
-          new XWiki.widgets.Notification('$successEdit', 'info', '20');
-          currentBoards = newBoards;
-        } else {
-          #set($error = $escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.xdata")))
-          new XWiki.widgets.Notification('$error', 'error', '20');
+        let params = {
+          taskDocument: task.id,
+        };
+        let hasDueDate = !task.custom_class.split(/\s+/).includes('noDueDate');
+        if(newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
+          params.endDate = newEndDate.getTime();
+        }
+        if(newStartDate.getTime() != task.editHack.oldStartDate.getTime()) {
+          params.startDate = newStartDate.getTime();
+        }
+        jQuery.ajax( updateService + new URLSearchParams(params) ).success(function(data) {
+          if (data.success == true) {
+            fetch_and_redraw(task);
+          } else {
+            console.log(data);
+            new XWiki.widgets.Notification(escapeHTML(data.reason), 'error', '20');
           }
-        });*/
+        }).error(e =&gt; console.log('Error when updating dates:', e));
       },
-      date_format: "YYYY-MM-DD[T]HH:mm:ss.SSSZ",
     });
-    //Include custom patterns
-    /*jQuery("#${divId} svg.gantt .bar-wrapper.statusInProgress .bar-progress").attr('mask', 'url("#fade-to-nothing")')
-    jQuery("#${divId} svg.gantt").append('&lt;defs&gt;\
-    &lt;linearGradient id="fadeGrad" x1="0" y1="0.5" x2="1" y2="0.5"&gt;\
-      &lt;stop offset="0.5" stop-color="white" stop-opacity="0"/&gt;\
-      &lt;stop offset="1" stop-color="white" stop-opacity=".5"/&gt;\
-    &lt;/linearGradient&gt;\
-    &lt;mask id="fade-to-nothing" maskContentUnits="objectBoundingBox"&gt;\
-      &lt;rect width="1" height="1" fill="url(#fadeGrad)"/&gt;\
-    &lt;/mask&gt;\
-    &lt;/defs&gt;\
-  ');*/
-  })
+  });
 });
 // ]]&gt;
 &lt;/script&gt;
+&lt;h3&gt;&lt;b&gt;
+ Gantt Diagram##
+#if ($macro.params.assignees), with assignees
+   #foreach($assignee in $xcontext.macro.params.assignees)
+     $assignee
+   #end
+#end
+#if ($xcontext.macro.params.from), from ${xcontext.macro.params.from}#end
+#if ($xcontext.macro.params.to)
+   , to ${xcontext.macro.params.to}
+ #end
+ #if ($xcontext.macro.params.assignees)
+   , with assignees
+   #foreach($assignee in $xcontext.macro.params.assignees.split(','))
+     #set($user = $xwiki.getUser($assignee).getUser())
+     &lt;a class="xwiki-mention user" href="$xwiki.getDocument($user.getFullName()).getURL()"&gt;$user.getFullName()&lt;/a&gt;
+   #end
+ #end
+&lt;/b&gt;&lt;/h3&gt;
 &lt;/div&gt;
 {{/html}}
 #end
@@ -960,6 +1184,162 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
     </property>
     <property>
       <name>readonly</name>
+    </property>
+    <property>
+      <type>java.lang.Boolean</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>5</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>d2d9eeb2-04e0-46a7-ad91-68f472c7f2b7</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>The spaces in which to look for tasks, comma separated.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>spaces</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>6</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>22aae958-b74c-4751-ada4-334cf624f390</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>true</defaultValue>
+    </property>
+    <property>
+      <description>Hide tasks which have no due date set, and as such cannot be displayed properly in the diagram. If set to false, the default duration of such a task is set to one week.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>hideNoDueDate</name>
     </property>
     <property>
       <type>java.lang.Boolean</type>

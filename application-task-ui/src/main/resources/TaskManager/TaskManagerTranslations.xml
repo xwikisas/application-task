@@ -119,9 +119,13 @@ taskmanager.livetable.creationDate=Creation Date
 
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task.
-taskmanager.gantt.taskEdit.error.xdata=The XWiki data could not be updated.
+taskmanager.gantt.taskEdit.error.generic=The task could not be updated.
 taskmanager.gantt.taskEdit.error.readonly=This diagram is read only.
-taskmanager.gantt.taskEdit.success=The XWiki data has been updated.
+taskmanager.gantt.taskEdit.error.notExists=The task does not exist.
+taskmanager.gantt.taskEdit.error.notExistsClass=The task class does not exist.
+taskmanager.gantt.taskEdit.success=The task has been updated.
+taskmanager.gantt.taskEdit.comment=Edited through the Gantt Diagram UI.
+taskmanager.gantt.task.noDueDate=No due date set
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
