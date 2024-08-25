@@ -264,42 +264,70 @@
       </use>
     </class>
     <property>
-      <cache>long</cache>
+      <cache>forbid</cache>
     </property>
     <property>
-      <code>.gantt {
-  .bar-label {
-    fill: #000000;
-    font-weight: bold;
-  }
-  .bar-wrapper:hover.statusToDo .bar-progress {
-    fill: #5ed65e;
-  }
-  .bar-wrapper.statusToDo .bar-progress {
-    fill: lightgreen;
-  }
-  .bar-wrapper:hover.statusDone .bar-progress {
-    fill: gold;
-  }
-  .bar-wrapper.statusDone .bar-progress {
-    fill: #f4e64b;
-  }
-  .bar-wrapper.statusInProgress {
-    fill: lightblue;
-  }
-  .bar-wrapper.noDueDate {
-    text, text.big {
-      filter:url(#rounded-corners);
-      fill:white;
-    }
-    .bar, .bar-progress {
-      mask: url('#fademask');
-    }
-  }
+      <code>.gantt .bar-label {
+  fill: #000000;
+  font-weight: bold;
+}
+.gantt .bar-wrapper:hover.statusToDo .bar-progress {
+  fill: #5ed65e;
+}
+.gantt .bar-wrapper.statusToDo .bar-progress {
+  fill: lightgreen;
+}
+.gantt .bar-wrapper:hover.statusDone .bar-progress {
+  fill: gold;
+}
+.gantt .bar-wrapper.statusDone .bar-progress {
+  fill: #f4e64b;
+}
+.gantt .bar-wrapper.statusInProgress {
+  fill: lightblue;
+}
+.gantt .bar-wrapper.noDueDate text, .gantt .bar-wrapper.noDueDate text.big {
+  filter:url(#rounded-corners);
+  fill:white;
+}
+.gantt .bar-wrapper.noDueDate .bar, .gantt .bar-wrapper.noDueDate .bar-progress {
+  mask: url('#fademask');
+}
+
+.gantt-popup {
+  width:10em;
+  height:2em;
+  position:absolute;
+  overflow:visible;
+  visibility:hidden;
+}
+.gantt-popup .popuptext {
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 3% 0;
+  position: absolute;
+  z-index: 10;
+}
+
+
+.gantt-popup .popuptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: rotate(45deg) translate(-40%, -40%);
+  background-color: #555;
+  height: 7px;
+  width: 7px;
 }</code>
     </property>
     <property>
-      <contentType>LESS</contentType>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Override Frappe Gantt styles</name>
@@ -568,65 +596,97 @@
     #set($query = $query + "&amp;spaces=${escapetool.url($xcontext.macro.params.spaces).replace('\','%5C')}")
   #end
 
+  #set($diagramIsReadonly = !("$!xcontext.macro.params.readonly" == 'false'))
+
   #set($readonlyError = $escapetool.html($escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.error.readonly"))))
   #set($successMessage = $escapetool.html($escapetool.javascript($services.localization.render("taskmanager.gantt.taskEdit.success"))))
   #set($genericError = $escapetool.javascript($escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.error.generic'))))
   #set($noDueDateMessage = $escapetool.javascript($escapetool.html($services.localization.render('taskmanager.gantt.task.noDueDate'))))
 
 {{html}}
-&lt;div id="${ganttId}"&gt;
+&lt;div id="${ganttId}" style='position:relative; overflow:hidden;'&gt;
 &lt;script type='text/javascript'&gt;
 //&lt;![CDATA[
-var ${ganttId};
-const updateService = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
-function canEdit(task) {
-  return (!$xcontext.macro.params.readonly);
-}
-
-function formatTask(task) {
-  if(task.custom_class.split(/\s+/).includes('noDueDate')) {
-    task.name = task.actualName + " - $noDueDateMessage";
-  } else {
-    task.name = task.actualName;
-  }
-  task.start = new Date(task.start);
-  task.end = new Date(task.end);
-  task.editHack = {
-    oldProgress:task.progress,
-    oldStartDate:task.start,
-    oldEndDate:task.end,
-  };
-}
-
-function escapeHTML(originalString) {
-  return originalString.replace(/&amp;/g, '&amp;amp;')
-  .replace(/&lt;/g, '&amp;lt;')
-  .replace(/&gt;/g, '&amp;gt;')
-  .replace(/"/g, '&amp;quot;')
-  .replace(/'/g, '&amp;#39;');
-}
-function unescapeHTML(originalString) {
-  return originalString.replace('&amp;amp;', /&amp;/g)
-  .replace('&amp;lt;', /&lt;/g)
-  .replace('&amp;gt;', /&gt;/g)
-  .replace('&amp;quot;', /"/g)
-  .replace('&amp;#39;', /'/g);
-}
-
+{
 require(['jquery', "$frappe_js_path"], function(jQuery){
-  function redrawBar(task) {
-    formatTask(task); // rename if noDueDate
+
+  //Add the custom svg markup when rendering Gantt
+  if(Gantt.prototype['_render'] === undefined) {
+    Gantt.prototype['_render'] = Gantt.prototype['render'];
+    Gantt.prototype['render'] = function() {
+      const result = this._render(...arguments);
+      addStyles(this.$svg);
+      return result;
+    };
+  }
+
+  var ${ganttId};
+  const updateService = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
+  function forbiddenEdit(task) {
+    let msg = null;
+    if($diagramIsReadonly) {
+      msg = "$readonlyError";
+    } else if (task.custom_class.split(/\s+/).includes('noEdit')){
+      msg = "$genericError";
+    }
+    return msg;
+  }
+
+  function formatTask(task) {
+    if(task.custom_class.split(/\s+/).includes('noDueDate')) {
+      task.name = task.actualName + " - $noDueDateMessage";
+    } else {
+      task.name = task.actualName;
+    }
+    if(!(task.start instanceof Date))
+      task.start = new Date(task.start);
+    if(!(task.end instanceof Date))
+      task.end = new Date(task.end);
+    task.editHack = {
+      oldProgress:task.progress,
+      oldStartDate:new Date(task.start),
+      oldEndDate:new Date(task.end),
+    };
+  }
+
+  function escapeHTML(originalString) {
+    return originalString.replace(/&amp;/g, '&amp;amp;')
+    .replace(/&lt;/g, '&amp;lt;')
+    .replace(/&gt;/g, '&amp;gt;')
+    .replace(/"/g, '&amp;quot;')
+    .replace(/'/g, '&amp;#39;');
+  }
+  function unescapeHTML(originalString) {
+    return originalString.replace('&amp;amp;', /&amp;/g)
+    .replace('&amp;lt;', /&lt;/g)
+    .replace('&amp;gt;', /&gt;/g)
+    .replace('&amp;quot;', /"/g)
+    .replace('&amp;#39;', /'/g);
+  }
+
+  function revertBar(task) {
+    // Only revert to previous state
     let _bar = ${ganttId}.bars.find((bar) =&gt; bar.task === task);
-    console.log(task)
+    _bar.update_bar_position({x:_bar.$bar.ox, width: _bar.$bar.owidth});
+
+    // manually reset progress width change, double click event doesn't trigger otherwise
+    _bar.$bar_progress.finaldx = 0;
+    _bar.update_handle_position();
+  }
+  function redrawBar(task) {
+    // Update task and position
+    formatTask(task); // rename if noDueDate, update old dates
+    let _bar = ${ganttId}.bars.find((bar) =&gt; bar.task === task);
     _bar.update_bar_position({x:_bar.compute_x()});
     _bar.group.setAttribute('class', 'bar-wrapper ' + (task.custom_class || ''));
     _bar.bar_group.getElementsByClassName('bar-label')[0].innerHTML = task.name;
-    task.editHack.oldStartDate = task.start;
-    task.editHack.oldEndDate = task.end;
-    task.editHack.oldProgress = task.progress;
+
+    // manually reset progress width change, double click event doesn't trigger otherwise
+    _bar.$bar_progress.finaldx = 0;
+    _bar.update_handle_position();
   }
   function fetch_and_redraw(task) {
-    return fetch("${jsonSourceURL}&amp;taskId=" + encodeURIComponent(unescapeHTML(task.id)))
+    return fetch("${jsonSourceURL}&amp;taskId=" + encodeURIComponent(task.id))
       .then(response =&gt; response.json()).then(newTaskData =&gt; {
         if(newTaskData.length != 1) {
           redrawBar(task);
@@ -640,6 +700,11 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
                                task.editHack.oldProgress == newTaskData.progress);
 
         Object.assign(task, newTaskData);
+
+        // If the dependencies of this task are not present in this diagram, remove them
+        let dependencies = task.dependencies.filter((dep) =&gt; ${ganttId}.tasks.any((t) =&gt; (t.id == dep)));
+        task.dependencies = dependencies;
+
         redrawBar(task);
 
         if (!updateHappened) {
@@ -651,22 +716,21 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
         }
     });
   }
-  //Add custom svg markup when rendering Gantt
-  Gantt.prototype['_render'] = Gantt.prototype['render'];
-  Gantt.prototype['render'] = function() {
-    const result = this['_render'](...arguments);
-    addStyles(this['$svg']);
-    return result;
-  };
 
   fetch("${jsonSourceURL}${query}").then(response =&gt; response.json()).then(tasks =&gt; {
-    tasks.forEach(formatTask);
-    console.log(tasks);
-
     if(tasks.length == 0) {
-      jQuery("#${ganttId}").append('Gantt: No tasks to show');
+      jQuery("#${ganttId}").append(`
+      &lt;div class='box'&gt;Gantt: No tasks to show.&lt;/div&gt;
+      `);
       return;
     }
+    tasks.forEach(formatTask);
+    tasks.forEach((task) =&gt; {
+      // If the dependencies of this task are not present in this diagram, remove them
+      let dependencies = task.dependencies.filter((dep) =&gt; tasks.any((t) =&gt; (t.id == dep)));
+      task.dependencies = dependencies;
+    });
+    console.log(tasks);
     ${ganttId} = new Gantt("#${ganttId}", tasks, {
       view_mode_select: true,
       view_mode: 'Day',
@@ -682,22 +746,28 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
           // useless progress change (event fires on any click, quirk of frappe-gantt)
           return;
         }
-        if (!canEdit(task)) {
+        let forbiddenEditReason = forbiddenEdit(task);
+        if (forbiddenEditReason != null) {
           task.progress = task.editHack.oldProgress;
-          redrawBar(task);
-          new XWiki.widgets.Notification("$errorOnEdit", 'error', '20');
+          revertBar(task);
+          new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
           return;
         }
 
-        let params = new URLSearchParams({
+        let params = {
           taskDocument: task.id,
           progress: newProgress
-        });
-        jQuery.ajax( updateService + params ).success(function(data) {
+        };
+        if(task.custom_class.split(/\s+/).includes('noDueDate')) {
+          params.startDate = task.start.getTime();
+          params.endDate = task.end.getTime();
+        }
+        jQuery.ajax( updateService + new URLSearchParams(params) ).success(function(data) {
           if (data.success == true) {
             fetch_and_redraw(task);
           } else {
             console.log(data);
+            revertBar(task);
             new XWiki.widgets.Notification(escapeHTML(data.reason), 'error', '20');
           }
         }).error(e =&gt; console.log('Error when updating progress:', e));
@@ -713,56 +783,149 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
           // Useless progress change (event fires on any click, quirk of frappe-gantt)
           return;
         }
-        if (!canEdit(task)) {
+        let forbiddenEditReason = forbiddenEdit(task);
+        if (forbiddenEditReason != null) {
           task.start = task.editHack.oldStartDate;
           task.end = task.editHack.oldEndDate;
-          redrawBar(task);
-          new XWiki.widgets.Notification('$errorOnEdit', 'error', '20');
+          revertBar(task);
+          new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
           return;
         }
         let params = {
           taskDocument: task.id,
         };
-        let hasDueDate = !task.custom_class.split(/\s+/).includes('noDueDate');
-        if(newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
-          params.endDate = newEndDate.getTime();
-        }
         if(newStartDate.getTime() != task.editHack.oldStartDate.getTime()) {
           params.startDate = newStartDate.getTime();
+        }
+        if(newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
+          params.endDate = newEndDate.getTime();
         }
         jQuery.ajax( updateService + new URLSearchParams(params) ).success(function(data) {
           if (data.success == true) {
             fetch_and_redraw(task);
           } else {
             console.log(data);
+            revertBar(task);
             new XWiki.widgets.Notification(escapeHTML(data.reason), 'error', '20');
           }
         }).error(e =&gt; console.log('Error when updating dates:', e));
       },
     });
+    {
+      // Set up progress popup
+      let ganttDiv = jQuery("#${ganttId}")[0];
+      let popup = document.createElement('div');
+      popup.innerHTML = `
+        &lt;span class='popuptext'&gt;Progress: &lt;span id="gantt-popup-progress-number"&gt;100&lt;/span&gt;%&lt;/span&gt;
+      `;
+      popup.classList.add('gantt-popup');
+      ganttDiv.appendChild(popup);
+
+      // Set up popup event listeners
+      let progressChangeObserver;
+      let _hoverTimer;
+      let is_resizing_progress = false;
+
+      function showPopup(barElem) {
+        if (is_resizing_progress) return;
+        const viewport = ganttDiv.getBoundingClientRect();
+        function normalizeDims(elem) {
+          return {
+            x:(elem.x - viewport.x),
+            y:(elem.y - viewport.y),
+            width:elem.width,
+            height:elem.height,
+          };
+        }
+        let bar = ${ganttId}.bars.find((b) =&gt; b.group === barElem)
+        const b = normalizeDims(bar.$bar.getBoundingClientRect());
+        const pop = normalizeDims(popup.getBoundingClientRect());
+        let y = b.y - pop.height - 5;
+        let x = b.x + (b.width - pop.width) / 2;
+        popup.style.top  = y + 'px';
+        popup.style.left = x + 'px';
+        let popupNumber = jQuery('#gantt-popup-progress-number', popup)[0]
+        popupNumber.innerHTML = bar.compute_progress();
+        popup.style.visibility = 'visible';
+        if(progressChangeObserver) {
+          progressChangeObserver.disconnect();
+        }
+        progressChangeObserver = new MutationObserver(() =&gt; {popupNumber.innerHTML = bar.compute_progress();});
+        progressChangeObserver.observe(bar.$bar_progress, {attributes:true});
+      }
+      function hidePopup() {
+        if (is_resizing_progress) return;
+        popup.style.visibility = 'hidden';
+        if(progressChangeObserver) {
+          progressChangeObserver.disconnect();
+        }
+      }
+      jQuery('.handle.progress', ganttDiv).on({
+        mousedown: function(e) {
+          let bar = e.delegateTarget.parentElement.parentElement;
+          showPopup(bar);
+          is_resizing_progress = true;
+        }
+      });
+      jQuery(ganttDiv).on({
+        mouseup: function(e) {
+          is_resizing_progress = false;
+          hidePopup();
+        }
+      });
+
+      jQuery('.bar-wrapper', ganttDiv).on({
+        mouseenter: function(e) {
+          let bar = e.currentTarget;
+          if(!_hoverTimer) {
+            _hoverTimer = setTimeout(() =&gt; {
+              showPopup(bar);
+            }, 1000);
+          }
+        },
+        mouseleave: function(e) {
+          clearTimeout(_hoverTimer);
+          _hoverTimer = null;
+          hidePopup();
+        },
+        mousedown: function(e) {
+          clearTimeout(_hoverTimer);
+          _hoverTimer = null;
+          hidePopup();
+        }
+      });
+    }
   });
 });
+}
 // ]]&gt;
 &lt;/script&gt;
-&lt;h3&gt;&lt;b&gt;
- Gantt Diagram##
-#if ($macro.params.assignees), with assignees
-   #foreach($assignee in $xcontext.macro.params.assignees)
-     $assignee
-   #end
+&lt;h5&gt;&lt;b&gt;
+ Gantt Diagram&lt;/b&gt;&lt;/h5&gt;&lt;p&gt;##
+#if ($xcontext.macro.params.from)&lt;span&gt;&lt;b&gt;From: &lt;/b&gt; ${escapetool.html($xcontext.macro.params.from)}&lt;/span&gt; #end
+#if ($xcontext.macro.params.to)&lt;span&gt;&lt;b&gt;To: &lt;/b&gt; ${escapetool.html($xcontext.macro.params.to)}&lt;/span&gt;#end  
+#if ($xcontext.macro.params.assignees)
+&lt;p&gt;&lt;b&gt;Assignees:&lt;/b&gt;
+  #foreach($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
+    &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
+  #end
+&lt;/p&gt;
 #end
-#if ($xcontext.macro.params.from), from ${xcontext.macro.params.from}#end
-#if ($xcontext.macro.params.to)
-   , to ${xcontext.macro.params.to}
- #end
- #if ($xcontext.macro.params.assignees)
-   , with assignees
-   #foreach($assignee in $xcontext.macro.params.assignees.split(','))
-     #set($user = $xwiki.getUser($assignee).getUser())
-     &lt;a class="xwiki-mention user" href="$xwiki.getDocument($user.getFullName()).getURL()"&gt;$user.getFullName()&lt;/a&gt;
-   #end
- #end
-&lt;/b&gt;&lt;/h3&gt;
+#if ($xcontext.macro.params.spaces)
+&lt;p&gt;&lt;b&gt;Spaces:&lt;/b&gt;
+  #foreach($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
+    &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
+  #end
+&lt;/p&gt;
+#end
+#if ($xcontext.macro.params.projects)
+&lt;p&gt;&lt;b&gt;Projects:&lt;/b&gt;
+  #foreach($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
+    &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
+  #end
+&lt;/p&gt;
+#end
+&lt;/p&gt;
 &lt;/div&gt;
 {{/html}}
 #end
@@ -781,7 +944,7 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
       <defaultCategory/>
     </property>
     <property>
-      <description>Display the Tasks registered with the Task Manager application in a gantt diagram.</description>
+      <description>Display the Tasks from the Task Manager Application in a gantt diagram.</description>
     </property>
     <property>
       <id>taskgantt</id>

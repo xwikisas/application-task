@@ -147,7 +147,7 @@
       #set($discard = $taskObj.put('id', $services.model.serialize($taskXDoc.getDocumentReference())))
       #set($discard = $taskObj.put('link', $taskXDoc.getURL()))
       #putOrDefault($taskObj 'actualName'
-        $escapetool.xml($task.getValue('name'))
+        $escapetool.html($task.getValue('name'))
         'Unknown Task'
       )
       #putOrDefault($taskObj 'progress'
