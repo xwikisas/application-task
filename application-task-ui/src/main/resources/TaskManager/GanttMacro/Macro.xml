@@ -608,9 +608,10 @@
 &lt;script type='text/javascript'&gt;
 //&lt;![CDATA[
 {
+var ${ganttId};
 require(['jquery', "$frappe_js_path"], function(jQuery){
 
-  //Add the custom svg markup when rendering Gantt
+  // Add the custom svg markup when rendering Gantt
   if(Gantt.prototype['_render'] === undefined) {
     Gantt.prototype['_render'] = Gantt.prototype['render'];
     Gantt.prototype['render'] = function() {
@@ -620,7 +621,136 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
     };
   }
 
-  var ${ganttId};
+  // Don't move dependencies when moving a task
+  if(Gantt.prototype['_bind_bar_events'] === undefined) {
+    Gantt.prototype['_bind_bar_events'] = Gantt.prototype['bind_bar_events'];
+    Gantt.prototype['bind_bar_events'] = function() {
+      on = (element, event, selector, callback) =&gt; {
+        if (!callback) {
+          callback = selector;
+          event.split(/\s+/).forEach(function (event) {
+            element.addEventListener(event, callback);
+          });
+        } else {
+          element.addEventListener(event, function (e) {
+            const delegatedTarget = e.target.closest(selector);
+            if (delegatedTarget) {
+              e.delegatedTarget = delegatedTarget;
+              callback.call(this, e, delegatedTarget);
+            }
+          });
+        }
+      };
+
+      closest = (selector, element) =&gt; {
+        if (!element) return null;
+
+        if (element.matches(selector)) {
+          return element;
+        }
+
+        return closest(selector, element.parentNode);
+      };
+
+      let is_dragging = false;
+      let x_on_start = 0;
+      let y_on_start = 0;
+      let is_resizing_left = false;
+      let is_resizing_right = false;
+      let parent_bar_id = null;
+      let bars = []; // instanceof Bar
+      this.bar_being_dragged = null;
+
+      function action_in_progress() {
+        return is_dragging || is_resizing_left || is_resizing_right;
+      }
+
+      on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) =&gt; {
+        const bar_wrapper = closest('.bar-wrapper', element);
+
+        if (element.classList.contains('left')) {
+          is_resizing_left = true;
+        } else if (element.classList.contains('right')) {
+          is_resizing_right = true;
+        } else if (element.classList.contains('bar-wrapper')) {
+          is_dragging = true;
+        }
+
+        bar_wrapper.classList.add('active');
+
+        x_on_start = e.offsetX;
+        y_on_start = e.offsetY;
+
+        parent_bar_id = bar_wrapper.getAttribute('data-id');
+        bars = [this.get_bar(parent_bar_id)];
+
+        this.bar_being_dragged = parent_bar_id;
+
+        bars.forEach((bar) =&gt; {
+          const $bar = bar.$bar;
+          $bar.ox = $bar.getX();
+          $bar.oy = $bar.getY();
+          $bar.owidth = $bar.getWidth();
+          $bar.finaldx = 0;
+        });
+      });
+
+      on(this.$svg, 'mousemove', (e) =&gt; {
+        if (!action_in_progress()) return;
+        const dx = e.offsetX - x_on_start;
+        e.offsetY - y_on_start;
+
+        bars.forEach((bar) =&gt; {
+          const $bar = bar.$bar;
+          $bar.finaldx = this.get_snap_position(dx);
+          this.hide_popup();
+          if (is_resizing_left) {
+            if (parent_bar_id === bar.task.id) {
+              bar.update_bar_position({
+                x: $bar.ox + $bar.finaldx,
+                width: $bar.owidth - $bar.finaldx,
+              });
+            } else {
+              bar.update_bar_position({
+                x: $bar.ox + $bar.finaldx,
+              });
+            }
+          } else if (is_resizing_right) {
+            if (parent_bar_id === bar.task.id) {
+              bar.update_bar_position({
+                width: $bar.owidth + $bar.finaldx,
+              });
+            }
+          } else if (is_dragging) {
+            bar.update_bar_position({ x: $bar.ox + $bar.finaldx });
+          }
+      });
+    });
+
+    document.addEventListener('mouseup', (e) =&gt; {
+      if (is_dragging || is_resizing_left || is_resizing_right) {
+        bars.forEach((bar) =&gt; bar.group.classList.remove('active'));
+      }
+
+      is_dragging = false;
+      is_resizing_left = false;
+      is_resizing_right = false;
+    });
+
+    jQuery(document).on('mouseup', (e) =&gt; {
+      this.bar_being_dragged = null;
+      bars.forEach((bar) =&gt; {
+        const $bar = bar.$bar;
+        if (!$bar.finaldx) return;
+        bar.date_changed();
+        $bar.finaldx = 0;
+        bar.set_action_completed();
+      });
+    });
+
+    this.bind_bar_progress();
+    };
+  }
   const updateService = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
   function forbiddenEdit(task) {
     let msg = null;
@@ -634,9 +764,9 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
 
   function formatTask(task) {
     if(task.custom_class.split(/\s+/).includes('noDueDate')) {
-      task.name = task.actualName + " - $noDueDateMessage";
+      task.name = escapeHTML(task.actualName) + " - $noDueDateMessage";
     } else {
-      task.name = task.actualName;
+      task.name = escapeHTML(task.actualName);
     }
     if(!(task.start instanceof Date))
       task.start = new Date(task.start);
@@ -736,7 +866,6 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
       view_mode: 'Day',
       popup_trigger: null,
       padding: 10,
-      column_width: 24,
       language: "$xwiki.getLocalePreference()",
       on_click: function (task) {
         window.open(task.link).focus();
@@ -794,9 +923,14 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
         let params = {
           taskDocument: task.id,
         };
+        // Manually set minutes and seconds since frappe gantt rounds to fixed hours
+        newStartDate.setSeconds(task.editHack.oldStartDate.getSeconds());
+        newStartDate.setMinutes(task.editHack.oldStartDate.getMinutes());
         if(newStartDate.getTime() != task.editHack.oldStartDate.getTime()) {
           params.startDate = newStartDate.getTime();
         }
+        newEndDate.setSeconds(task.editHack.oldEndDate.getSeconds());
+        newEndDate.setMinutes(task.editHack.oldEndDate.getMinutes());
         if(newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
           params.endDate = newEndDate.getTime();
         }
@@ -811,6 +945,23 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
         }).error(e =&gt; console.log('Error when updating dates:', e));
       },
     });
+    // Don't enforce 'task must start after dependencies' rule
+    if(${ganttId}.bars[0].__proto__['_update_bar_position'] === undefined) {
+      ${ganttId}.bars[0].__proto__['_update_bar_position'] = ${ganttId}.bars[0].__proto__['update_bar_position'];
+      ${ganttId}.bars[0].__proto__['update_bar_position'] = function ({ x = null, width = null }) {
+        const bar = this.$bar;
+        if (x) {
+          this.update_attr(bar, 'x', x);
+        }
+        if (width &amp;&amp; width &gt;= this.gantt.options.column_width) {
+          this.update_attr(bar, 'width', width);
+        }
+        this.update_label_position();
+        this.update_handle_position();
+        this.update_progressbar_position();
+        this.update_arrow_position();
+      }
+    }
     {
       // Set up progress popup
       let ganttDiv = jQuery("#${ganttId}")[0];
@@ -926,6 +1077,17 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
 &lt;/p&gt;
 #end
 &lt;/p&gt;
+#macro (viewModeButton $ganttId $viewMode)
+  &lt;input class='button' type='button' onclick="${ganttId}.change_view_mode('$viewMode')" value="$viewMode"&gt;
+#end
+&lt;form&gt;
+  #viewModeButton($ganttId 'Quarter Day')
+  #viewModeButton($ganttId 'Half Day')
+  #viewModeButton($ganttId 'Day')
+  #viewModeButton($ganttId 'Week')
+  #viewModeButton($ganttId 'Month')
+  #viewModeButton($ganttId 'Year')
+&lt;/form&gt;
 &lt;/div&gt;
 {{/html}}
 #end
@@ -1187,7 +1349,7 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
       <description/>
     </property>
     <property>
-      <mandatory/>
+      <mandatory>0</mandatory>
     </property>
     <property>
       <name>projects</name>
