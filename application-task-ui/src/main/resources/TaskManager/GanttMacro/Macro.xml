@@ -314,6 +314,12 @@
   z-index: 10;
 }
 
+.gantt .tick {
+  stroke-width: 0.4;
+}
+.gantt .tick.thick {
+  stroke-width: 2;
+}
 
 .gantt-popup .popuptext::after {
   content: "";
@@ -613,14 +619,136 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
 
   // Add the custom svg markup when rendering Gantt
   if(Gantt.prototype['_render'] === undefined) {
+    function setupProgressPopup() {
+      let ganttDiv = jQuery("#${ganttId}")[0];
+      let popup = jQuery('#${ganttId} div.gantt-popup');
+      if(popup.length &gt; 0) {
+        popup = popup[0];
+      } else {
+        popup = document.createElement('div');
+        popup.innerHTML = `
+          &lt;span class='popuptext'&gt;Progress: &lt;span id="gantt-popup-progress-number"&gt;100&lt;/span&gt;%&lt;/span&gt;
+        `;
+        popup.classList.add('gantt-popup');
+        ganttDiv.appendChild(popup);
+      }
+      // Set up popup event listeners
+      let progressChangeObserver;
+      let _hoverTimer;
+      let is_resizing_progress = false;
+
+      function showPopup(barElem) {
+        if (is_resizing_progress) return;
+        const viewport = ganttDiv.getBoundingClientRect();
+        function normalizeDims(elem) {
+          return {
+            x:(elem.x - viewport.x),
+            y:(elem.y - viewport.y),
+            width:elem.width,
+            height:elem.height,
+          };
+        }
+        let bar = ${ganttId}.bars.find((b) =&gt; b.group === barElem)
+        const b = normalizeDims(bar.$bar.getBoundingClientRect());
+        const pop = normalizeDims(popup.getBoundingClientRect());
+        let y = b.y - pop.height - 5;
+        let x = b.x + (b.width - pop.width) / 2;
+        popup.style.top  = y + 'px';
+        popup.style.left = x + 'px';
+        let popupNumber = jQuery('#gantt-popup-progress-number', popup)[0]
+        popupNumber.innerHTML = bar.compute_progress();
+        popup.style.visibility = 'visible';
+        if(progressChangeObserver) {
+          progressChangeObserver.disconnect();
+        }
+        progressChangeObserver = new MutationObserver(() =&gt; {popupNumber.innerHTML = bar.compute_progress();});
+        progressChangeObserver.observe(bar.$bar_progress, {attributes:true});
+      }
+      function hidePopup() {
+        if (is_resizing_progress) return;
+        popup.style.visibility = 'hidden';
+        if(progressChangeObserver) {
+          progressChangeObserver.disconnect();
+        }
+      }
+      jQuery('.handle.progress', ganttDiv).on({
+        mousedown: function(e) {
+          let bar = e.delegateTarget.parentElement.parentElement;
+          showPopup(bar);
+          is_resizing_progress = true;
+        }
+      });
+      jQuery(ganttDiv).on({
+        mouseup: function(e) {
+          is_resizing_progress = false;
+          hidePopup();
+        }
+      });
+
+      jQuery('.bar-wrapper', ganttDiv).on({
+        mouseenter: function(e) {
+          let bar = e.currentTarget;
+          if(!_hoverTimer) {
+            _hoverTimer = setTimeout(() =&gt; {
+              showPopup(bar);
+            }, 1000);
+          }
+        },
+        mouseleave: function(e) {
+          clearTimeout(_hoverTimer);
+          _hoverTimer = null;
+          hidePopup();
+        },
+        mousedown: function(e) {
+          clearTimeout(_hoverTimer);
+          _hoverTimer = null;
+          hidePopup();
+        }
+      });
+    }
     Gantt.prototype['_render'] = Gantt.prototype['render'];
     Gantt.prototype['render'] = function() {
-      const result = this._render(...arguments);
+      const result = this._render();
       addStyles(this.$svg);
+      setupProgressPopup();
       return result;
     };
   }
+  // Fix hour text display
+  if(Gantt.prototype['_get_date_info'] === undefined) {
+    Gantt.prototype['_get_date_info'] = Gantt.prototype['get_date_info'];
+    Gantt.prototype['get_date_info'] = function(date, last_date, i) {
+            let result = this._get_date_info(date, last_date, i);
+            const base_pos = {
+                x: i * this.options.column_width,
+                lower_y: this.options.header_height,
+                upper_y: this.options.header_height - 25,
+            };
 
+            const x_pos = {
+                'Quarter Day_lower': (this.options.column_width * 4),
+                'Quarter Day_upper': (this.options.column_width * 4) / 2,
+                'Half Day_lower': (this.options.column_width * 2),
+                'Half Day_upper': (this.options.column_width * 2) / 2,
+                Day_lower: this.options.column_width / 2,
+                Day_upper: (this.options.column_width * 30) / 2,
+                Week_lower: 0,
+                Week_upper: (this.options.column_width * 4) / 2,
+                Month_lower: this.options.column_width * 1.5,
+                Month_upper: (this.options.column_width * 12) / 2,
+                Year_lower: this.options.column_width / 2,
+                Year_upper: (this.options.column_width * 30) / 2,
+            };
+            const tweakedPos = {
+                upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
+                upper_y: base_pos.upper_y,
+                lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
+                lower_y: base_pos.lower_y,
+            };
+            Object.assign(result, tweakedPos);
+            return result;
+        }
+  }
   // Don't move dependencies when moving a task
   if(Gantt.prototype['_bind_bar_events'] === undefined) {
     Gantt.prototype['_bind_bar_events'] = Gantt.prototype['bind_bar_events'];
@@ -961,90 +1089,6 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
         this.update_progressbar_position();
         this.update_arrow_position();
       }
-    }
-    {
-      // Set up progress popup
-      let ganttDiv = jQuery("#${ganttId}")[0];
-      let popup = document.createElement('div');
-      popup.innerHTML = `
-        &lt;span class='popuptext'&gt;Progress: &lt;span id="gantt-popup-progress-number"&gt;100&lt;/span&gt;%&lt;/span&gt;
-      `;
-      popup.classList.add('gantt-popup');
-      ganttDiv.appendChild(popup);
-
-      // Set up popup event listeners
-      let progressChangeObserver;
-      let _hoverTimer;
-      let is_resizing_progress = false;
-
-      function showPopup(barElem) {
-        if (is_resizing_progress) return;
-        const viewport = ganttDiv.getBoundingClientRect();
-        function normalizeDims(elem) {
-          return {
-            x:(elem.x - viewport.x),
-            y:(elem.y - viewport.y),
-            width:elem.width,
-            height:elem.height,
-          };
-        }
-        let bar = ${ganttId}.bars.find((b) =&gt; b.group === barElem)
-        const b = normalizeDims(bar.$bar.getBoundingClientRect());
-        const pop = normalizeDims(popup.getBoundingClientRect());
-        let y = b.y - pop.height - 5;
-        let x = b.x + (b.width - pop.width) / 2;
-        popup.style.top  = y + 'px';
-        popup.style.left = x + 'px';
-        let popupNumber = jQuery('#gantt-popup-progress-number', popup)[0]
-        popupNumber.innerHTML = bar.compute_progress();
-        popup.style.visibility = 'visible';
-        if(progressChangeObserver) {
-          progressChangeObserver.disconnect();
-        }
-        progressChangeObserver = new MutationObserver(() =&gt; {popupNumber.innerHTML = bar.compute_progress();});
-        progressChangeObserver.observe(bar.$bar_progress, {attributes:true});
-      }
-      function hidePopup() {
-        if (is_resizing_progress) return;
-        popup.style.visibility = 'hidden';
-        if(progressChangeObserver) {
-          progressChangeObserver.disconnect();
-        }
-      }
-      jQuery('.handle.progress', ganttDiv).on({
-        mousedown: function(e) {
-          let bar = e.delegateTarget.parentElement.parentElement;
-          showPopup(bar);
-          is_resizing_progress = true;
-        }
-      });
-      jQuery(ganttDiv).on({
-        mouseup: function(e) {
-          is_resizing_progress = false;
-          hidePopup();
-        }
-      });
-
-      jQuery('.bar-wrapper', ganttDiv).on({
-        mouseenter: function(e) {
-          let bar = e.currentTarget;
-          if(!_hoverTimer) {
-            _hoverTimer = setTimeout(() =&gt; {
-              showPopup(bar);
-            }, 1000);
-          }
-        },
-        mouseleave: function(e) {
-          clearTimeout(_hoverTimer);
-          _hoverTimer = null;
-          hidePopup();
-        },
-        mousedown: function(e) {
-          clearTimeout(_hoverTimer);
-          _hoverTimer = null;
-          hidePopup();
-        }
-      });
     }
   });
 });
