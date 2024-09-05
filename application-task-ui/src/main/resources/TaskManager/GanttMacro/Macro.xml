@@ -718,36 +718,36 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
   if(Gantt.prototype['_get_date_info'] === undefined) {
     Gantt.prototype['_get_date_info'] = Gantt.prototype['get_date_info'];
     Gantt.prototype['get_date_info'] = function(date, last_date, i) {
-            let result = this._get_date_info(date, last_date, i);
-            const base_pos = {
-                x: i * this.options.column_width,
-                lower_y: this.options.header_height,
-                upper_y: this.options.header_height - 25,
-            };
+      let result = this._get_date_info(date, last_date, i);
+      const base_pos = {
+          x: i * this.options.column_width,
+          lower_y: this.options.header_height,
+          upper_y: this.options.header_height - 25,
+      };
 
-            const x_pos = {
-                'Quarter Day_lower': (this.options.column_width * 4),
-                'Quarter Day_upper': (this.options.column_width * 4) / 2,
-                'Half Day_lower': (this.options.column_width * 2),
-                'Half Day_upper': (this.options.column_width * 2) / 2,
-                Day_lower: this.options.column_width / 2,
-                Day_upper: (this.options.column_width * 30) / 2,
-                Week_lower: 0,
-                Week_upper: (this.options.column_width * 4) / 2,
-                Month_lower: this.options.column_width * 1.5,
-                Month_upper: (this.options.column_width * 12) / 2,
-                Year_lower: this.options.column_width / 2,
-                Year_upper: (this.options.column_width * 30) / 2,
-            };
-            const tweakedPos = {
-                upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
-                upper_y: base_pos.upper_y,
-                lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
-                lower_y: base_pos.lower_y,
-            };
-            Object.assign(result, tweakedPos);
-            return result;
-        }
+      const x_pos = {
+          'Quarter Day_lower': (this.options.column_width * 4),
+          'Quarter Day_upper': (this.options.column_width * 4) / 2,
+          'Half Day_lower': (this.options.column_width * 2),
+          'Half Day_upper': (this.options.column_width * 2) / 2,
+          Day_lower: this.options.column_width / 2,
+          Day_upper: (this.options.column_width * 30) / 2,
+          Week_lower: 0,
+          Week_upper: (this.options.column_width * 4) / 2,
+          Month_lower: this.options.column_width * 1.5,
+          Month_upper: (this.options.column_width * 12) / 2,
+          Year_lower: this.options.column_width / 2,
+          Year_upper: (this.options.column_width * 30) / 2,
+      };
+      const tweakedPos = {
+          upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
+          upper_y: base_pos.upper_y,
+          lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
+          lower_y: base_pos.lower_y,
+      };
+      Object.assign(result, tweakedPos);
+      return result;
+    };
   }
   // Don't move dependencies when moving a task
   if(Gantt.prototype['_bind_bar_events'] === undefined) {
@@ -852,31 +852,31 @@ require(['jquery', "$frappe_js_path"], function(jQuery){
           } else if (is_dragging) {
             bar.update_bar_position({ x: $bar.ox + $bar.finaldx });
           }
+        });
       });
-    });
 
-    document.addEventListener('mouseup', (e) =&gt; {
-      if (is_dragging || is_resizing_left || is_resizing_right) {
-        bars.forEach((bar) =&gt; bar.group.classList.remove('active'));
-      }
+      document.addEventListener('mouseup', (e) =&gt; {
+        if (is_dragging || is_resizing_left || is_resizing_right) {
+          bars.forEach((bar) =&gt; bar.group.classList.remove('active'));
+        }
 
-      is_dragging = false;
-      is_resizing_left = false;
-      is_resizing_right = false;
-    });
-
-    jQuery(document).on('mouseup', (e) =&gt; {
-      this.bar_being_dragged = null;
-      bars.forEach((bar) =&gt; {
-        const $bar = bar.$bar;
-        if (!$bar.finaldx) return;
-        bar.date_changed();
-        $bar.finaldx = 0;
-        bar.set_action_completed();
+        is_dragging = false;
+        is_resizing_left = false;
+        is_resizing_right = false;
       });
-    });
 
-    this.bind_bar_progress();
+      jQuery(document).on('mouseup', (e) =&gt; {
+        this.bar_being_dragged = null;
+        bars.forEach((bar) =&gt; {
+          const $bar = bar.$bar;
+          if (!$bar.finaldx) return;
+          bar.date_changed();
+          $bar.finaldx = 0;
+          bar.set_action_completed();
+        });
+      });
+
+      this.bind_bar_progress();
     };
   }
   const updateService = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
