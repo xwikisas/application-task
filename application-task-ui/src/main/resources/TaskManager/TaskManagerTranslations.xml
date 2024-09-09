@@ -126,6 +126,15 @@ taskmanager.gantt.taskEdit.error.notExistsClass=The task class does not exist.
 taskmanager.gantt.taskEdit.success=The task has been updated.
 taskmanager.gantt.taskEdit.comment=Edited through the Gantt Diagram UI.
 taskmanager.gantt.task.noDueDate=No due date set
+taskmanager.gantt.interface.title=Gantt Diagram
+taskmanager.gantt.interface.wait=Please wait...
+taskmanager.gantt.interface.date.from=From:
+taskmanager.gantt.interface.date.to=To:
+taskmanager.gantt.interface.projects=Projects:
+taskmanager.gantt.interface.spaces=Spaces:
+taskmanager.gantt.interface.assignees=Assignees:
+taskmanager.gantt.interface.hideNoDueDate_0=Tasks without a due date are hidden
+taskmanager.gantt.interface.hideNoDueDate_1=Tasks without a due date are shown
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks

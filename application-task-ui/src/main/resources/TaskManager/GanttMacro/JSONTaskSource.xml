@@ -143,7 +143,7 @@
     #if($services.security.authorization.hasAccess('view', $taskDocument))
       #set($taskObj = {})
       #set($customClasses = '')
-      #set($discard = $taskObj.put('id', $services.model.serialize($taskXDoc.getDocumentReference())))
+      #set($discard = $taskObj.put('id', "$taskXDoc.getDocumentReference()"))
       #set($discard = $taskObj.put('link', $taskXDoc.getURL()))
       #putOrDefault($taskObj 'actualName'
         $task.getValue('name')
@@ -165,13 +165,20 @@
         $xwiki.jodatime.getDateTime($taskObj['start']).plusWeeks(1).getMillis()
       )
       #if ("$!task.getValue('duedate').getTime()" == '')
-        #set($customClasses = $customClasses + ' noDueDate')
+        #set($customClasses = $customClasses + ' taskgantt-no-due-date')
       #end
-      #set($discard = $taskObj.put('dependencies', $task.getValue('dependencies')))
+      #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
+        #set($customClasses = $customClasses + ' taskgantt-no-edit')
+      #end
+      #set($dependencies = [])
+      #foreach ($dep in $task.getValue('dependencies'))
+        #set($discard = $dependencies.add("$xwiki.getDocument($dep).getDocumentReference()"))
+      #end
+      #set($discard = $taskObj.put('dependencies', $dependencies))
 
       #set($customClasses = $customClasses +
-          ' status' + $task.getValue('status').replace(' ', '-') +
-          ' severity' + $task.getValue('severity').replace(' ', '-')
+          ' taskgantt-status-' + $task.getValue('status').replace(' ', '-') +
+          ' taskgantt-severity-' + $task.getValue('severity').replace(' ', '-')
           )
       #set($discard = $taskObj.put('custom_class', $escapetool.html($customClasses)))
 
