@@ -132,6 +132,7 @@
 
 const frappe_js_path = "$frappe_js_path";
 const jsonSourceURL = "${xwiki.getDocument('TaskManager.GanttMacro.JSONTaskSource').getURL('get')}?xpage=plain&amp;outputSyntax=plain";
+// Could be replaced by a REST API call after XWIKI-20704 is fixed
 const updateServiceURL = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
 
 const readonlyError = "$escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.error.readonly'))";
@@ -630,6 +631,7 @@ const XWikiLocale = "$xwiki.getLocalePreference()";</code>
     <property>
       <code>function updateService(task) {
   return updateServiceURL;
+  // Could be replaced by a REST API call after XWIKI-20704 is fixed
   //return new XWiki.Document(XWiki.Model.resolve(task.id, XWiki.EntityType.DOCUMENT)).getRestURL('objects/TaskManager.TaskManagerClass/0');
 }
 
