@@ -323,7 +323,9 @@ $taskReportCall
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategory></defaultCategory>
+      <defaultCategory>
+        <value>Deprecated</value>
+      </defaultCategory>
     </property>
     <property>
       <description>Legacy Confluence bridge for Tasks Report.</description>
