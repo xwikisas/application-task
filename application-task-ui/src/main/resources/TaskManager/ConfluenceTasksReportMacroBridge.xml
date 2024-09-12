@@ -274,6 +274,8 @@
   #elseif ($status == 'incomplete')
     #set ($discard = $paramMap.put('status', 'InProgress'))
   #end
+#else
+  #set ($status = 'InProgress')
 #end
 #if ("$!sortBy" != '')
   #set ($discard = $paramMap.put('sortBy', $sortBy))
@@ -321,16 +323,16 @@ $taskReportCall
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategory/>
+      <defaultCategory></defaultCategory>
     </property>
     <property>
-      <description/>
+      <description>Legacy Confluence bridge for Tasks Report.</description>
     </property>
     <property>
       <id>tasks-report-macro</id>
     </property>
     <property>
-      <name>Confluence Tasks Report Macro</name>
+      <name>Legacy Confluence bridge for Tasks Report</name>
     </property>
     <property>
       <priority/>
