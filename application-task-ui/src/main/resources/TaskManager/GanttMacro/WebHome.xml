@@ -27,7 +27,7 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>WebHome</parent>
+  <parent>xwiki:TaskManager.GanttMacro</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -36,22 +36,23 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>The **taskgantt** macro draws an interactive Gantt diagram which shows tasks, optionally filtered by start/end date, assignee or project.
+  <content>{{translation key="taskmanager.gantt.documentation.description" /}}
 
-=== Examples ===
+=== {{translation key="taskmanager.gantt.documentation.examples.sectiontitle"/}} ===
 
-(% class="box" %)
-(((
-~{~{taskgantt readonly="false"/}} - enable editing through the UI (disabled by default)
+{{code}}{{taskgantt readonly="false"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.readonly"/}}
 
-~{~{taskgantt from="2024-08-01T08:00:00.000"/}} - filter by start date
+{{code}}{{taskgantt from="2024/09/27 09:00"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.start"/}}
 
-~{~{taskgantt from="2024-08-01T08:00:00.000" to="2024-08-31T17:00:00.000"/}} - filter by start and end dates
+{{code}}{{taskgantt from="2024/09/27 09:00" to="2024/09/27 17:00"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.startend"/}}
 
-~{~{taskgantt projects="Alpha,Beta,Gamma"/}} - filter by projects (comma separated, escape commas in project names with '\,')
+{{code}}{{taskgantt projects="Alpha,Beta,Gamma"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.projects"/}}
 
-~{~{taskgantt assignees="XWiki.Admin,XWiki.User1"/}} - filter by assigned users (comma separated)
-)))
+{{code}}{{taskgantt assignees="XWiki.Admin,XWiki.User1"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.assignees"/}}
+
+{{code}}{{taskgantt spaces="TaskManager,Sandbox.Tasks.Task_0"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.spaces"/}}
+
+{{code}}{{taskgantt hideNoDueDate="true"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.hideNoDueDate"/}}
 
 {{taskgantt/}}</content>
 </xwikidoc>

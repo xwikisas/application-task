@@ -27,7 +27,7 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>WebHome</parent>
+  <parent>xwiki:TaskManager.GanttMacro</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -37,22 +37,36 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity wiki="false"}}
-#macro(maybeSet $document $propName $propValue)
-  #if($propValue)
+#macro (maybeSet $document $propName $propValue)
+  #if ($propValue)
     $document.set($propName, $propValue)
   #end
 #end
 
-#if("$!request.outputSyntax" == 'plain')
-  #set($discard = $response.setContentType('application/json'))
+##
+## This page acts as an endpoint for taskgantt macro to update the tasks.
+## It also contains some simple logic for updating the status based on progress.
+## This workaround is needed until XWIKI-20704 is fixed.
+##
+## Parameters:
+##   - taskDocument: document id (eg. wiki:Space.Page);
+##   - startDate, endDate: new times, given as unix epoch milliseconds;
+##   - progress: new progress value, 0-100 number;
+##
+## Returns a json with a 'success' property and, in the case of a failure, a 'reason' as defined in the translation keys.
+##
+
+
+#if ("$!request.outputSyntax" == 'plain')
+  #set ($discard = $response.setContentType('application/json'))
 #end
 
-#set($taskDocument = $request.taskDocument)
+#set ($taskDocument = $request.taskDocument)
 #if (!$xwiki.exists($taskDocument))
-  $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExists'), 'page': "$taskDocument"})
+  $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExists')})
 #else
-  #set($taskDocument = $xwiki.getDocument($taskDocument))
-  #set($taskClass = $taskDocument.getObject('TaskManager.TaskManagerClass'))
+  #set ($taskDocument = $xwiki.getDocument($taskDocument))
+  #set ($taskClass = $taskDocument.getObject('TaskManager.TaskManagerClass'))
 
   #if (!$taskClass)
     $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExistsClass')})
@@ -60,17 +74,18 @@
     #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
       $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.permissions')})
     #else
-      #set($discard = $taskDocument.use('TaskManager.TaskManagerClass'))
-      #if($request.endDate)#set($end = $datetool.toDate($numbertool.toNumber($request.endDate).longValue()))#end
-      #if($request.startDate)#set($start = $datetool.toDate($numbertool.toNumber($request.startDate).longValue()))#end
+      #set ($discard = $taskDocument.use('TaskManager.TaskManagerClass'))
+      #if ($request.endDate)#set ($end = $datetool.toDate($numbertool.toNumber($request.endDate).longValue()))#end
+      #if ($request.startDate)#set ($start = $datetool.toDate($numbertool.toNumber($request.startDate).longValue()))#end
 
-      #maybeSet($taskDocument 'progress' $request.progress)
+      #maybeSet ($taskDocument 'progress' $request.progress)
+      ## Set status automatically when 100%
       #if ($request.progress == '100')
         $taskDocument.set('status', 'Done')
       #end
-      #maybeSet($taskDocument 'startDate' $start)
-      #maybeSet($taskDocument 'duedate' $end)
-      #set($discard = $taskDocument.save($services.localization.render('taskmanager.gantt.taskEdit.comment'), false))
+      #maybeSet ($taskDocument 'startDate' $start)
+      #maybeSet ($taskDocument 'duedate' $end)
+      #set ($discard = $taskDocument.save($services.localization.render('taskmanager.gantt.taskEdit.comment'), true))
       $jsontool.serialize({'success':true})
     #end
   #end

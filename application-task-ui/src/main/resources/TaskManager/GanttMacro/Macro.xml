@@ -27,7 +27,7 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>xwiki:TaskManager.GanttMacro.Macro</parent>
+  <parent>xwiki:TaskManager.GanttMacro</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -124,27 +124,260 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>#if("$!request.minify" == 'false')
-  #set($frappe_js_path = $services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.js"))
-#else
-  #set($frappe_js_path = $services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.min.js"))
-#end
+      <code>define('taskgantt-translation-keys', {
+  prefix: 'taskmanager.gantt.',
+  keys: [
+    'taskEdit.error.readonly',
+    'taskEdit.error.permissions',
+    'taskEdit.success',
+    'task.noDueDate',
+    'interface.noTasks',
+    'interface.popup.progress',
+  ],
+});
 
-const frappe_js_path = "$frappe_js_path";
-const jsonSourceURL = "${xwiki.getDocument('TaskManager.GanttMacro.JSONTaskSource').getURL('get')}?xpage=plain&amp;outputSyntax=plain";
-// Could be replaced by a REST API call after XWIKI-20704 is fixed
-const updateServiceURL = "$xwiki.getURL('TaskManager.GanttMacro.UpdateService')?xpage=plain&amp;outputSyntax=plain&amp;";
+define('taskgantt-localization', ['xwiki-l10n!taskgantt-translation-keys', 'xwiki-meta'], function (l10n, xm) {
+  return {
+    readonlyError: l10n['taskEdit.error.readonly'],
+    permissionError: l10n['taskEdit.error.permissions'],
+    successMessage: l10n['taskEdit.success'],
+    noDueDateMessage: l10n['task.noDueDate'],
+    noTasksMessage: l10n['interface.noTasks'],
+    popupProgressText: l10n['interface.popup.progress'],
+    XWikiLocale: xm.locale,
+  };
+});
 
-const readonlyError = "$escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.error.readonly'))";
-const permissionError = "$escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.error.permissions'))";
-const successMessage = "$escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.success'))";
-const genericError = "$escapetool.html($services.localization.render('taskmanager.gantt.taskEdit.error.generic'))";
-const noDueDateMessage = "$escapetool.html($services.localization.render('taskmanager.gantt.task.noDueDate'))";
+define('taskgantt-service-urls', ['jquery'], function ($) {
+  const jsonSourceURL =
+    new XWiki.Document(XWiki.Model.resolve('TaskManager.GanttMacro.JSONTaskSource', XWiki.EntityType.DOCUMENT)).getURL('get')
+    + '?xpage=plain&amp;outputSyntax=plain';
+  const updateServiceURL =
+    new XWiki.Document(XWiki.Model.resolve('TaskManager.GanttMacro.UpdateService', XWiki.EntityType.DOCUMENT)).getURL('get')
+    + '?xpage=plain&amp;outputSyntax=plain&amp;';
 
-const XWikiLocale = "$xwiki.getLocalePreference()";</code>
+  function updateService(task) {
+    // Could be refactored and replaced by a REST API call after XWIKI-20704 is fixed.
+    return updateServiceURL + new URLSearchParams({ taskDocument: task.id }) + '&amp;';
+    //return new XWiki.Document(XWiki.Model.resolve(task.id, XWiki.EntityType.DOCUMENT)).getRestURL('objects/TaskManager.TaskManagerClass/0');
+  };
+  function getJsonSourceQuery(ganttDiv) {
+    let query = '';
+    ganttDiv = $(ganttDiv);
+    if (undefined !== ganttDiv.data('assignees')) {
+      query += '&amp;assignees=' + ganttDiv.data('assignees');
+    }
+    if (undefined !== ganttDiv.data('reporters')) {
+      query += '&amp;reporters=' + ganttDiv.data('reporters');
+    }
+    if (undefined !== ganttDiv.data('projects')) {
+      query += '&amp;projects=' + ganttDiv.data('projects');
+    }
+    if (undefined !== ganttDiv.data('spaces')) {
+      query += '&amp;spaces=' + ganttDiv.data('spaces');
+    }
+    if (undefined !== ganttDiv.data('date-to')) {
+      query += '&amp;to=' + ganttDiv.data('date-to');
+    }
+    if (undefined !== ganttDiv.data('date-from')) {
+      query += '&amp;from=' + ganttDiv.data('date-from');
+    }
+    if (undefined !== ganttDiv.data('hide-no-due-date')) {
+      query += '&amp;hideNoDueDate=' + ganttDiv.data('hide-no-due-date');
+    }
+    return jsonSourceURL + query;
+  };
+
+  return {
+    'updateService': updateService,
+    'getJsonSourceQuery': getJsonSourceQuery,
+  };
+});
+
+define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10n) {
+  function escapeHTML(originalString) {
+    return String(originalString)
+      .replace(/&amp;/g, '&amp;amp;')
+      .replace(/&lt;/g, '&amp;lt;')
+      .replace(/&gt;/g, '&amp;gt;')
+      .replace(/"/g, '&amp;quot;')
+      .replace(/'/g, '&amp;#39;');
+  };
+  /**
+   *  Used to get absolute position information of an element relative to another element (viewport).
+   */
+  function normalizeDims(viewport, elem) {
+    return {
+      x: (elem.x - viewport.x),
+      y: (elem.y - viewport.y),
+      width: elem.width,
+      height: elem.height,
+    };
+  };
+  /**
+   * Converts dates from int to js Date.
+   * Updates task title when no due date.
+   * Updates the last state of a task to use when reverting in case of an error.
+   */
+  function formatTask(task) {
+    if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
+      task.name = escapeHTML(task.actualName) + ' - ' + l10n.noDueDateMessage;
+    } else {
+      task.name = escapeHTML(task.actualName);
+    }
+    if (!(task.start instanceof Date)) {
+      task.start = new Date(task.start);
+    }
+    if (!(task.end instanceof Date)) {
+      task.end = new Date(task.end);
+    }
+    if (task.editHack &amp;&amp; task._start) {
+      // At this point the Gantt is initialised so we can use the internal _start and _end dates.
+      task.editHack.oldProgress = task.progress;
+      task.editHack.oldStartDate.setTime(task._start.getTime());
+      task.editHack.oldEndDate.setTime(task._end.getTime());
+    } else {
+      task.editHack = {
+        oldProgress: task.progress,
+        oldStartDate: new Date(task.start.getTime()),
+        oldEndDate: new Date(task.end.getTime()),
+      };
+    }
+  };
+  /**
+   * Returns an error message if editing this task is not allowed.
+   */
+  function forbiddenEdit(task, gantt) {
+    let msg = null;
+    const isReadonly = $(gantt.$svg).closest('.taskgantt').data('readonly');
+    if (isReadonly) {
+      msg = l10n.readonlyError;
+    } else if (task.custom_class.split(/\s+/).includes('taskgantt-no-edit')) {
+      msg = l10n.permissionError;
+    }
+    return msg;
+  };
+
+  return {
+    'escapeHTML': escapeHTML,
+    'normalizeDims': normalizeDims,
+    'formatTask': formatTask,
+    'forbiddenEdit': forbiddenEdit,
+  };
+});
+
+define('taskgantt-progress-popup', [
+  'jquery',
+  'taskgantt-localization',
+  'taskgantt-utils'
+], function ($, l10n, taskutil) {
+  function showPopup(popup, ganttDiv, ganttObj, barElem, progressChangeObserver, isResizingProgress) {
+    if (isResizingProgress) {
+      // The popup is already visible, no need to recompute the location.
+      return;
+    }
+    const viewport = ganttDiv.getBoundingClientRect();
+    let bar = ganttObj.bars.find((b) =&gt; b.group === barElem);
+    const b = taskutil.normalizeDims(viewport, bar.$bar.getBoundingClientRect());
+    const pop = taskutil.normalizeDims(viewport, popup.getElementsByClassName('popuptext')[0].getBoundingClientRect());
+    let y = b.y - pop.height - 5;
+    let x = b.x + (b.width - pop.width) / 2;
+    popup.style.top = y + 'px';
+    popup.style.left = x + 'px';
+    let popupNumber = $('.gantt-popup-progress-number', popup);
+    popupNumber.text(bar.compute_progress() + '%');
+    popup.style.visibility = 'visible';
+    if (progressChangeObserver) {
+      progressChangeObserver.disconnect();
+    }
+    progressChangeObserver = new MutationObserver(() =&gt; { popupNumber.text(bar.compute_progress() + '%'); });
+    progressChangeObserver.observe(bar.$bar_progress, { attributes: true });
+  };
+  function hidePopup(popup, progressChangeObserver, isResizingProgress) {
+    if (isResizingProgress) {
+      return;
+    }
+    popup.style.visibility = 'hidden';
+    if (progressChangeObserver) {
+      progressChangeObserver.disconnect();
+    }
+  };
+  /**
+   * Set up a custom popup to display the progress for the specified gantt object.
+   */
+  function setupProgressPopup(ganttObj) {
+    let ganttDiv = $(ganttObj.$svg).closest('.taskgantt')[0];
+    let popup = $('div.gantt-popup', ganttDiv);
+    if (popup.length &gt; 0) {
+      popup = popup[0];
+    } else {
+      popup = document.createElement('div');
+      popup.innerHTML = '&lt;span class="popuptext"&gt;' +
+        taskutil.escapeHTML(l10n.popupProgressText) +
+        '&lt;span class="gantt-popup-progress-number"&gt;100%&lt;/span&gt;&lt;/span&gt;';
+      popup.classList.add('gantt-popup');
+      ganttDiv.appendChild(popup);
+    }
+    // Set up popup event listeners.
+    let progressChangeObserver;
+    let hoverTimer;
+    let isResizingProgress = false;
+
+    $('.handle.progress', ganttDiv).on({
+      mousedown: function (e) {
+        let bar = $(e.delegateTarget).closest('.bar-wrapper')[0];
+        showPopup(popup,
+          ganttDiv,
+          ganttObj,
+          bar,
+          progressChangeObserver,
+          isResizingProgress
+        );
+        isResizingProgress = true;
+      },
+    });
+    $(ganttDiv).on({
+      mouseup: function (e) {
+        isResizingProgress = false;
+        hidePopup(popup, progressChangeObserver, isResizingProgress);
+      },
+    });
+
+    $('.bar-wrapper', ganttDiv).on({
+      mouseenter: function (e) {
+        let bar = e.currentTarget;
+        if (!hoverTimer) {
+          hoverTimer = setTimeout(() =&gt; {
+            showPopup(popup,
+              ganttDiv,
+              ganttObj,
+              bar,
+              progressChangeObserver,
+              isResizingProgress
+            );
+          }, 1000);
+        }
+      },
+      mouseleave: function (e) {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+        hidePopup(popup, progressChangeObserver, isResizingProgress);
+      },
+      mousedown: function (e) {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+        hidePopup(popup, progressChangeObserver, isResizingProgress);
+      },
+    });
+  };
+
+  return {
+    'setupProgressPopup': setupProgressPopup,
+  };
+});</code>
     </property>
     <property>
-      <name>Define constants</name>
+      <name>Define constants &amp; helpers</name>
     </property>
     <property>
       <parse>1</parse>
@@ -240,295 +473,514 @@ const XWikiLocale = "$xwiki.getLocalePreference()";</code>
       <cache>long</cache>
     </property>
     <property>
-      <code>require(['jquery', frappe_js_path], function(jQuery){
-  // Add custom popup and the custom svg markup when rendering Gantt
-  if(Gantt.prototype['_render'] === undefined) {
-    function setupProgressPopup(ganttObj) {
-      let ganttDiv = ganttObj.$svg.parentNode.parentNode;
-      let popup = jQuery('div.gantt-popup', ganttDiv);
-      if(popup.length &gt; 0) {
-        popup = popup[0];
-      } else {
-        popup = document.createElement('div');
-        popup.innerHTML = `
-          &lt;span class='popuptext'&gt;Progress: &lt;span id="gantt-popup-progress-number"&gt;100&lt;/span&gt;%&lt;/span&gt;
-        `;
-        popup.classList.add('gantt-popup');
-        ganttDiv.appendChild(popup);
-      }
-      // Set up popup event listeners
-      let progressChangeObserver;
-      let _hoverTimer;
-      let is_resizing_progress = false;
+      <code>define('taskgantt-ui', [
+  'jquery',
+  'taskgantt-utils',
+  'taskgantt-localization',
+  'taskgantt-progress-popup',
+], function ($, taskutil, l10n, taskpopup) {
+  /**
+   * Add custom svg styles as part of a &lt;defs&gt; tag.
+   * This is done to fade out tasks with no due date and turn their text color red.
+   */
+  function addSvgStyles(svgElem) {
+    var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML += `
+      &lt;linearGradient id="fadeGrad"&gt;
+        &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
+        &lt;stop offset="75%" stop-color="white" stop-opacity=".4" /&gt;
+        &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
+      &lt;/linearGradient&gt;
+      &lt;mask x="-50%" y="-50%" width="200%" height="200%" id="fademask" maskContentUnits="objectBoundingBox"&gt;
+        &lt;rect x="-1" y="-1" width="2" height="3" fill="url(#fadeGrad)"/&gt;
+      &lt;/mask&gt;
 
-      function showPopup(barElem) {
-        if (is_resizing_progress) return;
-        const viewport = ganttDiv.getBoundingClientRect();
-        function normalizeDims(elem) {
-          return {
-            x:(elem.x - viewport.x),
-            y:(elem.y - viewport.y),
-            width:elem.width,
-            height:elem.height,
-          };
-        }
-        let bar = ganttObj.bars.find((b) =&gt; b.group === barElem)
-        const b = normalizeDims(bar.$bar.getBoundingClientRect());
-        const pop = normalizeDims(popup.getBoundingClientRect());
-        let y = b.y - pop.height - 5;
-        let x = b.x + (b.width - pop.width) / 2;
-        popup.style.top  = y + 'px';
-        popup.style.left = x + 'px';
-        let popupNumber = jQuery('#gantt-popup-progress-number', popup)[0]
-        popupNumber.innerHTML = bar.compute_progress();
-        popup.style.visibility = 'visible';
-        if(progressChangeObserver) {
-          progressChangeObserver.disconnect();
-        }
-        progressChangeObserver = new MutationObserver(() =&gt; {popupNumber.innerHTML = bar.compute_progress();});
-        progressChangeObserver.observe(bar.$bar_progress, {attributes:true});
-      }
-      function hidePopup() {
-        if (is_resizing_progress) return;
-        popup.style.visibility = 'hidden';
-        if(progressChangeObserver) {
-          progressChangeObserver.disconnect();
-        }
-      }
-      jQuery('.handle.progress', ganttDiv).on({
-        mousedown: function(e) {
-          let bar = e.delegateTarget.parentElement.parentElement;
-          showPopup(bar);
-          is_resizing_progress = true;
-        }
-      });
-      jQuery(ganttDiv).on({
-        mouseup: function(e) {
-          is_resizing_progress = false;
-          hidePopup();
-        }
-      });
-
-      jQuery('.bar-wrapper', ganttDiv).on({
-        mouseenter: function(e) {
-          let bar = e.currentTarget;
-          if(!_hoverTimer) {
-            _hoverTimer = setTimeout(() =&gt; {
-              showPopup(bar);
-            }, 1000);
-          }
-        },
-        mouseleave: function(e) {
-          clearTimeout(_hoverTimer);
-          _hoverTimer = null;
-          hidePopup();
-        },
-        mousedown: function(e) {
-          clearTimeout(_hoverTimer);
-          _hoverTimer = null;
-          hidePopup();
-        }
-      });
-    }
-    function addStyles(svgElem) {
-      var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-      defs.innerHTML += `
-    &lt;linearGradient id="fadeGrad" fill="white"&gt;
-      &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
-      &lt;stop offset="60%" stop-color="white" stop-opacity=".4" /&gt;
-      &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
-    &lt;/linearGradient&gt;
-    &lt;mask id="fademask" maskContentUnits="objectBoundingBox"&gt;
-      &lt;rect width="1" height="1" fill="url(#fadeGrad)"/&gt;
-    &lt;/mask&gt;
-
-    &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
-      &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
-      &lt;feGaussianBlur stdDeviation="4"/&gt;
-      &lt;feComponentTransfer&gt;
-        &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
-      &lt;/feComponentTransfer&gt;
-      &lt;feComponentTransfer&gt;
-        &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
-      &lt;/feComponentTransfer&gt;
-      &lt;feComposite operator="over" in="SourceGraphic"/&gt;
-    &lt;/filter&gt;
+      &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
+        &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
+        &lt;feGaussianBlur stdDeviation="4"/&gt;
+        &lt;feComponentTransfer&gt;
+          &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
+        &lt;/feComponentTransfer&gt;
+        &lt;feComponentTransfer&gt;
+          &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
+        &lt;/feComponentTransfer&gt;
+        &lt;feComposite operator="over" in="SourceGraphic"/&gt;
+      &lt;/filter&gt;
     `;
-      svgElem.setAttribute('height', svgElem.getAttribute('height') - 100);
-      svgElem.appendChild(defs);
-    }
-    Gantt.prototype['_render'] = Gantt.prototype['render'];
-    Gantt.prototype['render'] = function() {
-      const result = this._render();
-      addStyles(this.$svg);
-      setupProgressPopup(this);
-      return result;
-    };
-  }
-  // Fix hour text display
-  if(Gantt.prototype['_get_date_info'] === undefined) {
-    Gantt.prototype['_get_date_info'] = Gantt.prototype['get_date_info'];
-    Gantt.prototype['get_date_info'] = function(date, last_date, i) {
-      let result = this._get_date_info(date, last_date, i);
-      const base_pos = {
-          x: i * this.options.column_width,
-          lower_y: this.options.header_height,
-          upper_y: this.options.header_height - 25,
-      };
-
-      const x_pos = {
-          'Quarter Day_lower': (this.options.column_width * 4),
-          'Quarter Day_upper': (this.options.column_width * 4) / 2,
-          'Half Day_lower': (this.options.column_width * 2),
-          'Half Day_upper': (this.options.column_width * 2) / 2,
-          Day_lower: this.options.column_width / 2,
-          Day_upper: (this.options.column_width * 30) / 2,
-          Week_lower: 0,
-          Week_upper: (this.options.column_width * 4) / 2,
-          Month_lower: this.options.column_width * 1.5,
-          Month_upper: (this.options.column_width * 12) / 2,
-          Year_lower: this.options.column_width / 2,
-          Year_upper: (this.options.column_width * 30) / 2,
-      };
-      const tweakedPos = {
-          upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
-          upper_y: base_pos.upper_y,
-          lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
-          lower_y: base_pos.lower_y,
-      };
-      Object.assign(result, tweakedPos);
-      return result;
-    };
-  }
-  // Don't move dependencies when moving a task
-  if(Gantt.prototype['_bind_bar_events'] === undefined) {
-    Gantt.prototype['_bind_bar_events'] = Gantt.prototype['bind_bar_events'];
-    Gantt.prototype['bind_bar_events'] = function() {
-      on = (element, event, selector, callback) =&gt; {
-        if (!callback) {
-          callback = selector;
-          event.split(/\s+/).forEach(function (event) {
-            element.addEventListener(event, callback);
-          });
+    svgElem.setAttribute('height', svgElem.getAttribute('height') - 100);
+    svgElem.appendChild(defs);
+  };
+  function setGanttDisabledOverlayVisibility(gantt, visible) {
+    $('.taskgantt-noedit-overlay', gantt.$svg.closest('.taskgantt')).attr('style', 'visibility:' + (visible ? 'visible' : 'hidden') + ';');
+  };
+  /**
+   * Update the task position and show an UI notification with the right formatting and text.
+   * Depends on the outcome of the ajax request to the update service.
+   */
+  function setupResultNotificationsCallbacks(ajaxRequest, gantt, task) {
+    ajaxRequest.success(function (data) {
+      try {
+        if (data.success == true) {
+          redrawBar(task, gantt);
+          new XWiki.widgets.Notification(l10n.successMessage, 'info', '20');
         } else {
-          element.addEventListener(event, function (e) {
-            const delegatedTarget = e.target.closest(selector);
-            if (delegatedTarget) {
-              e.delegatedTarget = delegatedTarget;
-              callback.call(this, e, delegatedTarget);
-            }
-          });
+          revertBar(task, gantt);
+          console.log('Error when updating dates:', e);
+          new XWiki.widgets.Notification(taskutil.escapeHTML(e.responseJSON.description), 'error', '20');
         }
-      };
-
-      closest = (selector, element) =&gt; {
-        if (!element) return null;
-
-        if (element.matches(selector)) {
-          return element;
-        }
-
-        return closest(selector, element.parentNode);
-      };
-
-      let is_dragging = false;
-      let x_on_start = 0;
-      let y_on_start = 0;
-      let is_resizing_left = false;
-      let is_resizing_right = false;
-      let parent_bar_id = null;
-      let bars = []; // instanceof Bar
-      this.bar_being_dragged = null;
-
-      function action_in_progress() {
-        return is_dragging || is_resizing_left || is_resizing_right;
+      } catch (e) {
+        console.log(e)
+        new XWiki.widgets.Notification(taskutil.escapeHTML(e), 'error', '20');
       }
+      setGanttDisabledOverlayVisibility(gantt, false);
+    }).error(e =&gt; {
+      revertBar(task, gantt);
+      console.log(e);
+      new XWiki.widgets.Notification(taskutil.escapeHTML(e), 'error', '20');
+      setGanttDisabledOverlayVisibility(gantt, false);
+    });
+  };
+  /**
+   * Revert a task bar to its previous position (before modification).
+   */
+  function revertBar(task, gantt) {
+    // Revert to saved state before starting to edit.
+    task._start.setTime(task.editHack.oldStartDate.getTime());
+    task._end.setTime(task.editHack.oldEndDate.getTime());
+    task.progress = task.editHack.oldProgress;
 
-      on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) =&gt; {
-        const bar_wrapper = closest('.bar-wrapper', element);
+    let bar = gantt.bars.find((bar) =&gt; bar.task === task);
+    bar.update_bar_position({ x: bar.$bar.ox, width: bar.$bar.owidth });
 
-        if (element.classList.contains('left')) {
-          is_resizing_left = true;
-        } else if (element.classList.contains('right')) {
-          is_resizing_right = true;
-        } else if (element.classList.contains('bar-wrapper')) {
-          is_dragging = true;
-        }
+    // Manually reset progress width change, double click event doesn't trigger otherwise.
+    bar.$bar_progress.finaldx = 0;
+    bar.update_handle_position();
 
-        bar_wrapper.classList.add('active');
+    bar.group.classList = Array.from(bar.group.classList).filter((clas) =&gt; clas != 'active').join(' ');
+  };
+  /**
+   * Render a task bar at its current position, updating text and css classes if necessary.
+   */
+  function redrawBar(task, gantt) {
+    if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
+      task.custom_class = task.custom_class.split(/\s+/).filter((t) =&gt; t != 'taskgantt-no-due-date').join(' ');
+    }
+    // Rename if taskgantt-no-due-date, save new state for use in revertBar.
+    taskutil.formatTask(task);
 
-        x_on_start = e.offsetX;
-        y_on_start = e.offsetY;
+    let bar = gantt.bars.find((b) =&gt; b.task === task);
+    bar.update_bar_position({ x: bar.compute_x() });
+    bar.group.setAttribute('class', 'bar-wrapper ' + (task.custom_class || ''));
+    bar.bar_group.getElementsByClassName('bar-label')[0].innerHTML = task.name;
 
-        parent_bar_id = bar_wrapper.getAttribute('data-id');
-        bars = [this.get_bar(parent_bar_id)];
+    // Manually reset progress width change, double click event doesn't trigger otherwise.
+    bar.$bar_progress.finaldx = 0;
+    bar.update_handle_position();
+  };
 
-        this.bar_being_dragged = parent_bar_id;
+  return {
+    'setupProgressPopup': taskpopup.setupProgressPopup,
+    'addSvgStyles': addSvgStyles,
+    'setupResultNotificationsCallbacks': setupResultNotificationsCallbacks,
+    'setGanttDisabledOverlayVisibility': setGanttDisabledOverlayVisibility,
+    'redrawBar': redrawBar,
+    'revertBar': revertBar,
+  };
+});
 
-        bars.forEach((bar) =&gt; {
-          const $bar = bar.$bar;
-          $bar.ox = $bar.getX();
-          $bar.oy = $bar.getY();
-          $bar.owidth = $bar.getWidth();
-          $bar.finaldx = 0;
+/**
+ * This module modifies/patches the default library implementations for some functions.
+ * It also includes event handlers that fire when interacting with a task.
+ */
+define('taskgantt-override-functions', [
+  'jquery',
+  'taskgantt-utils',
+  'taskgantt-ui',
+  'taskgantt-service-urls',
+], function ($, taskutil, taskui, taskurls) {
+  /**
+   * Custom implementation of trigger_event from the frappe-gantt(v0.6.1) library.
+   * Bind the parent gantt object to 'this' in the event handlers.
+   */
+  function custom_trigger_event(event, args) {
+    if (this.options['on_' + event]) {
+      this.options['on_' + event].apply(this, args);
+    }
+  }
+  /**
+   * Custom implementation of render from the frappe-gantt(v0.6.1) library.
+   * Uses the original render function from the frappe-gantt library.
+   * Adds a custom popup and the custom svg markup for task bar fade on no due date.
+   */
+  function custom_render() {
+    const result = this._render(); // Use the default render implementation first.
+    taskui.addSvgStyles(this.$svg); // SVG specific style definitions, with no css equivalent.
+    taskui.setupProgressPopup(this);
+    return result;
+  };
+  /**
+   * Custom implementation of get_date_info from the frappe-gantt(v0.6.1) library.
+   * Fixes the hour text display in Quarter Day view mode.
+   * In the default frappe-gantt implementation, the header text is offset by 12h.
+   * Example: If a task starts at 06:00, it appears under the 18:00 section in the UI.
+   */
+  function custom_get_date_info(date, last_date, i) {
+    let result = this._get_date_info(date, last_date, i);
+    const base_pos = {
+      x: i * this.options.column_width,
+      lower_y: this.options.header_height,
+      upper_y: this.options.header_height - 25,
+    };
+
+    const x_pos = {
+      'Quarter Day_lower': (this.options.column_width * 4),
+      'Quarter Day_upper': (this.options.column_width * 4) / 2,
+      'Half Day_lower': (this.options.column_width * 2),
+      'Half Day_upper': (this.options.column_width * 2) / 2,
+      Day_lower: this.options.column_width / 2,
+      Day_upper: (this.options.column_width * 30) / 2,
+      Week_lower: 0,
+      Week_upper: (this.options.column_width * 4) / 2,
+      Month_lower: this.options.column_width * 1.5,
+      Month_upper: (this.options.column_width * 12) / 2,
+      Year_lower: this.options.column_width / 2,
+      Year_upper: (this.options.column_width * 30) / 2,
+    };
+    const tweakedPos = {
+      upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
+      upper_y: base_pos.upper_y,
+      lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
+      lower_y: base_pos.lower_y,
+    };
+    Object.assign(result, tweakedPos);
+    return result;
+  };
+  /**
+   * Custom implementation of bind_bar_events from the frappe-gantt(v0.6.1) library.
+   * Don't move dependencies when moving a task.
+   * This prevents unintentional updates and more freedom when moving tasks.
+   */
+  function custom_bind_bar_events() {
+    // Redefine some jQuery functions so they work on our SVG elements.
+    let closest = (selector, element) =&gt; {
+      if (!element) {
+        return null;
+      }
+      if (element.matches(selector)) {
+        return element;
+      }
+      return closest(selector, element.parentNode);
+    };
+    let on = (element, event, selector, callback) =&gt; {
+      if (!callback) {
+        callback = selector;
+        event.split(/\s+/).forEach(function (event) {
+          element.addEventListener(event, callback);
         });
-      });
-
-      on(this.$svg, 'mousemove', (e) =&gt; {
-        if (!action_in_progress()) return;
-        const dx = e.offsetX - x_on_start;
-        e.offsetY - y_on_start;
-
-        bars.forEach((bar) =&gt; {
-          const $bar = bar.$bar;
-          $bar.finaldx = this.get_snap_position(dx);
-          this.hide_popup();
-          if (is_resizing_left) {
-            if (parent_bar_id === bar.task.id) {
-              bar.update_bar_position({
-                x: $bar.ox + $bar.finaldx,
-                width: $bar.owidth - $bar.finaldx,
-              });
-            } else {
-              bar.update_bar_position({
-                x: $bar.ox + $bar.finaldx,
-              });
-            }
-          } else if (is_resizing_right) {
-            if (parent_bar_id === bar.task.id) {
-              bar.update_bar_position({
-                width: $bar.owidth + $bar.finaldx,
-              });
-            }
-          } else if (is_dragging) {
-            bar.update_bar_position({ x: $bar.ox + $bar.finaldx });
+      } else {
+        element.addEventListener(event, function (e) {
+          const delegatedTarget = e.target.closest(selector);
+          if (delegatedTarget) {
+            e.delegatedTarget = delegatedTarget;
+            callback.call(this, e, delegatedTarget);
           }
         });
-      });
+      }
+    };
 
-      document.addEventListener('mouseup', (e) =&gt; {
-        if (is_dragging || is_resizing_left || is_resizing_right) {
-          bars.forEach((bar) =&gt; bar.group.classList.remove('active'));
+    let is_dragging = false;
+    let x_on_start = 0;
+    let y_on_start = 0;
+    let is_resizing_left = false;
+    let is_resizing_right = false;
+    let parent_bar_id = null;
+    let bars = [];
+
+    function action_in_progress() {
+      return is_dragging || is_resizing_left || is_resizing_right;
+    }
+
+    on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) =&gt; {
+      const bar_wrapper = closest('.bar-wrapper', element);
+
+      if (element.classList.contains('left')) {
+        is_resizing_left = true;
+      } else if (element.classList.contains('right')) {
+        is_resizing_right = true;
+      } else if (element.classList.contains('bar-wrapper')) {
+        is_dragging = true;
+      }
+
+      bar_wrapper.classList.add('active');
+
+      x_on_start = e.offsetX;
+      y_on_start = e.offsetY;
+
+      parent_bar_id = bar_wrapper.getAttribute('data-id');
+      bars = [this.get_bar(parent_bar_id)];
+
+      bars.forEach((bar) =&gt; {
+        const $bar = bar.$bar;
+        $bar.ox = $bar.getX();
+        $bar.oy = $bar.getY();
+        $bar.owidth = $bar.getWidth();
+        $bar.finaldx = 0;
+      });
+    });
+
+    on(this.$svg, 'mousemove', (e) =&gt; {
+      if (!action_in_progress()) return;
+      const dx = e.offsetX - x_on_start;
+      e.offsetY - y_on_start;
+
+      bars.forEach((bar) =&gt; {
+        const $bar = bar.$bar;
+        $bar.finaldx = this.get_snap_position(dx);
+        this.hide_popup();
+        if (is_resizing_left) {
+          if (parent_bar_id === bar.task.id) {
+            bar.update_bar_position({
+              x: $bar.ox + $bar.finaldx,
+              width: $bar.owidth - $bar.finaldx,
+            });
+          } else {
+            bar.update_bar_position({
+              x: $bar.ox + $bar.finaldx,
+            });
+          }
+        } else if (is_resizing_right) {
+          if (parent_bar_id === bar.task.id) {
+            bar.update_bar_position({
+              width: $bar.owidth + $bar.finaldx,
+            });
+          }
+        } else if (is_dragging) {
+          bar.update_bar_position({ x: $bar.ox + $bar.finaldx });
         }
-
-        is_dragging = false;
-        is_resizing_left = false;
-        is_resizing_right = false;
       });
+    });
 
-      jQuery(document).on('mouseup', (e) =&gt; {
-        this.bar_being_dragged = null;
+    $(document).on('mouseup', (e) =&gt; {
+      if (is_dragging || is_resizing_left || is_resizing_right) {
         bars.forEach((bar) =&gt; {
+          bar.group.classList.remove('active');
           const $bar = bar.$bar;
-          if (!$bar.finaldx) return;
+          if (!$bar.finaldx) {
+            return;
+          }
           bar.date_changed();
           $bar.finaldx = 0;
           bar.set_action_completed();
         });
-      });
+      }
 
-      this.bind_bar_progress();
+      is_dragging = false;
+      is_resizing_left = false;
+      is_resizing_right = false;
+    });
+
+    this.bind_bar_progress();
+  };
+  /**
+   * Custom implementation of update_bar_position from the frappe-gantt(v0.6.1) library.
+   * Don't enforce 'task must start after dependencies' rule, for more freedom when moving tasks.
+   */
+  function custom_update_bar_position({ x = null, width = null }) {
+    const bar = this.$bar;
+    if (x) {
+      this.update_attr(bar, 'x', x);
+    }
+    if (width &amp;&amp; width &gt; 0) {
+      this.update_attr(bar, 'width', width);
+    }
+    this.update_label_position();
+    this.update_handle_position();
+    this.update_progressbar_position();
+    this.update_arrow_position();
+  }
+  /**
+   * Custom implementation of compute_x from the frappe-gantt(v0.6.1) library.
+   * Removed rounding to nearest hour when displaying tasks (so task positions are not snapped to fixed hours).
+   */
+  function custom_compute_x() {
+    const { step, column_width } = this.gantt.options;
+    const task_start = this.task._start;
+    const gantt_start = this.gantt.gantt_start;
+
+    const diff = (task_start - gantt_start) / 1000 / 60 / 60; // Float difference in Hours.
+    let x = (diff / step) * column_width;
+
+    if (this.gantt.view_is('Month')) {
+      const diff = (task_start - gantt_start) / 1000 / 60 / 60 / 24; // Float difference in Days.
+      x = (diff * column_width) / 30;
+    }
+    return x;
+  }
+  /**
+   * Custom implementation of prepare_values from the frappe-gantt(v0.6.1) library.
+   * Removed rounding to nearest hour when displaying tasks (so tasks with less than 1 hour duration are displayed).
+   */
+  function custom_prepare_values() {
+    taskutil.formatTask(this.task);
+    this._prepare_values();
+    this.duration =
+      ((this.task._end - this.task._start) / 1000 / 60 / 60) / // Float difference in Hours.
+      this.gantt.options.step;
+    this.width = this.gantt.options.column_width * this.duration;
+    this.progress_width =
+      this.gantt.options.column_width *
+      this.duration *
+      (this.task.progress / 100) || 0;
+  }
+  /**
+   * Custom implementation of compute_start_end_date from the frappe-gantt(v0.6.1) library.
+   * Removed rounding to nearest hour when computing the start and end dates.
+   * This fixes a bug which removed an hour from the end date the first time the task was moved.
+   */
+  function custom_compute_start_end_date() {
+    const bar = this.$bar;
+    const x_in_units = bar.getX() / this.gantt.options.column_width;
+    const new_start_date = new Date(this.gantt.gantt_start.getTime() + (x_in_units * this.gantt.options.step) * 1000 * 60 * 60);
+    const width_in_units = bar.getWidth() / this.gantt.options.column_width;
+    const new_end_date = new Date(new_start_date.getTime() + (width_in_units * this.gantt.options.step) * 1000 * 60 * 60);
+
+    return { new_start_date, new_end_date };
+  };
+  /**
+   * Disable Frappe's popup.
+   */
+  function custom_show_popup() {
+    return;
+  }
+  /**
+   * Event handler which fires when double clicking a task.
+   */
+  function on_click(task) {
+    window.open(task.link).focus();
+  };
+  /**
+   * Event handler which fires after changing the progress.
+   */
+  function on_progress_change(task, newProgress) {
+    if (newProgress == task.editHack.oldProgress) {
+      // Useless progress change (event fires on any click, quirk of frappe-gantt).
+      return;
+    }
+    let forbiddenEditReason = taskutil.forbiddenEdit(task, this);
+    if (forbiddenEditReason != null) {
+      taskui.revertBar(task, this);
+      new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
+      return;
+    }
+
+    let params = {
+      progress: newProgress,
     };
+    if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
+      // If the user interacts with a 'no-due-date' task, automatically set the dates.
+      params.startDate = task._start.getTime();
+      params.endDate = task._end.getTime();
+    }
+    taskui.setGanttDisabledOverlayVisibility(this, true);
+    taskui.setupResultNotificationsCallbacks(
+      $.ajax(taskurls.updateService(task) + new URLSearchParams(params)),
+      this,
+      task
+    );
+  }
+  /**
+   * Event handler which fires after changing the dates.
+   */
+  function on_date_change(task, newStartDate, newEndDate) {
+    // Frappe automatically subtracts 1 second from the real end date.
+    newEndDate.setSeconds(newEndDate.getSeconds() + 1);
+
+    if (newStartDate.getTime() == task.editHack.oldStartDate.getTime() &amp;&amp;
+      newEndDate.getTime() == task.editHack.oldEndDate.getTime()) {
+      // Useless progress change (event fires on any click, quirk of frappe-gantt).
+      return;
+    }
+    let forbiddenEditReason = taskutil.forbiddenEdit(task, this);
+    if (forbiddenEditReason != null) {
+      taskui.revertBar(task, this);
+      new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
+      return;
+    }
+    let params = {};
+    if (newStartDate.getTime() != task.editHack.oldStartDate.getTime()) {
+      params.startDate = newStartDate.getTime();
+    }
+    if (newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
+      params.endDate = newEndDate.getTime();
+    }
+
+    taskui.setGanttDisabledOverlayVisibility(this, true);
+    taskui.setupResultNotificationsCallbacks(
+      $.ajax(taskurls.updateService(task) + new URLSearchParams(params)),
+      this,
+      task
+    );
+  };
+  return {
+    // Frappe library Gantt class overrides.
+    'custom_trigger_event': custom_trigger_event,
+    'custom_render': custom_render,
+    'custom_get_date_info': custom_get_date_info,
+    'custom_bind_bar_events': custom_bind_bar_events,
+    // Frappe library Bar class overrides.
+    'custom_update_bar_position': custom_update_bar_position,
+    'custom_compute_x': custom_compute_x,
+    'custom_prepare_values': custom_prepare_values,
+    'custom_compute_start_end_date': custom_compute_start_end_date,
+    'custom_show_popup': custom_show_popup,
+    // Event handlers.
+    'on_click': on_click,
+    'on_progress_change': on_progress_change,
+    'on_date_change': on_date_change,
+  };
+});
+
+define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-gantt'], function (overrideDefs) {
+  /**
+   * Override the default behaviour of some functionalities of frappe-gantt.
+   */
+  if (Gantt.prototype['overrideDone'] === undefined) {
+    Gantt.prototype['overrideDone'] = false; // Dummy property so the override is done only once.
+
+    /**
+     * Override the Gantt inner class to remove some restrictions between dependencies.
+     * For this we need a Gantt instance, as the `Bar` class isn't publicly accessible.
+     */
+    let dummyElement = document.createElement('div');
+    let gantt = new Gantt(dummyElement, [{ id: 'task1' }]);
+
+    gantt.bars[0].__proto__['update_bar_position'] = overrideDefs.custom_update_bar_position;
+
+    gantt.bars[0].__proto__['show_popup'] = overrideDefs.custom_show_popup;
+
+    gantt.bars[0].__proto__['compute_start_end_date'] = overrideDefs.custom_compute_start_end_date;
+
+    gantt.bars[0].__proto__['compute_x'] = overrideDefs.custom_compute_x;
+
+    gantt.bars[0].__proto__['_prepare_values'] = gantt.bars[0].__proto__['prepare_values'];
+    gantt.bars[0].__proto__['prepare_values'] = overrideDefs.custom_prepare_values;
+
+    delete gantt;
+    delete dummyElement;
+
+    // Override Gantt class methods.
+
+    Gantt.prototype['trigger_event'] = overrideDefs.custom_trigger_event;
+
+    Gantt.prototype['_render'] = Gantt.prototype['render'];
+    Gantt.prototype['render'] = overrideDefs.custom_render;
+
+    Gantt.prototype['_get_date_info'] = Gantt.prototype['get_date_info'];
+    Gantt.prototype['get_date_info'] = overrideDefs.custom_get_date_info;
+
+    Gantt.prototype['bind_bar_events'] = overrideDefs.custom_bind_bar_events;
+
+    Gantt.prototype['overrideDone'] = true;
   }
 });</code>
     </property>
@@ -629,342 +1081,63 @@ const XWikiLocale = "$xwiki.getLocalePreference()";</code>
       <cache>long</cache>
     </property>
     <property>
-      <code>function updateService(task) {
-  return updateServiceURL;
-  // Could be replaced by a REST API call after XWIKI-20704 is fixed
-  //return new XWiki.Document(XWiki.Model.resolve(task.id, XWiki.EntityType.DOCUMENT)).getRestURL('objects/TaskManager.TaskManagerClass/0');
-}
-
-function getJsonSourceQuery(ganttDiv) {
-  let query = '';
-  ganttDiv = jQuery(ganttDiv);
-  if (undefined !== ganttDiv.data('assignees')) {
-    query += '&amp;assignees=' + ganttDiv.data('assignees');
-  }
-  if (undefined !== ganttDiv.data('reporters')) {
-    query += '&amp;reporters=' + ganttDiv.data('reporters');
-  }
-  if (undefined !== ganttDiv.data('projects')) {
-    query += '&amp;projects=' + ganttDiv.data('projects');
-  }
-  if (undefined !== ganttDiv.data('spaces')) {
-    query += '&amp;spaces=' + ganttDiv.data('spaces');
-  }
-  if (undefined !== ganttDiv.data('date-to')) {
-    query += '&amp;to=' + ganttDiv.data('date-to');
-  }
-  if (undefined !== ganttDiv.data('date-from')) {
-    query += '&amp;from=' + ganttDiv.data('date-from');
-  }
-  if (undefined !== ganttDiv.data('hide-no-due-date')) {
-    query += '&amp;hideNoDueDate=' + ganttDiv.data('hide-no-due-date');
-  }
-  return query;
-}
-
-function forbiddenEdit(task, gantt) {
-  let msg = null;
-  if(jQuery(gantt.$svg).parent().data('readonly')) {
-    msg = readonlyError;
-  } else if (task.custom_class.split(/\s+/).includes('taskgantt-no-edit')){
-    msg = permissionError;
-  }
-  return msg;
-}
-
-function formatTask(task) {
-  if(task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
-    task.name = escapeHTML(task.actualName) + ' - ' + noDueDateMessage;
-  } else {
-    task.name = escapeHTML(task.actualName);
-  }
-  if(!(task.start instanceof Date))
-    task.start = new Date(task.start);
-  if(!(task.end instanceof Date))
-    task.end = new Date(task.end);
-  task.editHack = {
-    oldProgress:task.progress,
-    oldStartDate:new Date(task.start),
-    oldEndDate:new Date(task.end),
-  };
-}
-
-function changeView(button) {
-  const idx = parseInt(button.parentNode.parentNode.getAttribute('id').substring('gantt'.length))
-  gantts[idx].change_view_mode(button.value);
-}
-function setGanttDisabledOverlay(gantt, visible) {
-  jQuery('.taskgantt-noedit-overlay', gantt.$svg.parentNode.parentNode).attr('style', 'visibility:' + (visible ? 'visible' : 'hidden') + ';');
-}
-function escapeHTML(originalString) {
-  return originalString.replace(/&amp;/g, '&amp;amp;')
-    .replace(/&lt;/g, '&amp;lt;')
-    .replace(/&gt;/g, '&amp;gt;')
-    .replace(/"/g, '&amp;quot;')
-    .replace(/'/g, '&amp;#39;');
-}
-function unescapeHTML(originalString) {
-  return originalString.replace('&amp;amp;', /&amp;/g)
-    .replace('&amp;lt;', /&lt;/g)
-    .replace('&amp;gt;', /&gt;/g)
-    .replace('&amp;quot;', /"/g)
-    .replace('&amp;#39;', /'/g);
-}
-
-function revertBar(task, gantt) {
-  // Only revert to previous state
-  task.start = task.editHack.oldStartDate;
-  task.end = task.editHack.oldEndDate;
-  task.progress = task.editHack.oldProgress;
-
-  let bar = gantt.bars.find((bar) =&gt; bar.task === task);
-  bar.update_bar_position({x:bar.$bar.ox, width: bar.$bar.owidth});
-
-  // manually reset progress width change, double click event doesn't trigger otherwise
-  bar.$bar_progress.finaldx = 0;
-  bar.update_handle_position();
-}
-function redrawBar(task, gantt) {
-  // Update task and position
-  if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
-    task.custom_class = task.custom_class.split(/\s+/).filter((t) =&gt; t != 'taskgantt-no-due-date').join(' ');
-  }
-  formatTask(task); // rename if taskgantt-no-due-date, update old dates
-  let bar = gantt.bars.find((b) =&gt; b.task === task);
-  bar.update_bar_position({x:bar.compute_x()});
-  bar.group.setAttribute('class', 'bar-wrapper ' + (task.custom_class || ''));
-  bar.bar_group.getElementsByClassName('bar-label')[0].innerHTML = task.name;
-
-  // manually reset progress width change, double click event doesn't trigger otherwise
-  bar.$bar_progress.finaldx = 0;
-  bar.update_handle_position();
-}</code>
-    </property>
-    <property>
-      <name>Function definitions</name>
-    </property>
-    <property>
-      <parse/>
-    </property>
-    <property>
-      <use/>
-    </property>
-  </object>
-  <object>
-    <name>TaskManager.GanttMacro.Macro</name>
-    <number>3</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>fef48bca-1806-4d62-80e9-fb44303d2cda</guid>
-    <class>
-      <name>XWiki.JavaScriptExtension</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <cache>
-        <cache>0</cache>
-        <defaultValue>long</defaultValue>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <freeText>forbidden</freeText>
-        <largeStorage>0</largeStorage>
-        <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </cache>
-      <code>
-        <contenttype>PureText</contenttype>
-        <disabled>0</disabled>
-        <editor>PureText</editor>
-        <name>code</name>
-        <number>2</number>
-        <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <parse>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>parse</name>
-        <number>4</number>
-        <prettyName>Parse content</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </parse>
-      <use>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <freeText>forbidden</freeText>
-        <largeStorage>0</largeStorage>
-        <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>currentPage|onDemand|always</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </use>
-    </class>
-    <property>
-      <cache>long</cache>
-    </property>
-    <property>
-      <code>if (!gantts) {
-  var gantts = [];
+      <code>require([
+  'jquery',
+  'taskgantt-service-urls',
+  'taskgantt-localization',
+  'taskgantt-override-functions',
+  'taskgantt-utils',
+  'frappe-gantt',
+  'taskgantt-frappe-overrides'
+], function ($, serviceUrls, l10n, overrideDefs, taskutil) {
   async function spawnGantt(ganttDiv, idx) {
-    console.log(ganttDiv, idx)
-    jQuery(ganttDiv).attr('id', 'gantt' + idx);
-    return fetch(jsonSourceURL + getJsonSourceQuery(ganttDiv)).then(response =&gt; response.json()).then(tasks =&gt; {
-      if(tasks.length == 0) {
-        jQuery(ganttDiv).append(`
-        &lt;div class='box'&gt;Gantt: No tasks to show.&lt;/div&gt;
-        `);
-        return;
-      }
-      tasks.forEach(formatTask);
-      tasks.forEach((task) =&gt; {
-        // If the dependencies of this task are not present in this diagram, remove them (else the Gantt breaks)
-        let dependencies = task.dependencies.filter((dep) =&gt; tasks.any((t) =&gt; (t.id == dep)));
-        task.dependencies = dependencies;
-      });
-      console.log(tasks);
-      let gantt = new Gantt(ganttDiv, tasks, {
-        view_mode_select: true,
-        view_mode: 'Day',
-        popup_trigger: null,
-        padding: 10,
-        language: XWikiLocale,
-        on_click: function (task) {
-          window.open(task.link).focus();
-        },
-        on_progress_change: function (task, newProgress) {
-          if (newProgress == task.editHack.oldProgress) {
-            // useless progress change (event fires on any click, quirk of frappe-gantt)
-            return;
-          }
-          let forbiddenEditReason = forbiddenEdit(task, gantts[idx]);
-          if (forbiddenEditReason != null) {
-            revertBar(task, gantts[idx]);
-            new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
-            return;
-          }
 
-          let params = {
-            taskDocument: task.id,
-            progress: newProgress
-          };
-          if(task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
-            params.startDate = task.start.getTime();
-            params.endDate = task.end.getTime();
-          }
-          setGanttDisabledOverlay(gantts[idx], true);
-          jQuery.ajax( updateService(task) + new URLSearchParams(params) ).success(function(data) {
-            redrawBar(task, gantts[idx]);
-            setGanttDisabledOverlay(gantts[idx], false);
-            new XWiki.widgets.Notification(successMessage, 'info', '20');
-          }).error(e =&gt; {
-            console.log('Error when updating progress:', e);
-            revertBar(task, gantts[idx]);
-            setGanttDisabledOverlay(gantts[idx], false);
-            new XWiki.widgets.Notification(escapeHTML(e.responseJSON.description), 'error', '20');
-          });
-        },
-        on_view_change: function(mode) {
-          //empty
-        },
-        on_date_change: function (task, newStartDate, newEndDate) {
-          // (Frappe automatically subtracts 1s from the real end date)
-          newEndDate.setSeconds(newEndDate.getSeconds() + 1);
-          if (newStartDate.getTime() == task.editHack.oldStartDate.getTime() &amp;&amp;
-              newEndDate.getTime() == task.editHack.oldEndDate.getTime()) {
-            // Useless progress change (event fires on any click, quirk of frappe-gantt)
-            return;
-          }
-          let forbiddenEditReason = forbiddenEdit(task, gantts[idx]);
-          if (forbiddenEditReason != null) {
-            revertBar(task, gantts[idx]);
-            new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
-            return;
-          }
-          let params = {
-            taskDocument: task.id,
-          };
-          // Manually set minutes and seconds since frappe gantt rounds to fixed hours
-          newStartDate.setSeconds(task.editHack.oldStartDate.getSeconds());
-          newStartDate.setMinutes(task.editHack.oldStartDate.getMinutes());
-          if(newStartDate.getTime() != task.editHack.oldStartDate.getTime()) {
-            params.startDate = newStartDate.getTime();
-          }
-          newEndDate.setSeconds(task.editHack.oldEndDate.getSeconds());
-          newEndDate.setMinutes(task.editHack.oldEndDate.getMinutes());
-          if(newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
-            params.endDate = newEndDate.getTime();
-          }
-          setGanttDisabledOverlay(gantts[idx], true);
-          jQuery.ajax( updateService(task) + new URLSearchParams(params) ).success(function(data) {
-            redrawBar(task, gantts[idx]);
-            new XWiki.widgets.Notification(successMessage, 'info', '20');
-            setGanttDisabledOverlay(gantts[idx], false);
-          }).error(e =&gt; {
-            revertBar(task, gantts[idx]);
-            console.log('Error when updating dates:', e);
-            new XWiki.widgets.Notification(escapeHTML(e.responseJSON.description), 'error', '20');
-            setGanttDisabledOverlay(gantts[idx], false);
-          });
-        },
-      });
-      // Don't enforce 'task must start after dependencies' rule
-      if(gantt.bars[0].__proto__['_update_bar_position'] === undefined) {
-        gantt.bars[0].__proto__['_update_bar_position'] = gantt.bars[0].__proto__['update_bar_position'];
-        gantt.bars[0].__proto__['update_bar_position'] = function ({ x = null, width = null }) {
-          const bar = this.$bar;
-          if (x) {
-            this.update_attr(bar, 'x', x);
-          }
-          if (width &amp;&amp; width &gt;= this.gantt.options.column_width) {
-            this.update_attr(bar, 'width', width);
-          }
-          this.update_label_position();
-          this.update_handle_position();
-          this.update_progressbar_position();
-          this.update_arrow_position();
-        }
-      }
-      return gantt;
+    $(ganttDiv).attr('id', 'taskgantt-gantt' + idx);
+
+    let tasks = await fetch(serviceUrls.getJsonSourceQuery(ganttDiv)).then(response =&gt; response.json());
+    if (tasks.length == 0) {
+      // Frappe breaks if it has no tasks to display, so replace it with an error message.
+      $(ganttDiv).append(`&lt;div class='box'&gt;` + l10n.noTasksMessage + `&lt;/div&gt;`);
+      return;
+    }
+    tasks.forEach(taskutil.formatTask);
+    tasks.forEach((task) =&gt; {
+      // If the dependencies of this task are not present in this diagram, remove them (otherwise the Gantt breaks).
+      let dependencies = task.dependencies.filter((dep) =&gt; tasks.any((t) =&gt; (t.id == dep)));
+      task.dependencies = dependencies;
     });
-  }
-  require(['jquery', frappe_js_path], function(jQuery){
-     Promise.all(jQuery.map(jQuery('.taskgantt'), spawnGantt)).then(data =&gt; gantts = data);
-  });
-}</code>
+
+    console.log(tasks);
+
+    let gantt;
+
+    let ganttOptions = {
+      view_mode: 'Day',
+      popup_trigger: null,
+      padding: 15,
+      language: l10n.XWikiLocale,
+      on_click: overrideDefs.on_click,
+      on_progress_change: overrideDefs.on_progress_change,
+      on_date_change: overrideDefs.on_date_change,
+    };
+
+    try {
+      gantt = new Gantt(ganttDiv, tasks, ganttOptions);
+    } catch (e) {
+      // In the case the language is undefined or not supported by frappe-gantt, fall back to English.
+      ganttOptions.language = 'en';
+      gantt = new Gantt(ganttDiv, tasks, ganttOptions);
+    }
+
+    // Bind viewmode buttons.
+    $('input', ganttDiv).on('click', (e) =&gt; {
+      gantt.change_view_mode(e.currentTarget.value);
+    });
+
+    return gantt;
+  };
+  Promise.all($.map($('.taskgantt'), spawnGantt));
+});</code>
     </property>
     <property>
       <name>Spawn frappe-gantt</name>
@@ -1081,18 +1254,12 @@ function redrawBar(task, gantt) {
       <cache>long</cache>
     </property>
     <property>
-      <code>.taskgantt {
-  position:relative;
-  overflow:hidden;
-}
-
-.gantt {
-  .tick {
-    fill: @xwiki-border-color;
-    stroke-width: 0.4;
-  }
-  .tick.thick {
-    stroke-width: 2;
+      <code>.gantt {
+  /**
+   * Grid and backgrounds.
+   */
+  .grid-background {
+    fill: none;
   }
   .grid-row {
     fill: @xwiki-page-content-bg;
@@ -1100,57 +1267,169 @@ function redrawBar(task, gantt) {
   .grid-row:nth-child(even) {
     fill: @nav-link-hover-bg;
   }
-  .bar-label {
+  .row-line {
+    stroke: @xwiki-border-color;
+  }
+  .tick {
+    fill: @xwiki-border-color;
+    stroke-width: 0.4;
+  }
+  .tick.thick {
+    stroke-width: 2;
+  }
+  .today-highlight {
+    fill: @xwiki-border-color;
+    opacity: 0.5;
+  }
+  /**
+   * Heading.
+   */
+  .grid-header {
+    fill: @xwiki-page-content-bg;
+    stroke: @xwiki-border-color;
+    stroke-width: 1.4;
+  }
+  .lower-text, .upper-text {
+    font-size: @font-size-base;
+    text-anchor: middle;
+  }
+  .upper-text {
     fill: @text-color;
-    font-weight: bold;
   }
-  .bar-wrapper:hover.taskgantt-status-ToDo .bar-progress {
-    fill: @brand-warning;
+  .lower-text {
+    fill: @text-color;
   }
-  .bar-wrapper.taskgantt-status-Done .bar-progress {
-    fill: @brand-success;
+  .hide {
+    display: none;
   }
-  .bar-wrapper.taskgantt-status-InProgress {
+  /**
+   * Bar handles and arrow.
+   */
+  .arrow {
+    fill: none;
+    stroke: @text-color;
+    stroke-width: 1.4;
+  }
+  .handle {
+    fill: lighten(@xwiki-border-color, 10%);
+    cursor: ew-resize;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+  }
+  .bar-wrapper:hover .handle {
+    visibility: visible;
+    opacity: 1;
+  }
+  /**
+   * Task bar defaults.
+   */
+  .bar {
+    fill: @xwiki-border-color;
+    rect, polygon {
+      filter: drop-shadow(0 0 0.3rem fade(contrast(@xwiki-page-content-bg), 33%));
+    }
+    .bar-invalid {
+      fill: transparent;
+      stroke: @xwiki-border-color;
+      stroke-width: 1;
+      stroke-dasharray: 5;
+    }
+    stroke-width: 0;
+    transition: stroke-width 0.3s ease;
+    user-select: none;
+  }
+  .bar-wrapper.taskgantt-no-due-date .bar {
+    filter: none;
+  }
+  .bar-progress {
     fill: @brand-info;
   }
-  .bar-wrapper.taskgantt-no-due-date text, .gantt .bar-wrapper.taskgantt-no-due-date text.big {
+  .bar-wrapper {
+    cursor: pointer;
+    outline: none;
+    &amp;.active, &amp;:hover {
+      .bar {
+        fill: darken(@xwiki-background-secondary-color, 10%);
+      }
+      .bar-progress {
+        fill: lighten(@brand-info, 10%);
+      }
+    }
+  }
+  /**
+   * Custom task classes.
+   */
+  .bar-wrapper {
+    &amp;.taskgantt-priority-High {
+      .bar-progress {
+        fill: @brand-warning;
+      }
+    }
+    &amp;.taskgantt-priority-Low {
+      .bar-progress {
+        fill: @brand-success;
+      }
+    }
+    &amp;.taskgantt-priority-Medium {
+      .bar-progress {
+        fill: @brand-info;
+      }
+    }
+    &amp;.active, &amp;:hover {
+      &amp;.taskgantt-priority-High {
+        .bar-progress {
+          fill: darken(@brand-warning, 10%);
+        }
+      }
+      &amp;.taskgantt-priority-Low {
+        .bar-progress {
+          fill: darken(@brand-success, 10%);
+        }
+      }
+      &amp;.taskgantt-priority-Medium {
+        .bar-progress {
+          fill: darken(@brand-info, 10%);
+        }
+      }
+    }
+  }
+  /**
+   * Bar text.
+   */
+  .bar-label {
+    fill: contrast(@xwiki-border-color);
+    dominant-baseline: central;
+    text-anchor: middle;
+    font-size: @font-size-base;
+    font-weight: bold;
+  }
+  .bar-label.big {
+    fill: contrast(@xwiki-page-content-bg);
+    text-anchor: start;
+  }
+  .bar-invalid ~ .bar-label {
+    fill: @text-color;
+  }
+  /**
+   * Custom classes for XWiki tasks.
+   */
+  .bar-wrapper.taskgantt-no-due-date text, .bar-wrapper.taskgantt-no-due-date text.big {
     filter:url(#rounded-corners);
     fill:@nav-link-hover-bg;
   }
-  .bar-wrapper.taskgantt-no-due-date .bar, .gantt .bar-wrapper.taskgantt-no-due-date .bar-progress {
+  .bar-wrapper.taskgantt-no-due-date .bar, .bar-wrapper.taskgantt-no-due-date .bar-progress {
     mask: url('#fademask');
   }
 }
-
-.gantt-popup {
-  width:10em;
-  height:2em;
-  position:absolute;
-  overflow:visible;
-  visibility:hidden;
-
-  .popuptext {
-    width: 100%;
-    height: 100%;
-    background-color: @navbar-default-bg;
-    color: @nav-link-hover-bg;
-    text-align: center;
-    border-radius: 6px;
-    padding: 3% 0;
-    position: absolute;
-    z-index: 2;
-  }
-
-  .popuptext::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: rotate(45deg) translate(-40%, -40%);
-    background-color: @navbar-default-bg;
-    height: 7px;
-    width: 7px;
-  }
+.taskgantt {
+  position:relative;
+  overflow:hidden;
+}
+.gantt-container {
+  position: relative;
+  overflow: auto;
+  font-size: @font-size-base;
 }
 .taskgantt-noedit-overlay {
   position:absolute;
@@ -1164,10 +1443,43 @@ function redrawBar(task, gantt) {
   display:flex;
   justify-content:center;
   span {
-    color: @nav-link-hover-bg;
+    color: contrast(@navbar-default-bg);
     font-weight: bold;
     align-self:center;
-    font-size:2em;
+    font-size:@font-size-h2;
+  }
+}
+
+.gantt-popup {
+  position: absolute;
+  overflow: visible;
+  visibility: hidden;
+
+  .popuptext {
+    width: fit-content;
+    background-color: @brand-info;
+    color: @xwiki-page-header-bg-color;
+    text-align: center;
+    white-space: pre;
+    border-radius: 6px;
+    padding: 0.3em 0.5em;
+    position: absolute;
+    z-index: 2;
+    .gantt-popup-progress-number {
+      display: inline-block;
+      width:3.3em;
+      text-align: center;
+    }
+    &amp;:after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: rotate(45deg) translate(-40%, -40%);
+      background-color: @brand-info;
+      height: 7px;
+      width: 7px;
+    }
   }
 }</code>
     </property>
@@ -1182,6 +1494,146 @@ function redrawBar(task, gantt) {
     </property>
     <property>
       <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>ec66a421-f55d-4f6e-8ccf-6a01ac04ff22</guid>
+    <class>
+      <name>XWiki.UIExtensionClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <async_cached>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_cached</name>
+        <number>3</number>
+        <prettyName>Cached</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_cached>
+      <async_context>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>async_context</name>
+        <number>4</number>
+        <prettyName>Context elements</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>, </separator>
+        <separators>|, </separators>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <values>action=Action|doc.reference=Document|icon.theme=Icon theme|locale=Language|rendering.defaultsyntax=Default syntax|rendering.restricted=Restricted|rendering.targetsyntax=Target syntax|request.base=Request base URL|request.parameters=Request parameters|request.url=Request URL|request.wiki=Request wiki|user=User|wiki=Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </async_context>
+      <async_enabled>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_enabled</name>
+        <number>2</number>
+        <prettyName>Asynchronous rendering</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_enabled>
+      <content>
+        <disabled>0</disabled>
+        <editor>Text</editor>
+        <name>content</name>
+        <number>1</number>
+        <prettyName>Executed Content</prettyName>
+        <rows>25</rows>
+        <size>120</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </content>
+      <extensionPointId>
+        <disabled>0</disabled>
+        <name>extensionPointId</name>
+        <number>5</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>6</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parameters>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>parameters</name>
+        <number>7</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>8</number>
+        <prettyName>Extension Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <async_cached>1</async_cached>
+    </property>
+    <property>
+      <async_context/>
+    </property>
+    <property>
+      <async_enabled>0</async_enabled>
+    </property>
+    <property>
+      <content/>
+    </property>
+    <property>
+      <extensionPointId>org.xwiki.platform.requirejs.module</extensionPointId>
+    </property>
+    <property>
+      <name>com.xwiki.task.gantt.frappe-gantt</name>
+    </property>
+    <property>
+      <parameters>id=frappe-gantt
+path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.min.js")</parameters>
+    </property>
+    <property>
+      <scope>wiki</scope>
     </property>
   </object>
   <object>
@@ -1392,15 +1844,15 @@ function redrawBar(task, gantt) {
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
 #else
-  #set($discard = $xwiki.linkx.use(
-      $services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.css'),
-      {'type': 'text/css', 'rel': 'stylesheet'}
+  #set ($discard = $xwiki.linkx.use(
+    $services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.css'),
+    {'type': 'text/css', 'rel': 'stylesheet'}
   ))
-  #set($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro')) ## Override default frappe styles
-  #set($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro')) ## Spawn gantt, Override default frappe styles for svg styles/patterns
-  #set($dateFormat = $services.datemacro.configuration.storageDateFormat)
-  #set($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
-  #set($diagramIsReadonly = !("$!xcontext.macro.params.readonly" == 'false'))
+  #set ($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro')) ## Override default frappe styles.
+  #set ($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro')) ## Spawn gantt, Override default frappe styles for svg styles/patterns.
+  #set ($dateFormat = $services.datemacro.configuration.storageDateFormat)
+  #set ($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
+  #set ($diagramIsReadonly = !("$!xcontext.macro.params.readonly" == 'false'))
 
 
 {{html}}
@@ -1440,36 +1892,36 @@ function redrawBar(task, gantt) {
 #if ($xcontext.macro.params.to)&lt;span&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.date.to'))&lt;/b&gt; ${escapetool.html($xcontext.macro.params.to)}&lt;/span&gt;#end
 #if ($xcontext.macro.params.assignees)
 &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.assignees'))&lt;/b&gt;
-  #foreach($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
+  #foreach ($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
     &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
   #end
 &lt;/p&gt;
 #end
 #if ($xcontext.macro.params.spaces)
 &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.spaces'))&lt;/b&gt;
-  #foreach($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
+  #foreach ($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
     &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
   #end
 &lt;/p&gt;
 #end
 #if ($xcontext.macro.params.projects)
 &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.projects'))&lt;/b&gt;
-  #foreach($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
+  #foreach ($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
     &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
   #end
 &lt;/p&gt;
 #end
 &lt;/p&gt;
 #macro (viewModeButton $viewMode)
-  &lt;input class='button' type='button' onclick="changeView(this)" value="$viewMode"&gt;
+  &lt;input class='button' type='button' value="$viewMode"&gt;
 #end
 &lt;form id='view-mode-buttons'&gt;
-  #viewModeButton('Quarter Day')
-  #viewModeButton('Half Day')
-  #viewModeButton('Day')
-  #viewModeButton('Week')
-  #viewModeButton('Month')
-  #viewModeButton('Year')
+  #viewModeButton ('Quarter Day')
+  #viewModeButton ('Half Day')
+  #viewModeButton ('Day')
+  #viewModeButton ('Week')
+  #viewModeButton ('Month')
+  #viewModeButton ('Year')
 &lt;/form&gt;
   &lt;div class='taskgantt-noedit-overlay'&gt;&lt;span&gt;
     $escapetool.html($services.localization.render('taskmanager.gantt.interface.wait'))
@@ -2044,7 +2496,7 @@ function redrawBar(task, gantt) {
       <defaultValue>true</defaultValue>
     </property>
     <property>
-      <description>Hide tasks which have no due date set, and as such cannot be displayed properly in the diagram. If set to false, the default duration of such a task is set to one week.</description>
+      <description>Hide tasks which have no due date set, and as such cannot be displayed properly in the diagram. If set to false, the default duration of such a task is displayed as one week.</description>
     </property>
     <property>
       <mandatory>0</mandatory>

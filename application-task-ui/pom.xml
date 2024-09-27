@@ -61,7 +61,7 @@
     <dependency>
       <groupId>org.webjars.npm</groupId>
       <artifactId>frappe-gantt</artifactId>
-      <version>0.6.1</version>
+      <version>${gantt.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.contrib</groupId>
