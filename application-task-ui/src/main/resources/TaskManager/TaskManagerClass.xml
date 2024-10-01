@@ -135,7 +135,7 @@
     #set($taskproject = $task.getProperty('project').value)
     #if($type == 'view')
       ## Begin a list in XWiki Syntax
-      *
+      * ## Without this space the * is not parsed as XWiki syntax
     #elseif($type == 'edit')
       &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
         &lt;input
