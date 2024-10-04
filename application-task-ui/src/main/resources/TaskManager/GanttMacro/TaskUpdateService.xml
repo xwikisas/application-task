@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.GanttMacro.UpdateService" locale="">
+<xwikidoc version="1.4" reference="TaskManager.GanttMacro.TaskUpdateService" locale="">
   <web>TaskManager.GanttMacro</web>
-  <name>UpdateService</name>
+  <name>TaskUpdateService</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -36,52 +36,57 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity wiki="false"}}
+  <content>{{velocity output="false"}}
 #macro (maybeSet $document $propName $propValue)
   #if ($propValue)
-    $document.set($propName, $propValue)
+    #set ($discard = $document.set($propName, $propValue))
   #end
 #end
-
+{{/velocity}}{{velocity wiki="false"}}
 ##
 ## This page acts as an endpoint for taskgantt macro to update the tasks.
 ## It also contains some simple logic for updating the status based on progress.
-## This workaround is needed until XWIKI-20704 is fixed.
+## This workaround is needed until the following JIRA issue is fixed:
+## XWIKI-20704: NullPointerException (NPE) when accessing objects with ComputedField properties from REST
 ##
 ## Parameters:
 ##   - taskDocument: document id (eg. wiki:Space.Page);
 ##   - startDate, endDate: new times, given as unix epoch milliseconds;
 ##   - progress: new progress value, 0-100 number;
 ##
-## Returns a json with a 'success' property and, in the case of a failure, a 'reason' as defined in the translation keys.
+## Returns a json with a 'success' field and, in case of a failure, a 'reason' as defined in the translation keys.
 ##
-
-
 #if ("$!request.outputSyntax" == 'plain')
   #set ($discard = $response.setContentType('application/json'))
 #end
-
 #set ($taskDocument = $request.taskDocument)
 #if (!$xwiki.exists($taskDocument))
-  $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExists')})
+  $jsontool.serialize({
+    'success':false,
+    'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExists')
+  })
 #else
   #set ($taskDocument = $xwiki.getDocument($taskDocument))
   #set ($taskClass = $taskDocument.getObject('TaskManager.TaskManagerClass'))
-
   #if (!$taskClass)
-    $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExistsClass')})
+    $jsontool.serialize({
+      'success':false,
+      'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExistsClass')
+    })
   #else
     #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
-      $jsontool.serialize({'success':false, 'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.permissions')})
+      $jsontool.serialize({
+        'success':false,
+        'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.permissions')
+      })
     #else
       #set ($discard = $taskDocument.use('TaskManager.TaskManagerClass'))
       #if ($request.endDate)#set ($end = $datetool.toDate($numbertool.toNumber($request.endDate).longValue()))#end
       #if ($request.startDate)#set ($start = $datetool.toDate($numbertool.toNumber($request.startDate).longValue()))#end
-
       #maybeSet ($taskDocument 'progress' $request.progress)
-      ## Set status automatically when 100%
+      ## Set status automatically when 100%.
       #if ($request.progress == '100')
-        $taskDocument.set('status', 'Done')
+        #set ($discard = $taskDocument.set('status', 'Done'))
       #end
       #maybeSet ($taskDocument 'startDate' $start)
       #maybeSet ($taskDocument 'duedate' $end)
@@ -92,7 +97,7 @@
 #end
 {{/velocity}}</content>
   <object>
-    <name>TaskManager.GanttMacro.UpdateService</name>
+    <name>TaskManager.GanttMacro.TaskUpdateService</name>
     <number>0</number>
     <className>XWiki.XWikiRights</className>
     <guid>c96c60c2-c754-4670-8d62-32a4a39517eb</guid>
@@ -175,7 +180,7 @@
     </property>
   </object>
   <object>
-    <name>TaskManager.GanttMacro.UpdateService</name>
+    <name>TaskManager.GanttMacro.TaskUpdateService</name>
     <number>1</number>
     <className>XWiki.XWikiRights</className>
     <guid>f5c1d40d-6a6f-4831-ba12-023b7bb14ebb</guid>

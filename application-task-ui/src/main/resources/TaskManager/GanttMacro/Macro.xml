@@ -131,8 +131,6 @@
     'taskEdit.error.permissions',
     'taskEdit.success',
     'task.noDueDate',
-    'interface.noTasks',
-    'interface.popup.progress',
   ],
 });
 
@@ -142,59 +140,76 @@ define('taskgantt-localization', ['xwiki-l10n!taskgantt-translation-keys', 'xwik
     permissionError: l10n['taskEdit.error.permissions'],
     successMessage: l10n['taskEdit.success'],
     noDueDateMessage: l10n['task.noDueDate'],
-    noTasksMessage: l10n['interface.noTasks'],
-    popupProgressText: l10n['interface.popup.progress'],
     XWikiLocale: xm.locale,
   };
 });
 
+define('taskgantt-config-templates', ['jquery'], function ($) {
+  const config = JSON.parse($('#taskgantt-config-templates').text())
+  return config;
+});
+
 define('taskgantt-service-urls', ['jquery'], function ($) {
-  const jsonSourceURL =
-    new XWiki.Document(XWiki.Model.resolve('TaskManager.GanttMacro.JSONTaskSource', XWiki.EntityType.DOCUMENT)).getURL('get')
-    + '?xpage=plain&amp;outputSyntax=plain';
-  const updateServiceURL =
-    new XWiki.Document(XWiki.Model.resolve('TaskManager.GanttMacro.UpdateService', XWiki.EntityType.DOCUMENT)).getURL('get')
+  const jsonSourceBaseURL =
+    new XWiki.Document(
+      XWiki.Model.resolve('TaskManager.GanttMacro.JSONTaskSource', XWiki.EntityType.DOCUMENT)
+    ).getURL('get')
+    + '?xpage=plain&amp;outputSyntax=plain&amp;';
+  const updateServiceBaseURL =
+    new XWiki.Document(
+      XWiki.Model.resolve('TaskManager.GanttMacro.TaskUpdateService', XWiki.EntityType.DOCUMENT)
+    ).getURL('get')
     + '?xpage=plain&amp;outputSyntax=plain&amp;';
 
-  function updateService(task) {
-    // Could be refactored and replaced by a REST API call after XWIKI-20704 is fixed.
-    return updateServiceURL + new URLSearchParams({ taskDocument: task.id }) + '&amp;';
-    //return new XWiki.Document(XWiki.Model.resolve(task.id, XWiki.EntityType.DOCUMENT)).getRestURL('objects/TaskManager.TaskManagerClass/0');
+  function getUpdateServiceURL(task) {
+    /**
+     * Could be refactored and replaced by a REST API call after the following JIRA issue is fixed:
+     * XWIKI-20704: NullPointerException (NPE) when accessing objects with ComputedField properties from REST
+     */
+    return updateServiceBaseURL + new URLSearchParams({ taskDocument: task.id }) + '&amp;';
+    // REST API call skeleton.
+    // return new XWiki.Document(
+    //   XWiki.Model.resolve(task.id, XWiki.EntityType.DOCUMENT)
+    // ).getRestURL('objects/TaskManager.TaskManagerClass/0');
   };
-  function getJsonSourceQuery(ganttDiv) {
-    let query = '';
+  function getJsonSourceURL(ganttDiv) {
+    const params = {};
     ganttDiv = $(ganttDiv);
     if (undefined !== ganttDiv.data('assignees')) {
-      query += '&amp;assignees=' + ganttDiv.data('assignees');
+      params['assignees'] = ganttDiv.data('assignees');
     }
     if (undefined !== ganttDiv.data('reporters')) {
-      query += '&amp;reporters=' + ganttDiv.data('reporters');
+      params['reporters'] = ganttDiv.data('reporters');
     }
     if (undefined !== ganttDiv.data('projects')) {
-      query += '&amp;projects=' + ganttDiv.data('projects');
+      params['projects'] = ganttDiv.data('projects');
     }
     if (undefined !== ganttDiv.data('spaces')) {
-      query += '&amp;spaces=' + ganttDiv.data('spaces');
+      params['spaces'] = ganttDiv.data('spaces');
     }
     if (undefined !== ganttDiv.data('date-to')) {
-      query += '&amp;to=' + ganttDiv.data('date-to');
+      params['to'] = ganttDiv.data('date-to');
     }
     if (undefined !== ganttDiv.data('date-from')) {
-      query += '&amp;from=' + ganttDiv.data('date-from');
+      params['from'] = ganttDiv.data('date-from');
     }
     if (undefined !== ganttDiv.data('hide-no-due-date')) {
-      query += '&amp;hideNoDueDate=' + ganttDiv.data('hide-no-due-date');
+      params['hideNoDueDate'] = ganttDiv.data('hide-no-due-date');
     }
-    return jsonSourceURL + query;
+    const query = $.param(params);
+    return jsonSourceBaseURL + query;
   };
 
   return {
-    'updateService': updateService,
-    'getJsonSourceQuery': getJsonSourceQuery,
+    'getUpdateServiceURL': getUpdateServiceURL,
+    'getJsonSourceURL': getJsonSourceURL,
   };
 });
 
 define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10n) {
+  /**
+   * Escape text with HTML escapes (needed because js escape() is deprecated).
+   */
   function escapeHTML(originalString) {
     return String(originalString)
       .replace(/&amp;/g, '&amp;amp;')
@@ -206,7 +221,7 @@ define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10
   /**
    *  Used to get absolute position information of an element relative to another element (viewport).
    */
-  function normalizeDims(viewport, elem) {
+  function normalizePosition(viewport, elem) {
     return {
       x: (elem.x - viewport.x),
       y: (elem.y - viewport.y),
@@ -231,23 +246,21 @@ define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10
     if (!(task.end instanceof Date)) {
       task.end = new Date(task.end);
     }
-    if (task.editHack &amp;&amp; task._start) {
-      // At this point the Gantt is initialised so we can use the internal _start and _end dates.
-      task.editHack.oldProgress = task.progress;
-      task.editHack.oldStartDate.setTime(task._start.getTime());
-      task.editHack.oldEndDate.setTime(task._end.getTime());
-    } else {
-      task.editHack = {
-        oldProgress: task.progress,
-        oldStartDate: new Date(task.start.getTime()),
-        oldEndDate: new Date(task.end.getTime()),
-      };
-    }
+    /**
+     * The `editMetadata` takes a snapshot of a task and it is used to detect what properties were updated when editing.
+     * It is also used to restore a task to its previous state in the UI after an edit error (permissions, readonly).
+     */
+    const hasStarted = task.editMetadata &amp;&amp; task._start;
+    task.editMetadata = {
+      oldProgress: task.progress,
+      oldStartDate: hasStarted ? task._start : new Date(task.start.getTime()),
+      oldEndDate: hasStarted ? task._end : new Date(task.end.getTime()),
+    };
   };
   /**
    * Returns an error message if editing this task is not allowed.
    */
-  function forbiddenEdit(task, gantt) {
+  function getForbiddenEditMsg(task, gantt) {
     let msg = null;
     const isReadonly = $(gantt.$svg).closest('.taskgantt').data('readonly');
     if (isReadonly) {
@@ -260,9 +273,9 @@ define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10
 
   return {
     'escapeHTML': escapeHTML,
-    'normalizeDims': normalizeDims,
+    'normalizePosition': normalizePosition,
     'formatTask': formatTask,
-    'forbiddenEdit': forbiddenEdit,
+    'getForbiddenEditMsg': getForbiddenEditMsg,
   };
 });
 
@@ -278,15 +291,18 @@ define('taskgantt-progress-popup', [
     }
     const viewport = ganttDiv.getBoundingClientRect();
     let bar = ganttObj.bars.find((b) =&gt; b.group === barElem);
-    const b = taskutil.normalizeDims(viewport, bar.$bar.getBoundingClientRect());
-    const pop = taskutil.normalizeDims(viewport, popup.getElementsByClassName('popuptext')[0].getBoundingClientRect());
+    const b = taskutil.normalizePosition(viewport, bar.$bar.getBoundingClientRect());
+    const pop = taskutil.normalizePosition(
+      viewport,
+      popup.getElementsByClassName('popuptext')[0].getBoundingClientRect()
+    );
     let y = b.y - pop.height - 5;
     let x = b.x + (b.width - pop.width) / 2;
     popup.style.top = y + 'px';
     popup.style.left = x + 'px';
     let popupNumber = $('.gantt-popup-progress-number', popup);
     popupNumber.text(bar.compute_progress() + '%');
-    popup.style.visibility = 'visible';
+    $(popup).addClass('active');
     if (progressChangeObserver) {
       progressChangeObserver.disconnect();
     }
@@ -297,7 +313,7 @@ define('taskgantt-progress-popup', [
     if (isResizingProgress) {
       return;
     }
-    popup.style.visibility = 'hidden';
+    $(popup).removeClass('active');
     if (progressChangeObserver) {
       progressChangeObserver.disconnect();
     }
@@ -307,17 +323,7 @@ define('taskgantt-progress-popup', [
    */
   function setupProgressPopup(ganttObj) {
     let ganttDiv = $(ganttObj.$svg).closest('.taskgantt')[0];
-    let popup = $('div.gantt-popup', ganttDiv);
-    if (popup.length &gt; 0) {
-      popup = popup[0];
-    } else {
-      popup = document.createElement('div');
-      popup.innerHTML = '&lt;span class="popuptext"&gt;' +
-        taskutil.escapeHTML(l10n.popupProgressText) +
-        '&lt;span class="gantt-popup-progress-number"&gt;100%&lt;/span&gt;&lt;/span&gt;';
-      popup.classList.add('gantt-popup');
-      ganttDiv.appendChild(popup);
-    }
+    let popup = $('div.gantt-popup', ganttDiv)[0];
     // Set up popup event listeners.
     let progressChangeObserver;
     let hoverTimer;
@@ -478,76 +484,34 @@ define('taskgantt-progress-popup', [
   'taskgantt-utils',
   'taskgantt-localization',
   'taskgantt-progress-popup',
-], function ($, taskutil, l10n, taskpopup) {
+  'taskgantt-config-templates'
+], function ($, taskutil, l10n, taskpopup, tgtemplates) {
   /**
    * Add custom svg styles as part of a &lt;defs&gt; tag.
-   * This is done to fade out tasks with no due date and turn their text color red.
+   * This is done to fade out tasks with no due date and turn their text background color red.
    */
   function addSvgStyles(svgElem) {
     var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    defs.innerHTML += `
-      &lt;linearGradient id="fadeGrad"&gt;
-        &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
-        &lt;stop offset="75%" stop-color="white" stop-opacity=".4" /&gt;
-        &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
-      &lt;/linearGradient&gt;
-      &lt;mask x="-50%" y="-50%" width="200%" height="200%" id="fademask" maskContentUnits="objectBoundingBox"&gt;
-        &lt;rect x="-1" y="-1" width="2" height="3" fill="url(#fadeGrad)"/&gt;
-      &lt;/mask&gt;
-
-      &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
-        &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
-        &lt;feGaussianBlur stdDeviation="4"/&gt;
-        &lt;feComponentTransfer&gt;
-          &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
-        &lt;/feComponentTransfer&gt;
-        &lt;feComponentTransfer&gt;
-          &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
-        &lt;/feComponentTransfer&gt;
-        &lt;feComposite operator="over" in="SourceGraphic"/&gt;
-      &lt;/filter&gt;
-    `;
+    defs.innerHTML += tgtemplates.svgCustomDefs;
     svgElem.setAttribute('height', svgElem.getAttribute('height') - 100);
     svgElem.appendChild(defs);
   };
   function setGanttDisabledOverlayVisibility(gantt, visible) {
-    $('.taskgantt-noedit-overlay', gantt.$svg.closest('.taskgantt')).attr('style', 'visibility:' + (visible ? 'visible' : 'hidden') + ';');
-  };
-  /**
-   * Update the task position and show an UI notification with the right formatting and text.
-   * Depends on the outcome of the ajax request to the update service.
-   */
-  function setupResultNotificationsCallbacks(ajaxRequest, gantt, task) {
-    ajaxRequest.success(function (data) {
-      try {
-        if (data.success == true) {
-          redrawBar(task, gantt);
-          new XWiki.widgets.Notification(l10n.successMessage, 'info', '20');
-        } else {
-          revertBar(task, gantt);
-          console.log('Error when updating dates:', e);
-          new XWiki.widgets.Notification(taskutil.escapeHTML(e.responseJSON.description), 'error', '20');
-        }
-      } catch (e) {
-        console.log(e)
-        new XWiki.widgets.Notification(taskutil.escapeHTML(e), 'error', '20');
-      }
-      setGanttDisabledOverlayVisibility(gantt, false);
-    }).error(e =&gt; {
-      revertBar(task, gantt);
-      console.log(e);
-      new XWiki.widgets.Notification(taskutil.escapeHTML(e), 'error', '20');
-      setGanttDisabledOverlayVisibility(gantt, false);
-    });
+    let overlayElem = $('.taskgantt-noedit-overlay', gantt.$svg.closest('.taskgantt'));
+    if (visible) {
+      overlayElem.addClass('active');
+    } else {
+      overlayElem.removeClass('active');
+    }
   };
   /**
    * Revert a task bar to its previous position (before modification).
    */
   function revertBar(task, gantt) {
     // Revert to saved state before starting to edit.
-    task._start.setTime(task.editHack.oldStartDate.getTime());
-    task._end.setTime(task.editHack.oldEndDate.getTime());
-    task.progress = task.editHack.oldProgress;
+    task._start.setTime(task.editMetadata.oldStartDate.getTime());
+    task._end.setTime(task.editMetadata.oldEndDate.getTime());
+    task.progress = task.editMetadata.oldProgress;
 
     let bar = gantt.bars.find((bar) =&gt; bar.task === task);
     bar.update_bar_position({ x: bar.$bar.ox, width: bar.$bar.owidth });
@@ -577,14 +541,47 @@ define('taskgantt-progress-popup', [
     bar.$bar_progress.finaldx = 0;
     bar.update_handle_position();
   };
+  /**
+   * Update the task position and show an UI notification with the right formatting and text.
+   */
+  function getUpdateServiceSuccessCallback(gantt, task) {
+    return function(data) {
+      try {
+        if (data.success == true) {
+          redrawBar(task, gantt);
+          new XWiki.widgets.Notification(l10n.successMessage, 'info', '20');
+        } else {
+          revertBar(task, gantt);
+          new XWiki.widgets.Notification(taskutil.escapeHTML(data.reason), 'error', '20');
+        }
+      } catch (e) {
+        console.log(e);
+        revertBar(task, gantt);
+        new XWiki.widgets.Notification(taskutil.escapeHTML(e), 'error', '20');
+      }
+      setGanttDisabledOverlayVisibility(gantt, false);
+    };
+  };
+  /**
+   * Revert the task position and show an UI notification with the right formatting and text.
+   */
+  function getUpdateServiceErrorCallback(gantt, task) {
+    return function(error) {
+      revertBar(task, gantt);
+      console.log(error);
+      new XWiki.widgets.Notification(taskutil.escapeHTML(error), 'error', '20');
+      setGanttDisabledOverlayVisibility(gantt, false);
+    };
+  };
 
   return {
     'setupProgressPopup': taskpopup.setupProgressPopup,
     'addSvgStyles': addSvgStyles,
-    'setupResultNotificationsCallbacks': setupResultNotificationsCallbacks,
     'setGanttDisabledOverlayVisibility': setGanttDisabledOverlayVisibility,
     'redrawBar': redrawBar,
     'revertBar': revertBar,
+    'getUpdateServiceSuccessCallback': getUpdateServiceSuccessCallback,
+    'getUpdateServiceErrorCallback': getUpdateServiceErrorCallback,
   };
 });
 
@@ -661,16 +658,7 @@ define('taskgantt-override-functions', [
    * This prevents unintentional updates and more freedom when moving tasks.
    */
   function custom_bind_bar_events() {
-    // Redefine some jQuery functions so they work on our SVG elements.
-    let closest = (selector, element) =&gt; {
-      if (!element) {
-        return null;
-      }
-      if (element.matches(selector)) {
-        return element;
-      }
-      return closest(selector, element.parentNode);
-    };
+    // Redefine on() from jQuery so delegate event handlers work on SVG elements.
     let on = (element, event, selector, callback) =&gt; {
       if (!callback) {
         callback = selector;
@@ -701,7 +689,7 @@ define('taskgantt-override-functions', [
     }
 
     on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) =&gt; {
-      const bar_wrapper = closest('.bar-wrapper', element);
+      const bar_wrapper = $(element).closest('.bar-wrapper')[0];
 
       if (element.classList.contains('left')) {
         is_resizing_left = true;
@@ -728,7 +716,7 @@ define('taskgantt-override-functions', [
       });
     });
 
-    on(this.$svg, 'mousemove', (e) =&gt; {
+    $(this.$svg).on('mousemove', (e) =&gt; {
       if (!action_in_progress()) return;
       const dx = e.offsetX - x_on_start;
       e.offsetY - y_on_start;
@@ -840,9 +828,15 @@ define('taskgantt-override-functions', [
   function custom_compute_start_end_date() {
     const bar = this.$bar;
     const x_in_units = bar.getX() / this.gantt.options.column_width;
-    const new_start_date = new Date(this.gantt.gantt_start.getTime() + (x_in_units * this.gantt.options.step) * 1000 * 60 * 60);
+    const new_start_date = new Date(
+      this.gantt.gantt_start.getTime() +
+      (x_in_units * this.gantt.options.step) * 1000 * 60 * 60
+    );
     const width_in_units = bar.getWidth() / this.gantt.options.column_width;
-    const new_end_date = new Date(new_start_date.getTime() + (width_in_units * this.gantt.options.step) * 1000 * 60 * 60);
+    const new_end_date = new Date(
+      new_start_date.getTime() +
+      (width_in_units * this.gantt.options.step) * 1000 * 60 * 60
+    );
 
     return { new_start_date, new_end_date };
   };
@@ -862,11 +856,11 @@ define('taskgantt-override-functions', [
    * Event handler which fires after changing the progress.
    */
   function on_progress_change(task, newProgress) {
-    if (newProgress == task.editHack.oldProgress) {
+    if (newProgress == task.editMetadata.oldProgress) {
       // Useless progress change (event fires on any click, quirk of frappe-gantt).
       return;
     }
-    let forbiddenEditReason = taskutil.forbiddenEdit(task, this);
+    let forbiddenEditReason = taskutil.getForbiddenEditMsg(task, this);
     if (forbiddenEditReason != null) {
       taskui.revertBar(task, this);
       new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
@@ -882,11 +876,9 @@ define('taskgantt-override-functions', [
       params.endDate = task._end.getTime();
     }
     taskui.setGanttDisabledOverlayVisibility(this, true);
-    taskui.setupResultNotificationsCallbacks(
-      $.ajax(taskurls.updateService(task) + new URLSearchParams(params)),
-      this,
-      task
-    );
+    $.ajax(taskurls.getUpdateServiceURL(task) + new URLSearchParams(params))
+      .done(taskui.getUpdateServiceSuccessCallback(this, task))
+      .fail(taskui.getUpdateServiceErrorCallback(this, task));
   }
   /**
    * Event handler which fires after changing the dates.
@@ -895,31 +887,29 @@ define('taskgantt-override-functions', [
     // Frappe automatically subtracts 1 second from the real end date.
     newEndDate.setSeconds(newEndDate.getSeconds() + 1);
 
-    if (newStartDate.getTime() == task.editHack.oldStartDate.getTime() &amp;&amp;
-      newEndDate.getTime() == task.editHack.oldEndDate.getTime()) {
+    if (newStartDate.getTime() == task.editMetadata.oldStartDate.getTime() &amp;&amp;
+      newEndDate.getTime() == task.editMetadata.oldEndDate.getTime()) {
       // Useless progress change (event fires on any click, quirk of frappe-gantt).
       return;
     }
-    let forbiddenEditReason = taskutil.forbiddenEdit(task, this);
+    let forbiddenEditReason = taskutil.getForbiddenEditMsg(task, this);
     if (forbiddenEditReason != null) {
       taskui.revertBar(task, this);
       new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
       return;
     }
     let params = {};
-    if (newStartDate.getTime() != task.editHack.oldStartDate.getTime()) {
+    if (newStartDate.getTime() != task.editMetadata.oldStartDate.getTime()) {
       params.startDate = newStartDate.getTime();
     }
-    if (newEndDate.getTime() != task.editHack.oldEndDate.getTime()) {
+    if (newEndDate.getTime() != task.editMetadata.oldEndDate.getTime()) {
       params.endDate = newEndDate.getTime();
     }
 
     taskui.setGanttDisabledOverlayVisibility(this, true);
-    taskui.setupResultNotificationsCallbacks(
-      $.ajax(taskurls.updateService(task) + new URLSearchParams(params)),
-      this,
-      task
-    );
+    $.ajax(taskurls.getUpdateServiceURL(task) + new URLSearchParams(params))
+      .done(taskui.getUpdateServiceSuccessCallback(this, task))
+      .fail(taskui.getUpdateServiceErrorCallback(this, task));
   };
   return {
     // Frappe library Gantt class overrides.
@@ -1087,17 +1077,19 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
   'taskgantt-localization',
   'taskgantt-override-functions',
   'taskgantt-utils',
+  'taskgantt-config-templates',
   'frappe-gantt',
   'taskgantt-frappe-overrides'
-], function ($, serviceUrls, l10n, overrideDefs, taskutil) {
+], function ($, serviceUrls, l10n, overrideDefs, taskutil, tgtemplates) {
   async function spawnGantt(ganttDiv, idx) {
 
     $(ganttDiv).attr('id', 'taskgantt-gantt' + idx);
 
-    let tasks = await fetch(serviceUrls.getJsonSourceQuery(ganttDiv)).then(response =&gt; response.json());
+    let tasks = await fetch(serviceUrls.getJsonSourceURL(ganttDiv)).then(response =&gt; response.json());
     if (tasks.length == 0) {
       // Frappe breaks if it has no tasks to display, so replace it with an error message.
-      $(ganttDiv).append(`&lt;div class='box'&gt;` + l10n.noTasksMessage + `&lt;/div&gt;`);
+      $(ganttDiv).append(tgtemplates.noTasksMessage);
+      $(ganttDiv).find('#view-mode-buttons').empty();
       return;
     }
     tasks.forEach(taskutil.formatTask);
@@ -1106,8 +1098,6 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
       let dependencies = task.dependencies.filter((dep) =&gt; tasks.any((t) =&gt; (t.id == dep)));
       task.dependencies = dependencies;
     });
-
-    console.log(tasks);
 
     let gantt;
 
@@ -1130,7 +1120,7 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
     }
 
     // Bind viewmode buttons.
-    $('input', ganttDiv).on('click', (e) =&gt; {
+    $('#view-mode-buttons &gt; button.view-mode-button', ganttDiv).on('click', (e) =&gt; {
       gantt.change_view_mode(e.currentTarget.value);
     });
 
@@ -1434,6 +1424,9 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
 .taskgantt-noedit-overlay {
   position:absolute;
   visibility:hidden;
+  &amp;.active {
+    visibility: visible;
+  }
   height:100%;
   width:100%;
   z-index: 3;
@@ -1454,6 +1447,9 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
   position: absolute;
   overflow: visible;
   visibility: hidden;
+  &amp;.active {
+    visibility: visible;
+  }
 
   .popuptext {
     width: fit-content;
@@ -1839,7 +1835,36 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <async_enabled>0</async_enabled>
     </property>
     <property>
-      <code>{{velocity}}
+      <code>{{velocity output="false"}}
+#macro (viewModeButton $viewMode $text)
+  &lt;button type="button" class='btn view-mode-button' value="$viewMode"&gt;$escapetool.html($text)&lt;/button&gt;
+#end
+#macro (noTasksMessage)
+  &lt;div class='box'&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.noTasks'))&lt;/div&gt;
+#end
+#macro (svgCustomDefs)
+      &lt;linearGradient id="fadeGrad"&gt;
+        &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
+        &lt;stop offset="75%" stop-color="white" stop-opacity=".6" /&gt;
+        &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
+      &lt;/linearGradient&gt;
+      &lt;mask x="-50%" y="-50%" width="200%" height="200%" id="fademask" maskContentUnits="objectBoundingBox"&gt;
+        &lt;rect x="-1" y="-1" width="2" height="3" fill="url(#fadeGrad)"/&gt;
+      &lt;/mask&gt;
+
+      &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
+        &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
+        &lt;feGaussianBlur stdDeviation="4"/&gt;
+        &lt;feComponentTransfer&gt;
+          &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
+        &lt;/feComponentTransfer&gt;
+        &lt;feComponentTransfer&gt;
+          &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
+        &lt;/feComponentTransfer&gt;
+        &lt;feComposite operator="over" in="SourceGraphic"/&gt;
+      &lt;/filter&gt;
+#end
+{{/velocity}}{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
@@ -1848,11 +1873,19 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
     $services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.css'),
     {'type': 'text/css', 'rel': 'stylesheet'}
   ))
-  #set ($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro')) ## Override default frappe styles.
-  #set ($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro')) ## Spawn gantt, Override default frappe styles for svg styles/patterns.
+  #set ($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro'))
+  #set ($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro'))
   #set ($dateFormat = $services.datemacro.configuration.storageDateFormat)
   #set ($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
   #set ($diagramIsReadonly = !("$!xcontext.macro.params.readonly" == 'false'))
+  ## Create HTML templates for use in JS.
+  #set ($config = {})
+  #set ($discard = $config.put('svgCustomDefs', "#svgCustomDefs"))
+  #set ($discard = $config.put('noTasksMessage', "#noTasksMessage"))
+  {{html clean='false'}}
+  &lt;script id='taskgantt-config-templates' type='application/json'&gt;$jsontool.serialize($config).replace('&amp;lt;', '\u003C')
+  &lt;/script&gt;
+  {{/html}}
 
 
 {{html}}
@@ -1865,67 +1898,73 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
     data-date-to="$escapetool.html($xwiki.jodatime.dateTime.parse($xcontext.macro.params.to, $dateTimeFormatter).getMillis())"
   #end
   #if ($xcontext.macro.params.hideNoDueDate)
-    data-hide-no-due-date="$escapetool.html($xcontext.macro.params.hideNoDueDate)"
+    data-hide-no-due-date="${escapetool.html($xcontext.macro.params.hideNoDueDate)}"
   #end
+  ##TODO: Make `projects` use a Page picker (should support selecting multiple pages).
+  ##      When changed the JSONTaskSource should be updated aswell.
   #if ($xcontext.macro.params.projects)
-    data-projects="$escapetool.html($xcontext.macro.params.projects)"
+    data-projects="${escapetool.html($xcontext.macro.params.projects)}"
   #end
   #if ($xcontext.macro.params.assignees)
-    data-assignees="$escapetool.html($xcontext.macro.params.assignees)")
+    data-assignees="${escapetool.html($xcontext.macro.params.assignees)}"
   #end
   #if ($xcontext.macro.params.reporters)
-    data-reporters="$escapetool.html($xcontext.macro.params.reporters)")
+    data-reporters="${escapetool.html($xcontext.macro.params.reporters)}"
   #end
+  ##TODO: Make `spaces` use a Space/Page picker (should support selecting multiple pages).
+  ##      When changed the JSONTaskSource should be updated aswell.
   #if ($xcontext.macro.params.spaces)
-    data-spaces="${escapetool.html($xcontext.macro.params.spaces).replace('\','%5C')}")
+    data-spaces="${escapetool.html($xcontext.macro.params.spaces)}"
   #end
 &gt;
-&lt;h5&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.title'))&lt;/b&gt;&lt;/h5&gt;&lt;p&gt;
-&lt;p&gt;
-#if ("$xcontext.macro.params.hideNoDueDate" == 'false')
-  $escapetool.html($services.localization.render('taskmanager.gantt.interface.hideNoDueDate_1'))
-#else
-  $escapetool.html($services.localization.render('taskmanager.gantt.interface.hideNoDueDate_0'))
-#end
-&lt;/p&gt;
-#if ($xcontext.macro.params.from)&lt;span&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.date.from'))&lt;/b&gt; ${escapetool.html($xcontext.macro.params.from)}&lt;/span&gt; #end
-#if ($xcontext.macro.params.to)&lt;span&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.date.to'))&lt;/b&gt; ${escapetool.html($xcontext.macro.params.to)}&lt;/span&gt;#end
-#if ($xcontext.macro.params.assignees)
-&lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.assignees'))&lt;/b&gt;
-  #foreach ($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
-    &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
+## TODO: Change the way in which the parameters below are displayed in the UI so it is prettier and takes up less space.
+&lt;div class='taskgantt-description'&gt;
+  &lt;h5&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.title'))&lt;/b&gt;&lt;/h5&gt;
+  &lt;p class='xform'&gt;&lt;span class='xHint'&gt;
+  #if ("$xcontext.macro.params.hideNoDueDate" == 'false')
+    $escapetool.html($services.localization.render('taskmanager.gantt.macro.hideNoDueDate_1'))
+  #else
+    $escapetool.html($services.localization.render('taskmanager.gantt.macro.hideNoDueDate_0'))
   #end
-&lt;/p&gt;
-#end
-#if ($xcontext.macro.params.spaces)
-&lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.spaces'))&lt;/b&gt;
-  #foreach ($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
-    &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
+  &lt;/p&gt;&lt;/span&gt;
+  #if ($xcontext.macro.params.from)&lt;span&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.date.from'))&lt;/b&gt; ${escapetool.html($xcontext.macro.params.from)}&lt;/span&gt; #end
+  #if ($xcontext.macro.params.to)&lt;span&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.date.to'))&lt;/b&gt; ${escapetool.html($xcontext.macro.params.to)}&lt;/span&gt;#end
+  #if ($xcontext.macro.params.assignees)
+  &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.assignees'))&lt;/b&gt;
+    #foreach ($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
+      &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
+    #end
+  &lt;/p&gt;
   #end
-&lt;/p&gt;
-#end
-#if ($xcontext.macro.params.projects)
-&lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.interface.projects'))&lt;/b&gt;
-  #foreach ($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
-    &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
+  #if ($xcontext.macro.params.spaces)
+  &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.spaces'))&lt;/b&gt;
+    #foreach ($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
+      &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
+    #end
+  &lt;/p&gt;
   #end
-&lt;/p&gt;
-#end
-&lt;/p&gt;
-#macro (viewModeButton $viewMode)
-  &lt;input class='button' type='button' value="$viewMode"&gt;
-#end
-&lt;form id='view-mode-buttons'&gt;
-  #viewModeButton ('Quarter Day')
-  #viewModeButton ('Half Day')
-  #viewModeButton ('Day')
-  #viewModeButton ('Week')
-  #viewModeButton ('Month')
-  #viewModeButton ('Year')
-&lt;/form&gt;
-  &lt;div class='taskgantt-noedit-overlay'&gt;&lt;span&gt;
-    $escapetool.html($services.localization.render('taskmanager.gantt.interface.wait'))
-  &lt;/span&gt;&lt;/div&gt;
+  #if ($xcontext.macro.params.projects)
+  &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.projects'))&lt;/b&gt;
+    #foreach ($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
+      &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
+    #end
+  &lt;/p&gt;
+  #end
+&lt;/div&gt;
+&lt;div id='view-mode-buttons'&gt;
+  #viewModeButton ('Quarter Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.quarterDay'))
+  #viewModeButton ('Half Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.halfDay'))
+  #viewModeButton ('Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.day'))
+  #viewModeButton ('Week' $services.localization.render('taskmanager.gantt.macro.viewmodes.week'))
+  #viewModeButton ('Month' $services.localization.render('taskmanager.gantt.macro.viewmodes.month'))
+  #viewModeButton ('Year' $services.localization.render('taskmanager.gantt.macro.viewmodes.year'))
+&lt;/div&gt;
+&lt;div class='taskgantt-noedit-overlay'&gt;
+    &lt;span&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.wait'))&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class='gantt-popup'&gt;
+  &lt;span class='popuptext'&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.popup.progress'))&lt;span class='gantt-popup-progress-number'&gt;100%&lt;/span&gt;&lt;/span&gt;
+&lt;/div&gt;
 &lt;/div&gt;
 {{/html}}
 #end
@@ -1944,7 +1983,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <defaultCategory/>
     </property>
     <property>
-      <description>Display the Tasks from the Task Manager Application in a gantt diagram.</description>
+      <description>Display tasks from Task Manager Application in a Gantt diagram.</description>
     </property>
     <property>
       <id>taskgantt</id>
@@ -2028,7 +2067,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <defaultValue/>
     </property>
     <property>
-      <description>Only show tasks which started after the specified date.</description>
+      <description>Display tasks which started after the specified date.</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -2106,7 +2145,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <defaultValue/>
     </property>
     <property>
-      <description>Only show Tasks assigned to these Users. Comma separated format: "XWiki.User1,XWiki.User2"</description>
+      <description>Display tasks assigned to these users.</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -2262,7 +2301,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <defaultValue/>
     </property>
     <property>
-      <description>Only show tasks which end before the specified date.</description>
+      <description>Display tasks which end before the specified date.</description>
     </property>
     <property>
       <mandatory>0</mandatory>

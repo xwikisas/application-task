@@ -36,7 +36,7 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity wiki="false"}}
+  <content>{{velocity output="false"}}
 #macro (putOrDefault $map $propertyName $value $default1)
   #if ($value)
     #set ($discard = $map.put($propertyName, $value))
@@ -46,7 +46,8 @@
 #end
 
 #macro (csvToArray $csvString $return)
-  ## When a project name contains a comma, it can be escaped with a backslash.
+  ## This macro escapes commas using backslashes, to not break when csv items contain commas.
+  ## TODO: Also escape backslashes, as a csv item ending with one will not be interpreted correctly.
   #set ($csv = $csvString.split('(?&lt;!\\),'))
   #set ($newArray = [])
   #foreach ($elem in $csv)
@@ -54,12 +55,12 @@
   #end
   #set ($discard = $return.put('csvReturn', $newArray))
 #end
-
+{{/velocity}}{{velocity wiki="false"}}
 ##
 ## This page prepares and returns the JSON of tasks used in the frappe-gantt library, in the taskgantt macro.
-## Parameters are the same as taskgantt macro, with an optional 'taskId', which will return the single task, regardless of other parameters.
+## Parameters are the same as taskgantt macro, with an optional 'taskId'.
+## When the 'taskId' is present, only that task will be returned, regardless of other parameters.
 ##
-
 #if ($xcontext.action == 'get')
   #set ($discard = $response.setContentType('application/json'))
   #set ($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
@@ -179,13 +180,11 @@
         #set ($discard = $dependencies.add("$xwiki.getDocument($dep).getDocumentReference()"))
       #end
       #set ($discard = $taskObj.put('dependencies', $dependencies))
-
       #set ($customClasses = $customClasses +
           ' taskgantt-status-' + $task.getValue('status').replace(' ', '-') +
           ' taskgantt-priority-' + $task.getValue('severity').replace(' ', '-')
           )
       #set ($discard = $taskObj.put('custom_class', $escapetool.html($customClasses)))
-
       #set ($discard = $tasks.add($taskObj))
     #end
   #end

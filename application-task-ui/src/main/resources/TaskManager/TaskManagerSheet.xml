@@ -316,29 +316,29 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>require(["jquery", "moment"], function ($, moment) {
+      <code>require(['jquery', 'moment'], function ($, moment) {
    $(document).ready(function(){
       $("input[id='TaskManager.TaskManagerClass_0_progress']").change(function(event){
         var val = $(this).val();
-        var status = "ToDo";
-        if(val &amp;&amp; val != ""){
+        var status = 'ToDo';
+        if(val &amp;&amp; val != ''){
             val = parseInt(val);
             if(val &lt; 100){
-               status = "InProgress";
+               status = 'InProgress';
             } else {
-               status = "Done";
+               status = 'Done';
            }
         }
          $("select[name='TaskManager.TaskManagerClass_0_status']").val(status);
       });
       $("select[id='TaskManager.TaskManagerClass_0_status']").change(function(event){
         var status = $(this).val();
-        if (status == "Done") {
+        if (status == 'Done') {
           $("input[name='TaskManager.TaskManagerClass_0_progress']").val(100);
-        } else if (status == "InProgress") {
+        } else if (status == 'InProgress') {
           let startDateInput = $("input[name='TaskManager.TaskManagerClass_0_startDate']");
-          const format = moment().toMomentFormatString(startDateInput.data("format"));
-          if (startDateInput.val() == "") {
+          const format = moment().toMomentFormatString(startDateInput.data('format'));
+          if (startDateInput.val() == '') {
             startDateInput.val(moment().format(format));
           }
         }
