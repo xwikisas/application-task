@@ -180,10 +180,6 @@
         #set ($discard = $dependencies.add("$xwiki.getDocument($dep).getDocumentReference()"))
       #end
       #set ($discard = $taskObj.put('dependencies', $dependencies))
-      #set ($customClasses = $customClasses +
-          ' taskgantt-status-' + $task.getValue('status').replace(' ', '-') +
-          ' taskgantt-priority-' + $task.getValue('severity').replace(' ', '-')
-          )
       #set ($discard = $taskObj.put('custom_class', $escapetool.html($customClasses)))
       #set ($discard = $tasks.add($taskObj))
     #end

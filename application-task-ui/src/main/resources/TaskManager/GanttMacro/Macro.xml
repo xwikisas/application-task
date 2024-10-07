@@ -1365,43 +1365,6 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
     }
   }
   /**
-   * Custom task classes.
-   */
-  .bar-wrapper {
-    &amp;.taskgantt-priority-High {
-      .bar-progress {
-        fill: @brand-warning;
-      }
-    }
-    &amp;.taskgantt-priority-Low {
-      .bar-progress {
-        fill: @brand-success;
-      }
-    }
-    &amp;.taskgantt-priority-Medium {
-      .bar-progress {
-        fill: @brand-info;
-      }
-    }
-    &amp;.active, &amp;:hover {
-      &amp;.taskgantt-priority-High {
-        .bar-progress {
-          fill: darken(@brand-warning, 10%);
-        }
-      }
-      &amp;.taskgantt-priority-Low {
-        .bar-progress {
-          fill: darken(@brand-success, 10%);
-        }
-      }
-      &amp;.taskgantt-priority-Medium {
-        .bar-progress {
-          fill: darken(@brand-info, 10%);
-        }
-      }
-    }
-  }
-  /**
    * Bar text.
    */
   .bar-label {
