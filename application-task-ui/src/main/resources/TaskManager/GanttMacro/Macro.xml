@@ -236,9 +236,9 @@ define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10
    */
   function formatTask(task) {
     if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
-      task.name = escapeHTML(task.actualName) + ' - ' + l10n.noDueDateMessage;
+      task.name = escapeHTML(task.taskName) + ' - ' + l10n.noDueDateMessage;
     } else {
-      task.name = escapeHTML(task.actualName);
+      task.name = escapeHTML(task.taskName);
     }
     if (!(task.start instanceof Date)) {
       task.start = new Date(task.start);
@@ -597,32 +597,37 @@ define('taskgantt-override-functions', [
 ], function ($, taskutil, taskui, taskurls) {
   /**
    * Custom implementation of trigger_event from the frappe-gantt(v0.6.1) library.
-   * Bind the parent gantt object to 'this' in the event handlers.
+   * Changed: Bind the parent gantt object to 'this' in the event handlers.
    */
   function custom_trigger_event(event, args) {
     if (this.options['on_' + event]) {
-      this.options['on_' + event].apply(this, args);
+      this.options['on_' + event].apply(this, args); // Changed: Was `apply(null, args)`.
     }
-  }
+  };
   /**
    * Custom implementation of render from the frappe-gantt(v0.6.1) library.
    * Uses the original render function from the frappe-gantt library.
-   * Adds a custom popup and the custom svg markup for task bar fade on no due date.
+   * Changed: Adds a custom popup and the custom svg markup for task bar fade on no due date.
    */
   function custom_render() {
     const result = this._render(); // Use the default render implementation first.
-    taskui.addSvgStyles(this.$svg); // SVG specific style definitions, with no css equivalent.
-    taskui.setupProgressPopup(this);
+    taskui.addSvgStyles(this.$svg); // Changed: SVG specific style definitions, with no css equivalent.
+    taskui.setupProgressPopup(this); // Changed: Custom popup for progress, doesn't use frappe-gantt popup.
     return result;
   };
   /**
    * Custom implementation of get_date_info from the frappe-gantt(v0.6.1) library.
-   * Fixes the hour text display in Quarter Day view mode.
+   * Uses the original get_date_info function from the frappe-gantt library.
+   *
+   * Fixes the header text display in multiple view modes.
    * In the default frappe-gantt implementation, the header text is offset by 12h.
    * Example: If a task starts at 06:00, it appears under the 18:00 section in the UI.
    */
   function custom_get_date_info(date, last_date, i) {
+    // Use default implementation first because only it has access to
+    // the `date_utils` object, let it format the text in the header as it wishes.
     let result = this._get_date_info(date, last_date, i);
+    // Below copied from original function.
     const base_pos = {
       x: i * this.options.column_width,
       lower_y: this.options.header_height,
@@ -630,27 +635,49 @@ define('taskgantt-override-functions', [
     };
 
     const x_pos = {
-      'Quarter Day_lower': (this.options.column_width * 4),
-      'Quarter Day_upper': (this.options.column_width * 4) / 2,
-      'Half Day_lower': (this.options.column_width * 2),
-      'Half Day_upper': (this.options.column_width * 2) / 2,
+      'Quarter Day_lower': (this.options.column_width * 4),  // Changed: Alignment (waswidth * 4 / 2).
+      'Quarter Day_upper': (this.options.column_width * 4) / 2, // Changed: Alignment (was 0). Now date text is centered above hours of a day.
+      'Half Day_lower': (this.options.column_width * 2), // Changed: Alignment (was width * 2 / 2).
+      'Half Day_upper': (this.options.column_width * 2) / 2, // Changed: Alignment (was (width * 30)/2). Now date text is above 12, not 00.
       Day_lower: this.options.column_width / 2,
       Day_upper: (this.options.column_width * 30) / 2,
       Week_lower: 0,
       Week_upper: (this.options.column_width * 4) / 2,
-      Month_lower: this.options.column_width * 1.5,
+      Month_lower: this.options.column_width * 1.5, // Changed: Alignment (was width * 2). Now month names are actually above their corresponding column.
       Month_upper: (this.options.column_width * 12) / 2,
       Year_lower: this.options.column_width / 2,
       Year_upper: (this.options.column_width * 30) / 2,
     };
+    // Changed: Full result has 2 other fields, leave them be. For the others use the objects above.
     const tweakedPos = {
       upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
       upper_y: base_pos.upper_y,
       lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
       lower_y: base_pos.lower_y,
     };
+    // Changed: Use the values redefined above to alter the result.
     Object.assign(result, tweakedPos);
     return result;
+  };
+  /**
+   * This is copied from the frappe-gantt library.
+   * Redefinition of on() from jQuery so delegate event handlers work on SVG elements.
+   */
+  function on(element, event, selector, callback) {
+    if (!callback) {
+      callback = selector;
+      event.split(/\s+/).forEach(function (event) {
+        element.addEventListener(event, callback);
+      });
+    } else {
+      element.addEventListener(event, function (e) {
+        const delegatedTarget = e.target.closest(selector);
+        if (delegatedTarget) {
+          e.delegatedTarget = delegatedTarget;
+          callback.call(this, e, delegatedTarget);
+        }
+      });
+    }
   };
   /**
    * Custom implementation of bind_bar_events from the frappe-gantt(v0.6.1) library.
@@ -658,38 +685,21 @@ define('taskgantt-override-functions', [
    * This prevents unintentional updates and more freedom when moving tasks.
    */
   function custom_bind_bar_events() {
-    // Redefine on() from jQuery so delegate event handlers work on SVG elements.
-    let on = (element, event, selector, callback) =&gt; {
-      if (!callback) {
-        callback = selector;
-        event.split(/\s+/).forEach(function (event) {
-          element.addEventListener(event, callback);
-        });
-      } else {
-        element.addEventListener(event, function (e) {
-          const delegatedTarget = e.target.closest(selector);
-          if (delegatedTarget) {
-            e.delegatedTarget = delegatedTarget;
-            callback.call(this, e, delegatedTarget);
-          }
-        });
-      }
-    };
-
     let is_dragging = false;
     let x_on_start = 0;
     let y_on_start = 0;
     let is_resizing_left = false;
     let is_resizing_right = false;
     let parent_bar_id = null;
-    let bars = [];
+    let bars = []; // instanceof Bar
+    //this.bar_being_dragged = null; // Changed: Not needed since the frappe-gantt popup is not used.
 
     function action_in_progress() {
       return is_dragging || is_resizing_left || is_resizing_right;
     }
 
     on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) =&gt; {
-      const bar_wrapper = $(element).closest('.bar-wrapper')[0];
+      const bar_wrapper = $(element).closest('.bar-wrapper')[0]; // Changed: Uses jQuery instead of custom frappe-gantt function.
 
       if (element.classList.contains('left')) {
         is_resizing_left = true;
@@ -705,7 +715,9 @@ define('taskgantt-override-functions', [
       y_on_start = e.offsetY;
 
       parent_bar_id = bar_wrapper.getAttribute('data-id');
-      bars = [this.get_bar(parent_bar_id)];
+      bars = [this.get_bar(parent_bar_id)]; // Changed: Don't move all dependencies, just this task.
+
+      // this.bar_being_dragged = parent_bar_id; // Changed: Not needed (see above).
 
       bars.forEach((bar) =&gt; {
         const $bar = bar.$bar;
@@ -748,16 +760,18 @@ define('taskgantt-override-functions', [
       });
     });
 
-    $(document).on('mouseup', (e) =&gt; {
+    $(document).on('mouseup', (e) =&gt; { // Changed: Use jQuery.
       if (is_dragging || is_resizing_left || is_resizing_right) {
         bars.forEach((bar) =&gt; {
           bar.group.classList.remove('active');
+          // Changed: Merged document and svg handlers into one, so releasing the mouse button outside svg still registers a task update.
+          //this.bar_being_dragged = null; // Changed: Not needed (see above).
           const $bar = bar.$bar;
           if (!$bar.finaldx) {
             return;
           }
           bar.date_changed();
-          $bar.finaldx = 0;
+          $bar.finaldx = 0; // Changed: Reset finaldx value so double click handler works.
           bar.set_action_completed();
         });
       }
@@ -776,16 +790,17 @@ define('taskgantt-override-functions', [
   function custom_update_bar_position({ x = null, width = null }) {
     const bar = this.$bar;
     if (x) {
+      // Changed: Removed early return statement which enforced the 'task must start after dependencies' rule.
       this.update_attr(bar, 'x', x);
     }
-    if (width &amp;&amp; width &gt; 0) {
+    if (width &amp;&amp; width &gt; 0) { // Changed: width &gt; 0 so tasks can get smaller than a column (so you can drag a task to make it last 5 minutes long for example).
       this.update_attr(bar, 'width', width);
     }
     this.update_label_position();
     this.update_handle_position();
     this.update_progressbar_position();
     this.update_arrow_position();
-  }
+  };
   /**
    * Custom implementation of compute_x from the frappe-gantt(v0.6.1) library.
    * Removed rounding to nearest hour when displaying tasks (so task positions are not snapped to fixed hours).
@@ -795,31 +810,32 @@ define('taskgantt-override-functions', [
     const task_start = this.task._start;
     const gantt_start = this.gantt.gantt_start;
 
-    const diff = (task_start - gantt_start) / 1000 / 60 / 60; // Float difference in Hours.
+    const diff = (task_start - gantt_start) / 1000 / 60 / 60; // Changed: FLOAT difference in Hours.
     let x = (diff / step) * column_width;
 
     if (this.gantt.view_is('Month')) {
-      const diff = (task_start - gantt_start) / 1000 / 60 / 60 / 24; // Float difference in Days.
+      const diff = (task_start - gantt_start) / 1000 / 60 / 60 / 24; // Changed: FLOAT difference in Days.
       x = (diff * column_width) / 30;
     }
     return x;
-  }
+  };
   /**
    * Custom implementation of prepare_values from the frappe-gantt(v0.6.1) library.
+   * Uses the original prepare_values function from the frappe-gantt library.
    * Removed rounding to nearest hour when displaying tasks (so tasks with less than 1 hour duration are displayed).
    */
   function custom_prepare_values() {
     taskutil.formatTask(this.task);
     this._prepare_values();
     this.duration =
-      ((this.task._end - this.task._start) / 1000 / 60 / 60) / // Float difference in Hours.
+      ((this.task._end - this.task._start) / 1000 / 60 / 60) / // Changed: FLOAT difference in Hours.
       this.gantt.options.step;
     this.width = this.gantt.options.column_width * this.duration;
     this.progress_width =
       this.gantt.options.column_width *
       this.duration *
       (this.task.progress / 100) || 0;
-  }
+  };
   /**
    * Custom implementation of compute_start_end_date from the frappe-gantt(v0.6.1) library.
    * Removed rounding to nearest hour when computing the start and end dates.
@@ -828,12 +844,12 @@ define('taskgantt-override-functions', [
   function custom_compute_start_end_date() {
     const bar = this.$bar;
     const x_in_units = bar.getX() / this.gantt.options.column_width;
-    const new_start_date = new Date(
+    const new_start_date = new Date( // Changed: Removed frappe-gantt's date_utils hour rounding.
       this.gantt.gantt_start.getTime() +
       (x_in_units * this.gantt.options.step) * 1000 * 60 * 60
     );
     const width_in_units = bar.getWidth() / this.gantt.options.column_width;
-    const new_end_date = new Date(
+    const new_end_date = new Date( // Changed: Removed frappe-gantt's date_utils hour rounding.
       new_start_date.getTime() +
       (width_in_units * this.gantt.options.step) * 1000 * 60 * 60
     );
@@ -845,7 +861,7 @@ define('taskgantt-override-functions', [
    */
   function custom_show_popup() {
     return;
-  }
+  };
   /**
    * Event handler which fires when double clicking a task.
    */
@@ -879,7 +895,7 @@ define('taskgantt-override-functions', [
     $.ajax(taskurls.getUpdateServiceURL(task) + new URLSearchParams(params))
       .done(taskui.getUpdateServiceSuccessCallback(this, task))
       .fail(taskui.getUpdateServiceErrorCallback(this, task));
-  }
+  };
   /**
    * Event handler which fires after changing the dates.
    */
@@ -911,6 +927,7 @@ define('taskgantt-override-functions', [
       .done(taskui.getUpdateServiceSuccessCallback(this, task))
       .fail(taskui.getUpdateServiceErrorCallback(this, task));
   };
+
   return {
     // Frappe library Gantt class overrides.
     'custom_trigger_event': custom_trigger_event,

@@ -150,7 +150,7 @@
       #set ($customClasses = '')
       #set ($discard = $taskObj.put('id', "$taskXDoc.getDocumentReference()"))
       #set ($discard = $taskObj.put('link', $taskXDoc.getURL()))
-      #putOrDefault ($taskObj 'actualName'
+      #putOrDefault ($taskObj 'taskName'
         $task.getValue('name')
         $services.localization.render('taskmanager.gantt.task.unknownTaskTitle')
       )
