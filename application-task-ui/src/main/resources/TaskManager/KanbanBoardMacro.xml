@@ -43,6 +43,8 @@
 * ##user## [optional, default=$xcontext.userReference] define the user for who tasks are assigned
 * ##space## [optional, default=TaskManager] define the space to look for tasks
 * ##project## [optional, default=] define the project to look for tasks
+* ##colors## [optional, default=green,blue,orange] define the colors of the Kanban columns
+* ##columns## [optional, default=ToDo,InProgress,Done] define the statuses to display as Kanban columns
 
 Example:
 
@@ -569,7 +571,9 @@ Example:
   #end
   #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
 #end
-{{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="32%" colors=$escapetool.xml($colors)/}}
+#set ($columns = "$!{xcontext.macro.params.columns}")
+
+{{awmkanban className="TaskManager.TaskManagerClass" category="status" displayedCategoryColumns="$!escapetool.xml($columns)" title="name" columns="assignee,progress,duedate" width="32%" colors=$escapetool.xml($colors)/}}
 {{/velocity}}
 </code>
     </property>
