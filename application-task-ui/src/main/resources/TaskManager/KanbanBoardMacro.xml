@@ -43,6 +43,7 @@
 * ##user## [optional, default=$xcontext.userReference] define the user for who tasks are assigned
 * ##space## [optional, default=TaskManager] define the space to look for tasks
 * ##project## [optional, default=] define the project to look for tasks
+* ##columnWidth## [optional, default=32%] define the width of all Kanban column
 
 Example:
 
@@ -551,6 +552,7 @@ Example:
 ## The xwql variable is used by the awmkanban macro called from this one.
 #set ($xwql = '')
 #set($user = "$!{xcontext.macro.params.user}")
+#set ($columnWidth = "$!{xcontext.macro.params.columnWidth}")
 #set ($colors = "$!{xcontext.macro.params.colors}")
 #if($user != '')
   #set($xwql = "obj.assignee = '$escapetool.sql($user)'")
@@ -569,7 +571,7 @@ Example:
   #end
   #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
 #end
-{{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="32%" colors=$escapetool.xml($colors)/}}
+{{awmkanban className="TaskManager.TaskManagerClass" category="status" title="name" columns="assignee,progress,duedate" width="$!escapetool.xml($columnWidth)" colors=$escapetool.xml($colors)/}}
 {{/velocity}}
 </code>
     </property>
@@ -989,6 +991,84 @@ Example:
     </property>
     <property>
       <name>colors</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>7</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>c55d1eb3-7297-4ddc-a306-4aa42d5aba92</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>32%</defaultValue>
+    </property>
+    <property>
+      <description>The width of each Kanban column, specified in any css units (example: 32%, 500px, 30em, etc..).</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>columnWidth</name>
     </property>
     <property>
       <type/>
