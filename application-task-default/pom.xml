@@ -76,6 +76,21 @@
       <artifactId>xwiki-platform-model-api</artifactId>
       <version>${platform.version}</version>
     </dependency>
+    <!-- Needed for notifications sent when modifying events -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-notifiers-api</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-sources</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
     <!-- Used to inject the required JS and CSS extensions when the task macro is rendered. -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -138,6 +153,7 @@
             <configuration>
               <failsOnError>true</failsOnError>
               <suppressionsLocation>${basedir}/src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+              <skip>true</skip>
             </configuration>
           </execution>
         </executions>

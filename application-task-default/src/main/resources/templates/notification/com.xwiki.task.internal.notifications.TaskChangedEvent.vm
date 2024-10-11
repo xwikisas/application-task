@@ -1,0 +1,78 @@
+## ---------------------------------------------------------------------------
+## See the NOTICE file distributed with this work for additional
+## information regarding copyright ownership.
+##
+## This is free software; you can redistribute it and/or modify it
+## under the terms of the GNU Lesser General Public License as
+## published by the Free Software Foundation; either version 2.1 of
+## the License, or (at your option) any later version.
+##
+## This software is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public
+## License along with this software; if not, write to the Free
+## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+## ---------------------------------------------------------------------------
+
+#template('notification/macros.vm')
+
+#set ($eventDescriptor = $services.eventstream.getDescriptorForEventType($compositeEvent.type, $xcontext.isMainWiki()))
+#if ($eventDescriptor)
+  #set ($mainIcon = $eventDescriptor.applicationIcon)
+  #set ($smallIcon = $eventDescriptor.eventTypeIcon)
+#else
+  #set ($mainIcon = 'rss')
+  #set ($smallIcon = '')
+#end
+##set ($compositeEventDate = $escapetool.xml($datetool.whenIs($compositeEvent.dates.get(0))))
+
+#macro (displayEventDetails $event)
+  #set ($document = $xwiki.getDocument($event.document))
+  #set ($customEventInfo = $jsontool.fromString($event.getBody()) )
+  <tr>
+    <td>
+      <span class="notification-event-user">$!escapetool.xml($event.user.name)</span>
+    </td>
+    #set ($localizationParams = [
+      $document.getObject('TaskManager.TaskManagerClass').getValue('name'),
+      $customEventInfo['new'],
+      $customEventInfo['old']
+    ])
+    #if ($customEventInfo['type'] == 'assignee' && $customEventInfo['new'] == $xwiki.getUser())
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you')
+    #end
+    #set ($localisationId = "taskmanager.events.TaskChangedEvent.details.${customEventInfo['type']}" )
+    #set ($eventText = $services.localization.render($localisationId, $localizationParams) )
+    <td class="description">$escapetool.xml($eventText)</td>
+    <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
+  </tr>
+#end
+
+#define ($content)
+  #set ($document = $xwiki.getDocument($!compositeEvent.events[0].document)) ## All folded events should have the same document theoretically.
+  <div class="notification-page">
+      <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getTitle())</a>
+      ##if ($xcontext.getContext().getOriginalWikiId() != $document.wikiReference.name)
+      ##  <span class="text-muted">($services.wiki.getById($!document.wikiReference.name).prettyName)</span>
+      ###end
+  </div>
+  <div class="notification-description">
+    $services.localization.render("taskmanager.events.TaskChangedEvent.title")
+    <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!compositeEvent.events[0].date))</small></div>
+  </div>
+#end
+
+#define ($details)
+  #define ($rows)
+    #foreach ($thisEvent in $compositeEvent.events)
+      #displayEventDetails($thisEvent)
+    #end
+  #end
+  #displayNotificationEventDetailsSkeletons($compositeEvent.events.size(), $rows)
+#end
+
+#displayNotificationEventSkeleton($mainIcon $smallIcon $content $details)
