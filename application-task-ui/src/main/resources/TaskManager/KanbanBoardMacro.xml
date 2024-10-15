@@ -572,7 +572,15 @@ Example:
   #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
 #end
 #set ($columns = "$!{xcontext.macro.params.columns}")
-{{awmkanban className="TaskManager.TaskManagerClass" category="status" displayedCategoryColumns="$!escapetool.xml($columns)" title="name" columns="assignee,progress,duedate" width="32%" colors=$escapetool.xml($colors)/}}
+{{awmkanban
+  className="TaskManager.TaskManagerClass"
+  category="status"
+  displayedCategoryColumns="$!escapetool.xml($columns)"
+  title="name"
+  columns="assignee,progress,duedate"
+  width="32%"
+  colors=$escapetool.xml($colors)
+/}}
 {{/velocity}}
 </code>
     </property>
