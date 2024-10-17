@@ -147,7 +147,7 @@
     #set ($task = $taskXDoc.getObject('TaskManager.TaskManagerClass'))
     #if ($services.security.authorization.hasAccess('view', $taskDocument))
       #set ($taskObj = {})
-      #set ($customClasses = '')
+      #set ($customClasses = [])
       #set ($discard = $taskObj.put('id', "$taskXDoc.getDocumentReference()"))
       #set ($discard = $taskObj.put('link', $taskXDoc.getURL()))
       #putOrDefault ($taskObj 'taskName'
@@ -170,17 +170,17 @@
         $xwiki.jodatime.getDateTime($taskObj['start']).plusWeeks(1).getMillis()
       )
       #if ("$!task.getValue('duedate').getTime()" == '')
-        #set ($customClasses = $customClasses + ' taskgantt-no-due-date')
+        #set ($discard = $customClasses.add('taskgantt-no-due-date'))
       #end
       #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
-        #set ($customClasses = $customClasses + ' taskgantt-no-edit')
+        #set ($discard = $customClasses.add('taskgantt-no-edit'))
       #end
       #set ($dependencies = [])
       #foreach ($dep in $task.getValue('dependencies'))
         #set ($discard = $dependencies.add("$xwiki.getDocument($dep).getDocumentReference()"))
       #end
       #set ($discard = $taskObj.put('dependencies', $dependencies))
-      #set ($discard = $taskObj.put('custom_class', $escapetool.html($customClasses)))
+      #set ($discard = $taskObj.put('taskClasses', $customClasses))
       #set ($discard = $tasks.add($taskObj))
     #end
   #end

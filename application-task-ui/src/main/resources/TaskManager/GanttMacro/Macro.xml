@@ -235,11 +235,12 @@ define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10
    * Updates the last state of a task to use when reverting in case of an error.
    */
   function formatTask(task) {
-    if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
+    if (task.taskClasses.includes('taskgantt-no-due-date')) {
       task.name = escapeHTML(task.taskName) + ' - ' + l10n.noDueDateMessage;
     } else {
       task.name = escapeHTML(task.taskName);
     }
+    task.custom_class = escapeHTML(task.taskClasses.join(' '));
     if (!(task.start instanceof Date)) {
       task.start = new Date(task.start);
     }
@@ -265,7 +266,7 @@ define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10
     const isReadonly = $(gantt.$svg).closest('.taskgantt').data('readonly');
     if (isReadonly) {
       msg = l10n.readonlyError;
-    } else if (task.custom_class.split(/\s+/).includes('taskgantt-no-edit')) {
+    } else if (task.taskClasses.includes('taskgantt-no-edit')) {
       msg = l10n.permissionError;
     }
     return msg;
@@ -526,10 +527,8 @@ define('taskgantt-progress-popup', [
    * Render a task bar at its current position, updating text and css classes if necessary.
    */
   function redrawBar(task, gantt) {
-    if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
-      task.custom_class = task.custom_class.split(/\s+/).filter((t) =&gt; t != 'taskgantt-no-due-date').join(' ');
-    }
-    // Rename if taskgantt-no-due-date, save new state for use in revertBar.
+    task.taskClasses = task.taskClasses.filter((t) =&gt; t != 'taskgantt-no-due-date');
+    // Rename if taskgantt-no-due-date was removed, save new state for use in revertBar.
     taskutil.formatTask(task);
 
     let bar = gantt.bars.find((b) =&gt; b.task === task);
@@ -886,7 +885,7 @@ define('taskgantt-override-functions', [
     let params = {
       progress: newProgress,
     };
-    if (task.custom_class.split(/\s+/).includes('taskgantt-no-due-date')) {
+    if (task.taskClasses.includes('taskgantt-no-due-date')) {
       // If the user interacts with a 'no-due-date' task, automatically set the dates.
       params.startDate = task._start.getTime();
       params.endDate = task._end.getTime();
