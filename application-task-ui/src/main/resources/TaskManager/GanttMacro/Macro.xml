@@ -333,13 +333,7 @@ define('taskgantt-progress-popup', [
     $('.handle.progress', ganttDiv).on({
       mousedown: function (e) {
         let bar = $(e.delegateTarget).closest('.bar-wrapper')[0];
-        showPopup(popup,
-          ganttDiv,
-          ganttObj,
-          bar,
-          progressChangeObserver,
-          isResizingProgress
-        );
+        showPopup(popup, ganttDiv, ganttObj, bar, progressChangeObserver, isResizingProgress);
         isResizingProgress = true;
       },
     });
@@ -355,13 +349,7 @@ define('taskgantt-progress-popup', [
         let bar = e.currentTarget;
         if (!hoverTimer) {
           hoverTimer = setTimeout(() =&gt; {
-            showPopup(popup,
-              ganttDiv,
-              ganttObj,
-              bar,
-              progressChangeObserver,
-              isResizingProgress
-            );
+            showPopup(popup, ganttDiv, ganttObj, bar, progressChangeObserver, isResizingProgress);
           }, 1000);
         }
       },
@@ -546,17 +534,10 @@ define('taskgantt-progress-popup', [
   function getUpdateServiceSuccessCallback(gantt, task) {
     return function(data) {
       try {
-        if (data.success == true) {
-          redrawBar(task, gantt);
-          new XWiki.widgets.Notification(l10n.successMessage, 'info', '20');
-        } else {
-          revertBar(task, gantt);
-          new XWiki.widgets.Notification(taskutil.escapeHTML(data.reason), 'error', '20');
-        }
+        redrawBar(task, gantt);
+        new XWiki.widgets.Notification(l10n.successMessage, 'info', '20');
       } catch (e) {
         console.log(e);
-        revertBar(task, gantt);
-        new XWiki.widgets.Notification(taskutil.escapeHTML(e), 'error', '20');
       }
       setGanttDisabledOverlayVisibility(gantt, false);
     };
@@ -568,7 +549,7 @@ define('taskgantt-progress-popup', [
     return function(error) {
       revertBar(task, gantt);
       console.log(error);
-      new XWiki.widgets.Notification(taskutil.escapeHTML(error), 'error', '20');
+      new XWiki.widgets.Notification(taskutil.escapeHTML(error.responseText), 'error', '20');
       setGanttDisabledOverlayVisibility(gantt, false);
     };
   };
@@ -588,7 +569,7 @@ define('taskgantt-progress-popup', [
  * This module modifies/patches the default library implementations for some functions.
  * It also includes event handlers that fire when interacting with a task.
  */
-define('taskgantt-override-functions', [
+define('taskgantt-frappe-methods', [
   'jquery',
   'taskgantt-utils',
   'taskgantt-ui',
@@ -946,7 +927,7 @@ define('taskgantt-override-functions', [
   };
 });
 
-define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-gantt'], function (overrideDefs) {
+define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], function (overrideDefs) {
   /**
    * Override the default behaviour of some functionalities of frappe-gantt.
    */
@@ -1091,11 +1072,11 @@ define('taskgantt-frappe-overrides', ['taskgantt-override-functions', 'frappe-ga
   'jquery',
   'taskgantt-service-urls',
   'taskgantt-localization',
-  'taskgantt-override-functions',
+  'taskgantt-frappe-methods',
   'taskgantt-utils',
   'taskgantt-config-templates',
   'frappe-gantt',
-  'taskgantt-frappe-overrides'
+  'taskgantt-frappe'
 ], function ($, serviceUrls, l10n, overrideDefs, taskutil, tgtemplates) {
   async function spawnGantt(ganttDiv, idx) {
 
@@ -1819,28 +1800,30 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   &lt;div class='box'&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.noTasks'))&lt;/div&gt;
 #end
 #macro (svgCustomDefs)
-      &lt;linearGradient id="fadeGrad"&gt;
-        &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
-        &lt;stop offset="75%" stop-color="white" stop-opacity=".6" /&gt;
-        &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
-      &lt;/linearGradient&gt;
-      &lt;mask x="-50%" y="-50%" width="200%" height="200%" id="fademask" maskContentUnits="objectBoundingBox"&gt;
-        &lt;rect x="-1" y="-1" width="2" height="3" fill="url(#fadeGrad)"/&gt;
-      &lt;/mask&gt;
+  &lt;linearGradient id="fadeGrad"&gt;
+    &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
+    &lt;stop offset="75%" stop-color="white" stop-opacity=".6" /&gt;
+    &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
+  &lt;/linearGradient&gt;
+  &lt;mask x="-50%" y="-50%" width="200%" height="200%" id="fademask" maskContentUnits="objectBoundingBox"&gt;
+    &lt;rect x="-1" y="-1" width="2" height="3" fill="url(#fadeGrad)"/&gt;
+  &lt;/mask&gt;
 
-      &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
-        &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
-        &lt;feGaussianBlur stdDeviation="4"/&gt;
-        &lt;feComponentTransfer&gt;
-          &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
-        &lt;/feComponentTransfer&gt;
-        &lt;feComponentTransfer&gt;
-          &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
-        &lt;/feComponentTransfer&gt;
-        &lt;feComposite operator="over" in="SourceGraphic"/&gt;
-      &lt;/filter&gt;
+  &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
+    &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
+    &lt;feGaussianBlur stdDeviation="4"/&gt;
+    &lt;feComponentTransfer&gt;
+      &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
+    &lt;/feComponentTransfer&gt;
+    &lt;feComponentTransfer&gt;
+      &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
+    &lt;/feComponentTransfer&gt;
+    &lt;feComposite operator="over" in="SourceGraphic"/&gt;
+  &lt;/filter&gt;
 #end
-{{/velocity}}{{velocity}}
+{{/velocity}}
+
+{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
@@ -1943,18 +1926,21 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #end
 &lt;/div&gt;
 &lt;div id='view-mode-buttons'&gt;
-  #viewModeButton ('Quarter Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.quarterDay'))
-  #viewModeButton ('Half Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.halfDay'))
-  #viewModeButton ('Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.day'))
-  #viewModeButton ('Week' $services.localization.render('taskmanager.gantt.macro.viewmodes.week'))
-  #viewModeButton ('Month' $services.localization.render('taskmanager.gantt.macro.viewmodes.month'))
-  #viewModeButton ('Year' $services.localization.render('taskmanager.gantt.macro.viewmodes.year'))
+  #viewModeButton('Quarter Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.quarterDay'))
+  #viewModeButton('Half Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.halfDay'))
+  #viewModeButton('Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.day'))
+  #viewModeButton('Week' $services.localization.render('taskmanager.gantt.macro.viewmodes.week'))
+  #viewModeButton('Month' $services.localization.render('taskmanager.gantt.macro.viewmodes.month'))
+  #viewModeButton('Year' $services.localization.render('taskmanager.gantt.macro.viewmodes.year'))
 &lt;/div&gt;
 &lt;div class='taskgantt-noedit-overlay'&gt;
-    &lt;span&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.wait'))&lt;/span&gt;
+  &lt;span&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.wait'))&lt;/span&gt;
 &lt;/div&gt;
 &lt;div class='gantt-popup'&gt;
-  &lt;span class='popuptext'&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.popup.progress'))&lt;span class='gantt-popup-progress-number'&gt;100%&lt;/span&gt;&lt;/span&gt;
+  &lt;span class='popuptext'&gt;$escapetool.html(
+    $services.localization.render('taskmanager.gantt.macro.popup.progress')
+  )&lt;span class='gantt-popup-progress-number'&gt;100%&lt;/span&gt;
+  &lt;/span&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 {{/html}}

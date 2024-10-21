@@ -72,7 +72,7 @@
   #else
     #if ("$!request.spaces" != '')
       #set ($spaces = {})
-      #csvToArray ($request.spaces $spaces)
+      #csvToArray($request.spaces $spaces)
       #set ($spaces = $spaces['csvReturn'])
       ## Filter by exact space and by subspaces.
       #set ($query = $query + ' and (doc.space in (:spaces)')
@@ -85,19 +85,19 @@
     #end
     #if ("$!request.assignees" != '')
       #set ($assignees = {})
-      #csvToArray ($request.assignees $assignees)
+      #csvToArray($request.assignees $assignees)
       #set ($assignees = $assignees['csvReturn'])
       #set ($query = $query + " and task.assignee in (:assignees)")
     #end
     #if ("$!request.reporters" != '')
       #set ($reporters = {})
-      #csvToArray ($request.reporters $reporters)
+      #csvToArray($request.reporters $reporters)
       #set ($reporters = $reporters['csvReturn'])
       #set ($query = $query + " and task.reporter in (:reporters)")
     #end
     #if ("$!request.projects" != '')
       #set ($projects = {})
-      #csvToArray ($request.projects $projects)
+      #csvToArray($request.projects $projects)
       #set ($projects = $projects['csvReturn'])
       #set ($query = $query + " and task.project in (:projects)")
     #end
@@ -150,22 +150,22 @@
       #set ($customClasses = [])
       #set ($discard = $taskObj.put('id', "$taskXDoc.getDocumentReference()"))
       #set ($discard = $taskObj.put('link', $taskXDoc.getURL()))
-      #putOrDefault ($taskObj 'taskName'
+      #putOrDefault($taskObj 'taskName'
         $task.getValue('name')
         $services.localization.render('taskmanager.gantt.task.unknownTaskTitle')
       )
-      #putOrDefault ($taskObj 'progress'
+      #putOrDefault($taskObj 'progress'
         $task.getValue('progress')
         0
       )
-      #putOrDefault ($taskObj 'project'  $task.getValue('project')  '')
-      #putOrDefault ($taskObj 'assignee' $task.getValue('assignee') '')
-      #putOrDefault ($taskObj 'reporter' $task.getValue('reporter') '')
-      #putOrDefault ($taskObj 'start'
+      #putOrDefault($taskObj 'project'  $task.getValue('project')  '')
+      #putOrDefault($taskObj 'assignee' $task.getValue('assignee') '')
+      #putOrDefault($taskObj 'reporter' $task.getValue('reporter') '')
+      #putOrDefault($taskObj 'start'
         $task.getValue('startDate').getTime()
         $task.getValue('createDate').getTime()
       )
-      #putOrDefault ($taskObj 'end'
+      #putOrDefault($taskObj 'end'
         $task.getValue('duedate').getTime()
         $xwiki.jodatime.getDateTime($taskObj['start']).plusWeeks(1).getMillis()
       )

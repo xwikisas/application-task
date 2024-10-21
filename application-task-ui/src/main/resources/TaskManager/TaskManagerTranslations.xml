@@ -119,11 +119,11 @@ taskmanager.livetable.creationDate=Creation Date
 
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
-taskmanager.gantt.taskEdit.error.generic=The task could not be updated
+taskmanager.gantt.taskEdit.error.generic=Task could not be updated
 taskmanager.gantt.taskEdit.error.readonly=This diagram is read only
-taskmanager.gantt.taskEdit.error.notExists=The task does not exist
-taskmanager.gantt.taskEdit.error.notExistsClass=The task class does not exist
-taskmanager.gantt.taskEdit.success=The task has been updated
+taskmanager.gantt.taskEdit.error.notExists=Task does not exist
+taskmanager.gantt.taskEdit.error.missingObject=Task class does not exist
+taskmanager.gantt.taskEdit.success=Task updated
 taskmanager.gantt.taskEdit.comment=Edited through the Gantt Diagram UI
 taskmanager.gantt.task.noDueDate=No due date set
 taskmanager.gantt.task.unknownTaskTitle=Unknown Task

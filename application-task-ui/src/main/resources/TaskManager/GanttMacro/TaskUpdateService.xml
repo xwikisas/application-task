@@ -54,44 +54,38 @@
 ##   - startDate, endDate: new times, given as unix epoch milliseconds;
 ##   - progress: new progress value, 0-100 number;
 ##
-## Returns a json with a 'success' field and, in case of a failure, a 'reason' as defined in the translation keys.
+## In case of a failure, returns a reason string, defined in the translation keys.
 ##
 #if ("$!request.outputSyntax" == 'plain')
-  #set ($discard = $response.setContentType('application/json'))
+  #set ($discard = $response.setContentType('text/plain'))
 #end
 #set ($taskDocument = $request.taskDocument)
 #if (!$xwiki.exists($taskDocument))
-  $jsontool.serialize({
-    'success':false,
-    'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExists')
-  })
+  #set ($discard = $response.setStatus(404))
+  $services.localization.render('taskmanager.gantt.taskEdit.error.notExists')
 #else
   #set ($taskDocument = $xwiki.getDocument($taskDocument))
-  #set ($taskClass = $taskDocument.getObject('TaskManager.TaskManagerClass'))
-  #if (!$taskClass)
-    $jsontool.serialize({
-      'success':false,
-      'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.notExistsClass')
-    })
+  #set ($taskObject = $taskDocument.getObject('TaskManager.TaskManagerClass'))
+  #if (!$taskObject)
+    #set ($discard = $response.setStatus(404))
+    $services.localization.render('taskmanager.gantt.taskEdit.error.missingObject')
   #else
     #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
-      $jsontool.serialize({
-        'success':false,
-        'reason':$services.localization.render('taskmanager.gantt.taskEdit.error.permissions')
-      })
+      #set ($discard = $response.setStatus(401))
+      $services.localization.render('taskmanager.gantt.taskEdit.error.permissions')
     #else
       #set ($discard = $taskDocument.use('TaskManager.TaskManagerClass'))
       #if ($request.endDate)#set ($end = $datetool.toDate($numbertool.toNumber($request.endDate).longValue()))#end
       #if ($request.startDate)#set ($start = $datetool.toDate($numbertool.toNumber($request.startDate).longValue()))#end
-      #maybeSet ($taskDocument 'progress' $request.progress)
+      #maybeSet($taskDocument 'progress' $request.progress)
       ## Set status automatically when 100%.
       #if ($request.progress == '100')
         #set ($discard = $taskDocument.set('status', 'Done'))
       #end
-      #maybeSet ($taskDocument 'startDate' $start)
-      #maybeSet ($taskDocument 'duedate' $end)
+      #maybeSet($taskDocument 'startDate' $start)
+      #maybeSet($taskDocument 'duedate' $end)
       #set ($discard = $taskDocument.save($services.localization.render('taskmanager.gantt.taskEdit.comment'), true))
-      $jsontool.serialize({'success':true})
+      #set ($discard = $response.setStatus(200))
     #end
   #end
 #end
@@ -168,9 +162,6 @@
     </class>
     <property>
       <allow>1</allow>
-    </property>
-    <property>
-      <groups>XWiki.XWikiAllGroup</groups>
     </property>
     <property>
       <levels>view</levels>
@@ -251,9 +242,6 @@
     </class>
     <property>
       <allow>1</allow>
-    </property>
-    <property>
-      <groups>XWiki.XWikiAdminGroup</groups>
     </property>
     <property>
       <levels>view</levels>
