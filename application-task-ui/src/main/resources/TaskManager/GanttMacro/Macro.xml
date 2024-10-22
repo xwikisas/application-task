@@ -549,7 +549,7 @@ define('taskgantt-progress-popup', [
     return function(error) {
       revertBar(task, gantt);
       console.log(error);
-      new XWiki.widgets.Notification(taskutil.escapeHTML(error.responseText), 'error', '20');
+      new XWiki.widgets.Notification(taskutil.escapeHTML(error.responseJSON.data), 'error', '20');
       setGanttDisabledOverlayVisibility(gantt, false);
     };
   };

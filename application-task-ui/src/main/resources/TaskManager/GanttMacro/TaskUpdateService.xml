@@ -54,25 +54,26 @@
 ##   - startDate, endDate: new times, given as unix epoch milliseconds;
 ##   - progress: new progress value, 0-100 number;
 ##
-## In case of a failure, returns a reason string, defined in the translation keys.
+## In case of a failure, returns a JSON object with a `data` field containing the error text,
+## as defined in the translation keys.
 ##
 #if ("$!request.outputSyntax" == 'plain')
-  #set ($discard = $response.setContentType('text/plain'))
+  #set ($discard = $response.setContentType('application/json'))
 #end
 #set ($taskDocument = $request.taskDocument)
 #if (!$xwiki.exists($taskDocument))
   #set ($discard = $response.setStatus(404))
-  $services.localization.render('taskmanager.gantt.taskEdit.error.notExists')
+  $jsontool.serialize({'data':$services.localization.render('taskmanager.gantt.taskEdit.error.notExists')})
 #else
   #set ($taskDocument = $xwiki.getDocument($taskDocument))
   #set ($taskObject = $taskDocument.getObject('TaskManager.TaskManagerClass'))
   #if (!$taskObject)
     #set ($discard = $response.setStatus(404))
-    $services.localization.render('taskmanager.gantt.taskEdit.error.missingObject')
+    $jsontool.serialize({'data':$services.localization.render('taskmanager.gantt.taskEdit.error.missingObject')})
   #else
     #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
       #set ($discard = $response.setStatus(401))
-      $services.localization.render('taskmanager.gantt.taskEdit.error.permissions')
+      $jsontool.serialize({'data':$services.localization.render('taskmanager.gantt.taskEdit.error.permissions')})
     #else
       #set ($discard = $taskDocument.use('TaskManager.TaskManagerClass'))
       #if ($request.endDate)#set ($end = $datetool.toDate($numbertool.toNumber($request.endDate).longValue()))#end
@@ -86,168 +87,9 @@
       #maybeSet($taskDocument 'duedate' $end)
       #set ($discard = $taskDocument.save($services.localization.render('taskmanager.gantt.taskEdit.comment'), true))
       #set ($discard = $response.setStatus(200))
+      $jsontool.serialize({})
     #end
   #end
 #end
 {{/velocity}}</content>
-  <object>
-    <name>TaskManager.GanttMacro.TaskUpdateService</name>
-    <number>0</number>
-    <className>XWiki.XWikiRights</className>
-    <guid>c96c60c2-c754-4670-8d62-32a4a39517eb</guid>
-    <class>
-      <name>XWiki.XWikiRights</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <allow>
-        <defaultValue>1</defaultValue>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>allow</displayType>
-        <name>allow</name>
-        <number>4</number>
-        <prettyName>Allow/Deny</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </allow>
-      <groups>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>input</displayType>
-        <multiSelect>1</multiSelect>
-        <name>groups</name>
-        <number>1</number>
-        <picker>1</picker>
-        <prettyName>Groups</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>5</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.GroupsClass</classType>
-      </groups>
-      <levels>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>1</multiSelect>
-        <name>levels</name>
-        <number>2</number>
-        <prettyName>Levels</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>3</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.LevelsClass</classType>
-      </levels>
-      <users>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>input</displayType>
-        <multiSelect>1</multiSelect>
-        <name>users</name>
-        <number>3</number>
-        <picker>1</picker>
-        <prettyName>Users</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>5</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
-      </users>
-    </class>
-    <property>
-      <allow>1</allow>
-    </property>
-    <property>
-      <levels>view</levels>
-    </property>
-    <property>
-      <users/>
-    </property>
-  </object>
-  <object>
-    <name>TaskManager.GanttMacro.TaskUpdateService</name>
-    <number>1</number>
-    <className>XWiki.XWikiRights</className>
-    <guid>f5c1d40d-6a6f-4831-ba12-023b7bb14ebb</guid>
-    <class>
-      <name>XWiki.XWikiRights</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <allow>
-        <defaultValue>1</defaultValue>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>allow</displayType>
-        <name>allow</name>
-        <number>4</number>
-        <prettyName>Allow/Deny</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </allow>
-      <groups>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>input</displayType>
-        <multiSelect>1</multiSelect>
-        <name>groups</name>
-        <number>1</number>
-        <picker>1</picker>
-        <prettyName>Groups</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>5</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.GroupsClass</classType>
-      </groups>
-      <levels>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>1</multiSelect>
-        <name>levels</name>
-        <number>2</number>
-        <prettyName>Levels</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>3</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.LevelsClass</classType>
-      </levels>
-      <users>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>input</displayType>
-        <multiSelect>1</multiSelect>
-        <name>users</name>
-        <number>3</number>
-        <picker>1</picker>
-        <prettyName>Users</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <size>5</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
-      </users>
-    </class>
-    <property>
-      <allow>1</allow>
-    </property>
-    <property>
-      <levels>view</levels>
-    </property>
-    <property>
-      <users/>
-    </property>
-  </object>
 </xwikidoc>
