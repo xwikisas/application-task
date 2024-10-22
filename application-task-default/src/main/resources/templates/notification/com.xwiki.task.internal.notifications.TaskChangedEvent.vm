@@ -33,32 +33,53 @@
 #macro (displayEventDetails $event)
   #set ($document = $xwiki.getDocument($event.document))
   #set ($customEventInfo = $jsontool.fromString($event.getBody()) )
-  <tr>
-    <td>
-      <span class="notification-event-user">$!escapetool.xml($event.user.name)</span>
-    </td>
-    #set ($localizationParams = [
-      $document.getObject('TaskManager.TaskManagerClass').getValue('name'),
-      $customEventInfo['new'],
-      $customEventInfo['old']
-    ])
-    #if ($customEventInfo['type'] == 'assignee' && $customEventInfo['new'] == $xwiki.getUser())
-      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you')
-    #end
-    #set ($localisationId = "taskmanager.events.TaskChangedEvent.details.${customEventInfo['type']}" )
-    #set ($eventText = $services.localization.render($localisationId, $localizationParams) )
-    <td class="description">$escapetool.xml($eventText)</td>
-    <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
-  </tr>
+  #if ("$!customEventInfo" == '')
+    ## Do nothing if the json is either malformed, or the body contains something else (like if the event is part of
+    ## another application, and it was grouped with the notifications from TaskManager).
+  #else
+    <tr>
+      <td>
+        <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
+      </td>
+      #if ($customEventInfo['type'] == 'assignee')
+        #if ($customEventInfo['new'] == $xwiki.getUser().getUser().getFullName())
+          #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you')
+        #end
+        ## Display user name with link to user page.
+        ##set ($customEventInfo['old'] = $!xwiki.getUserName($customEventInfo['old']))
+        ##set ($customEventInfo['new'] = $!xwiki.getUserName($customEventInfo['new']))
+      #elseif ($customEventInfo['type'] == 'duedate.earlier' || $customEventInfo['type'] == 'duedate.later')
+        ## Convert from Long date to human-readable date, using format configured in datemacro.
+        #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+        #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+        #set ($customEventInfo['old'] = 
+          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['old'])))
+        )
+        #set ($customEventInfo['new'] = 
+          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['new'])))
+        )
+      #end
+      #set ($localizationParams = [
+        $document.getObject('TaskManager.TaskManagerClass').getValue('name'),
+        $customEventInfo['new'],
+        $customEventInfo['old']
+      ])
+      #set ($localizationId = "taskmanager.events.TaskChangedEvent.details.${customEventInfo['type']}" )
+      #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+      <td class="description">$escapetool.xml($eventText)</td>
+      <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
+    </tr>
+  #end
 #end
 
 #define ($content)
-  #set ($document = $xwiki.getDocument($!compositeEvent.events[0].document)) ## All folded events should have the same document theoretically.
+  ## All folded events should have the same document, so display the first one as a title for the group.
+  #set ($document = $xwiki.getDocument($!compositeEvent.events[0].document))
   <div class="notification-page">
-      <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getTitle())</a>
-      ##if ($xcontext.getContext().getOriginalWikiId() != $document.wikiReference.name)
-      ##  <span class="text-muted">($services.wiki.getById($!document.wikiReference.name).prettyName)</span>
-      ###end
+    <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getTitle())</a>
+    #if ($xcontext.getContext().getOriginalWikiId() != $document.getDocumentReference().getWikiReference().name)
+      <span class="text-muted">($services.wiki.getById($document.getDocumentReference().getWikiReference().name).prettyName)</span>
+    #end
   </div>
   <div class="notification-description">
     $services.localization.render("taskmanager.events.TaskChangedEvent.title")

@@ -19,11 +19,11 @@
  */
 
 package com.xwiki.task.internal.notifications;
-//import org.xwiki.eventstream.TargetableEvent;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.xwiki.eventstream.RecordableEvent;
 import org.xwiki.model.reference.DocumentReference;
 
@@ -33,36 +33,57 @@ import org.xwiki.model.reference.DocumentReference;
  * @version $Id$
  * @since 3.5.2
  */
-public class TaskChangedEvent implements RecordableEvent, Cloneable//, TargetableEvent
+public class TaskChangedEvent implements RecordableEvent, Cloneable
 {
-    DocumentReference documentReference;
-    String documentVersion;
-    Map<String, Object> localizationParams;
+    private DocumentReference documentReference;
+    private String documentVersion;
+    private Map<String, Object> localizationParams;
 
-    Set<String> targetedUsers;
+    private Set<String> targetedUsers;
 
-    public TaskChangedEvent() {
+    /**
+     * Task which represents a property change in a task. This is a dummy constructor.
+     */
+    public TaskChangedEvent()
+    {
         this.targetedUsers = new HashSet<String>();
     }
 
+    /**
+     * Task which represents a property change in a task.
+     * 
+     * @param documentReference the document reference of the changed task.
+     * @param documentVersion the version of the task document which contains the changes made.
+     * @param targetedUsers the users to specifically target with the notification.
+     * @param localizationParams the localization parameters used to format the localization string of the notification.
+     */
     public TaskChangedEvent(
         DocumentReference documentReference,
         String documentVersion,
-        Map<String, Object> localizationParams,
-        Set<String> targetedUsers
-    ) {
+        Set<String> targetedUsers,
+        Map<String, Object> localizationParams
+    )
+    {
         this.documentReference = documentReference;
         this.documentVersion = documentVersion;
-        this.localizationParams = localizationParams;
         this.targetedUsers = targetedUsers;
+        this.localizationParams = localizationParams;
     }
 
+    /**
+     * Task which represents a property change in a task.
+     * 
+     * @param documentReference the document reference of the changed task.
+     * @param documentVersion the version of the task document which contains the changes made.
+     * @param targetedUsers the users to specifically target with the notification.
+     */
     public TaskChangedEvent(
         DocumentReference documentReference,
         String documentVersion,
         Set<String> targetedUsers
-    ) {
-        this(documentReference, documentVersion, null, targetedUsers);
+    )
+    {
+        this(documentReference, documentVersion, targetedUsers, null);
     }
 
     @Override
@@ -72,28 +93,53 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable//, Targetabl
     }
 
     @Override
-    public TaskChangedEvent clone() {
-        return new TaskChangedEvent(documentReference, documentVersion, localizationParams, targetedUsers);
+    public TaskChangedEvent clone()
+    {
+        // Create a new class instance, sharing the same objects as property values.
+        return new TaskChangedEvent(documentReference, documentVersion, targetedUsers, localizationParams);
     }
 
-    //@Override
-    public Set<String> getTarget() {
+    /**
+     * @return the set of users targeted by this event.
+     */
+    public Set<String> getTarget()
+    {
         return targetedUsers;
     }
 
-    public DocumentReference getDocumentReference() {
+    /**
+     * @return the document reference of the task which generated this event.
+     */
+    public DocumentReference getDocumentReference()
+    {
         return documentReference;
     }
 
-    public String getDocumentVersion() {
+    /**
+     * @return the version of the task document which generated this event.
+     */
+    public String getDocumentVersion()
+    {
         return documentVersion;
     }
 
-    public Map<String, Object> getLocalizationParams() {
+    /**
+     * @return the localization parameters of this notification.
+     */
+    public Map<String, Object> getLocalizationParams()
+    {
         return localizationParams;
     }
 
-    public void setLocalizationParams(Map<String, Object> localizationParams) {
+    /**
+     * @param localizationParams a dictionary of parameters for use in the localization strings.
+     * The dictionary must contain:
+     *   * `new` field, containing the new value of the changed property.
+     *   * `old` field, containing the old value of the changed property.
+     *   * `type` field, containing the suffix of the localization string to use when displaying the notification.
+     */
+    public void setLocalizationParams(Map<String, Object> localizationParams)
+    {
         this.localizationParams = localizationParams;
     }
 

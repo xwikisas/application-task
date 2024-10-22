@@ -32,20 +32,34 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
 import org.suigeneris.jrcs.rcs.Version;
+// import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
+// import org.xwiki.model.reference.DocumentReference;
+// import org.xwiki.model.reference.EntityReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
+// import org.xwiki.user.CurrentUserReference;
+// import org.xwiki.user.UserReference;
+// import org.xwiki.notifications.NotificationException;
+// import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
+// import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
+// import org.xwiki.notifications.filters.watch.WatchedEntityReference;
+// import org.xwiki.user.UserReferenceResolver;
+// import org.xwiki.user.internal.document.DocumentUserReference;
 
 import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.StringProperty;
+// import com.xpn.xwiki.user.api.XWikiUser;
+import com.xwiki.task.model.Task;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.DateProperty;
@@ -61,8 +75,17 @@ import com.xpn.xwiki.objects.DateProperty;
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
     private static final String TASK_MANAGER_CLASS_NAME = "TaskManager.TaskManagerClass";
-    private static final String ASSIGNEE_FIELD_NAME = "assignee";
-    private static final String REPORTER_FIELD_NAME = "reporter";
+
+    /**
+     * The fields of the Task class which are watched for changes.
+     */
+    private static final List<String> WATCHED_FIELDS = Arrays.asList(
+        Task.ASSIGNEE,
+        Task.DUE_DATE,
+        Task.PROJECT,
+        Task.STATUS,
+        Task.SEVERITY
+    );
 
     @Inject
     private ComponentManager componentManager;
@@ -70,15 +93,10 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Inject
     private DocumentRevisionProvider documentRevisionProvider;
 
-    private ObservationManager observationManager;
+    @Inject
+    private Logger logger;
 
-    public static final List<String> WATCHED_FIELDS = Arrays.asList(
-        "duedate",
-        "assignee",
-        "project",
-        "status",
-        "severity"
-    );
+    private ObservationManager observationManager;
 
     /**
      * Initialize the listener.
@@ -88,8 +106,15 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         super(TaskChangedEventNotificationListener.class.getName(), Arrays.asList(new DocumentUpdatedEvent()));
     }
 
-    private Object getPropertyValue(BaseObject obj, String propertyName)
+    /**
+     * Helper to get the value of the properties of an XObject.
+     * @param obj the base object
+     * @param propertyName the property to retrieve
+     * @return the value of the desired property, or null if the property doesn't exist or has unsupported typ.
+     */
+    private static Object getPropertyValue(BaseObject obj, String propertyName)
     {
+        // Method getValue() is not defined for the Property interface.
         PropertyInterface property = obj.safeget(propertyName);
         if (property instanceof StringProperty) {
             return ((StringProperty) property).getValue();
@@ -102,21 +127,33 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         }
     }
 
+    /**
+     * Get a {@link TaskChangedEvent} reflecting the changes made on a certain property, if a change happened.
+     * 
+     * @param currentObject the current version of the object
+     * @param previousObject the previous version of the object
+     * @param propertyName the property to check for changes
+     * @param baseEvent a skeleton event used as a template when calling multiple times for the same object
+     * @return the event describing the changes done to the specified field, null when no change occured
+     */
     private TaskChangedEvent getFieldChangedEvent(
         BaseObject currentObject,
         BaseObject previousObject,
         String propertyName,
-        TaskChangedEvent event)
+        TaskChangedEvent baseEvent)
     {
         Object currentValue = getPropertyValue(currentObject, propertyName);
         Object previousValue = getPropertyValue(previousObject, propertyName);
 
-        if (currentValue == null || previousValue == null) {
-            System.out.println("New/Deleted " + propertyName + ", you get a pass.");
+
+        if (currentValue == null) {
+            // TODO: Maybe add localization string for 'field value was just added/removed'?
+            // (only possible for assignee and duedate)
             return null;
         }
-
         boolean valuesAreEqual = currentValue.equals(previousValue);
+
+        String localizationSuffix = propertyName;
 
         if (currentValue instanceof Date) {
             long currentDate = ((Date) currentValue).getTime();
@@ -124,26 +161,26 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
             valuesAreEqual = (currentDate == previousDate);
             if (currentDate > previousDate) {
-                propertyName += ".later";
+                localizationSuffix += ".later";
             } else {
-                propertyName += ".earlier";
+                localizationSuffix += ".earlier";
             }
         }
-        
-        
-        if (!valuesAreEqual) {
-            Map<String, Object> localizationParams = new HashMap<String, Object>();
-            localizationParams.put("new", currentValue);
-            localizationParams.put("old", previousValue);
-            localizationParams.put("type", propertyName);
 
-            event = event.clone();
-            event.setLocalizationParams(localizationParams);
-            System.out.println(propertyName + ": " + currentValue + " <- " + previousValue);
-            return event;
-        } else {
+
+        if (valuesAreEqual) {
             return null;
         }
+
+        Map<String, Object> localizationParams = new HashMap<String, Object>();
+        localizationParams.put("new", currentValue);
+        localizationParams.put("old", previousValue);
+        localizationParams.put("type", localizationSuffix);
+
+        TaskChangedEvent event = baseEvent.clone();
+        event.setLocalizationParams(localizationParams);
+
+        return event;
     }
 
     /**
@@ -156,12 +193,11 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
         if (null == document.getXObject(document.resolveClassReference(TASK_MANAGER_CLASS_NAME))) {
             // Stop if the document has no TaskManager tasks attached.
-            System.out.println("Keine Task Objekt.");
             return;
         }
 
         XWikiDocumentArchive versionArchive = document.getDocumentArchive();
-        Version version = document.getRCSVersion(); //versionArchive.getLatestNode().getVersion();
+        Version version = document.getRCSVersion();
 
         XWikiDocument currentDoc = null;
         XWikiDocument previousDoc = null;
@@ -176,7 +212,11 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
                 ).getVersion().toString()
             );
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(
+                "Error while getting TaskManager document versions of task [{}]: [{}].",
+                document.getDocumentReference(),
+                e
+            );
             return;
         }
 
@@ -189,18 +229,15 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
         if (null == previousObject || null == currentObject) {
             // Stop if the task was just added or deleted.
-            System.out.println("Keine Task, haben Sie jetzt vielleicht einen Task adden oder deleten?");
             return;
         }
 
+        // The reporter shouldn't be changing between versions.
         Set<String> targetedUsers = new HashSet<String>(Arrays.asList(
-            (String) getPropertyValue(currentObject, REPORTER_FIELD_NAME),
-            (String) getPropertyValue(currentObject, ASSIGNEE_FIELD_NAME),
-            (String) getPropertyValue(previousObject, REPORTER_FIELD_NAME),
-            (String) getPropertyValue(previousObject, ASSIGNEE_FIELD_NAME)
+            (String) getPropertyValue(currentObject, Task.REPORTER),
+            (String) getPropertyValue(currentObject, Task.ASSIGNEE),
+            (String) getPropertyValue(previousObject, Task.ASSIGNEE)
         ));
-
-        System.out.println("Targeted: " + targetedUsers.toString());
 
         TaskChangedEvent baseTaskChangedEvent =
             new TaskChangedEvent(document.getDocumentReference(), version.toString(), targetedUsers);
@@ -214,7 +251,6 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
             );
             if (null != taskChangedEvent) {
                 getObservationManager().notify(taskChangedEvent, document.toString(), data);
-                System.out.println("Done sending the notification for " + field);
             }
         });
     }
