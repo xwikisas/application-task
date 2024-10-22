@@ -1,0 +1,99 @@
+## ---------------------------------------------------------------------------
+## See the NOTICE file distributed with this work for additional
+## information regarding copyright ownership.
+##
+## This is free software; you can redistribute it and/or modify it
+## under the terms of the GNU Lesser General Public License as
+## published by the Free Software Foundation; either version 2.1 of
+## the License, or (at your option) any later version.
+##
+## This software is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public
+## License along with this software; if not, write to the Free
+## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+## ---------------------------------------------------------------------------
+
+#template('notification/macros.vm')
+
+#set ($eventDescriptor = $services.eventstream.getDescriptorForEventType($compositeEvent.type, $xcontext.isMainWiki()))
+#if ($eventDescriptor)
+  #set ($mainIcon = $eventDescriptor.applicationIcon)
+  #set ($smallIcon = $eventDescriptor.eventTypeIcon)
+#else
+  #set ($mainIcon = 'rss')
+  #set ($smallIcon = '')
+#end
+##set ($compositeEventDate = $escapetool.xml($datetool.whenIs($compositeEvent.dates.get(0))))
+
+#macro (displayEventDetails $event)
+  #set ($document = $xwiki.getDocument($event.document))
+  #set ($customEventInfo = $jsontool.fromString($event.getBody()) )
+  #if ("$!customEventInfo" == '')
+    ## Do nothing if the json is either malformed, or the body contains something else (like if the event is part of
+    ## another application, and it was grouped with the notifications from TaskManager).
+  #else
+    <tr>
+      <td>
+        <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
+      </td>
+      #if ($customEventInfo['type'] == 'assignee')
+        #if ($customEventInfo['new'] == $xwiki.getUser().getUser().getFullName())
+          #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you')
+        #end
+        ## Display user name with link to user page.
+        ##set ($customEventInfo['old'] = $!xwiki.getUserName($customEventInfo['old']))
+        ##set ($customEventInfo['new'] = $!xwiki.getUserName($customEventInfo['new']))
+      #elseif ($customEventInfo['type'] == 'duedate.earlier' || $customEventInfo['type'] == 'duedate.later')
+        ## Convert from Long date to human-readable date, using format configured in datemacro.
+        #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+        #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+        #set ($customEventInfo['old'] = 
+          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['old'])))
+        )
+        #set ($customEventInfo['new'] = 
+          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['new'])))
+        )
+      #end
+      #set ($localizationParams = [
+        $document.getObject('TaskManager.TaskManagerClass').getValue('name'),
+        $customEventInfo['new'],
+        $customEventInfo['old']
+      ])
+      #set ($localizationId = "taskmanager.events.TaskChangedEvent.details.${customEventInfo['type']}" )
+      #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+      <td class="description">$escapetool.xml($eventText)</td>
+      <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
+    </tr>
+  #end
+#end
+
+#define ($content)
+  ## All folded events should have the same document, so display the first one as a title for the group.
+  #set ($document = $xwiki.getDocument($!compositeEvent.events[0].document))
+  <div class="notification-page">
+    <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getTitle())</a>
+    #if ($xcontext.getContext().getOriginalWikiId() != $document.getDocumentReference().getWikiReference().name)
+      <span class="text-muted">($services.wiki.getById($document.getDocumentReference().getWikiReference().name).prettyName)</span>
+    #end
+  </div>
+  <div class="notification-description">
+    $services.localization.render("taskmanager.events.TaskChangedEvent.title")
+    <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!compositeEvent.events[0].date))</small></div>
+  </div>
+#end
+
+#define ($details)
+  #define ($rows)
+    #foreach ($thisEvent in $compositeEvent.events)
+      #displayEventDetails($thisEvent)
+    #end
+  #end
+  #displayNotificationEventDetailsSkeletons($compositeEvent.events.size(), $rows)
+#end
+
+#displayNotificationEventSkeleton($mainIcon $smallIcon $content $details)
