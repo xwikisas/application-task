@@ -226,7 +226,7 @@
     #end
   {{/html}}
 #else
-  {{info}}You have to be logged in in order to view this page{{/info}}
+  {{info}}$escapetool.xml($services.localization.render('taskmanager.guest.page')){{/info}}
 #end
 {{/velocity}}</content>
   <object>

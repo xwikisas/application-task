@@ -1082,6 +1082,13 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
 
     $(ganttDiv).attr('id', 'taskgantt-gantt' + idx);
 
+    if ($(ganttDiv).data('is-guest') == true) {
+      // Mimic the behaviour present in TaskManagerSheet, which hides task data if the user is a guest.
+      $(ganttDiv).append(tgtemplates.guestMessage);
+      $(ganttDiv).find('#view-mode-buttons').empty();
+      return;
+    }
+
     let tasks = await fetch(serviceUrls.getJsonSourceURL(ganttDiv)).then(response =&gt; response.json());
     if (tasks.length == 0) {
       // Frappe breaks if it has no tasks to display, so replace it with an error message.
@@ -1799,6 +1806,9 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
 #macro (noTasksMessage)
   &lt;div class='box'&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.noTasks'))&lt;/div&gt;
 #end
+#macro (guestMessage)
+  &lt;div class='box'&gt;$escapetool.html($services.localization.render('taskmanager.guest.gantt'))&lt;/div&gt;
+#end
 #macro (svgCustomDefs)
   &lt;linearGradient id="fadeGrad"&gt;
     &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
@@ -1845,6 +1855,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #set ($config = {})
   #set ($discard = $config.put('svgCustomDefs', "#svgCustomDefs"))
   #set ($discard = $config.put('noTasksMessage', "#noTasksMessage"))
+  #set ($discard = $config.put('guestMessage', "#guestMessage"))
   {{html clean='false'}}
   &lt;script id='taskgantt-config-templates' type='application/json'&gt;$jsontool.serialize($config).replace('&amp;lt;', '\u003C')
   &lt;/script&gt;
@@ -1852,6 +1863,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
 
 {{html}}
 &lt;div class='taskgantt'
+  data-is-guest="$isGuest"
   data-readonly="$diagramIsReadonly"
   #if ("$!xcontext.macro.params.from" != '')
     #set ($fromMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.from, $storageDateTimeFormatter).getMillis())
