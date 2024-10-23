@@ -56,178 +56,174 @@
 {{/velocity}}
 
 {{velocity}}
-#if(!$isGuest)
-  {{html wiki="true"}}
-    #set ($discard = $doc.use('TaskManager.TaskManagerClass'))
-    #set ($discard = $xwiki.jsx.use('TaskManager.TaskManagerSheet')) ## For auto-updating Status and Progress
-    #set($isEdit = ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
-    #if(!$isEdit)
-      (% class="xform" %)
+{{html wiki="true"}}
+  #set ($discard = $doc.use('TaskManager.TaskManagerClass'))
+  #set ($discard = $xwiki.jsx.use('TaskManager.TaskManagerSheet')) ## For auto-updating Status and Progress
+  #set($isEdit = ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+  #if(!$isEdit)
+    (% class="xform" %)
+    (((
+      (% class="row" %)
       (((
-        (% class="row" %)
+        (% class="col-xs-12 col-sm-8 col-md-8" %)
         (((
-          (% class="col-xs-12 col-sm-8 col-md-8" %)
+          (% class="row" %)
           (((
-            (% class="row" %)
-            (((
-              #displayPropertyCol('number', 'key')
-              #if ("$!doc.display('project')" != '')
-                #displayPropertyCol('project', 'folder')
-              #end
-            )))
-            (% class="row" %)
-            (((
-              #displayPropertyCol('startDate', 'calendar')
-              #displayPropertyCol('createDate', 'calendar')
-              #displayPropertyCol('duedate', 'time')
-              #if ("$!doc.display('completeDate')" != '')
-                #displayPropertyCol('completeDate', 'check')
-              #end
-            )))
-            (% class="row" %)
-            (((
-              #displayPropertyCol('reporter', 'user')
-              #if ("$!doc.getValue('assignee')" != '')
-                #displayPropertyCol('assignee', 'user')
-              #end
-            )))
-          )))
-          (% class="col-xs-12 col-sm-4 col-md-4" %)
-          (((
-            #displayProperty('severity', 'bell')
-            #displayProperty('status', 'info')
-            #displayProperty('progress', 'contrast')
-          )))
-        )))
-        (% class="row" %)
-        (((
-          (% class="col-xs-12 col-sm-12 col-md-12" %)
-          (((
-            (% class="form-group" %)
-            (((
-              #if ("$!doc.display('description')" != '' || $xcontext.action == 'preview')
-                ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
-                    $services.icon.render('application_view_list')
-                    $escapetool.xml($doc.displayPrettyName('description', false, false))
-                  &lt;/label&gt;
-                : #if ($xcontext.action == 'preview') $doc.getRenderedContent($request.content, $doc.syntax) #else $doc.display('description') #end
-              #end
-            )))
-          )))
-        )))
-        (% class="row" %)
-        (((
-          (% class="col-xs-12 col-sm-12 col-md-12" %)
-          (((
-            #if ("$!doc.display('dependencies')" != '')
-               #displayProperty('dependencies', 'add')
+            #displayPropertyCol('number', 'key')
+            #if ("$!doc.display('project')" != '')
+              #displayPropertyCol('project', 'folder')
             #end
-        )))
-      )))
-    #end
-    #if($isEdit)
-      (% class="xform" %)
-      (((
-        (% class="row" %)
-        (((
-          (% class="col-xs-12 col-sm-8 col-md-8" %)
-          (((
-            (% class="form-group" %)
-            (((
-              ## Automatically set task name property from the document name
-              ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
-                  $services.icon.render('book')
-                  $escapetool.xml($doc.displayPrettyName('name', false, false))
-                &lt;/label&gt;
-                #set($taskName = $doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value)
-                #if("$!{taskName}" == '')
-                   #set($taskName = $doc.documentReference.name)
-                   #if($taskName == $services.model.getEntityReference('DOCUMENT', 'default').name)
-                     ## we are a non-terminal page: use space name
-                     #set($taskName = $doc.documentReference.parent.name)
-                   #end
-                #end
-              :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($taskName)"/&gt;
-            )))
           )))
-          (% class="col-xs-12 col-sm-4 col-md-4" %)
+          (% class="row" %)
           (((
-            (% class="form-group" %)
-            (((
-              ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
-                  $services.icon.render('folder')
-                  $escapetool.xml($doc.displayPrettyName('project', false, false))
-                &lt;/label&gt;
-              : $doc.display('project')
-            )))
-          )))
-        )))
-        (% class="row" %)
-        (((
-          (% class="col-xs-12 col-sm-8 col-md-8" %)
-          (((
-            (% class="row" %)
-            (((
-              #displayPropertyCol('startDate', 'calendar')
-              #displayPropertyCol('createDate', 'calendar')
-              #displayPropertyCol('duedate', 'time')
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-              )))
+            #displayPropertyCol('startDate', 'calendar')
+            #displayPropertyCol('createDate', 'calendar')
+            #displayPropertyCol('duedate', 'time')
+            #if ("$!doc.display('completeDate')" != '')
               #displayPropertyCol('completeDate', 'check')
-            )))
-            (% class="row" %)
-            (((
-              (% class="col-xs-12 col-sm-6" %)
-              (((
-                (% class="form-group" %)
-                (((
-                  ; &lt;label for="TaskManager.TaskManagerClass_0_reporter"&gt;
-                      $services.icon.render('user')
-                      $escapetool.xml($doc.displayPrettyName('reporter', false, false))
-                    &lt;/label&gt;
-                  : #if($doc.isNew())
-                      #set($discard = $doc.getObject('TaskManager.TaskManagerClass').set('reporter', $xcontext.user))
-                    #end
-                    $doc.display('reporter', 'hidden')
-                    $doc.display('reporter', 'view')
-                )))
-              )))
-              #displayPropertyCol('assignee', 'user')
-            )))
+            #end
           )))
-          (% class="col-xs-12 col-sm-4 col-md-4" %)
+          (% class="row" %)
           (((
-            #displayProperty('severity', 'bell')
-            #displayProperty('status', 'info')
-            #displayProperty('progress', 'contrast')
+            #displayPropertyCol('reporter', 'user')
+            #if ("$!doc.getValue('assignee')" != '')
+              #displayPropertyCol('assignee', 'user')
+            #end
           )))
         )))
-        (% class="row" %)
+        (% class="col-xs-12 col-sm-4 col-md-4" %)
         (((
-          (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
+          #displayProperty('severity', 'bell')
+          #displayProperty('status', 'info')
+          #displayProperty('progress', 'contrast')
+        )))
+      )))
+      (% class="row" %)
+      (((
+        (% class="col-xs-12 col-sm-12 col-md-12" %)
+        (((
+          (% class="form-group" %)
           (((
-            ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
-                $services.icon.render('application_view_list')
-                $escapetool.xml($doc.displayPrettyName('description', false, false))
-              &lt;/label&gt;
-            : $doc.display('description')
-          )))
-          (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
-          (((
-            ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;
-                $services.icon.render('add')
-                $escapetool.xml($doc.displayPrettyName('dependencies', false, false))
-              &lt;/label&gt;
-            : $doc.display('dependencies')
+            #if ("$!doc.display('description')" != '' || $xcontext.action == 'preview')
+              ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
+                  $services.icon.render('application_view_list')
+                  $escapetool.xml($doc.displayPrettyName('description', false, false))
+                &lt;/label&gt;
+              : #if ($xcontext.action == 'preview') $doc.getRenderedContent($request.content, $doc.syntax) #else $doc.display('description') #end
+            #end
           )))
         )))
       )))
-    #end
-  {{/html}}
-#else
-  {{info}}$escapetool.xml($services.localization.render('taskmanager.guest.page')){{/info}}
-#end
+      (% class="row" %)
+      (((
+        (% class="col-xs-12 col-sm-12 col-md-12" %)
+        (((
+          #if ("$!doc.display('dependencies')" != '')
+            #displayProperty('dependencies', 'add')
+          #end
+      )))
+    )))
+  #end
+  #if($isEdit)
+    (% class="xform" %)
+    (((
+      (% class="row" %)
+      (((
+        (% class="col-xs-12 col-sm-8 col-md-8" %)
+        (((
+          (% class="form-group" %)
+          (((
+            ## Automatically set task name property from the document name
+            ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
+                $services.icon.render('book')
+                $escapetool.xml($doc.displayPrettyName('name', false, false))
+              &lt;/label&gt;
+              #set($taskName = $doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value)
+              #if("$!{taskName}" == '')
+                #set($taskName = $doc.documentReference.name)
+                #if($taskName == $services.model.getEntityReference('DOCUMENT', 'default').name)
+                  ## we are a non-terminal page: use space name
+                  #set($taskName = $doc.documentReference.parent.name)
+                #end
+              #end
+            :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($taskName)"/&gt;
+          )))
+        )))
+        (% class="col-xs-12 col-sm-4 col-md-4" %)
+        (((
+          (% class="form-group" %)
+          (((
+            ; &lt;label for="TaskManager.TaskManagerClass_0_project"&gt;
+                $services.icon.render('folder')
+                $escapetool.xml($doc.displayPrettyName('project', false, false))
+              &lt;/label&gt;
+            : $doc.display('project')
+          )))
+        )))
+      )))
+      (% class="row" %)
+      (((
+        (% class="col-xs-12 col-sm-8 col-md-8" %)
+        (((
+          (% class="row" %)
+          (((
+            #displayPropertyCol('startDate', 'calendar')
+            #displayPropertyCol('createDate', 'calendar')
+            #displayPropertyCol('duedate', 'time')
+            (% class="col-xs-12 col-sm-6" %)
+            (((
+            )))
+            #displayPropertyCol('completeDate', 'check')
+          )))
+          (% class="row" %)
+          (((
+            (% class="col-xs-12 col-sm-6" %)
+            (((
+              (% class="form-group" %)
+              (((
+                ; &lt;label for="TaskManager.TaskManagerClass_0_reporter"&gt;
+                    $services.icon.render('user')
+                    $escapetool.xml($doc.displayPrettyName('reporter', false, false))
+                  &lt;/label&gt;
+                : #if($doc.isNew())
+                    #set($discard = $doc.getObject('TaskManager.TaskManagerClass').set('reporter', $xcontext.user))
+                  #end
+                  $doc.display('reporter', 'hidden')
+                  $doc.display('reporter', 'view')
+              )))
+            )))
+            #displayPropertyCol('assignee', 'user')
+          )))
+        )))
+        (% class="col-xs-12 col-sm-4 col-md-4" %)
+        (((
+          #displayProperty('severity', 'bell')
+          #displayProperty('status', 'info')
+          #displayProperty('progress', 'contrast')
+        )))
+      )))
+      (% class="row" %)
+      (((
+        (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
+        (((
+          ; &lt;label for="TaskManager.TaskManagerClass_0_description"&gt;
+              $services.icon.render('application_view_list')
+              $escapetool.xml($doc.displayPrettyName('description', false, false))
+            &lt;/label&gt;
+          : $doc.display('description')
+        )))
+        (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
+        (((
+          ; &lt;label for="TaskManager.TaskManagerClass_0_dependencies"&gt;
+              $services.icon.render('add')
+              $escapetool.xml($doc.displayPrettyName('dependencies', false, false))
+            &lt;/label&gt;
+          : $doc.display('dependencies')
+        )))
+      )))
+    )))
+  #end
+{{/html}}
 {{/velocity}}</content>
   <object>
     <name>TaskManager.TaskManagerSheet</name>

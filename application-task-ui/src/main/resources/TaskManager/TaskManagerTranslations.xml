@@ -117,8 +117,7 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
-taskmanager.guest.page=You have to be logged in in order to view this page
-taskmanager.guest.gantt=You have to be logged in in order to view this diagram.
+taskmanager.guest.panel=You have to be logged in in order to view this panel
 
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task

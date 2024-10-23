@@ -188,7 +188,7 @@
     (% class="pull-right"%)[[$services.localization.render('taskmanager.panel.fulltasklist')&gt;&gt;TaskManager.WebHome]]
   #end
   #else
-    {{info}}You have to be logged in in order to view this panel{{/info}}
+    {{info}}$escapetool.xml($services.localization.render('taskmanager.guest.panel')){{/info}}
   #end
   #panelfooter()
 {{/velocity}}</content>
