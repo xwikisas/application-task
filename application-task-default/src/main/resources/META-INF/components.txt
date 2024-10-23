@@ -13,6 +13,7 @@ com.xwiki.task.internal.TaskXDOMProcessor
 com.xwiki.task.internal.TaskMacroUpdateEventListener
 com.xwiki.task.internal.TaskManagerConfigurationSource
 com.xwiki.task.internal.TaskObjectUpdateEventListener
+com.xwiki.task.internal.SuperCompactReferenceSerializer
 com.xwiki.task.internal.job.TaskDataInferringJob
 com.xwiki.task.internal.macro.TaskMacro
 com.xwiki.task.internal.macro.TasksMacro

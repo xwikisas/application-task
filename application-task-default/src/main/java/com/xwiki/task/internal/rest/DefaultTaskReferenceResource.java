@@ -58,7 +58,7 @@ public class DefaultTaskReferenceResource extends XWikiResource implements TaskR
     private TaskReferenceGenerator taskReferenceGenerator;
 
     @Inject
-    @Named("compact")
+    @Named("supercompact")
     private EntityReferenceSerializer<String> serializer;
 
     @Inject
@@ -67,13 +67,15 @@ public class DefaultTaskReferenceResource extends XWikiResource implements TaskR
     @Override
     public String generateId(String wikiName, String spaces, String pageName) throws XWikiRestException
     {
+        DocumentReference ownerRef = new DocumentReference(pageName, getSpaceReference(spaces, wikiName));
         DocumentReference docRef =
             new DocumentReference(pageName, new SpaceReference("Tasks", getSpaceReference(spaces, wikiName)));
         if (!contextualAuthorizationManager.hasAccess(Right.EDIT, docRef)) {
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
         try {
-            return serializer.serialize(pageReferenceResolver.resolve(taskReferenceGenerator.generate(docRef)), docRef);
+            return serializer.serialize(pageReferenceResolver.resolve(taskReferenceGenerator.generate(docRef)),
+                ownerRef);
         } catch (TaskException e) {
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
         }
