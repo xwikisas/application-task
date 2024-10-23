@@ -117,8 +117,6 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
-taskmanager.guest.panel=You have to be logged in in order to view this panel
-
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
 taskmanager.gantt.taskEdit.error.generic=Task could not be updated
@@ -161,6 +159,7 @@ taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until
 taskmanager.panel.fulltasklist=See full list
 taskmanager.panel.noactivetasks=No active Tasks
+taskmanager.panel.guest=You have to be logged in in order to view this panel
 
 # Template provider
 taskmanager.entry.name=Task
