@@ -1,0 +1,2527 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.4" reference="TaskManager.GanttMacro.Macro" locale="">
+  <web>TaskManager.GanttMacro</web>
+  <name>Macro</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>xwiki:TaskManager.GanttMacro</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>Macro</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{taskgantt/}}</content>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>20ebfcab-84f8-4525-b1b5-c053c1e425f0</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>define('taskgantt-translation-keys', {
+  prefix: 'taskmanager.gantt.',
+  keys: [
+    'taskEdit.error.readonly',
+    'taskEdit.error.permissions',
+    'taskEdit.success',
+    'task.noDueDate',
+  ],
+});
+
+define('taskgantt-localization', ['xwiki-l10n!taskgantt-translation-keys', 'xwiki-meta'], function (l10n, xm) {
+  return {
+    readonlyError: l10n['taskEdit.error.readonly'],
+    permissionError: l10n['taskEdit.error.permissions'],
+    successMessage: l10n['taskEdit.success'],
+    noDueDateMessage: l10n['task.noDueDate'],
+    XWikiLocale: xm.locale,
+  };
+});
+
+define('taskgantt-config-templates', ['jquery'], function ($) {
+  const config = JSON.parse($('#taskgantt-config-templates').text())
+  return config;
+});
+
+define('taskgantt-service-urls', ['jquery'], function ($) {
+  const jsonSourceBaseURL =
+    new XWiki.Document(
+      XWiki.Model.resolve('TaskManager.GanttMacro.JSONTaskSource', XWiki.EntityType.DOCUMENT)
+    ).getURL('get')
+    + '?xpage=plain&amp;outputSyntax=plain&amp;';
+  const updateServiceBaseURL =
+    new XWiki.Document(
+      XWiki.Model.resolve('TaskManager.GanttMacro.TaskUpdateService', XWiki.EntityType.DOCUMENT)
+    ).getURL('get')
+    + '?xpage=plain&amp;outputSyntax=plain&amp;';
+
+  function getUpdateServiceURL(task) {
+    /**
+     * Could be refactored and replaced by a REST API call after the following JIRA issue is fixed:
+     * XWIKI-20704: NullPointerException (NPE) when accessing objects with ComputedField properties from REST
+     */
+    return updateServiceBaseURL + new URLSearchParams({ taskDocument: task.id }) + '&amp;';
+    // REST API call skeleton.
+    // return new XWiki.Document(
+    //   XWiki.Model.resolve(task.id, XWiki.EntityType.DOCUMENT)
+    // ).getRestURL('objects/TaskManager.TaskManagerClass/0');
+  };
+  function getJsonSourceURL(ganttDiv) {
+    const params = {};
+    ganttDiv = $(ganttDiv);
+    if (undefined !== ganttDiv.data('assignees')) {
+      params['assignees'] = ganttDiv.data('assignees');
+    }
+    if (undefined !== ganttDiv.data('reporters')) {
+      params['reporters'] = ganttDiv.data('reporters');
+    }
+    if (undefined !== ganttDiv.data('projects')) {
+      params['projects'] = ganttDiv.data('projects');
+    }
+    if (undefined !== ganttDiv.data('spaces')) {
+      params['spaces'] = ganttDiv.data('spaces');
+    }
+    if (undefined !== ganttDiv.data('date-to')) {
+      params['to'] = ganttDiv.data('date-to');
+    }
+    if (undefined !== ganttDiv.data('date-from')) {
+      params['from'] = ganttDiv.data('date-from');
+    }
+    if (undefined !== ganttDiv.data('hide-no-due-date')) {
+      params['hideNoDueDate'] = ganttDiv.data('hide-no-due-date');
+    }
+    const query = $.param(params);
+    return jsonSourceBaseURL + query;
+  };
+
+  return {
+    'getUpdateServiceURL': getUpdateServiceURL,
+    'getJsonSourceURL': getJsonSourceURL,
+  };
+});
+
+define('taskgantt-utils', ['jquery', 'taskgantt-localization'], function ($, l10n) {
+  /**
+   * Escape text with HTML escapes (needed because js escape() is deprecated).
+   */
+  function escapeHTML(originalString) {
+    return String(originalString)
+      .replace(/&amp;/g, '&amp;amp;')
+      .replace(/&lt;/g, '&amp;lt;')
+      .replace(/&gt;/g, '&amp;gt;')
+      .replace(/"/g, '&amp;quot;')
+      .replace(/'/g, '&amp;#39;');
+  };
+  /**
+   *  Used to get absolute position information of an element relative to another element (viewport).
+   */
+  function normalizePosition(viewport, elem) {
+    return {
+      x: (elem.x - viewport.x),
+      y: (elem.y - viewport.y),
+      width: elem.width,
+      height: elem.height,
+    };
+  };
+  /**
+   * Converts dates from int to js Date.
+   * Updates task title when no due date.
+   * Updates the last state of a task to use when reverting in case of an error.
+   */
+  function formatTask(task) {
+    if (task.taskClasses.includes('taskgantt-no-due-date')) {
+      task.name = escapeHTML(task.taskName) + ' - ' + l10n.noDueDateMessage;
+    } else {
+      task.name = escapeHTML(task.taskName);
+    }
+    task.custom_class = escapeHTML(task.taskClasses.join(' '));
+    if (!(task.start instanceof Date)) {
+      task.start = new Date(task.start);
+    }
+    if (!(task.end instanceof Date)) {
+      task.end = new Date(task.end);
+    }
+    /**
+     * The `editMetadata` takes a snapshot of a task and it is used to detect what properties were updated when editing.
+     * It is also used to restore a task to its previous state in the UI after an edit error (permissions, readonly).
+     */
+    const hasStarted = task.editMetadata &amp;&amp; task._start;
+    task.editMetadata = {
+      oldProgress: task.progress,
+      oldStartDate: hasStarted ? task._start : new Date(task.start.getTime()),
+      oldEndDate: hasStarted ? task._end : new Date(task.end.getTime()),
+    };
+  };
+  /**
+   * Returns an error message if editing this task is not allowed.
+   */
+  function getForbiddenEditMsg(task, gantt) {
+    let msg = null;
+    const isReadonly = $(gantt.$svg).closest('.taskgantt').data('readonly');
+    if (isReadonly) {
+      msg = l10n.readonlyError;
+    } else if (task.taskClasses.includes('taskgantt-no-edit')) {
+      msg = l10n.permissionError;
+    }
+    return msg;
+  };
+
+  return {
+    'escapeHTML': escapeHTML,
+    'normalizePosition': normalizePosition,
+    'formatTask': formatTask,
+    'getForbiddenEditMsg': getForbiddenEditMsg,
+  };
+});
+
+define('taskgantt-progress-popup', [
+  'jquery',
+  'taskgantt-localization',
+  'taskgantt-utils'
+], function ($, l10n, taskutil) {
+  function showPopup(popup, ganttDiv, ganttObj, barElem, progressChangeObserver, isResizingProgress) {
+    if (isResizingProgress) {
+      // The popup is already visible, no need to recompute the location.
+      return;
+    }
+    const viewport = ganttDiv.getBoundingClientRect();
+    let bar = ganttObj.bars.find((b) =&gt; b.group === barElem);
+    const b = taskutil.normalizePosition(viewport, bar.$bar.getBoundingClientRect());
+    const pop = taskutil.normalizePosition(
+      viewport,
+      popup.getElementsByClassName('popuptext')[0].getBoundingClientRect()
+    );
+    let y = b.y - pop.height - 5;
+    let x = b.x + (b.width - pop.width) / 2;
+    popup.style.top = y + 'px';
+    popup.style.left = x + 'px';
+    let popupNumber = $('.gantt-popup-progress-number', popup);
+    popupNumber.text(bar.compute_progress() + '%');
+    $(popup).addClass('active');
+    if (progressChangeObserver) {
+      progressChangeObserver.disconnect();
+    }
+    progressChangeObserver = new MutationObserver(() =&gt; { popupNumber.text(bar.compute_progress() + '%'); });
+    progressChangeObserver.observe(bar.$bar_progress, { attributes: true });
+  };
+  function hidePopup(popup, progressChangeObserver, isResizingProgress) {
+    if (isResizingProgress) {
+      return;
+    }
+    $(popup).removeClass('active');
+    if (progressChangeObserver) {
+      progressChangeObserver.disconnect();
+    }
+  };
+  /**
+   * Set up a custom popup to display the progress for the specified gantt object.
+   */
+  function setupProgressPopup(ganttObj) {
+    let ganttDiv = $(ganttObj.$svg).closest('.taskgantt')[0];
+    let popup = $('div.gantt-popup', ganttDiv)[0];
+    // Set up popup event listeners.
+    let progressChangeObserver;
+    let hoverTimer;
+    let isResizingProgress = false;
+
+    $('.handle.progress', ganttDiv).on({
+      mousedown: function (e) {
+        let bar = $(e.delegateTarget).closest('.bar-wrapper')[0];
+        showPopup(popup, ganttDiv, ganttObj, bar, progressChangeObserver, isResizingProgress);
+        isResizingProgress = true;
+      },
+    });
+    $(ganttDiv).on({
+      mouseup: function (e) {
+        isResizingProgress = false;
+        hidePopup(popup, progressChangeObserver, isResizingProgress);
+      },
+    });
+
+    $('.bar-wrapper', ganttDiv).on({
+      mouseenter: function (e) {
+        let bar = e.currentTarget;
+        if (!hoverTimer) {
+          hoverTimer = setTimeout(() =&gt; {
+            showPopup(popup, ganttDiv, ganttObj, bar, progressChangeObserver, isResizingProgress);
+          }, 1000);
+        }
+      },
+      mouseleave: function (e) {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+        hidePopup(popup, progressChangeObserver, isResizingProgress);
+      },
+      mousedown: function (e) {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+        hidePopup(popup, progressChangeObserver, isResizingProgress);
+      },
+    });
+  };
+
+  return {
+    'setupProgressPopup': setupProgressPopup,
+  };
+});</code>
+    </property>
+    <property>
+      <name>Define constants &amp; helpers</name>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>1</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>25ed597a-40df-4228-8855-fa197ce65ceb</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>define('taskgantt-ui', [
+  'jquery',
+  'taskgantt-utils',
+  'taskgantt-localization',
+  'taskgantt-progress-popup',
+  'taskgantt-config-templates'
+], function ($, taskutil, l10n, taskpopup, tgtemplates) {
+  /**
+   * Add custom svg styles as part of a &lt;defs&gt; tag.
+   * This is done to fade out tasks with no due date and turn their text background color red.
+   */
+  function addSvgStyles(svgElem) {
+    var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML += tgtemplates.svgCustomDefs;
+    svgElem.setAttribute('height', svgElem.getAttribute('height') - 100);
+    svgElem.appendChild(defs);
+  };
+  function setGanttDisabledOverlayVisibility(gantt, visible) {
+    let overlayElem = $('.taskgantt-noedit-overlay', gantt.$svg.closest('.taskgantt'));
+    if (visible) {
+      overlayElem.addClass('active');
+    } else {
+      overlayElem.removeClass('active');
+    }
+  };
+  /**
+   * Revert a task bar to its previous position (before modification).
+   */
+  function revertBar(task, gantt) {
+    // Revert to saved state before starting to edit.
+    task._start.setTime(task.editMetadata.oldStartDate.getTime());
+    task._end.setTime(task.editMetadata.oldEndDate.getTime());
+    task.progress = task.editMetadata.oldProgress;
+
+    let bar = gantt.bars.find((bar) =&gt; bar.task === task);
+    bar.update_bar_position({ x: bar.$bar.ox, width: bar.$bar.owidth });
+
+    // Manually reset progress width change, double click event doesn't trigger otherwise.
+    bar.$bar_progress.finaldx = 0;
+    bar.update_handle_position();
+
+    bar.group.classList = Array.from(bar.group.classList).filter((clas) =&gt; clas != 'active').join(' ');
+  };
+  /**
+   * Render a task bar at its current position, updating text and css classes if necessary.
+   */
+  function redrawBar(task, gantt) {
+    task.taskClasses = task.taskClasses.filter((t) =&gt; t != 'taskgantt-no-due-date');
+    // Rename if taskgantt-no-due-date was removed, save new state for use in revertBar.
+    taskutil.formatTask(task);
+
+    let bar = gantt.bars.find((b) =&gt; b.task === task);
+    bar.update_bar_position({ x: bar.compute_x() });
+    bar.group.setAttribute('class', 'bar-wrapper ' + (task.custom_class || ''));
+    bar.bar_group.getElementsByClassName('bar-label')[0].innerHTML = task.name;
+
+    // Manually reset progress width change, double click event doesn't trigger otherwise.
+    bar.$bar_progress.finaldx = 0;
+    bar.update_handle_position();
+  };
+  /**
+   * Update the task position and show an UI notification with the right formatting and text.
+   */
+  function getUpdateServiceSuccessCallback(gantt, task) {
+    return function(data) {
+      try {
+        redrawBar(task, gantt);
+        new XWiki.widgets.Notification(l10n.successMessage, 'info', '20');
+      } catch (e) {
+        console.log(e);
+      }
+      setGanttDisabledOverlayVisibility(gantt, false);
+    };
+  };
+  /**
+   * Revert the task position and show an UI notification with the right formatting and text.
+   */
+  function getUpdateServiceErrorCallback(gantt, task) {
+    return function(error) {
+      revertBar(task, gantt);
+      console.log(error);
+      new XWiki.widgets.Notification(taskutil.escapeHTML(error.responseJSON.data), 'error', '20');
+      setGanttDisabledOverlayVisibility(gantt, false);
+    };
+  };
+
+  return {
+    'setupProgressPopup': taskpopup.setupProgressPopup,
+    'addSvgStyles': addSvgStyles,
+    'setGanttDisabledOverlayVisibility': setGanttDisabledOverlayVisibility,
+    'redrawBar': redrawBar,
+    'revertBar': revertBar,
+    'getUpdateServiceSuccessCallback': getUpdateServiceSuccessCallback,
+    'getUpdateServiceErrorCallback': getUpdateServiceErrorCallback,
+  };
+});
+
+/**
+ * This module modifies/patches the default library implementations for some functions.
+ * It also includes event handlers that fire when interacting with a task.
+ */
+define('taskgantt-frappe-methods', [
+  'jquery',
+  'taskgantt-utils',
+  'taskgantt-ui',
+  'taskgantt-service-urls',
+], function ($, taskutil, taskui, taskurls) {
+  /**
+   * Custom implementation of trigger_event from the frappe-gantt(v0.6.1) library.
+   * Changed: Bind the parent gantt object to 'this' in the event handlers.
+   */
+  function custom_trigger_event(event, args) {
+    if (this.options['on_' + event]) {
+      this.options['on_' + event].apply(this, args); // Changed: Was `apply(null, args)`.
+    }
+  };
+  /**
+   * Custom implementation of render from the frappe-gantt(v0.6.1) library.
+   * Uses the original render function from the frappe-gantt library.
+   * Changed: Adds a custom popup and the custom svg markup for task bar fade on no due date.
+   */
+  function custom_render() {
+    const result = this._render(); // Use the default render implementation first.
+    taskui.addSvgStyles(this.$svg); // Changed: SVG specific style definitions, with no css equivalent.
+    taskui.setupProgressPopup(this); // Changed: Custom popup for progress, doesn't use frappe-gantt popup.
+    return result;
+  };
+  /**
+   * Custom implementation of get_date_info from the frappe-gantt(v0.6.1) library.
+   * Uses the original get_date_info function from the frappe-gantt library.
+   *
+   * Fixes the header text display in multiple view modes.
+   * In the default frappe-gantt implementation, the header text is offset by 12h.
+   * Example: If a task starts at 06:00, it appears under the 18:00 section in the UI.
+   */
+  function custom_get_date_info(date, last_date, i) {
+    // Use default implementation first because only it has access to
+    // the `date_utils` object, let it format the text in the header as it wishes.
+    let result = this._get_date_info(date, last_date, i);
+    // Below copied from original function.
+    const base_pos = {
+      x: i * this.options.column_width,
+      lower_y: this.options.header_height,
+      upper_y: this.options.header_height - 25,
+    };
+
+    const x_pos = {
+      'Quarter Day_lower': (this.options.column_width * 4),  // Changed: Alignment (waswidth * 4 / 2).
+      'Quarter Day_upper': (this.options.column_width * 4) / 2, // Changed: Alignment (was 0). Now date text is centered above hours of a day.
+      'Half Day_lower': (this.options.column_width * 2), // Changed: Alignment (was width * 2 / 2).
+      'Half Day_upper': (this.options.column_width * 2) / 2, // Changed: Alignment (was (width * 30)/2). Now date text is above 12, not 00.
+      Day_lower: this.options.column_width / 2,
+      Day_upper: (this.options.column_width * 30) / 2,
+      Week_lower: 0,
+      Week_upper: (this.options.column_width * 4) / 2,
+      Month_lower: this.options.column_width * 1.5, // Changed: Alignment (was width * 2). Now month names are actually above their corresponding column.
+      Month_upper: (this.options.column_width * 12) / 2,
+      Year_lower: this.options.column_width / 2,
+      Year_upper: (this.options.column_width * 30) / 2,
+    };
+    // Changed: Full result has 2 other fields, leave them be. For the others use the objects above.
+    const tweakedPos = {
+      upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
+      upper_y: base_pos.upper_y,
+      lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
+      lower_y: base_pos.lower_y,
+    };
+    // Changed: Use the values redefined above to alter the result.
+    Object.assign(result, tweakedPos);
+    return result;
+  };
+  /**
+   * This is copied from the frappe-gantt library.
+   * Redefinition of on() from jQuery so delegate event handlers work on SVG elements.
+   */
+  function on(element, event, selector, callback) {
+    if (!callback) {
+      callback = selector;
+      event.split(/\s+/).forEach(function (event) {
+        element.addEventListener(event, callback);
+      });
+    } else {
+      element.addEventListener(event, function (e) {
+        const delegatedTarget = e.target.closest(selector);
+        if (delegatedTarget) {
+          e.delegatedTarget = delegatedTarget;
+          callback.call(this, e, delegatedTarget);
+        }
+      });
+    }
+  };
+  /**
+   * Custom implementation of bind_bar_events from the frappe-gantt(v0.6.1) library.
+   * Don't move dependencies when moving a task.
+   * This prevents unintentional updates and more freedom when moving tasks.
+   */
+  function custom_bind_bar_events() {
+    let is_dragging = false;
+    let x_on_start = 0;
+    let y_on_start = 0;
+    let is_resizing_left = false;
+    let is_resizing_right = false;
+    let parent_bar_id = null;
+    let bars = []; // instanceof Bar
+    //this.bar_being_dragged = null; // Changed: Not needed since the frappe-gantt popup is not used.
+
+    function action_in_progress() {
+      return is_dragging || is_resizing_left || is_resizing_right;
+    }
+
+    on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) =&gt; {
+      const bar_wrapper = $(element).closest('.bar-wrapper')[0]; // Changed: Uses jQuery instead of custom frappe-gantt function.
+
+      if (element.classList.contains('left')) {
+        is_resizing_left = true;
+      } else if (element.classList.contains('right')) {
+        is_resizing_right = true;
+      } else if (element.classList.contains('bar-wrapper')) {
+        is_dragging = true;
+      }
+
+      bar_wrapper.classList.add('active');
+
+      x_on_start = e.offsetX;
+      y_on_start = e.offsetY;
+
+      parent_bar_id = bar_wrapper.getAttribute('data-id');
+      bars = [this.get_bar(parent_bar_id)]; // Changed: Don't move all dependencies, just this task.
+
+      // this.bar_being_dragged = parent_bar_id; // Changed: Not needed (see above).
+
+      bars.forEach((bar) =&gt; {
+        const $bar = bar.$bar;
+        $bar.ox = $bar.getX();
+        $bar.oy = $bar.getY();
+        $bar.owidth = $bar.getWidth();
+        $bar.finaldx = 0;
+      });
+    });
+
+    $(this.$svg).on('mousemove', (e) =&gt; {
+      if (!action_in_progress()) return;
+      const dx = e.offsetX - x_on_start;
+      e.offsetY - y_on_start;
+
+      bars.forEach((bar) =&gt; {
+        const $bar = bar.$bar;
+        $bar.finaldx = this.get_snap_position(dx);
+        this.hide_popup();
+        if (is_resizing_left) {
+          if (parent_bar_id === bar.task.id) {
+            bar.update_bar_position({
+              x: $bar.ox + $bar.finaldx,
+              width: $bar.owidth - $bar.finaldx,
+            });
+          } else {
+            bar.update_bar_position({
+              x: $bar.ox + $bar.finaldx,
+            });
+          }
+        } else if (is_resizing_right) {
+          if (parent_bar_id === bar.task.id) {
+            bar.update_bar_position({
+              width: $bar.owidth + $bar.finaldx,
+            });
+          }
+        } else if (is_dragging) {
+          bar.update_bar_position({ x: $bar.ox + $bar.finaldx });
+        }
+      });
+    });
+
+    $(document).on('mouseup', (e) =&gt; { // Changed: Use jQuery.
+      if (is_dragging || is_resizing_left || is_resizing_right) {
+        bars.forEach((bar) =&gt; {
+          bar.group.classList.remove('active');
+          // Changed: Merged document and svg handlers into one, so releasing the mouse button outside svg still registers a task update.
+          //this.bar_being_dragged = null; // Changed: Not needed (see above).
+          const $bar = bar.$bar;
+          if (!$bar.finaldx) {
+            return;
+          }
+          bar.date_changed();
+          $bar.finaldx = 0; // Changed: Reset finaldx value so double click handler works.
+          bar.set_action_completed();
+        });
+      }
+
+      is_dragging = false;
+      is_resizing_left = false;
+      is_resizing_right = false;
+    });
+
+    this.bind_bar_progress();
+  };
+  /**
+   * Custom implementation of update_bar_position from the frappe-gantt(v0.6.1) library.
+   * Don't enforce 'task must start after dependencies' rule, for more freedom when moving tasks.
+   */
+  function custom_update_bar_position({ x = null, width = null }) {
+    const bar = this.$bar;
+    if (x) {
+      // Changed: Removed early return statement which enforced the 'task must start after dependencies' rule.
+      this.update_attr(bar, 'x', x);
+    }
+    if (width &amp;&amp; width &gt; 0) { // Changed: width &gt; 0 so tasks can get smaller than a column (so you can drag a task to make it last 5 minutes long for example).
+      this.update_attr(bar, 'width', width);
+    }
+    this.update_label_position();
+    this.update_handle_position();
+    this.update_progressbar_position();
+    this.update_arrow_position();
+  };
+  /**
+   * Custom implementation of compute_x from the frappe-gantt(v0.6.1) library.
+   * Removed rounding to nearest hour when displaying tasks (so task positions are not snapped to fixed hours).
+   */
+  function custom_compute_x() {
+    const { step, column_width } = this.gantt.options;
+    const task_start = this.task._start;
+    const gantt_start = this.gantt.gantt_start;
+
+    const diff = (task_start - gantt_start) / 1000 / 60 / 60; // Changed: FLOAT difference in Hours.
+    let x = (diff / step) * column_width;
+
+    if (this.gantt.view_is('Month')) {
+      const diff = (task_start - gantt_start) / 1000 / 60 / 60 / 24; // Changed: FLOAT difference in Days.
+      x = (diff * column_width) / 30;
+    }
+    return x;
+  };
+  /**
+   * Custom implementation of prepare_values from the frappe-gantt(v0.6.1) library.
+   * Uses the original prepare_values function from the frappe-gantt library.
+   * Removed rounding to nearest hour when displaying tasks (so tasks with less than 1 hour duration are displayed).
+   */
+  function custom_prepare_values() {
+    taskutil.formatTask(this.task);
+    this._prepare_values();
+    this.duration =
+      ((this.task._end - this.task._start) / 1000 / 60 / 60) / // Changed: FLOAT difference in Hours.
+      this.gantt.options.step;
+    this.width = this.gantt.options.column_width * this.duration;
+    this.progress_width =
+      this.gantt.options.column_width *
+      this.duration *
+      (this.task.progress / 100) || 0;
+  };
+  /**
+   * Custom implementation of compute_start_end_date from the frappe-gantt(v0.6.1) library.
+   * Removed rounding to nearest hour when computing the start and end dates.
+   * This fixes a bug which removed an hour from the end date the first time the task was moved.
+   */
+  function custom_compute_start_end_date() {
+    const bar = this.$bar;
+    const x_in_units = bar.getX() / this.gantt.options.column_width;
+    const new_start_date = new Date( // Changed: Removed frappe-gantt's date_utils hour rounding.
+      this.gantt.gantt_start.getTime() +
+      (x_in_units * this.gantt.options.step) * 1000 * 60 * 60
+    );
+    const width_in_units = bar.getWidth() / this.gantt.options.column_width;
+    const new_end_date = new Date( // Changed: Removed frappe-gantt's date_utils hour rounding.
+      new_start_date.getTime() +
+      (width_in_units * this.gantt.options.step) * 1000 * 60 * 60
+    );
+
+    return { new_start_date, new_end_date };
+  };
+  /**
+   * Disable Frappe's popup.
+   */
+  function custom_show_popup() {
+    return;
+  };
+  /**
+   * Event handler which fires when double clicking a task.
+   */
+  function on_click(task) {
+    window.open(task.link).focus();
+  };
+  /**
+   * Event handler which fires after changing the progress.
+   */
+  function on_progress_change(task, newProgress) {
+    if (newProgress == task.editMetadata.oldProgress) {
+      // Useless progress change (event fires on any click, quirk of frappe-gantt).
+      return;
+    }
+    let forbiddenEditReason = taskutil.getForbiddenEditMsg(task, this);
+    if (forbiddenEditReason != null) {
+      taskui.revertBar(task, this);
+      new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
+      return;
+    }
+
+    let params = {
+      progress: newProgress,
+    };
+    if (task.taskClasses.includes('taskgantt-no-due-date')) {
+      // If the user interacts with a 'no-due-date' task, automatically set the dates.
+      params.startDate = task._start.getTime();
+      params.endDate = task._end.getTime();
+    }
+    taskui.setGanttDisabledOverlayVisibility(this, true);
+    $.ajax(taskurls.getUpdateServiceURL(task) + new URLSearchParams(params))
+      .done(taskui.getUpdateServiceSuccessCallback(this, task))
+      .fail(taskui.getUpdateServiceErrorCallback(this, task));
+  };
+  /**
+   * Event handler which fires after changing the dates.
+   */
+  function on_date_change(task, newStartDate, newEndDate) {
+    // Frappe automatically subtracts 1 second from the real end date.
+    newEndDate.setSeconds(newEndDate.getSeconds() + 1);
+
+    if (newStartDate.getTime() == task.editMetadata.oldStartDate.getTime() &amp;&amp;
+      newEndDate.getTime() == task.editMetadata.oldEndDate.getTime()) {
+      // Useless progress change (event fires on any click, quirk of frappe-gantt).
+      return;
+    }
+    let forbiddenEditReason = taskutil.getForbiddenEditMsg(task, this);
+    if (forbiddenEditReason != null) {
+      taskui.revertBar(task, this);
+      new XWiki.widgets.Notification(forbiddenEditReason, 'error', '20');
+      return;
+    }
+    let params = {};
+    if (newStartDate.getTime() != task.editMetadata.oldStartDate.getTime()) {
+      params.startDate = newStartDate.getTime();
+    }
+    if (newEndDate.getTime() != task.editMetadata.oldEndDate.getTime()) {
+      params.endDate = newEndDate.getTime();
+    }
+
+    taskui.setGanttDisabledOverlayVisibility(this, true);
+    $.ajax(taskurls.getUpdateServiceURL(task) + new URLSearchParams(params))
+      .done(taskui.getUpdateServiceSuccessCallback(this, task))
+      .fail(taskui.getUpdateServiceErrorCallback(this, task));
+  };
+
+  return {
+    // Frappe library Gantt class overrides.
+    'custom_trigger_event': custom_trigger_event,
+    'custom_render': custom_render,
+    'custom_get_date_info': custom_get_date_info,
+    'custom_bind_bar_events': custom_bind_bar_events,
+    // Frappe library Bar class overrides.
+    'custom_update_bar_position': custom_update_bar_position,
+    'custom_compute_x': custom_compute_x,
+    'custom_prepare_values': custom_prepare_values,
+    'custom_compute_start_end_date': custom_compute_start_end_date,
+    'custom_show_popup': custom_show_popup,
+    // Event handlers.
+    'on_click': on_click,
+    'on_progress_change': on_progress_change,
+    'on_date_change': on_date_change,
+  };
+});
+
+define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], function (overrideDefs) {
+  /**
+   * Override the default behaviour of some functionalities of frappe-gantt.
+   */
+  if (Gantt.prototype['overrideDone'] === undefined) {
+    Gantt.prototype['overrideDone'] = false; // Dummy property so the override is done only once.
+
+    /**
+     * Override the Gantt inner class to remove some restrictions between dependencies.
+     * For this we need a Gantt instance, as the `Bar` class isn't publicly accessible.
+     */
+    let dummyElement = document.createElement('div');
+    let gantt = new Gantt(dummyElement, [{ id: 'task1' }]);
+
+    gantt.bars[0].__proto__['update_bar_position'] = overrideDefs.custom_update_bar_position;
+
+    gantt.bars[0].__proto__['show_popup'] = overrideDefs.custom_show_popup;
+
+    gantt.bars[0].__proto__['compute_start_end_date'] = overrideDefs.custom_compute_start_end_date;
+
+    gantt.bars[0].__proto__['compute_x'] = overrideDefs.custom_compute_x;
+
+    gantt.bars[0].__proto__['_prepare_values'] = gantt.bars[0].__proto__['prepare_values'];
+    gantt.bars[0].__proto__['prepare_values'] = overrideDefs.custom_prepare_values;
+
+    delete gantt;
+    delete dummyElement;
+
+    // Override Gantt class methods.
+
+    Gantt.prototype['trigger_event'] = overrideDefs.custom_trigger_event;
+
+    Gantt.prototype['_render'] = Gantt.prototype['render'];
+    Gantt.prototype['render'] = overrideDefs.custom_render;
+
+    Gantt.prototype['_get_date_info'] = Gantt.prototype['get_date_info'];
+    Gantt.prototype['get_date_info'] = overrideDefs.custom_get_date_info;
+
+    Gantt.prototype['bind_bar_events'] = overrideDefs.custom_bind_bar_events;
+
+    Gantt.prototype['overrideDone'] = true;
+  }
+});</code>
+    </property>
+    <property>
+      <name>Customize gantt library</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>2</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>237bceb9-bb38-4c3f-89df-2cdaa31d82d3</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>require([
+  'jquery',
+  'taskgantt-service-urls',
+  'taskgantt-localization',
+  'taskgantt-frappe-methods',
+  'taskgantt-utils',
+  'taskgantt-config-templates',
+  'frappe-gantt',
+  'taskgantt-frappe'
+], function ($, serviceUrls, l10n, overrideDefs, taskutil, tgtemplates) {
+  async function spawnGantt(ganttDiv, idx) {
+
+    $(ganttDiv).attr('id', 'taskgantt-gantt' + idx);
+
+    let tasks = await fetch(serviceUrls.getJsonSourceURL(ganttDiv)).then(response =&gt; response.json());
+    if (tasks.length == 0) {
+      // Frappe breaks if it has no tasks to display, so replace it with an error message.
+      $(ganttDiv).append(tgtemplates.noTasksMessage);
+      $(ganttDiv).find('#view-mode-buttons').empty();
+      return;
+    }
+    tasks.forEach(taskutil.formatTask);
+    tasks.forEach((task) =&gt; {
+      // If the dependencies of this task are not present in this diagram, remove them (otherwise the Gantt breaks).
+      let dependencies = task.dependencies.filter((dep) =&gt; tasks.any((t) =&gt; (t.id == dep)));
+      task.dependencies = dependencies;
+    });
+
+    let gantt;
+
+    let ganttOptions = {
+      view_mode: 'Day',
+      popup_trigger: null,
+      padding: 15,
+      language: l10n.XWikiLocale,
+      on_click: overrideDefs.on_click,
+      on_progress_change: overrideDefs.on_progress_change,
+      on_date_change: overrideDefs.on_date_change,
+    };
+
+    try {
+      gantt = new Gantt(ganttDiv, tasks, ganttOptions);
+    } catch (e) {
+      // In the case the language is undefined or not supported by frappe-gantt, fall back to English.
+      ganttOptions.language = 'en';
+      gantt = new Gantt(ganttDiv, tasks, ganttOptions);
+    }
+
+    // Bind viewmode buttons.
+    $('#view-mode-buttons &gt; button.view-mode-button', ganttDiv).on('click', (e) =&gt; {
+      gantt.change_view_mode(e.currentTarget.value);
+    });
+
+    return gantt;
+  };
+  Promise.all($.map($('.taskgantt'), spawnGantt));
+});</code>
+    </property>
+    <property>
+      <name>Spawn frappe-gantt</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>d0ae2c28-2352-4c27-88c8-2f7931d74a5c</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.gantt {
+  /**
+   * Grid and backgrounds.
+   */
+  .grid-background {
+    fill: none;
+  }
+  .grid-row {
+    fill: @xwiki-page-content-bg;
+  }
+  .grid-row:nth-child(even) {
+    fill: @nav-link-hover-bg;
+  }
+  .row-line {
+    stroke: @xwiki-border-color;
+  }
+  .tick {
+    stroke: @xwiki-border-color;
+    stroke-width: 0.7;
+  }
+  .tick.thick {
+    stroke-width: 2;
+  }
+  .today-highlight {
+    fill: @xwiki-border-color;
+    opacity: 0.5;
+  }
+  /**
+   * Heading.
+   */
+  .grid-header {
+    fill: @xwiki-page-content-bg;
+    stroke: @xwiki-border-color;
+    stroke-width: 1.4;
+  }
+  .lower-text, .upper-text {
+    font-size: @font-size-base;
+    text-anchor: middle;
+    fill: @text-color;
+  }
+  .hide {
+    display: none;
+  }
+  /**
+   * Bar handles and arrow.
+   */
+  .arrow {
+    fill: none;
+    stroke: @text-color;
+    stroke-width: 1.4;
+  }
+  .handle {
+    fill: lighten(@xwiki-border-color, 10%);
+    cursor: ew-resize;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+  }
+  .bar-wrapper:hover .handle {
+    visibility: visible;
+    opacity: 1;
+  }
+  /**
+   * Task bar defaults.
+   */
+  .bar {
+    fill: @xwiki-border-color;
+    rect, polygon {
+      filter: drop-shadow(0 0 0.2rem fade(contrast(@xwiki-page-content-bg), 33%));
+    }
+    stroke: contrast(@xwiki-page-content-bg);
+    stroke-width: 0;
+    transition: stroke-width 0.3s ease;
+    user-select: none;
+  }
+  .bar-invalid {
+    fill: transparent;
+    stroke: contrast(@xwiki-page-content-bg);
+    stroke-width: 1;
+    stroke-dasharray: 5;
+  }
+  .bar-wrapper.taskgantt-no-due-date .bar {
+    filter: none;
+  }
+  .bar-progress {
+    fill: @brand-info;
+  }
+  .bar-wrapper {
+    cursor: pointer;
+    outline: none;
+    &amp;.active, &amp;:hover {
+      .bar {
+        fill: darken(@xwiki-background-secondary-color, 10%);
+      }
+      .bar-progress {
+        fill: lighten(@brand-info, 10%);
+      }
+    }
+  }
+  /**
+   * Bar text.
+   */
+  .bar-label {
+    fill: contrast(@xwiki-border-color);
+    dominant-baseline: central;
+    text-anchor: middle;
+    font-size: @font-size-base;
+    font-weight: bold;
+    &amp;.big {
+      fill: contrast(@xwiki-page-content-bg);
+      text-anchor: start;
+    }
+  }
+  .bar-invalid ~ .bar-label {
+    fill: @text-color;
+  }
+  /**
+   * Custom classes for XWiki tasks.
+   */
+  .bar-wrapper.taskgantt-no-due-date text, .bar-wrapper.taskgantt-no-due-date text.big {
+    filter:url(#rounded-corners);
+    fill:@nav-link-hover-bg;
+  }
+  .bar-wrapper.taskgantt-no-due-date .bar, .bar-wrapper.taskgantt-no-due-date .bar-progress {
+    mask: url('#fademask');
+  }
+}
+.taskgantt {
+  position:relative;
+  overflow:hidden;
+}
+.gantt-container {
+  position: relative;
+  overflow: auto;
+  font-size: @font-size-base;
+  /* Default gantt popup styles removed. */
+}
+.taskgantt-noedit-overlay {
+  position:absolute;
+  visibility:hidden;
+  &amp;.active {
+    visibility: visible;
+  }
+  height:100%;
+  width:100%;
+  z-index: 3;
+  left:0;
+  top:0;
+  background-color: fade(@navbar-default-bg, 60%);
+  display:flex;
+  justify-content:center;
+  span {
+    color: contrast(@navbar-default-bg);
+    font-weight: bold;
+    align-self:center;
+    font-size:@font-size-h2;
+  }
+}
+
+.gantt-popup {
+  position: absolute;
+  overflow: visible;
+  visibility: hidden;
+  &amp;.active {
+    visibility: visible;
+  }
+
+  .popuptext {
+    width: fit-content;
+    background-color: @brand-info;
+    color: @xwiki-page-header-bg-color;
+    text-align: center;
+    white-space: pre;
+    border-radius: 6px;
+    padding: 0.3em 0.5em;
+    position: absolute;
+    z-index: 2;
+    .gantt-popup-progress-number {
+      display: inline-block;
+      width:3.3em;
+      text-align: center;
+    }
+    &amp;:after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: rotate(45deg) translate(-40%, -40%);
+      background-color: @brand-info;
+      height: 7px;
+      width: 7px;
+    }
+  }
+}</code>
+    </property>
+    <property>
+      <contentType>LESS</contentType>
+    </property>
+    <property>
+      <name>Override Frappe Gantt styles</name>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>ec66a421-f55d-4f6e-8ccf-6a01ac04ff22</guid>
+    <class>
+      <name>XWiki.UIExtensionClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <async_cached>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_cached</name>
+        <number>3</number>
+        <prettyName>Cached</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_cached>
+      <async_context>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>async_context</name>
+        <number>4</number>
+        <prettyName>Context elements</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>, </separator>
+        <separators>|, </separators>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <values>action=Action|doc.reference=Document|icon.theme=Icon theme|locale=Language|rendering.defaultsyntax=Default syntax|rendering.restricted=Restricted|rendering.targetsyntax=Target syntax|request.base=Request base URL|request.parameters=Request parameters|request.url=Request URL|request.wiki=Request wiki|user=User|wiki=Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </async_context>
+      <async_enabled>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_enabled</name>
+        <number>2</number>
+        <prettyName>Asynchronous rendering</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_enabled>
+      <content>
+        <disabled>0</disabled>
+        <editor>Text</editor>
+        <name>content</name>
+        <number>1</number>
+        <prettyName>Executed Content</prettyName>
+        <rows>25</rows>
+        <size>120</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </content>
+      <extensionPointId>
+        <disabled>0</disabled>
+        <name>extensionPointId</name>
+        <number>5</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>6</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parameters>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>parameters</name>
+        <number>7</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>8</number>
+        <prettyName>Extension Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <async_cached>1</async_cached>
+    </property>
+    <property>
+      <async_context/>
+    </property>
+    <property>
+      <async_enabled>0</async_enabled>
+    </property>
+    <property>
+      <content/>
+    </property>
+    <property>
+      <extensionPointId>org.xwiki.platform.requirejs.module</extensionPointId>
+    </property>
+    <property>
+      <name>com.xwiki.task.gantt.frappe-gantt</name>
+    </property>
+    <property>
+      <parameters>id=frappe-gantt
+path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.min.js")</parameters>
+    </property>
+    <property>
+      <scope>wiki</scope>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroClass</className>
+    <guid>f1941f8a-9d1a-4d4a-b2b3-e332d10ab507</guid>
+    <class>
+      <name>XWiki.WikiMacroClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <async_cached>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_cached</name>
+        <number>13</number>
+        <prettyName>Cached</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_cached>
+      <async_context>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>async_context</name>
+        <number>14</number>
+        <prettyName>Context elements</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>, </separator>
+        <separators>|, </separators>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <values>action=Action|doc.reference=Document|icon.theme=Icon theme|locale=Language|rendering.defaultsyntax=Default syntax|rendering.restricted=Restricted|rendering.targetsyntax=Target syntax|request.base=Request base URL|request.parameters=Request parameters|request.url=Request URL|request.wiki=Request wiki|user=User|wiki=Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </async_context>
+      <async_enabled>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_enabled</name>
+        <number>12</number>
+        <prettyName>Asynchronous rendering</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_enabled>
+      <code>
+        <disabled>0</disabled>
+        <editor>Text</editor>
+        <name>code</name>
+        <number>10</number>
+        <prettyName>Macro code</prettyName>
+        <rows>20</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentDescription>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>contentDescription</name>
+        <number>9</number>
+        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </contentDescription>
+      <contentJavaType>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentJavaType</name>
+        <number>8</number>
+        <picker>1</picker>
+        <prettyName>Macro content type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentJavaType>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>7</number>
+        <prettyName>Macro content availability</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Optional|Mandatory|No content</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <defaultCategory>
+        <disabled>0</disabled>
+        <name>defaultCategory</name>
+        <number>4</number>
+        <prettyName>Default category</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultCategory>
+      <description>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>description</name>
+        <number>3</number>
+        <prettyName>Macro description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <id>
+        <disabled>0</disabled>
+        <name>id</name>
+        <number>1</number>
+        <prettyName>Macro id</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </id>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Macro name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <priority>
+        <disabled>0</disabled>
+        <name>priority</name>
+        <number>11</number>
+        <numberType>integer</numberType>
+        <prettyName>Priority</prettyName>
+        <size>10</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </priority>
+      <supportsInlineMode>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>supportsInlineMode</name>
+        <number>5</number>
+        <prettyName>Supports inline mode</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </supportsInlineMode>
+      <visibility>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>visibility</name>
+        <number>6</number>
+        <prettyName>Macro visibility</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Current User|Current Wiki|Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </visibility>
+    </class>
+    <property>
+      <async_cached>0</async_cached>
+    </property>
+    <property>
+      <async_context/>
+    </property>
+    <property>
+      <async_enabled>0</async_enabled>
+    </property>
+    <property>
+      <code>{{velocity output="false"}}
+#macro (viewModeButton $viewMode $text)
+  &lt;button type="button" class='btn view-mode-button' value="$viewMode"&gt;$escapetool.html($text)&lt;/button&gt;
+#end
+#macro (noTasksMessage)
+  &lt;div class='box'&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.noTasks'))&lt;/div&gt;
+#end
+#macro (svgCustomDefs)
+  &lt;linearGradient id="fadeGrad"&gt;
+    &lt;stop offset="30%" stop-color="white" stop-opacity="1" /&gt;
+    &lt;stop offset="75%" stop-color="white" stop-opacity=".6" /&gt;
+    &lt;stop offset="100%" stop-color="white" stop-opacity="0" /&gt;
+  &lt;/linearGradient&gt;
+  &lt;mask x="-50%" y="-50%" width="200%" height="200%" id="fademask" maskContentUnits="objectBoundingBox"&gt;
+    &lt;rect x="-1" y="-1" width="2" height="3" fill="url(#fadeGrad)"/&gt;
+  &lt;/mask&gt;
+
+  &lt;filter id="rounded-corners" x="-2.5%" width="105%" y="-5%" height="110%"&gt;
+    &lt;feFlood flood-color="rgba(255,60,60)"/&gt;
+    &lt;feGaussianBlur stdDeviation="4"/&gt;
+    &lt;feComponentTransfer&gt;
+      &lt;feFuncA type="table"tableValues="0 0 0 1"/&gt;
+    &lt;/feComponentTransfer&gt;
+    &lt;feComponentTransfer&gt;
+      &lt;feFuncA type="table"tableValues="0 1 1 1 1 1 1 1"/&gt;
+    &lt;/feComponentTransfer&gt;
+    &lt;feComposite operator="over" in="SourceGraphic"/&gt;
+  &lt;/filter&gt;
+#end
+{{/velocity}}
+
+{{velocity}}
+#set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
+#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
+  {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
+#else
+  ## Already using frappe-gantt styles overriden with XWiki Less variables, so no need to include the original.
+  ## TODO: Uncomment the code below in case of upgrade or if the original styles are needed.
+  ###set ($discard = $xwiki.linkx.use(
+  ##  $services.webjars.url('org.webjars.npm:frappe-gantt', 'dist/frappe-gantt.css'),
+  ##  {'type': 'text/css', 'rel': 'stylesheet'}
+  ##))
+  #set ($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro'))
+  #set ($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro'))
+  #set ($storageDateFormat = $services.datemacro.configuration.storageDateFormat)
+  #set ($storageDateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($storageDateFormat))
+  #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+  #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+  #set ($diagramIsReadonly = !("$!xcontext.macro.params.readonly" == 'false'))
+  ## Create HTML templates for use in JS.
+  #set ($config = {})
+  #set ($discard = $config.put('svgCustomDefs', "#svgCustomDefs"))
+  #set ($discard = $config.put('noTasksMessage', "#noTasksMessage"))
+  {{html clean='false'}}
+  &lt;script id='taskgantt-config-templates' type='application/json'&gt;$jsontool.serialize($config).replace('&amp;lt;', '\u003C')
+  &lt;/script&gt;
+  {{/html}}
+
+{{html}}
+&lt;div class='taskgantt'
+  data-readonly="$diagramIsReadonly"
+  #if ("$!xcontext.macro.params.from" != '')
+    #set ($fromMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.from, $storageDateTimeFormatter).getMillis())
+    data-date-from="${escapetool.html($fromMillis)}"
+  #end
+  #if ("$!xcontext.macro.params.to" != '')
+    #set ($toMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.to, $storageDateTimeFormatter).getMillis())
+    data-date-to="${escapetool.html($toMillis)}"
+  #end
+  #if ("$!xcontext.macro.params.hideNoDueDate" != '')
+    data-hide-no-due-date="${escapetool.html($xcontext.macro.params.hideNoDueDate)}"
+  #end
+  ##TODO: Make `projects` use a Page picker (should support selecting multiple pages).
+  ##      When changed the JSONTaskSource should be updated aswell.
+  #if ("$!xcontext.macro.params.projects" != '')
+    data-projects="${escapetool.html($xcontext.macro.params.projects)}"
+  #end
+  #if ("$!xcontext.macro.params.assignees" != '')
+    data-assignees="${escapetool.html($xcontext.macro.params.assignees)}"
+  #end
+  #if ("$!xcontext.macro.params.reporters" != '')
+    data-reporters="${escapetool.html($xcontext.macro.params.reporters)}"
+  #end
+  ##TODO: Make `spaces` use a Space/Page picker (should support selecting multiple pages).
+  ##      When changed the JSONTaskSource should be updated aswell.
+  #if ("$!xcontext.macro.params.spaces" != '')
+    data-spaces="${escapetool.html($xcontext.macro.params.spaces)}"
+  #end
+&gt;
+## TODO: Change the way in which the parameters below are displayed in the UI so it is prettier and takes up less space.
+&lt;div class='taskgantt-description'&gt;
+  &lt;h5&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.title'))&lt;/b&gt;&lt;/h5&gt;
+  &lt;p class='xform'&gt;&lt;span class='xHint'&gt;
+  #if ("$xcontext.macro.params.hideNoDueDate" == 'false')
+    $escapetool.html($services.localization.render('taskmanager.gantt.macro.hideNoDueDate_1'))
+  #else
+    $escapetool.html($services.localization.render('taskmanager.gantt.macro.hideNoDueDate_0'))
+  #end
+  &lt;/p&gt;&lt;/span&gt;
+  #if ("$!xcontext.macro.params.from" != '')
+    &lt;span&gt;
+      &lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.date.from'))&lt;/b&gt;
+      $escapetool.html($displayDateFormatter.print($fromMillis))
+    &lt;/span&gt;
+  #end
+  #if ("$!xcontext.macro.params.to" != '')
+    &lt;span&gt;
+      &lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.date.to'))&lt;/b&gt;
+      $escapetool.html($displayDateFormatter.print($toMillis))
+    &lt;/span&gt;
+  #end
+  #if ("$!xcontext.macro.params.assignees" != '')
+  &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.assignees'))&lt;/b&gt;
+    #foreach ($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
+      &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
+    #end
+  &lt;/p&gt;
+  #end
+  #if ("$!xcontext.macro.params.spaces" != '')
+  &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.spaces'))&lt;/b&gt;
+    #foreach ($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
+      &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
+    #end
+  &lt;/p&gt;
+  #end
+  #if ("$!xcontext.macro.params.projects" != '')
+  &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.projects'))&lt;/b&gt;
+    #foreach ($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
+      &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
+    #end
+  &lt;/p&gt;
+  #end
+&lt;/div&gt;
+&lt;div id='view-mode-buttons'&gt;
+  #viewModeButton('Quarter Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.quarterDay'))
+  #viewModeButton('Half Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.halfDay'))
+  #viewModeButton('Day' $services.localization.render('taskmanager.gantt.macro.viewmodes.day'))
+  #viewModeButton('Week' $services.localization.render('taskmanager.gantt.macro.viewmodes.week'))
+  #viewModeButton('Month' $services.localization.render('taskmanager.gantt.macro.viewmodes.month'))
+  #viewModeButton('Year' $services.localization.render('taskmanager.gantt.macro.viewmodes.year'))
+&lt;/div&gt;
+&lt;div class='taskgantt-noedit-overlay'&gt;
+  &lt;span&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.wait'))&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class='gantt-popup'&gt;
+  &lt;span class='popuptext'&gt;$escapetool.html(
+    $services.localization.render('taskmanager.gantt.macro.popup.progress')
+  )&lt;span class='gantt-popup-progress-number'&gt;100%&lt;/span&gt;
+  &lt;/span&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+{{/html}}
+#end
+{{/velocity}}</code>
+    </property>
+    <property>
+      <contentDescription/>
+    </property>
+    <property>
+      <contentJavaType/>
+    </property>
+    <property>
+      <contentType>No content</contentType>
+    </property>
+    <property>
+      <defaultCategory/>
+    </property>
+    <property>
+      <description>Display tasks from Task Manager Application in a Gantt diagram.</description>
+    </property>
+    <property>
+      <id>taskgantt</id>
+    </property>
+    <property>
+      <name>Gantt Diagram</name>
+    </property>
+    <property>
+      <priority/>
+    </property>
+    <property>
+      <supportsInlineMode>0</supportsInlineMode>
+    </property>
+    <property>
+      <visibility>Current Wiki</visibility>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>d8cfcc42-1da4-4ee0-b768-fff9a98938af</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Display tasks which started after the specified date.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>from</name>
+    </property>
+    <property>
+      <type>com.xwiki.date.DateType</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>1</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>d437a729-785d-4661-9634-06c146e4919b</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Display tasks assigned to these users.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>assignees</name>
+    </property>
+    <property>
+      <type>com.xwiki.task.UserReferenceList</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>2</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>3723e1b2-9d58-409a-8c62-81373612d2a8</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>projects</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>3</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>4944f8c4-514a-4ad0-bae6-f97f48eca815</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Display tasks which end before the specified date.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>to</name>
+    </property>
+    <property>
+      <type>com.xwiki.date.DateType</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>4</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>2ed2ab1f-83c1-4d15-9674-c2d08b311356</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>true</defaultValue>
+    </property>
+    <property>
+      <description>Whether users can modify tasks using the Gantt Diagram UI.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>readonly</name>
+    </property>
+    <property>
+      <type>java.lang.Boolean</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>5</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>d2d9eeb2-04e0-46a7-ad91-68f472c7f2b7</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>The spaces in which to look for tasks, comma separated.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>spaces</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>6</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>22aae958-b74c-4751-ada4-334cf624f390</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>true</defaultValue>
+    </property>
+    <property>
+      <description>Hide tasks which have no due date set, and as such cannot be displayed properly in the diagram. If set to false, the default duration of such a task is displayed as one week.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>hideNoDueDate</name>
+    </property>
+    <property>
+      <type>java.lang.Boolean</type>
+    </property>
+  </object>
+</xwikidoc>

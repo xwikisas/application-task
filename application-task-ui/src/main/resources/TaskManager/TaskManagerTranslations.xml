@@ -117,11 +117,49 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
+# Gantt Diagram
+taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
+taskmanager.gantt.taskEdit.error.generic=Task could not be updated
+taskmanager.gantt.taskEdit.error.readonly=This diagram is read only
+taskmanager.gantt.taskEdit.error.notExists=Task does not exist
+taskmanager.gantt.taskEdit.error.missingObject=Task class does not exist
+taskmanager.gantt.taskEdit.success=Task updated
+taskmanager.gantt.taskEdit.comment=Edited through the Gantt Diagram UI
+taskmanager.gantt.task.noDueDate=No due date set
+taskmanager.gantt.task.unknownTaskTitle=Unknown Task
+taskmanager.gantt.macro.title=Gantt Diagram
+taskmanager.gantt.macro.wait=Please wait...
+taskmanager.gantt.macro.date.from=From:
+taskmanager.gantt.macro.date.to=To:
+taskmanager.gantt.macro.projects=Projects:
+taskmanager.gantt.macro.spaces=Spaces:
+taskmanager.gantt.macro.assignees=Assignees:
+taskmanager.gantt.macro.hideNoDueDate_0=Tasks without a due date are hidden
+taskmanager.gantt.macro.hideNoDueDate_1=Tasks without a due date are shown
+taskmanager.gantt.macro.noTasks=No tasks correspond to the given filter.
+taskmanager.gantt.macro.popup.progress=Progress:
+taskmanager.gantt.macro.viewmodes.quarterDay=Quarter Day
+taskmanager.gantt.macro.viewmodes.halfDay=Half Day
+taskmanager.gantt.macro.viewmodes.day=Day
+taskmanager.gantt.macro.viewmodes.week=Week
+taskmanager.gantt.macro.viewmodes.month=Month
+taskmanager.gantt.macro.viewmodes.year=Year
+taskmanager.gantt.documentation.description=The taskgantt macro draws an interactive Gantt diagram which shows tasks, optionally filtered by start/end date, assignee, space or project.
+taskmanager.gantt.documentation.examples.sectiontitle=Examples
+taskmanager.gantt.documentation.examples.readonly=enable editing through the UI (disabled by default)
+taskmanager.gantt.documentation.examples.start=filter by start date
+taskmanager.gantt.documentation.examples.startend=filter by start and end dates
+taskmanager.gantt.documentation.examples.projects=filter by projects (comma separated, escape commas in project names with '\\,')
+taskmanager.gantt.documentation.examples.assignees=filter by assigned users (comma separated)
+taskmanager.gantt.documentation.examples.spaces=filter by parent spaces (comma separated)
+taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not have a due date set (default is true)
+
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until
 taskmanager.panel.fulltasklist=See full list
 taskmanager.panel.noactivetasks=No active Tasks
+taskmanager.panel.guest=You have to be logged in in order to view this panel
 
 # Template provider
 taskmanager.entry.name=Task
