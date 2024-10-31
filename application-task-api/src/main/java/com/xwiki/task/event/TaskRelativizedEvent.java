@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,19 +16,23 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
+package com.xwiki.task.event;
 
-<!DOCTYPE suppressions PUBLIC
-  "-//Puppy Crawl//DTD Suppressions 1.0//EN"
-  "http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
+import org.xwiki.observation.event.AbstractCancelableEvent;
+import org.xwiki.observation.event.EndFoldEvent;
 
-<suppressions>
-  <suppress checks="ClassFanOutComplexity"
-    files="src/main/java/com/xwiki/task/internal/TaskMacroUpdateEventListener\.java"/>
-  <suppress checks="CyclomaticComplexity"
-    files="src/main/java/com/xwiki/task/internal/TaskPageCopyEventListener\.java"/>
-  <suppress checks="NPathComplexity"
-    files="src/main/java/com/xwiki/task/internal/TaskPageCopyEventListener\.java"/>
-  <suppress checks="ReturnCount"
-    files="src/main/java/com/xwiki/task/internal/TaskPageCopyEventListener\.java"/>
-</suppressions>
+/**
+ * Event fired after the task relativizing process has finished.
+ *
+ * <ul>
+ * <li>source: The job that processed the documents.</li>
+ * <li>data: The list of files that were processed.</li>
+ * </ul>
+ *
+ * @since 3.5.2
+ * @version $Id$
+ */
+public class TaskRelativizedEvent extends AbstractCancelableEvent implements EndFoldEvent
+{
+}

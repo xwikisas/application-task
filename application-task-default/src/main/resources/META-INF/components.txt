@@ -8,6 +8,10 @@ com.xwiki.task.internal.DefaultTaskReferenceGenerator
 com.xwiki.task.internal.MacroBlockFinder
 com.xwiki.task.internal.TaskBlockProcessor
 com.xwiki.task.internal.TaskDatesInitializer
+com.xwiki.task.internal.TaskPageCopyEventListener
+com.xwiki.task.internal.TaskMacroReferenceMigrator
+com.xwiki.task.internal.TaskPageMovingEventListener
+com.xwiki.task.internal.TaskReferenceMigratorListener
 com.xwiki.task.internal.TaskReferenceUtils
 com.xwiki.task.internal.TaskXDOMProcessor
 com.xwiki.task.internal.TaskMacroUpdateEventListener
@@ -15,6 +19,7 @@ com.xwiki.task.internal.TaskManagerConfigurationSource
 com.xwiki.task.internal.TaskObjectUpdateEventListener
 com.xwiki.task.internal.SuperCompactReferenceSerializer
 com.xwiki.task.internal.job.TaskDataInferringJob
+com.xwiki.task.internal.job.TaskReferenceRelativizerJob
 com.xwiki.task.internal.macro.TaskMacro
 com.xwiki.task.internal.macro.TasksMacro
 com.xwiki.task.internal.rest.DefaultTaskReferenceResource
