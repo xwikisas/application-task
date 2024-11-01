@@ -29,7 +29,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
@@ -111,8 +110,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 context.put(TASK_UPDATE_FLAG, true);
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
             } catch (TaskException e) {
-                logger.error("Failed to delete the tasks that have the current document as owner: [{}].",
-                    ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to delete the tasks that have the current document as owner: [{}].", e);
             } finally {
                 context.put(TASK_UPDATE_FLAG, null);
             }
@@ -131,8 +129,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 try {
                     updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
                 } catch (XWikiException e) {
-                    logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
-                        ExceptionUtils.getStackTrace(e));
+                    logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference, e);
                 } finally {
                     lastFoldDocumentReference = document.getDocumentReference();
                 }
@@ -146,8 +143,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             try {
                 updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
             } catch (XWikiException e) {
-                logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
-                    ExceptionUtils.getStackTrace(e));
+                logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference, e);
             } finally {
                 lastFoldDocumentReference = null;
             }
@@ -176,8 +172,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 }
             } catch (XWikiException e) {
                 logger.warn("There was an exception when attempting to remove the task pages associated to the task "
-                        + "macros present in the previous version of the document: [{}].",
-                    ExceptionUtils.getStackTrace(e));
+                        + "macros present in the previous version of the document: [{}].", e);
             }
         }
         if (!tasks.isEmpty() || !previousDocTasks.isEmpty()) {
@@ -211,8 +206,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                         previousDocTask.getReference());
                 }
             } catch (XWikiException e) {
-                logger.error("Failed to remove the Task Document with id [{}]: [{}].", previousDocTask.getReference(),
-                    ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to remove the Task Document with id [{}]: [{}].",
+                    previousDocTask.getReference(), e);
             }
         }
     }
@@ -256,7 +251,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 context.getWiki().saveDocument(taskDoc, "Task updated!", context);
             } catch (XWikiException e) {
                 logger.error("Failed to retrieve the document that contains the Task Object with id [{}]: [{}].",
-                    taskReference, ExceptionUtils.getStackTrace(e));
+                    taskReference, e);
             }
         }
     }
