@@ -111,8 +111,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 context.put(TASK_UPDATE_FLAG, true);
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
             } catch (TaskException e) {
-                logger.warn("Failed to delete the tasks that have the current document as owner: [{}].",
-                    ExceptionUtils.getRootCauseMessage(e));
+                logger.error("Failed to delete the tasks that have the current document as owner: [{}].",
+                    ExceptionUtils.getStackTrace(e));
             } finally {
                 context.put(TASK_UPDATE_FLAG, null);
             }
@@ -132,7 +132,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                     updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
                 } catch (XWikiException e) {
                     logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
-                        ExceptionUtils.getRootCauseMessage(e));
+                        ExceptionUtils.getStackTrace(e));
                 } finally {
                     lastFoldDocumentReference = document.getDocumentReference();
                 }
@@ -147,7 +147,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
             } catch (XWikiException e) {
                 logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference,
-                    ExceptionUtils.getRootCauseMessage(e));
+                    ExceptionUtils.getStackTrace(e));
             } finally {
                 lastFoldDocumentReference = null;
             }
@@ -177,7 +177,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             } catch (XWikiException e) {
                 logger.warn("There was an exception when attempting to remove the task pages associated to the task "
                         + "macros present in the previous version of the document: [{}].",
-                    ExceptionUtils.getRootCauseMessage(e));
+                    ExceptionUtils.getStackTrace(e));
             }
         }
         if (!tasks.isEmpty() || !previousDocTasks.isEmpty()) {
@@ -211,8 +211,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                         previousDocTask.getReference());
                 }
             } catch (XWikiException e) {
-                logger.warn("Failed to remove the Task Document with id [{}]: [{}].", previousDocTask.getReference(),
-                    ExceptionUtils.getRootCauseMessage(e));
+                logger.error("Failed to remove the Task Document with id [{}]: [{}].", previousDocTask.getReference(),
+                    ExceptionUtils.getStackTrace(e));
             }
         }
     }
@@ -255,8 +255,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
                 context.getWiki().saveDocument(taskDoc, "Task updated!", context);
             } catch (XWikiException e) {
-                logger.warn("Failed to retrieve the document that contains the Task Object with id [{}]: [{}].",
-                    taskReference, ExceptionUtils.getRootCauseMessage(e));
+                logger.error("Failed to retrieve the document that contains the Task Object with id [{}]: [{}].",
+                    taskReference, ExceptionUtils.getStackTrace(e));
             }
         }
     }
