@@ -645,7 +645,7 @@
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategory/>
+      <defaultCategory>Content</defaultCategory>
     </property>
     <property>
       <description>Display a task and its information as a card.</description>

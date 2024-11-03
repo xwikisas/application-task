@@ -596,7 +596,7 @@ Example:
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategory/>
+      <defaultCategory>Content</defaultCategory>
     </property>
     <property>
       <description>Display the tasks as a Kanban board (see https://en.wikipedia.org/wiki/Kanban_board).</description>

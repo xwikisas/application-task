@@ -1957,7 +1957,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategory/>
+      <defaultCategory>Content</defaultCategory>
     </property>
     <property>
       <description>Display tasks from Task Manager Application in a Gantt diagram.</description>
