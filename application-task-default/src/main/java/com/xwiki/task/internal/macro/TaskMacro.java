@@ -105,7 +105,7 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
     {
         super("name", "description", new DefaultContentDescriptor("Content of the task.", false, Block.LIST_BLOCK_TYPE),
             TaskMacroParameters.class);
-        setDefaultCategory(DEFAULT_CATEGORY_CONTENT);
+        setDefaultCategories(Collections.singleton(DEFAULT_CATEGORY_CONTENT));
     }
 
     @Override

@@ -90,7 +90,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
     public TasksMacro()
     {
         super("Tasks", "Display one or more tasks identified by their IDs.", TasksMacroParameters.class);
-        setDefaultCategory(DEFAULT_CATEGORY_CONTENT);
+        setDefaultCategories(Collections.singleton(DEFAULT_CATEGORY_CONTENT));
     }
 
     @Override

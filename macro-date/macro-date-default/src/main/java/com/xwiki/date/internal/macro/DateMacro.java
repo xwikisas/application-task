@@ -79,7 +79,7 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     public DateMacro()
     {
         super("Date", "Insert a date that will be displayed nicely.", DateMacroParameters.class);
-        setDefaultCategory(DEFAULT_CATEGORY_CONTENT);
+        setDefaultCategories(Collections.singleton(DEFAULT_CATEGORY_CONTENT));
     }
 
     @Override

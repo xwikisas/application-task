@@ -20,8 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="DateMacro.Code.SkinExtension" locale="">
-  <web>DateMacro</web>
+<xwikidoc version="1.5" reference="DateMacro.Code.SkinExtension" locale="">
+  <web>DateMacro.Code</web>
   <name>SkinExtension</name>
   <language/>
   <defaultLanguage/>
