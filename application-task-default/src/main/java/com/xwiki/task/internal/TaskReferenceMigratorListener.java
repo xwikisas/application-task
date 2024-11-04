@@ -104,7 +104,13 @@ public class TaskReferenceMigratorListener extends AbstractEventListener impleme
         }
         DocumentReference flagDocRef = new DocumentReference(EXECUTED_DOC_FLAG, context.getWikiReference());
         // If the flag document exists, it means that the relativizer has been executed in the past.
-        if (context.getWiki().exists(flagDocRef, context)) {
+        try {
+            if (context.getWiki().exists(flagDocRef, context)) {
+                return;
+            }
+        } catch (XWikiException e) {
+            logger.warn("Failed to check whether [{}] exists or not. Cause: [{}].", EXECUTED_DOC_FLAG,
+                ExceptionUtils.getRootCauseMessage(e));
             return;
         }
 
