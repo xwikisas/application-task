@@ -30,6 +30,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 
+import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskReferenceGenerator;
 
 /**
@@ -50,14 +51,17 @@ public class DefaultTaskReferenceGenerator implements TaskReferenceGenerator
     private final Map<SpaceReference, Integer> nameOccurences = new HashMap<>();
 
     @Override
-    public synchronized DocumentReference generate(DocumentReference parent)
+    public synchronized DocumentReference generate(DocumentReference parent) throws TaskException
     {
-
-        SpaceReference parentSpaceRef = parent.getLastSpaceReference();
-        return getUniqueName(parentSpaceRef);
+        try {
+            SpaceReference parentSpaceRef = parent.getLastSpaceReference();
+            return getUniqueName(parentSpaceRef);
+        } catch (Exception e) {
+            throw new TaskException(String.format("Failed to generate an unique name for the parent [%s].", parent), e);
+        }
     }
 
-    private DocumentReference getUniqueName(SpaceReference spaceRef)
+    private DocumentReference getUniqueName(SpaceReference spaceRef) throws Exception
     {
 
         int i = nameOccurences.getOrDefault(spaceRef, 0);

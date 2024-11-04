@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.TaskManagerLiveTableResults" locale="">
+<xwikidoc version="1.5" reference="TaskManager.TaskManagerLiveTableResults" locale="">
   <web>TaskManager</web>
   <name>TaskManagerLiveTableResults</name>
   <language/>

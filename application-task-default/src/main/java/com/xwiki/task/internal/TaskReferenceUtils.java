@@ -72,8 +72,11 @@ public class TaskReferenceUtils
     public EntityReference resolve(String representation, EntityReference relativeTo)
     {
         DocumentReference docRef = docStringResolver.resolve(representation, relativeTo);
-        if (!documentAccessBridge.exists(docRef)) {
-            return pageReferenceResolver.resolve(representation, relativeTo);
+        try {
+            if (!documentAccessBridge.exists(docRef)) {
+                return pageReferenceResolver.resolve(representation, relativeTo);
+            }
+        } catch (Exception ignored) {
         }
         return docRef;
     }
