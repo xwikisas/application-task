@@ -61,9 +61,9 @@ import static com.xwiki.task.internal.AbstractTaskEventListener.TASK_CLASS_REFER
  * @since 3.5.2
  */
 @Component
-@Named("TaskPageCopyEventListener")
+@Named("TaskPageCopiedOrMovedEventListener")
 @Singleton
-public class TaskPageCopyEventListener extends AbstractEventListener
+public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
 {
     private static final String WEBHOME = "WebHome";
 
@@ -91,9 +91,9 @@ public class TaskPageCopyEventListener extends AbstractEventListener
     /**
      * Default constructor.
      */
-    public TaskPageCopyEventListener()
+    public TaskPageCopiedOrMovedEventListener()
     {
-        super("TaskPageCopyEventListener", Collections.singletonList(new DocumentCreatedEvent()));
+        super("TaskPageCopiedOrMovedEventListener", Collections.singletonList(new DocumentCreatedEvent()));
     }
 
     @Override
@@ -102,13 +102,15 @@ public class TaskPageCopyEventListener extends AbstractEventListener
         boolean changed = false;
         XWikiContext context = (XWikiContext) data;
         XWikiDocument document = ((XWikiDocument) source).clone();
+        logger.debug("Processing [{}].", document.getDocumentReference());
         // Don't process the same document twice in a row.
         if (Objects.equals(lastProcessedEntity, document.getDocumentReference())) {
+            logger.debug("Already processed [{}]. Returning.", document.getDocumentReference());
             return;
         }
         lastProcessedEntity = document.getDocumentReference();
 
-        // This listener handles only the copying of Task pages.
+        // This listener handles only the copying/moving of Task pages.
         if (!observationContext.isIn(otherEvent -> {
             if (otherEvent instanceof DocumentCopyingEvent || otherEvent instanceof DocumentRenamingEvent) {
                 refactoringEvent = otherEvent;
@@ -117,11 +119,14 @@ public class TaskPageCopyEventListener extends AbstractEventListener
             return false;
         }))
         {
+            logger.debug("Document [{}] was not created in a copying or renaming event. Returning.",
+                document.getDocumentReference());
             refactoringEvent = null;
             return;
         }
         BaseObject taskObj = document.getXObject(TASK_CLASS_REFERENCE);
         if (taskObj == null) {
+            logger.debug("Created document [{}] does not contain a task object.", document.getDocumentReference());
             return;
         }
 
@@ -129,7 +134,10 @@ public class TaskPageCopyEventListener extends AbstractEventListener
             // When a Task Page is being copied, we should update the task number such that no duplicates will exist.
             try {
                 changed = true;
-                taskObj.set(Task.NUMBER, taskCounter.getNextNumber(), context);
+                int newNumber = taskCounter.getNextNumber();
+                logger.debug("Task doc [{}] was copied. Changing the id of the copied instance from [{}] to [{}].",
+                    taskObj.getDocumentReference(), taskObj.getIntValue(Task.NUMBER), newNumber);
+                taskObj.set(Task.NUMBER, newNumber, context);
             } catch (TaskException e) {
                 logger.warn("Failed to set a new id to the copied task document [{}]. Cause: [{}].",
                     document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
@@ -158,8 +166,60 @@ public class TaskPageCopyEventListener extends AbstractEventListener
     {
         // We are not interested in task pages that don't have owners.
         if (taskObj.getLargeStringValue(Task.OWNER).isEmpty()) {
+            logger.debug("Task doc [{}] doesn't have an owner.", taskObj.getDocumentReference());
             return false;
         }
+        Optional<EntityReference> movedParentPage = getMovedOrCopiedEntity();
+        if (!movedParentPage.isPresent()) {
+            logger.debug("Task page [{}] was not moved as part of a move/copy job.", taskObj.getDocumentReference());
+            return false;
+        }
+
+        if (isTaskPageMoved(taskObj, movedParentPage)) {
+            logger.debug(
+                "Task page [{}] was created as a result of moving/copying either a task page or Tasks subspace [{}].",
+                taskObj.getDocumentReference(), movedParentPage.get());
+            return false;
+        }
+
+        try {
+            EntityReference ownerName = taskObj.getDocumentReference().getName().equals(WEBHOME)
+                ? taskObj.getDocumentReference().getParent() : taskObj.getDocumentReference();
+
+            // Update the owner if the created task was a child of a Tasks subspace.
+            if (ownerName.getParent() != null && ownerName.getParent().getName().equals(TASKS)) {
+                String newOwner = serializer.serialize(
+                    new DocumentReference(WEBHOME, (SpaceReference) ownerName.getParent().getParent()));
+                logger.debug("Setting new owner for [{}] as [{}].", taskObj.getDocumentReference(), newOwner);
+                taskObj.set(Task.OWNER, newOwner, context);
+                return true;
+            }
+            logger.debug(
+                "The moved/copied task page [{}] is not part of the Tasks subspace. The owner will not be updated.",
+                taskObj.getDocumentReference());
+        } catch (Exception e) {
+            logger.error("Failed to set the new owner for the task page [{}].", taskObj.getDocumentReference(), e);
+        }
+        return false;
+    }
+
+    private boolean isTaskPageMoved(BaseObject taskObj, Optional<EntityReference> movedParentPage)
+    {
+        // If a task page is moved through the UI, we shouldn't update the owner.
+        if (movedParentPage.get().equals(taskObj.getDocumentReference())) {
+            return true;
+        }
+        // If a Tasks page is moved, we don't need to update the owner.
+        if (movedParentPage.get().getName().equals(TASKS)
+            || (movedParentPage.get().getParent() != null && movedParentPage.get().getParent().getName().equals(TASKS)))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private Optional<EntityReference> getMovedOrCopiedEntity()
+    {
         // If the Task Page was copied/moved together with its owner, the owner ref was changed so we should update
         // the object field that stores that information.
         if (!observationContext.isIn(otherEvent -> {
@@ -171,44 +231,13 @@ public class TaskPageCopyEventListener extends AbstractEventListener
         }))
         {
             jobStartedEvent = null;
-            return false;
+            return Optional.empty();
         }
 
         if (!(jobStartedEvent.getRequest() instanceof AbstractCopyOrMoveRequest)) {
-            return false;
+            return Optional.empty();
         }
         AbstractCopyOrMoveRequest copyOrMoveRequest = ((AbstractCopyOrMoveRequest) jobStartedEvent.getRequest());
-        Optional<EntityReference> movedParentPage =
-            copyOrMoveRequest.getEntityReferences().stream().findFirst();
-        if (!movedParentPage.isPresent()) {
-            return false;
-        }
-
-        // If a task page is moved through the UI, we shouldn't update the owner.
-        if (movedParentPage.get().equals(taskObj.getDocumentReference())) {
-            return false;
-        }
-        // If a Tasks page is moved, we don't need to update the owner.
-        if (movedParentPage.get().getName().equals(TASKS)
-            || (movedParentPage.get().getParent() != null && movedParentPage.get().getParent().getName().equals(TASKS)))
-        {
-            return false;
-        }
-
-        try {
-            EntityReference a = taskObj.getDocumentReference().getName().equals(WEBHOME)
-                ? taskObj.getDocumentReference().getParent() : taskObj.getDocumentReference();
-
-            // Update the owner if the created task was a child of a Tasks subspace.
-            if (a.getParent() != null && a.getParent().getName().equals(TASKS)) {
-                taskObj.set(Task.OWNER,
-                    serializer.serialize(new DocumentReference(WEBHOME, (SpaceReference) a.getParent().getParent())),
-                    context);
-                return true;
-            }
-        } catch (Exception e) {
-            logger.error("Failed to set the new owner for the task page [{}].", taskObj.getDocumentReference(), e);
-        }
-        return false;
+        return copyOrMoveRequest.getEntityReferences().stream().findFirst();
     }
 }

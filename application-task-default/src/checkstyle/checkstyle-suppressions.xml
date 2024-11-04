@@ -27,10 +27,4 @@
 <suppressions>
   <suppress checks="ClassFanOutComplexity"
     files="src/main/java/com/xwiki/task/internal/TaskMacroUpdateEventListener\.java"/>
-  <suppress checks="CyclomaticComplexity"
-    files="src/main/java/com/xwiki/task/internal/TaskPageCopyEventListener\.java"/>
-  <suppress checks="NPathComplexity"
-    files="src/main/java/com/xwiki/task/internal/TaskPageCopyEventListener\.java"/>
-  <suppress checks="ReturnCount"
-    files="src/main/java/com/xwiki/task/internal/TaskPageCopyEventListener\.java"/>
 </suppressions>

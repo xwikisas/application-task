@@ -22,6 +22,7 @@ package com.xwiki.task.internal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -85,7 +86,7 @@ public class TaskPageMovingEventListener extends AbstractEventListener
         }
     }
 
-    private static void handleDocumentsDeletingEvent(Object source,
+    private void handleDocumentsDeletingEvent(Object source,
         Map<EntityReference, EntitySelection> concernedEntities)
     {
         // If the move job was previously processed by this listener (is a not deep job for a page that is owner of
@@ -102,6 +103,9 @@ public class TaskPageMovingEventListener extends AbstractEventListener
         if (movedParentPage.isEmpty()) {
             return;
         }
+        logger.debug("Task owner [{}] moving in a non-deep job. Including the task pages under the Tasks subspace.",
+            movedParentPage.get());
+
         SpaceReference tasksSpace = new SpaceReference("Tasks", movedParentPage.get().getParent());
 
         for (Map.Entry<EntityReference, EntitySelection> entry : concernedEntities.entrySet()) {
@@ -113,6 +117,11 @@ public class TaskPageMovingEventListener extends AbstractEventListener
         }
 
         concernedEntities.get(movedParentPage.get()).setSelected(true);
+        logger.debug("The following pages will be moved [{}].",
+            concernedEntities.entrySet().stream()
+                .filter(e -> e.getValue().isSelected())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList()));
     }
 
     private void handleMoveEvent(EntitiesRenamingEvent event, MoveJob source, MoveRequest moveRequest)
@@ -120,6 +129,7 @@ public class TaskPageMovingEventListener extends AbstractEventListener
         // Detect if the created document is inside a Renaming Job that is NOT deep (the children are not moved).
         // If that's the case, set the job as deep and move only the children under the Tasks space.
         if (moveRequest.isDeep()) {
+            logger.debug("Move Job is deep. Skipping.");
             return;
         }
         Optional<EntityReference> movedParentPage = moveRequest.getEntityReferences().stream().findFirst();
@@ -128,6 +138,7 @@ public class TaskPageMovingEventListener extends AbstractEventListener
         }
         String statement = "from doc.object(TaskManager.TaskManagerClass) AS task WHERE task.owner like :page";
         try {
+            logger.debug("Looking for task pages that have [{}] as owner.", movedParentPage.get());
             List<String> childPages = queryManager.createQuery(statement, Query.XWQL)
                 .bindValue("page", serializer.serialize(movedParentPage.get())).setLimit(1).execute();
 
@@ -137,6 +148,9 @@ public class TaskPageMovingEventListener extends AbstractEventListener
                 // Tasks space.
                 moveRequest.setProperty(MOVE_FLAG, true);
                 moveRequest.setDeep(true);
+                logger.debug("Found a task page. Set the job as deep.");
+            } else {
+                logger.debug("No task page has [{}] as owner.", movedParentPage.get());
             }
         } catch (QueryException e) {
             logger.warn("Failed to retrieve the task pages that have [{}] as owner. Cause: [{}].",

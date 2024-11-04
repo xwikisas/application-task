@@ -50,7 +50,7 @@ import com.xwiki.task.event.TaskRelativizedEvent;
 import com.xwiki.task.event.TaskRelativizingEvent;
 
 /**
- * Listener responsible with making sure that the task pages are always moved together with their owners.
+ * Listener responsible with migrating the task macro "reference" parameters to a relative value.
  *
  * @version $Id$
  * @since 3.5.2
