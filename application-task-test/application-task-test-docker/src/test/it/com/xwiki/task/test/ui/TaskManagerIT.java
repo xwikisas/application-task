@@ -157,7 +157,7 @@ class TaskManagerIT
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
         viewPage.edit();
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
-        inlinePage.waitUntilPageIsLoaded();
+        inlinePage.waitUntilPageIsReady();
         // Changing a property of the page should change the macro call.
         inlinePage.setStatus("ToDo");
         inlinePage.clickSaveAndView();
@@ -189,7 +189,7 @@ class TaskManagerIT
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
         row = taskReport.getRow(2);
-        assertEquals("#3\nDo this  as late as @Admin2023/01/01 12:00",
+        assertEquals("#3\nDo this  as late as @Admin 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
         assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
         assertEquals("Admin", taskReport.getCell(row, taskAssigneeCellIndex).getText());

@@ -69,7 +69,7 @@ class DefaultTaskReferenceGeneratorTest
     }
 
     @Test
-    void generateMultipleReferences() throws TaskException
+    void generateMultipleReferences() throws Exception
     {
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
 
@@ -81,7 +81,7 @@ class DefaultTaskReferenceGeneratorTest
     }
 
     @Test
-    void generateReferenceWhenDocumentAlreadyExistsInWiki() throws TaskException
+    void generateReferenceWhenDocumentAlreadyExistsInWiki() throws Exception
     {
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
         when(

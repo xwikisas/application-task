@@ -90,6 +90,11 @@ public class Task
     public static final String CREATE_DATE = "createDate";
 
     /**
+     * The name of the START_DATE field.
+     */
+    public static final String START_DATE = "startDate";
+
+    /**
      * The name of the DUE_DATE field.
      */
     public static final String DUE_DATE = "duedate";
@@ -119,6 +124,8 @@ public class Task
     private DocumentReference assignee;
 
     private Date createDate;
+
+    private Date startDate;
 
     private Date duedate;
 
@@ -221,6 +228,22 @@ public class Task
     public void setCreateDate(Date createDate)
     {
         this.createDate = createDate;
+    }
+
+    /**
+     * @return the timestamp for the start of the task.
+     */
+    public Date getStartDate()
+    {
+        return startDate;
+    }
+
+    /**
+     * @param startDate the moment the task was started.
+     */
+    public void setStartDate(Date startDate)
+    {
+        this.startDate = startDate;
     }
 
     /**

@@ -59,6 +59,11 @@
       <version>${licensing.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>frappe-gantt</artifactId>
+      <version>${gantt.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.xwiki.contrib</groupId>
       <artifactId>macro-kanban</artifactId>
       <type>xar</type>
@@ -129,7 +134,6 @@
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>momentjs</artifactId>
-      <version>2.24.0</version>
     </dependency>
     <dependency>
       <groupId>org.webjars</groupId>

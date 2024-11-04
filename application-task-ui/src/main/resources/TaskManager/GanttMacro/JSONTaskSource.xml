@@ -1,0 +1,190 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="TaskManager.GanttMacro.JSONTaskSource" locale="">
+  <web>TaskManager.GanttMacro</web>
+  <name>JSONTaskSource</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>xwiki:TaskManager.GanttMacro</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{velocity output="false"}}
+#macro (putOrDefault $map $propertyName $value $default1)
+  #if ($value)
+    #set ($discard = $map.put($propertyName, $value))
+  #else
+    #set ($discard = $map.put($propertyName, $default1))
+  #end
+#end
+
+#macro (csvToArray $csvString $return)
+  ## This macro escapes commas using backslashes, to not break when csv items contain commas.
+  ## TODO: Also escape backslashes, as a csv item ending with one will not be interpreted correctly.
+  #set ($csv = $csvString.split('(?&lt;!\\),'))
+  #set ($newArray = [])
+  #foreach ($elem in $csv)
+    #set ($discard = $newArray.add($elem.replace('\,', ',')))
+  #end
+  #set ($discard = $return.put('csvReturn', $newArray))
+#end
+{{/velocity}}{{velocity wiki="false"}}
+##
+## This page prepares and returns the JSON of tasks used in the frappe-gantt library, in the taskgantt macro.
+## Parameters are the same as taskgantt macro, with an optional 'taskId'.
+## When the 'taskId' is present, only that task will be returned, regardless of other parameters.
+##
+#if ($xcontext.action == 'get')
+  #set ($discard = $response.setContentType('application/json'))
+  #set ($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
+  #if ("$!request.taskId" != '')
+    ## Short-circuit if the request is for a specific task.
+    #set ($query = $query + ' and doc.fullName = (:taskId)')
+    #set ($query = $services.query.xwql($query).setLimit(1))
+    #set ($query = $query.bindValue('taskId', $request.taskId))
+  #else
+    #if ("$!request.spaces" != '')
+      #set ($spaces = {})
+      #csvToArray($request.spaces $spaces)
+      #set ($spaces = $spaces['csvReturn'])
+      ## Filter by exact space and by subspaces.
+      #set ($query = $query + ' and (doc.space in (:spaces)')
+      #set ($index = 0)
+      #foreach ($space in $spaces)
+        #set ($query = $query + " or doc.space like :spaces${index}")
+        #set ($index = $index + 1)
+      #end
+      #set ($query = $query + ')')
+    #end
+    #if ("$!request.assignees" != '')
+      #set ($assignees = {})
+      #csvToArray($request.assignees $assignees)
+      #set ($assignees = $assignees['csvReturn'])
+      #set ($query = $query + " and task.assignee in (:assignees)")
+    #end
+    #if ("$!request.reporters" != '')
+      #set ($reporters = {})
+      #csvToArray($request.reporters $reporters)
+      #set ($reporters = $reporters['csvReturn'])
+      #set ($query = $query + " and task.reporter in (:reporters)")
+    #end
+    #if ("$!request.projects" != '')
+      #set ($projects = {})
+      #csvToArray($request.projects $projects)
+      #set ($projects = $projects['csvReturn'])
+      #set ($query = $query + " and task.project in (:projects)")
+    #end
+    #if ("$!request.from" != '')
+      #set ($from = $datetool.toDate($numbertool.toNumber($request.from).longValue()))
+      #set ($query = $query + ' and (' +
+          '(task.startDate is not NULL and task.startDate  &gt;= :from) or ' +
+          '(task.startDate is     NULL and task.createDate &gt;= :from))'
+      )
+    #end
+    #if ($request.hideNoDueDate != 'false')
+      #set ($query = $query + ' and task.duedate is not NULL')
+    #end
+    #if ("$!request.to" != '')
+      #set ($to = $datetool.toDate($numbertool.toNumber($request.to).longValue()))
+      #set ($query = $query + ' and (' +
+              '(task.duedate is not NULL and task.duedate &lt;= :to) or ' +
+              '(task.duedate is     NULL and (' +
+                '(task.startDate is not NULL and task.startDate  &lt;= :to) or ' +
+                '(task.startDate is     NULL and task.createDate &lt;= :to))' +
+            '))'
+      )
+    #end
+    ## Sort the tasks by project and name to ensure a stable order.
+    #set ($query = $query + ' order by UPPER(task.project), task.project, UPPER(task.name), task.name')
+    #set ($query = $services.query.xwql($query).setLimit(50))
+    #if ($spaces)
+      #set ($query = $query.bindValue("spaces", $spaces))
+      #set ($index = 0)
+      #foreach ($space in $spaces)
+        #set ($space = $space + '.%')
+        #set ($query = $query.bindValue("spaces${index}", $space))
+        #set ($index = $index + 1)
+      #end
+    #end
+    #if ($assignees) #set ($query = $query.bindValue('assignees', $assignees)) #end
+    #if ($projects)  #set ($query = $query.bindValue('projects', $projects))   #end
+    #if ($reporters) #set ($query = $query.bindValue('reporters', $reporters)) #end
+    #if ($from)      #set ($query = $query.bindValue('from', $from))           #end
+    #if ($to)        #set ($query = $query.bindValue('to', $to))               #end
+  #end
+  #set ($queryResult = $query.execute())
+
+  #set ($tasks = [])
+  #foreach ($taskDocument in $queryResult)
+    #set ($taskXDoc = $xwiki.getDocument($taskDocument))
+    #set ($task = $taskXDoc.getObject('TaskManager.TaskManagerClass'))
+    #if ($services.security.authorization.hasAccess('view', $taskDocument))
+      #set ($taskObj = {})
+      #set ($customClasses = [])
+      #set ($discard = $taskObj.put('id', "$taskXDoc.getDocumentReference()"))
+      #set ($discard = $taskObj.put('link', $taskXDoc.getURL()))
+      #putOrDefault($taskObj 'taskName'
+        $task.getValue('name')
+        $services.localization.render('taskmanager.gantt.task.unknownTaskTitle')
+      )
+      #putOrDefault($taskObj 'progress'
+        $task.getValue('progress')
+        0
+      )
+      #putOrDefault($taskObj 'project'  $task.getValue('project')  '')
+      #putOrDefault($taskObj 'assignee' $task.getValue('assignee') '')
+      #putOrDefault($taskObj 'reporter' $task.getValue('reporter') '')
+      #putOrDefault($taskObj 'start'
+        $task.getValue('startDate').getTime()
+        $task.getValue('createDate').getTime()
+      )
+      #putOrDefault($taskObj 'end'
+        $task.getValue('duedate').getTime()
+        $xwiki.jodatime.getDateTime($taskObj['start']).plusWeeks(1).getMillis()
+      )
+      #if ("$!task.getValue('duedate').getTime()" == '')
+        #set ($discard = $customClasses.add('taskgantt-no-due-date'))
+      #end
+      #if (!$services.security.authorization.hasAccess('edit', $taskDocument))
+        #set ($discard = $customClasses.add('taskgantt-no-edit'))
+      #end
+      #set ($dependencies = [])
+      #foreach ($dep in $task.getValue('dependencies'))
+        #set ($discard = $dependencies.add("$xwiki.getDocument($dep).getDocumentReference()"))
+      #end
+      #set ($discard = $taskObj.put('dependencies', $dependencies))
+      #set ($discard = $taskObj.put('taskClasses', $customClasses))
+      #set ($discard = $tasks.add($taskObj))
+    #end
+  #end
+  $jsontool.serialize($tasks)
+#end
+{{/velocity}}</content>
+</xwikidoc>
