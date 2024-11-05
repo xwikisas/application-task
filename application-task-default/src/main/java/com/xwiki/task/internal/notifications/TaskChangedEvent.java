@@ -42,7 +42,7 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     private Set<String> targetedUsers;
 
     /**
-     * Task which represents a property change in a task. This is a dummy constructor.
+     * Event which represents a property change in a task. This is a dummy constructor.
      */
     public TaskChangedEvent()
     {
@@ -50,7 +50,7 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     }
 
     /**
-     * Task which represents a property change in a task.
+     * Event which represents a property change in a task.
      * 
      * @param documentReference the document reference of the changed task.
      * @param documentVersion the version of the task document which contains the changes made.
@@ -71,7 +71,7 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     }
 
     /**
-     * Task which represents a property change in a task.
+     * Event which represents a property change in a task.
      * 
      * @param documentReference the document reference of the changed task.
      * @param documentVersion the version of the task document which contains the changes made.

@@ -35,6 +35,7 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.suigeneris.jrcs.rcs.Version;
 // import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -103,7 +104,8 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      */
     public TaskChangedEventNotificationListener()
     {
-        super(TaskChangedEventNotificationListener.class.getName(), Arrays.asList(new DocumentUpdatedEvent()));
+        super(TaskChangedEventNotificationListener.class.getName(), Arrays.asList(new DocumentUpdatedEvent(), 
+            new DocumentCreatedEvent()));
     }
 
     /**
@@ -114,7 +116,10 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      */
     private static Object getPropertyValue(BaseObject obj, String propertyName)
     {
-        // Method getValue() is not defined for the Property interface.
+        if (null == obj) {
+            return null;
+        }
+        // Method getValue() always returns null from the Property interface implementation, so this if chain is needed.
         PropertyInterface property = obj.safeget(propertyName);
         if (property instanceof StringProperty) {
             return ((StringProperty) property).getValue();
@@ -192,7 +197,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         XWikiDocument document = (XWikiDocument) source;
 
         if (null == document.getXObject(document.resolveClassReference(TASK_MANAGER_CLASS_NAME))) {
-            // Stop if the document has no TaskManager tasks attached.
+            // Stop if the document has no TaskManager tasks attached (or task was just removed).
             return;
         }
 
@@ -205,12 +210,14 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         try {
             currentDoc = documentRevisionProvider
                 .getRevision(document, version.toString());
-            previousDoc = documentRevisionProvider.getRevision(
-                document,
-                versionArchive.getNode(
-                    versionArchive.getPrevVersion(version)
-                ).getVersion().toString()
-            );
+
+            Version previousVersion = versionArchive.getPrevVersion(version);
+            previousDoc =
+                null != previousVersion
+                ? documentRevisionProvider.getRevision(
+                    document,
+                    versionArchive.getNode(previousVersion).getVersion().toString()
+                ) : null;
         } catch (Exception e) {
             logger.warn(
                 "Error while getting TaskManager document versions of task [{}]: [{}].",
@@ -223,14 +230,10 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         BaseObject currentObject = currentDoc.getXObject(
             currentDoc.resolveClassReference(TASK_MANAGER_CLASS_NAME)
         );
-        BaseObject previousObject = previousDoc.getXObject(
-            previousDoc.resolveClassReference(TASK_MANAGER_CLASS_NAME)
-        );
-
-        if (null == previousObject || null == currentObject) {
-            // Stop if the task was just added or deleted.
-            return;
-        }
+        BaseObject previousObject = 
+            null != previousDoc
+            ? previousDoc.getXObject(previousDoc.resolveClassReference(TASK_MANAGER_CLASS_NAME))
+            : null;
 
         // The reporter shouldn't be changing between versions.
         Set<String> targetedUsers = new HashSet<String>(Arrays.asList(
@@ -242,17 +245,30 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         TaskChangedEvent baseTaskChangedEvent =
             new TaskChangedEvent(document.getDocumentReference(), version.toString(), targetedUsers);
 
-        WATCHED_FIELDS.forEach((String field) -> {
+        if (null == previousObject) {
+            // Only send one notification if the task was just added.
             TaskChangedEvent taskChangedEvent = getFieldChangedEvent(
                 currentObject,
                 previousObject,
-                field,
+                Task.ASSIGNEE,
                 baseTaskChangedEvent
             );
             if (null != taskChangedEvent) {
                 getObservationManager().notify(taskChangedEvent, document.toString(), data);
             }
-        });
+        } else {
+            WATCHED_FIELDS.forEach((String field) -> {
+                TaskChangedEvent taskChangedEvent = getFieldChangedEvent(
+                    currentObject,
+                    previousObject,
+                    field,
+                    baseTaskChangedEvent
+                );
+                if (null != taskChangedEvent) {
+                    getObservationManager().notify(taskChangedEvent, document.toString(), data);
+                }
+            });
+        }
     }
 
     private ObservationManager getObservationManager()
