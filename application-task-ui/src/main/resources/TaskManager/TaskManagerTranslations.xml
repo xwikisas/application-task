@@ -119,7 +119,7 @@ taskmanager.livetable.creationDate=Creation Date
 
 # Notifications for changed tasks
 taskmanager.events.TaskChangedEvent.description=A task which you are assigned to or you are watching was modified
-taskmanager.events.TaskChangedEvent.title=A task was modified
+taskmanager.events.TaskChangedEvent.title=Task was modified
 taskmanager.events.TaskChangedEvent.details.status=The status of {0} was changed to {1}
 taskmanager.events.TaskChangedEvent.details.duedate.later=The deadline of {0} was extended to {1}
 taskmanager.events.TaskChangedEvent.details.duedate.earlier=The deadline of {0} was tightened to {1}
@@ -168,6 +168,7 @@ taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not h
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until
+taskmanager.panel.untildate.nodate=No due date
 taskmanager.panel.fulltasklist=See full list
 taskmanager.panel.noactivetasks=No active Tasks
 taskmanager.panel.guest=You have to be logged in in order to view this panel
