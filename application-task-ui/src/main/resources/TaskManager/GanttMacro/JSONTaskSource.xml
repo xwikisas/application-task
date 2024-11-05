@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.GanttMacro.JSONTaskSource" locale="">
+<xwikidoc version="1.5" reference="TaskManager.GanttMacro.JSONTaskSource" locale="">
   <web>TaskManager.GanttMacro</web>
   <name>JSONTaskSource</name>
   <language/>

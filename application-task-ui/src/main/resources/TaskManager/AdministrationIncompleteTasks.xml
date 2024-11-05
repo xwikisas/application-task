@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.AdministrationIncompleteTasks" locale="">
+<xwikidoc version="1.5" reference="TaskManager.AdministrationIncompleteTasks" locale="">
   <web>TaskManager</web>
   <name>AdministrationIncompleteTasks</name>
   <language/>
@@ -94,6 +94,7 @@
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
+        <restricted>0</restricted>
         <rows>20</rows>
         <size>50</size>
         <unmodifiable>0</unmodifiable>
@@ -204,9 +205,7 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
     // Start the job and create a jobrunner object to periodically check the status of the job.
     $('.fixAllTasks').on('click', function () {
       let button = $(this);
-      // TODO: Remove this when the parent version is greater or equal to 14.5. On versions lower than 14.5, we use the JobRunner that happens to be defined
-      // by the displayer of the TextArea. On versions greater than 14.5, xwiki-job-runner is defined globally.
-      require([#if("$!services.resource.temporary" != '')'xwiki-job-runner'#else'JobRunner'#end], function (JobRunner) {
+      require(['xwiki-job-runner'], function (JobRunner) {
         var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', fixAll: '1', form_token: xcontext.form_token }));
         let notification = new XWiki.widgets.Notification(l10n.get('notification.fixAll.inprogress'), "inprogress");
         $.getJSON(serviceURL)
@@ -271,7 +270,7 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
       <name/>
     </property>
     <property>
-      <parse>1</parse>
+      <parse>0</parse>
     </property>
     <property>
       <use>currentPage</use>
@@ -317,6 +316,7 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
         <name>code</name>
         <number>2</number>
         <prettyName>Code</prettyName>
+        <restricted>0</restricted>
         <rows>20</rows>
         <size>50</size>
         <unmodifiable>0</unmodifiable>

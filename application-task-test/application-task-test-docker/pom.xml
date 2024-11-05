@@ -25,9 +25,10 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task-test</artifactId>
-    <version>3.5.1-SNAPSHOT</version>
+    <version>3.6.1-SNAPSHOT</version>
   </parent>
   <artifactId>application-task-test-docker</artifactId>
+  <version>3.6.1-SNAPSHOT</version>
   <name>Task Manager Application - Tests - Functional Docker Tests</name>
   <!-- TODO: Move to use "functional-test" in the future when http://jira.codehaus.org/browse/MNG-1911 is fixed,
        see http://jira.xwiki.org/jira/browse/XWIKI-7683 -->
@@ -79,6 +80,18 @@
       <type>pom</type>
       <scope>test</scope>
     </dependency>
+    <!-- Remove when licensing application has the parent to 14.10. -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-model-api</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-extension-api</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
+    <!-- End remove. -->
     <dependency>
       <groupId>com.xwiki.task</groupId>
       <artifactId>application-task-test-pageobjects</artifactId>

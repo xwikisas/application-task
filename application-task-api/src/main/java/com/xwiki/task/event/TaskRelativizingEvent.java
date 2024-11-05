@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,22 +16,23 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
+package com.xwiki.task.event;
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>com.xwiki.task</groupId>
-    <artifactId>application-task</artifactId>
-    <version>3.6.1-SNAPSHOT</version>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.xwiki.date</groupId>
-  <artifactId>macro-date</artifactId>
-  <packaging>pom</packaging>
-  <name>Date Macro - Parent POM</name>
-  <modules>
-    <module>macro-date-api</module>
-    <module>macro-date-default</module>
-    <module>macro-date-ui</module>
-  </modules>
-</project>
+import org.xwiki.observation.event.AbstractCancelableEvent;
+import org.xwiki.observation.event.BeginFoldEvent;
+
+/**
+ * Event before the task relativizing process has started.
+ *
+ * <ul>
+ * <li>source: The job that processes the documents.</li>
+ * <li>data: The list of files that will be searched for task macros and updated.</li>
+ * </ul>
+ *
+ * @since 3.5.2
+ * @version $Id$
+ */
+public class TaskRelativizingEvent extends AbstractCancelableEvent implements BeginFoldEvent
+{
+}

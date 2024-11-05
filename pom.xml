@@ -25,11 +25,11 @@
   <parent>
     <groupId>com.xwiki.parent</groupId>
     <artifactId>xwikisas-parent-platform</artifactId>
-    <version>13.10-3</version>
+    <version>14.10-1</version>
   </parent>
   <groupId>com.xwiki.task</groupId>
   <artifactId>application-task</artifactId>
-  <version>3.5.2-SNAPSHOT</version>
+  <version>3.6.1-SNAPSHOT</version>
   <name>Task Manager Application - Parent POM</name>
   <packaging>pom</packaging>
   <description>The parent POM of the Task Manager Application (Pro).</description>
@@ -44,7 +44,7 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <licensing.version>1.25</licensing.version>
+    <licensing.version>1.26</licensing.version>
     <kanban-macro.version>1.4.0</kanban-macro.version>
     <gantt.version>0.6.1</gantt.version>
     <xwiki.extension.category>application</xwiki.extension.category>

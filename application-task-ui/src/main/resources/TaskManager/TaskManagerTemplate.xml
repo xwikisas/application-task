@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="TaskManager.TaskManagerTemplate" locale="">
+<xwikidoc version="1.5" reference="TaskManager.TaskManagerTemplate" locale="">
   <web>TaskManager</web>
   <name>TaskManagerTemplate</name>
   <language/>
@@ -140,7 +140,7 @@
     #set($taskproject = $task.getProperty('project').value)
     #if($type == 'view')
       ## Begin a list in XWiki Syntax
-      *
+      * ## Without this space the * is not parsed as XWiki syntax
     #elseif($type == 'edit')
       &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
         &lt;input
@@ -248,18 +248,21 @@
         <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
       </duedate>
       <name>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
+        <editor>PureText</editor>
         <hint/>
         <name>name</name>
         <number>1</number>
         <picker>0</picker>
         <prettyName>Task name</prettyName>
-        <size>30</size>
+        <rows>5</rows>
+        <size>40</size>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </name>
       <number>
         <customDisplay/>
