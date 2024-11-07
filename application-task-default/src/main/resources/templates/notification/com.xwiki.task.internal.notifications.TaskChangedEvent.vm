@@ -20,15 +20,8 @@
 
 #template('notification/macros.vm')
 
-#set ($eventDescriptor = $services.eventstream.getDescriptorForEventType($compositeEvent.type, $xcontext.isMainWiki()))
-#if ($eventDescriptor)
-  #set ($mainIcon = $eventDescriptor.applicationIcon)
-  #set ($smallIcon = $eventDescriptor.eventTypeIcon)
-#else
-  #set ($mainIcon = 'rss')
-  #set ($smallIcon = '')
-#end
-##set ($compositeEventDate = $escapetool.xml($datetool.whenIs($compositeEvent.dates.get(0))))
+#set ($mainIcon = 'list')
+#set ($smallIcon = '')
 
 #macro (displayEventDetails $event)
   #set ($document = $xwiki.getDocument($event.document))

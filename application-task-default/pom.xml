@@ -158,7 +158,6 @@
             <configuration>
               <failsOnError>true</failsOnError>
               <suppressionsLocation>${basedir}/src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-              <skip>true</skip>
             </configuration>
           </execution>
         </executions>

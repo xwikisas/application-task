@@ -59,6 +59,6 @@ public class TaskChangedEventDescriptor implements RecordableEventDescriptor
     @Override
     public String getApplicationIcon()
     {
-        return "rss";
+        return "list";
     }
 }
