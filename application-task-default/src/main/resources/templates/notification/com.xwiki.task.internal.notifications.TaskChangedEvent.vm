@@ -35,12 +35,15 @@
         <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
       </td>
       #if ($customEventInfo['type'] == 'assignee')
-        #if ($customEventInfo['new'] == $xwiki.getUser().getUser().getFullName())
-          #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you')
+        #if ("$!customEventInfo['new']" == '')
+          #if ($customEventInfo['old'] == $xwiki.getUser().getUser().getFullName())
+            #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
+          #elseif ("$!customEventInfo['old']" == '')
+            #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+          #end
+        #elseif ($customEventInfo['new'] == $xwiki.getUser().getUser().getFullName())
+          #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
         #end
-        ## Display user name with link to user page.
-        ##set ($customEventInfo['old'] = $!xwiki.getUserName($customEventInfo['old']))
-        ##set ($customEventInfo['new'] = $!xwiki.getUserName($customEventInfo['new']))
       #elseif ($customEventInfo['type'] == 'duedate.earlier' || $customEventInfo['type'] == 'duedate.later')
         ## Convert from Long date to human-readable date, using format configured in datemacro.
         #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
@@ -53,7 +56,6 @@
         )
       #end
       #set ($localizationParams = [
-        $document.getObject('TaskManager.TaskManagerClass').getValue('name'),
         $customEventInfo['new'],
         $customEventInfo['old']
       ])

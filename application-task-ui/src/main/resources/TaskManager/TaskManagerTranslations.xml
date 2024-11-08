@@ -120,13 +120,15 @@ taskmanager.livetable.creationDate=Creation Date
 # Notifications for changed tasks
 taskmanager.events.TaskChangedEvent.description=A task which you are assigned to or you are watching was modified
 taskmanager.events.TaskChangedEvent.title=Task was modified
-taskmanager.events.TaskChangedEvent.details.status=The status of {0} was changed to {1}
-taskmanager.events.TaskChangedEvent.details.duedate.later=The deadline of {0} was extended to {1}
-taskmanager.events.TaskChangedEvent.details.duedate.earlier=The deadline of {0} was tightened to {1}
-taskmanager.events.TaskChangedEvent.details.assignee.you=You were assigned to the task {0}
-taskmanager.events.TaskChangedEvent.details.assignee={1} was assigned to the task {0}
-taskmanager.events.TaskChangedEvent.details.severity=The priority of {0} was changed to {1}
-taskmanager.events.TaskChangedEvent.details.project=The task {0} was assigned to project {1}
+taskmanager.events.TaskChangedEvent.details.status=Status changed to {0}
+taskmanager.events.TaskChangedEvent.details.duedate.later=Deadline extended to {0}
+taskmanager.events.TaskChangedEvent.details.duedate.earlier=Deadline tightened to {0}
+taskmanager.events.TaskChangedEvent.details.assignee.you.assigned=You were assigned
+taskmanager.events.TaskChangedEvent.details.assignee.you.unassigned=You were unassigned
+taskmanager.events.TaskChangedEvent.details.assignee.none=Nobody is assigned
+taskmanager.events.TaskChangedEvent.details.assignee={0} was assigned
+taskmanager.events.TaskChangedEvent.details.severity=Priority changed to {0}
+taskmanager.events.TaskChangedEvent.details.project=This task was assigned to project {0}
 
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
