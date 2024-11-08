@@ -110,8 +110,8 @@
 ## The core will make available the following variables:
 ## - $name[String] = the name of the displayed field ('dependencies')
 ## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
-## - $object[com.xpn.xwiki.api.Object] = the displayed object 
-## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property 
+## - $object[com.xpn.xwiki.api.Object] = the displayed object
+## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property
 ## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
 ## - $value[DBList in this case] = the property value
 ##
@@ -137,7 +137,7 @@
       ## Begin a list in XWiki Syntax
       * ## Without this space the * is not parsed as XWiki syntax
     #elseif($type == 'edit')
-      &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+      &lt;label class="xwiki-form-listclass" data-project="$escapetool.xml(${taskproject})" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
         &lt;input
           id="xwiki-form-dependencies-0-${foreach.index}"
           value="${escapetool.xml($taskid)}"
@@ -153,11 +153,11 @@
     &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
     &lt;span class="task-manager-status-${taskstatus}"&gt;[${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]&lt;/span&gt;
     &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($taskpage.getURL('view'))"&gt;${escapetool.xml($tasktitle)}&lt;/a&gt;&lt;/span&gt;
-    ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
+    ($services.rendering.escape($services.localization.render('TaskManager.TaskManagerClass_duedate'), 'xwiki/2.1') ${taskduedate})
     #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
       &lt;span class="task-manager-status-Late"&gt;
         ${services.icon.render('bell')}
-        ${services.localization.render('TaskManager.TaskManagerClass_status_Late')}
+        $services.rendering.escape(${services.localization.render('TaskManager.TaskManagerClass_status_Late')}, 'xwiki/2.1')
       &lt;/span&gt;
     #end
     #if($type == 'edit')
@@ -179,7 +179,7 @@
     #end
     &lt;/div&gt;
   #else
-    {{info}}${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}{{/info}}
+    {{info}}$services.rendering.escape(${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}, 'xwiki/2.1'){{/info}}
   #end
 #else
   #foreach($taskid in $value)
@@ -252,6 +252,7 @@
       <number>1</number>
       <picker>0</picker>
       <prettyName>Task name</prettyName>
+      <restricted>0</restricted>
       <rows>5</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
@@ -306,8 +307,8 @@
 ## The core will make available the following variables:
 ## - $name[String] = the name of the displayed field ('dependencies')
 ## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
-## - $object[com.xpn.xwiki.api.Object] = the displayed object 
-## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property 
+## - $object[com.xpn.xwiki.api.Object] = the displayed object
+## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property
 ## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
 ## - $value[DBList in this case] = the property value
 ##
@@ -352,11 +353,11 @@
 #foreach($rValue in $propertyClass.mapValues.entrySet())
   #set($key = "TaskManager.TaskManagerClass_project_$rValue.key")
   #set($translation = $services.localization.render($key))
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+  &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $rValue.key
+      $services.rendering.escape($rValue.key, 'xwiki/2.1')
     #else
-      $translation
+      $services.rendering.escape($translation, 'xwiki/2.1')
     #end
   &lt;/option&gt;
 #end
@@ -365,9 +366,9 @@
   #set($key = "TaskManager.TaskManagerClass_project_${object.getValue('project')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
-    $object.getValue('project')
+    $services.rendering.escape($object.getValue('project'), 'xwiki/2.1')
   #else
-    $translation
+    $services.rendering.escape($translation, 'xwiki/2.1')
   #end
 #end
 {{/velocity}}</customDisplay>
@@ -433,11 +434,11 @@
 #foreach($rValue in $propertyClass.mapValues.entrySet())
   #set($key = "TaskManager.TaskManagerClass_severity_$rValue.key")
   #set($translation = $services.localization.render($key))
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+  &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $rValue.key
+      $services.rendering.escape($rValue.key, 'xwiki/2.1')
     #else
-      $translation
+      $services.rendering.escape($translation, 'xwiki/2.1')
     #end
   &lt;/option&gt;
 #end
@@ -446,9 +447,9 @@
   #set($key = "TaskManager.TaskManagerClass_severity_${object.getValue('severity')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
-    $object.getValue('severity')
+    $services.rendering.escape($object.getValue('severity'), 'xwiki/2.1')
   #else
-    $translation
+    $services.rendering.escape($translation, 'xwiki/2.1')
   #end
 #end
 {{/velocity}}</customDisplay>
@@ -505,11 +506,11 @@
 #foreach($rValue in $propertyClass.mapValues.entrySet())
   #set($key = "TaskManager.TaskManagerClass_status_$rValue.key")
   #set($translation = $services.localization.render($key))
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+  &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $rValue.key
+      $services.rendering.escape($rValue.key, 'xwiki/2.1')
     #else
-      $translation
+      $services.rendering.escape($translation, 'xwiki/2.1')
     #end
   &lt;/option&gt;
 #end
@@ -518,9 +519,9 @@
   #set($key = "TaskManager.TaskManagerClass_status_${object.getValue('status')}")
   #set($translation = $services.localization.render($key))
   #if ($translation == $key)
-    $object.getValue('status')
+    $services.rendering.escape($object.getValue('status'), 'xwiki/2.1')
   #else
-    $translation
+    $services.rendering.escape($translation, 'xwiki/2.1')
   #end
 #end
 {{/velocity}}</customDisplay>
