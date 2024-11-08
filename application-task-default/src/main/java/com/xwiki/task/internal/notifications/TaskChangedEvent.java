@@ -20,9 +20,7 @@
 
 package com.xwiki.task.internal.notifications;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.xwiki.eventstream.RecordableEvent;
 import org.xwiki.model.reference.DocumentReference;
@@ -39,34 +37,28 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     private String documentVersion;
     private Map<String, Object> localizationParams;
 
-    private Set<String> targetedUsers;
-
     /**
      * Event which represents a property change in a task. This is a dummy constructor.
      */
     public TaskChangedEvent()
     {
-        this.targetedUsers = new HashSet<String>();
     }
 
     /**
      * Event which represents a property change in a task.
      * 
-     * @param documentReference the document reference of the changed task.
-     * @param documentVersion the version of the task document which contains the changes made.
-     * @param targetedUsers the users to specifically target with the notification.
+     * @param documentReference  the document reference of the changed task.
+     * @param documentVersion    the version of the task document which contains the changes made.
      * @param localizationParams the localization parameters used to format the localization string of the notification.
      */
     public TaskChangedEvent(
         DocumentReference documentReference,
         String documentVersion,
-        Set<String> targetedUsers,
         Map<String, Object> localizationParams
     )
     {
         this.documentReference = documentReference;
         this.documentVersion = documentVersion;
-        this.targetedUsers = targetedUsers;
         this.localizationParams = localizationParams;
     }
 
@@ -74,16 +66,14 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
      * Event which represents a property change in a task.
      * 
      * @param documentReference the document reference of the changed task.
-     * @param documentVersion the version of the task document which contains the changes made.
-     * @param targetedUsers the users to specifically target with the notification.
+     * @param documentVersion   the version of the task document which contains the changes made.
      */
     public TaskChangedEvent(
         DocumentReference documentReference,
-        String documentVersion,
-        Set<String> targetedUsers
+        String documentVersion
     )
     {
-        this(documentReference, documentVersion, targetedUsers, null);
+        this(documentReference, documentVersion, null);
     }
 
     @Override
@@ -96,15 +86,7 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     public TaskChangedEvent clone()
     {
         // Create a new class instance, sharing the same objects as property values.
-        return new TaskChangedEvent(documentReference, documentVersion, targetedUsers, localizationParams);
-    }
-
-    /**
-     * @return the set of users targeted by this event.
-     */
-    public Set<String> getTarget()
-    {
-        return targetedUsers;
+        return new TaskChangedEvent(documentReference, documentVersion, localizationParams);
     }
 
     /**

@@ -89,7 +89,7 @@ public class TaskChangedEventConverter implements RecordableEventConverter
 
         XWikiContext context = contextProvider.get();
         Event convertedEvent = this.defaultConverter.convert(event, source, data);
-        XWikiDocument document = new XWikiDocument(event.getDocumentReference());
+        XWikiDocument document = context.getWiki().getDocument(event.getDocumentReference(), context);
 
         convertedEvent.setDocument(event.getDocumentReference());
         convertedEvent.setDocumentVersion(event.getDocumentVersion());

@@ -182,12 +182,7 @@
   #foreach($result in $results)
     #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))
     * $services.icon.render('accept') **[[$object.getProperty('name').value&gt;&gt;$result]]**
-    (% class="text-muted small" %)##
-    #if ($object.getProperty('duedate').value)
-      $services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
-    #else
-      $services.localization.render('taskmanager.panel.untildate.nodate')
-    #end
+    (% class="text-muted small" %)$services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
   #end
   #if($results.size() == 0)
     (% class="pull-left"%)$services.localization.render('taskmanager.panel.noactivetasks')
