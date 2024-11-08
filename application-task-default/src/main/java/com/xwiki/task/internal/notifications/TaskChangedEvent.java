@@ -34,7 +34,9 @@ import org.xwiki.model.reference.DocumentReference;
 public class TaskChangedEvent implements RecordableEvent, Cloneable
 {
     private DocumentReference documentReference;
+
     private String documentVersion;
+
     private Map<String, Object> localizationParams;
 
     /**
@@ -47,15 +49,12 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     /**
      * Event which represents a property change in a task.
      * 
-     * @param documentReference  the document reference of the changed task.
-     * @param documentVersion    the version of the task document which contains the changes made.
+     * @param documentReference the document reference of the changed task.
+     * @param documentVersion the version of the task document which contains the changes made.
      * @param localizationParams the localization parameters used to format the localization string of the notification.
      */
-    public TaskChangedEvent(
-        DocumentReference documentReference,
-        String documentVersion,
-        Map<String, Object> localizationParams
-    )
+    public TaskChangedEvent(DocumentReference documentReference, String documentVersion,
+        Map<String, Object> localizationParams)
     {
         this.documentReference = documentReference;
         this.documentVersion = documentVersion;
@@ -66,12 +65,9 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
      * Event which represents a property change in a task.
      * 
      * @param documentReference the document reference of the changed task.
-     * @param documentVersion   the version of the task document which contains the changes made.
+     * @param documentVersion the version of the task document which contains the changes made.
      */
-    public TaskChangedEvent(
-        DocumentReference documentReference,
-        String documentVersion
-    )
+    public TaskChangedEvent(DocumentReference documentReference, String documentVersion)
     {
         this(documentReference, documentVersion, null);
     }
@@ -114,15 +110,12 @@ public class TaskChangedEvent implements RecordableEvent, Cloneable
     }
 
     /**
-     * @param localizationParams a dictionary of parameters for use in the localization strings.
-     * The dictionary must contain:
-     *   * `new` field, containing the new value of the changed property.
-     *   * `old` field, containing the old value of the changed property.
-     *   * `type` field, containing the suffix of the localization string to use when displaying the notification.
+     * @param localizationParams a dictionary of parameters for use in the localization strings. It must contain a `new`
+     *            and `old` field, containing the new and old values of the changed property, and a `type` field
+     *            containing the suffix of the localization string to use when displaying the notification.
      */
     public void setLocalizationParams(Map<String, Object> localizationParams)
     {
         this.localizationParams = localizationParams;
     }
-
 }

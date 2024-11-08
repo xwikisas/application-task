@@ -77,7 +77,7 @@ public class TaskChangedEventConverter implements RecordableEventConverter
             ObjectWriter ow = new ObjectMapper().writer();
             json = ow.writeValueAsString(params);
         } catch (Exception e) {
-            logger.warn("Error while serializing parameters of TaskChangedEvent: [{}].", e);
+            logger.warn("Error while serializing parameters of TaskChangedEvent:", e);
         }
         return json;
     }

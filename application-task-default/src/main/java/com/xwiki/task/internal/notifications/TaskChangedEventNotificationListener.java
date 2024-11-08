@@ -53,6 +53,7 @@ import com.xpn.xwiki.objects.DateProperty;
 
 /**
  * Listener which fires when adding/modifying a task in order to notify users of the changes.
+ * 
  * @version $Id$
  * @since 3.5.2
  */
@@ -62,18 +63,14 @@ import com.xpn.xwiki.objects.DateProperty;
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
     private static final String TASK_MANAGER_CLASS_NAME = "TaskManager.TaskManagerClass";
+
     private static final EntityReference CLASS_MATCHER = BaseObjectReference.any(TASK_MANAGER_CLASS_NAME);
 
     /**
      * The fields of the Task class which are watched for changes.
      */
-    private static final List<String> WATCHED_FIELDS = Arrays.asList(
-        Task.ASSIGNEE,
-        Task.DUE_DATE,
-        Task.PROJECT,
-        Task.STATUS,
-        Task.SEVERITY
-    );
+    private static final List<String> WATCHED_FIELDS =
+        Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY);
 
     @Inject
     private ComponentManager componentManager;
@@ -85,10 +82,8 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      */
     public TaskChangedEventNotificationListener()
     {
-        super(TaskChangedEventNotificationListener.class.getName(), Arrays.asList(
-            new XObjectUpdatedEvent(CLASS_MATCHER),
-            new XObjectAddedEvent(CLASS_MATCHER)
-        ));
+        super(TaskChangedEventNotificationListener.class.getName(),
+            Arrays.asList(new XObjectUpdatedEvent(CLASS_MATCHER), new XObjectAddedEvent(CLASS_MATCHER)));
     }
 
     /**
@@ -125,11 +120,8 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      * @param baseEvent a skeleton event used as a template when calling multiple times for the same object
      * @return the event describing the changes done to the specified field, null when no change occured
      */
-    private TaskChangedEvent getFieldChangedEvent(
-        BaseObject currentObject,
-        BaseObject previousObject,
-        String propertyName,
-        TaskChangedEvent baseEvent)
+    private TaskChangedEvent getFieldChangedEvent(BaseObject currentObject, BaseObject previousObject,
+        String propertyName, TaskChangedEvent baseEvent)
     {
         Object currentValue = getPropertyValue(currentObject, propertyName);
         Object previousValue = getPropertyValue(previousObject, propertyName);
@@ -183,21 +175,15 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     {
         XWikiContext context = (XWikiContext) data;
 
-        BaseObject currentObject =
-            context.getDoc().getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
-        BaseObject previousObject =
-            source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject currentObject = context.getDoc().getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject previousObject = source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
 
         TaskChangedEvent baseTaskChangedEvent =
             new TaskChangedEvent(source.getDocumentReference(), source.getVersion());
 
         WATCHED_FIELDS.forEach((String field) -> {
-            TaskChangedEvent taskChangedEvent = getFieldChangedEvent(
-                currentObject,
-                previousObject,
-                field,
-                baseTaskChangedEvent
-            );
+            TaskChangedEvent taskChangedEvent =
+                getFieldChangedEvent(currentObject, previousObject, field, baseTaskChangedEvent);
             if (null != taskChangedEvent) {
                 getObservationManager().notify(taskChangedEvent, source.toString(), data);
             }
@@ -206,19 +192,14 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
     private void onEvent(XObjectAddedEvent event, XWikiDocument source, XWikiContext data)
     {
-        BaseObject currentObject =
-            source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject currentObject = source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
 
-        TaskChangedEvent baseTaskChangedEvent = 
+        TaskChangedEvent baseTaskChangedEvent =
             new TaskChangedEvent(source.getDocumentReference(), source.getVersion());
 
         // Only send notification for assignee if the task was just created.
-        TaskChangedEvent taskChangedEvent = getFieldChangedEvent(
-            currentObject,
-            null,
-            Task.ASSIGNEE,
-            baseTaskChangedEvent
-        );
+        TaskChangedEvent taskChangedEvent =
+            getFieldChangedEvent(currentObject, null, Task.ASSIGNEE, baseTaskChangedEvent);
 
         getObservationManager().notify(taskChangedEvent, source.toString(), data);
     }

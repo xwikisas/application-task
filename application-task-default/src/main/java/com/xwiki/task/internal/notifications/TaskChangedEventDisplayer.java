@@ -28,7 +28,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.script.ScriptContext;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rendering.block.Block;
@@ -40,17 +39,16 @@ import org.xwiki.notifications.NotificationException;
 import org.xwiki.notifications.notifiers.NotificationDisplayer;
 
 /**
-* Display a custom template for ExtensionAutoUpgradedEvent or ExtensionAutoUpgradedFailedEvent.
-* 
-* @version $Id$
+ * Display a custom template for {@link TaskChangedEvent}.
+ * 
+ * @version $Id$
  * @since 3.5.2
-*/
+ */
 @Component
 @Singleton
 @Named("com.xwiki.task.internal.notifications.TaskChangedEventDisplayer")
 public class TaskChangedEventDisplayer implements NotificationDisplayer
 {
-
     protected static final List<String> EVENTS = Arrays.asList(TaskChangedEvent.class.getCanonicalName());
 
     protected static final String EVENT_BINDING_NAME = "compositeEvent";
@@ -68,8 +66,8 @@ public class TaskChangedEventDisplayer implements NotificationDisplayer
     public Block renderNotification(CompositeEvent eventNotification) throws NotificationException
     {
         ScriptContext scriptContext = this.scriptContextManager.getScriptContext();
-        Template customTemplate = this.templateManager.getTemplate(
-            "notification/com.xwiki.task.internal.notifications.TaskChangedEvent.vm");
+        Template customTemplate =
+            this.templateManager.getTemplate("notification/com.xwiki.task.internal.notifications.TaskChangedEvent.vm");
 
         try {
             // Bind the event to some variable in the velocity context.
@@ -77,7 +75,7 @@ public class TaskChangedEventDisplayer implements NotificationDisplayer
 
             return this.templateManager.execute(customTemplate);
         } catch (Exception e) {
-            logger.warn("Failed to render custom template. Root cause is: [{}]", ExceptionUtils.getRootCauseMessage(e));
+            logger.warn("Failed to render custom template. Cause:", e);
         }
         return null;
     }
