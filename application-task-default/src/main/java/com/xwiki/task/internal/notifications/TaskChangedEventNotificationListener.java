@@ -175,8 +175,8 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     {
         XWikiContext context = (XWikiContext) data;
 
-        BaseObject currentObject = context.getDoc().getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
-        BaseObject previousObject = source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject currentObject = source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject previousObject = context.getDoc().getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
 
         TaskChangedEvent baseTaskChangedEvent =
             new TaskChangedEvent(source.getDocumentReference(), source.getVersion());
