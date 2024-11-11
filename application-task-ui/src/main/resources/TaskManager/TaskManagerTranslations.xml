@@ -157,6 +157,7 @@ taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not h
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
 taskmanager.panel.untildate=until
+taskmanager.panel.untildate.nodate=No due date
 taskmanager.panel.fulltasklist=See full list
 taskmanager.panel.noactivetasks=No active Tasks
 taskmanager.panel.guest=You have to be logged in in order to view this panel
