@@ -38,7 +38,7 @@
         #if ("$!customEventInfo['new']" == '')
           #if ($customEventInfo['old'] == $xwiki.getUser().getUser().getFullName())
             #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
-          #elseif ("$!customEventInfo['old']" == '')
+          #else
             #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
           #end
         #elseif ($customEventInfo['new'] == $xwiki.getUser().getUser().getFullName())
