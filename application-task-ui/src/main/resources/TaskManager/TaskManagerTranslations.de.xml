@@ -115,6 +115,7 @@ xe.index.order=Auftrag
 # Panel
 taskmanager.panel.paneltitle=Meine Aufgaben
 taskmanager.panel.untildate=bis
+taskmanager.panel.untildate.nodate=Kein Fälligkeitsdatum
 taskmanager.panel.fulltasklist=Siehe vollständige Liste
 taskmanager.panel.noactivetasks=Keine aktiven Aufgaben
 
