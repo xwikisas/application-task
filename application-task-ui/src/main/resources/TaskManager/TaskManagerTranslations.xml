@@ -118,17 +118,18 @@ taskmanager.livetable.duedate=Due Date
 taskmanager.livetable.creationDate=Creation Date
 
 # Notifications for changed tasks
-taskmanager.events.TaskChangedEvent.description=A task which you are assigned to or you are watching was modified
-taskmanager.events.TaskChangedEvent.title=Task was modified
-taskmanager.events.TaskChangedEvent.details.status=Status changed to {0}
-taskmanager.events.TaskChangedEvent.details.duedate.later=Deadline extended to {0}
-taskmanager.events.TaskChangedEvent.details.duedate.earlier=Deadline tightened to {0}
-taskmanager.events.TaskChangedEvent.details.assignee.you.assigned=You were assigned
-taskmanager.events.TaskChangedEvent.details.assignee.you.unassigned=You were unassigned
-taskmanager.events.TaskChangedEvent.details.assignee.none=Nobody is assigned
-taskmanager.events.TaskChangedEvent.details.assignee={0} was assigned
-taskmanager.events.TaskChangedEvent.details.severity=Priority changed to {0}
-taskmanager.events.TaskChangedEvent.details.project=This task was assigned to project {0}
+taskmanager.events.taskChangedEvent.description=A task which you are assigned to or you are watching was modified
+taskmanager.events.taskChangedEvent.title=Task was modified
+taskmanager.events.taskChangedEvent.details.status=Status changed to {0}
+taskmanager.events.taskChangedEvent.details.duedate=Deadline set to {0}
+taskmanager.events.taskChangedEvent.details.duedate.later=Deadline extended to {0}
+taskmanager.events.taskChangedEvent.details.duedate.earlier=Deadline tightened to {0}
+taskmanager.events.taskChangedEvent.details.assignee.you.assigned=You were assigned
+taskmanager.events.taskChangedEvent.details.assignee.you.unassigned=You were unassigned
+taskmanager.events.taskChangedEvent.details.assignee.none=Nobody is assigned
+taskmanager.events.taskChangedEvent.details.assignee={0} was assigned
+taskmanager.events.taskChangedEvent.details.severity=Priority changed to {0}
+taskmanager.events.taskChangedEvent.details.project=This task was assigned to project {0}
 
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task

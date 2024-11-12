@@ -35,31 +35,31 @@
         <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
       </td>
       #if ($customEventInfo['type'] == 'assignee')
-        #if ("$!customEventInfo['new']" == '')
-          #if ($customEventInfo['old'] == $xwiki.getUser().getUser().getFullName())
+        #if ("$!customEventInfo['currentValue']" == '')
+          #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
             #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
           #else
             #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
           #end
-        #elseif ($customEventInfo['new'] == $xwiki.getUser().getUser().getFullName())
+        #elseif ($customEventInfo['currentValue'] == $xwiki.getUser().getUser().getFullName())
           #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
         #end
       #elseif ($customEventInfo['type'] == 'duedate.earlier' || $customEventInfo['type'] == 'duedate.later')
         ## Convert from Long date to human-readable date, using format configured in datemacro.
         #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
         #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
-        #set ($customEventInfo['old'] = 
-          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['old'])))
+        #set ($customEventInfo['previousValue'] = 
+          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['previousValue'])))
         )
-        #set ($customEventInfo['new'] = 
-          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['new'])))
+        #set ($customEventInfo['currentValue'] = 
+          $!escapetool.xml($displayDateFormatter.print($xwiki.jodatime.getDateTime($customEventInfo['currentValue'])))
         )
       #end
       #set ($localizationParams = [
-        $customEventInfo['new'],
-        $customEventInfo['old']
+        $customEventInfo['currentValue'],
+        $customEventInfo['previousValue']
       ])
-      #set ($localizationId = "taskmanager.events.TaskChangedEvent.details.${customEventInfo['type']}" )
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
       #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
       <td class="description">$escapetool.xml($eventText)</td>
       <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
@@ -77,7 +77,7 @@
     #end
   </div>
   <div class="notification-description">
-    $services.localization.render("taskmanager.events.TaskChangedEvent.title")
+    $services.localization.render("taskmanager.events.taskChangedEvent.title")
     <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!compositeEvent.events[0].date))</small></div>
   </div>
 #end

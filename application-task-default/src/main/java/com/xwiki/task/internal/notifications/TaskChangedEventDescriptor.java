@@ -37,7 +37,6 @@ import org.xwiki.eventstream.RecordableEventDescriptor;
 @Named("com.xwiki.task.internal.notifications.TaskChangedEventDescriptor")
 public class TaskChangedEventDescriptor implements RecordableEventDescriptor
 {
-
     @Override
     public String getEventType()
     {
@@ -53,7 +52,7 @@ public class TaskChangedEventDescriptor implements RecordableEventDescriptor
     @Override
     public String getDescription()
     {
-        return "taskmanager.events.TaskChangedEvent.description";
+        return "taskmanager.events.taskChangedEvent.description";
     }
 
     @Override

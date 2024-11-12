@@ -21,39 +21,44 @@
 package com.xwiki.task.internal.notifications;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
+
+import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
-import org.xwiki.model.reference.EntityReference;
 
-import com.xwiki.task.model.Task;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.XWikiDocumentArchive;
 import com.xpn.xwiki.internal.event.XObjectAddedEvent;
 import com.xpn.xwiki.internal.event.XObjectUpdatedEvent;
-
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseObjectReference;
-import com.xpn.xwiki.objects.StringProperty;
+import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
-import com.xpn.xwiki.objects.DateProperty;
+import com.xpn.xwiki.objects.StringProperty;
+import com.xwiki.task.model.Task;
+
+import org.suigeneris.jrcs.rcs.Version;
 
 /**
  * Listener which fires when adding/modifying a task in order to notify users of the changes.
- * 
+ *
  * @version $Id$
  * @since 3.5.2
  */
@@ -62,9 +67,10 @@ import com.xpn.xwiki.objects.DateProperty;
 @Named("com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener")
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
-    private static final String TASK_MANAGER_CLASS_NAME = "TaskManager.TaskManagerClass";
+    private static final LocalDocumentReference TASK_CLASS =
+        new LocalDocumentReference("TaskManager", "TaskManagerClass");
 
-    private static final EntityReference CLASS_MATCHER = BaseObjectReference.any(TASK_MANAGER_CLASS_NAME);
+    private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
 
     /**
      * The fields of the Task class which are watched for changes.
@@ -73,9 +79,13 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY);
 
     @Inject
-    private ComponentManager componentManager;
+    private Logger logger;
 
-    private ObservationManager observationManager;
+    @Inject
+    private DocumentRevisionProvider documentRevisionProvider;
+
+    @Inject
+    private Provider<ObservationManager> observationManagerProvider;
 
     /**
      * Initialize the listener.
@@ -86,9 +96,19 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
             Arrays.asList(new XObjectUpdatedEvent(CLASS_MATCHER), new XObjectAddedEvent(CLASS_MATCHER)));
     }
 
+    @Override
+    public void onEvent(Event event, Object source, Object data)
+    {
+        if (event instanceof XObjectUpdatedEvent) {
+            onEvent((XObjectUpdatedEvent) event, (XWikiDocument) source, (XWikiContext) data);
+        } else if (event instanceof XObjectAddedEvent) {
+            onEvent((XObjectAddedEvent) event, (XWikiDocument) source, (XWikiContext) data);
+        }
+    }
+
     /**
      * Helper to get the value of the properties of an XObject.
-     * 
+     *
      * @param obj the base object
      * @param propertyName the property to retrieve
      * @return the value of the desired property, or null if the property doesn't exist or has unsupported type.
@@ -105,7 +125,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         } else if (property instanceof LargeStringProperty) {
             return ((LargeStringProperty) property).getValue();
         } else if (property instanceof DateProperty) {
-            return (Date) ((DateProperty) property).getValue();
+            return ((DateProperty) property).getValue();
         } else {
             return null;
         }
@@ -113,12 +133,12 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
     /**
      * Get a {@link TaskChangedEvent} reflecting the changes made to a certain property, if a change happened.
-     * 
+     *
      * @param currentObject the current version of the object
      * @param previousObject the previous version of the object
      * @param propertyName the property to check for changes
      * @param baseEvent a skeleton event used as a template when calling multiple times for the same object
-     * @return the event describing the changes done to the specified field, null when no change occured
+     * @return the event describing the changes done to the specified field, null when no change occurred
      */
     private TaskChangedEvent getFieldChangedEvent(BaseObject currentObject, BaseObject previousObject,
         String propertyName, TaskChangedEvent baseEvent)
@@ -132,87 +152,82 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
         boolean valuesAreEqual = currentValue.equals(previousValue);
 
-        String localizationSuffix = propertyName;
+        String translationKeySuffix = propertyName;
 
         if (currentValue instanceof Date) {
             long currentDate = ((Date) currentValue).getTime();
-            long previousDate = ((Date) previousValue).getTime();
+            long previousDate = 0;
+            if (null != previousValue) {
+                previousDate = ((Date) previousValue).getTime();
+                if (currentDate > previousDate) {
+                    translationKeySuffix += ".later";
+                } else {
+                    translationKeySuffix += ".earlier";
+                }
+            }
 
             valuesAreEqual = (currentDate == previousDate);
-            if (currentDate > previousDate) {
-                localizationSuffix += ".later";
-            } else {
-                localizationSuffix += ".earlier";
-            }
         }
 
         if (valuesAreEqual) {
             return null;
         }
 
-        Map<String, Object> localizationParams = new HashMap<String, Object>();
-        localizationParams.put("new", currentValue);
-        localizationParams.put("old", previousValue);
-        localizationParams.put("type", localizationSuffix);
+        Map<String, Object> eventInfo = new HashMap<>();
+        eventInfo.put("currentValue", currentValue);
+        eventInfo.put("previousValue", previousValue);
+        eventInfo.put("type", translationKeySuffix);
 
-        TaskChangedEvent event = baseEvent.clone();
-        event.setLocalizationParams(localizationParams);
+        TaskChangedEvent event =
+            new TaskChangedEvent(baseEvent.getDocumentReference(), baseEvent.getDocumentVersion(), eventInfo);
+        event.setEventInfo(eventInfo);
 
         return event;
     }
 
-    @Override
-    public void onEvent(Event event, Object source, Object data)
+    private void onEvent(XObjectUpdatedEvent event, XWikiDocument sourceDoc, XWikiContext context)
     {
-        if (event instanceof XObjectUpdatedEvent) {
-            onEvent((XObjectUpdatedEvent) event, (XWikiDocument) source, (XWikiContext) data);
-        } else if (event instanceof XObjectAddedEvent) {
-            onEvent((XObjectAddedEvent) event, (XWikiDocument) source, (XWikiContext) data);
+        XWikiDocumentArchive versionArchive = sourceDoc.getDocumentArchive();
+        Version version = sourceDoc.getRCSVersion();
+
+        XWikiDocument previousDoc = null;
+
+        try {
+            Version previousVersion = versionArchive.getPrevVersion(version);
+            previousDoc = documentRevisionProvider.getRevision(sourceDoc,
+                versionArchive.getNode(previousVersion).getVersion().toString());
+        } catch (Exception e) {
+            logger.warn("Error while getting previous version of TaskManager document [{}]. Cause:",
+                sourceDoc.getDocumentReference(), e);
+            return;
         }
-    }
 
-    private void onEvent(XObjectUpdatedEvent event, XWikiDocument source, XWikiContext data)
-    {
-        XWikiContext context = (XWikiContext) data;
-
-        BaseObject currentObject = source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
-        BaseObject previousObject = context.getDoc().getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject currentObject = sourceDoc.getXObject(TASK_CLASS);
+        BaseObject previousObject = previousDoc.getXObject(TASK_CLASS);
 
         TaskChangedEvent baseTaskChangedEvent =
-            new TaskChangedEvent(source.getDocumentReference(), source.getVersion());
+            new TaskChangedEvent(sourceDoc.getDocumentReference(), sourceDoc.getVersion());
 
         WATCHED_FIELDS.forEach((String field) -> {
             TaskChangedEvent taskChangedEvent =
                 getFieldChangedEvent(currentObject, previousObject, field, baseTaskChangedEvent);
             if (null != taskChangedEvent) {
-                getObservationManager().notify(taskChangedEvent, source.toString(), data);
+                observationManagerProvider.get().notify(taskChangedEvent, sourceDoc.toString(), context);
             }
         });
     }
 
-    private void onEvent(XObjectAddedEvent event, XWikiDocument source, XWikiContext data)
+    private void onEvent(XObjectAddedEvent event, XWikiDocument sourceDoc, XWikiContext context)
     {
-        BaseObject currentObject = source.getXObject(source.resolveClassReference(TASK_MANAGER_CLASS_NAME));
+        BaseObject currentObject = sourceDoc.getXObject(TASK_CLASS);
 
         TaskChangedEvent baseTaskChangedEvent =
-            new TaskChangedEvent(source.getDocumentReference(), source.getVersion());
+            new TaskChangedEvent(sourceDoc.getDocumentReference(), sourceDoc.getVersion());
 
         // Only send notification for assignee if the task was just created.
         TaskChangedEvent taskChangedEvent =
             getFieldChangedEvent(currentObject, null, Task.ASSIGNEE, baseTaskChangedEvent);
 
-        getObservationManager().notify(taskChangedEvent, source.toString(), data);
-    }
-
-    private ObservationManager getObservationManager()
-    {
-        if (this.observationManager == null) {
-            try {
-                this.observationManager = componentManager.getInstance(ObservationManager.class);
-            } catch (ComponentLookupException e) {
-                throw new RuntimeException("Cound not retrieve an Observation Manager against the component manager");
-            }
-        }
-        return this.observationManager;
+        observationManagerProvider.get().notify(taskChangedEvent, sourceDoc.toString(), context);
     }
 }

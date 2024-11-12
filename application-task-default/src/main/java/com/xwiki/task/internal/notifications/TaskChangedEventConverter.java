@@ -29,11 +29,11 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.eventstream.Event;
 import org.xwiki.eventstream.RecordableEvent;
 import org.xwiki.eventstream.RecordableEventConverter;
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -65,23 +65,6 @@ public class TaskChangedEventConverter implements RecordableEventConverter
     @Inject
     private Logger logger;
 
-    /**
-     * Utility method to convert an object to JSON.
-     * 
-     * @param params the localization parameters to serialize.
-     */
-    private String serializeParams(Map<String, Object> params)
-    {
-        String json = null;
-        try {
-            ObjectWriter ow = new ObjectMapper().writer();
-            json = ow.writeValueAsString(params);
-        } catch (Exception e) {
-            logger.warn("Error while serializing parameters of TaskChangedEvent:", e);
-        }
-        return json;
-    }
-
     @Override
     public Event convert(RecordableEvent recordableEvent, String source, Object data) throws Exception
     {
@@ -94,7 +77,7 @@ public class TaskChangedEventConverter implements RecordableEventConverter
         convertedEvent.setDocument(event.getDocumentReference());
         convertedEvent.setDocumentVersion(event.getDocumentVersion());
         convertedEvent.setDocumentTitle(document.getRenderedTitle(context));
-        convertedEvent.setBody(serializeParams(event.getLocalizationParams()));
+        convertedEvent.setBody(serializeParams(event.getEventInfo()));
 
         return convertedEvent;
     }
@@ -103,5 +86,22 @@ public class TaskChangedEventConverter implements RecordableEventConverter
     public List<RecordableEvent> getSupportedEvents()
     {
         return Arrays.asList(new TaskChangedEvent());
+    }
+
+    /**
+     * Utility method to convert an object to JSON.
+     *
+     * @param params the localization parameters to serialize.
+     */
+    private String serializeParams(Map<String, Object> params)
+    {
+        String json = null;
+        try {
+            ObjectWriter ow = new ObjectMapper().writer();
+            json = ow.writeValueAsString(params);
+        } catch (Exception e) {
+            logger.warn("Error while serializing parameters of TaskChangedEvent:", e);
+        }
+        return json;
     }
 }

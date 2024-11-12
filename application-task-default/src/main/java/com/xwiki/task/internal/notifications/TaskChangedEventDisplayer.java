@@ -30,17 +30,17 @@ import javax.script.ScriptContext;
 
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.notifications.CompositeEvent;
+import org.xwiki.notifications.NotificationException;
+import org.xwiki.notifications.notifiers.NotificationDisplayer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.script.ScriptContextManager;
 import org.xwiki.template.Template;
 import org.xwiki.template.TemplateManager;
-import org.xwiki.notifications.CompositeEvent;
-import org.xwiki.notifications.NotificationException;
-import org.xwiki.notifications.notifiers.NotificationDisplayer;
 
 /**
  * Display a custom template for {@link TaskChangedEvent}.
- * 
+ *
  * @version $Id$
  * @since 3.5.2
  */
@@ -66,8 +66,7 @@ public class TaskChangedEventDisplayer implements NotificationDisplayer
     public Block renderNotification(CompositeEvent eventNotification) throws NotificationException
     {
         ScriptContext scriptContext = this.scriptContextManager.getScriptContext();
-        Template customTemplate =
-            this.templateManager.getTemplate("notification/com.xwiki.task.internal.notifications.TaskChangedEvent.vm");
+        Template customTemplate = this.templateManager.getTemplate("notification/taskChangedEvent.vm");
 
         try {
             // Bind the event to some variable in the velocity context.
