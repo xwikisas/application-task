@@ -67,15 +67,16 @@
       <nameField/>
       <validationScript/>
       <notSkippedFoldEvents>
-        <contenttype>---</contenttype>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
-        <editor>---</editor>
+        <editor>PureText</editor>
         <hint/>
         <name>notSkippedFoldEvents</name>
         <number>3</number>
         <picker>1</picker>
         <prettyName>notSkippedFoldEvents</prettyName>
+        <restricted>0</restricted>
         <rows>5</rows>
         <size>40</size>
         <unmodifiable>0</unmodifiable>
