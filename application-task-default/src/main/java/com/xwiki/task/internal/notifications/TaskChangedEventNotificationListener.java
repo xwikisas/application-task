@@ -21,13 +21,9 @@
 package com.xwiki.task.internal.notifications;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -41,9 +37,7 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.doc.XWikiDocumentArchive;
 import com.xpn.xwiki.internal.event.XObjectAddedEvent;
 import com.xpn.xwiki.internal.event.XObjectUpdatedEvent;
 import com.xpn.xwiki.objects.BaseObject;
@@ -53,8 +47,6 @@ import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.StringProperty;
 import com.xwiki.task.model.Task;
-
-import org.suigeneris.jrcs.rcs.Version;
 
 /**
  * Listener which fires when adding/modifying a task in order to notify users of the changes.
@@ -77,12 +69,6 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      */
     private static final List<String> WATCHED_FIELDS =
         Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY);
-
-    @Inject
-    private Logger logger;
-
-    @Inject
-    private DocumentRevisionProvider documentRevisionProvider;
 
     @Inject
     private Provider<ObservationManager> observationManagerProvider;
@@ -147,27 +133,13 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         Object previousValue = getPropertyValue(previousObject, propertyName);
 
         if (currentValue == null) {
+            // Don't send an event when a field is unset.
             return null;
         }
 
         boolean valuesAreEqual = currentValue.equals(previousValue);
 
         String translationKeySuffix = propertyName;
-
-        if (currentValue instanceof Date) {
-            long currentDate = ((Date) currentValue).getTime();
-            long previousDate = 0;
-            if (null != previousValue) {
-                previousDate = ((Date) previousValue).getTime();
-                if (currentDate > previousDate) {
-                    translationKeySuffix += ".later";
-                } else {
-                    translationKeySuffix += ".earlier";
-                }
-            }
-
-            valuesAreEqual = (currentDate == previousDate);
-        }
 
         if (valuesAreEqual) {
             return null;
@@ -187,20 +159,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
     private void onEvent(XObjectUpdatedEvent event, XWikiDocument sourceDoc, XWikiContext context)
     {
-        XWikiDocumentArchive versionArchive = sourceDoc.getDocumentArchive();
-        Version version = sourceDoc.getRCSVersion();
-
-        XWikiDocument previousDoc = null;
-
-        try {
-            Version previousVersion = versionArchive.getPrevVersion(version);
-            previousDoc = documentRevisionProvider.getRevision(sourceDoc,
-                versionArchive.getNode(previousVersion).getVersion().toString());
-        } catch (Exception e) {
-            logger.warn("Error while getting previous version of TaskManager document [{}]. Cause:",
-                sourceDoc.getDocumentReference(), e);
-            return;
-        }
+        XWikiDocument previousDoc = sourceDoc.getOriginalDocument();
 
         BaseObject currentObject = sourceDoc.getXObject(TASK_CLASS);
         BaseObject previousObject = previousDoc.getXObject(TASK_CLASS);
