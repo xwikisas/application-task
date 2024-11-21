@@ -75,7 +75,7 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
     }
 
     @Override
-    protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
+    protected void processEvent(XWikiDocument document, XWikiContext context, Event event, boolean inFoldEvent)
     {
         // Handle delete event before checking for the existence of task object because it does not exist on
         // the given document when it is being deleted and need to call XWiki#getDocument(DocumentReference).

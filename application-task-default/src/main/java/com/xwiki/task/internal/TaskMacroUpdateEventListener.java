@@ -89,7 +89,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     }
 
     @Override
-    protected void processEvent(XWikiDocument document, XWikiContext context, Event event)
+    protected void processEvent(XWikiDocument document, XWikiContext context, Event event, boolean inFoldEvent)
     {
         // Skip task pages. They will be handled by TaskObjectUpdateEventListener.
         if (document.getXObject(TASK_CLASS_REFERENCE) != null) {
@@ -101,7 +101,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
-        if (maybeHandleFoldEvent(document, context)) {
+        if (maybeHandleFoldEvent(document, context, inFoldEvent)) {
             return;
         }
 
@@ -119,10 +119,15 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         updateTaskPages(document, context);
     }
 
-    private boolean maybeHandleFoldEvent(XWikiDocument document, XWikiContext context)
+    private boolean maybeHandleFoldEvent(XWikiDocument document, XWikiContext context, boolean inFoldEvent)
     {
         // If inside a fold event, ignore the various versions of the same document and process only the last revision.
-        if (isExecutingInFoldEvent()) {
+        // You can notice that the last document created during the fold event won't be processed by this listener.
+        // It will be processed during the next fold event. However, in the case of confluence migrations, the last
+        // processed document is "WebPreferences". This guarantees that all migrated documents that might contain
+        // tasks will be processed by this listener. If things change for the migrator, we have to change this
+        // optimization.
+        if (inFoldEvent) {
             if (lastFoldDocumentReference != null && !document.getDocumentReference()
                 .equals(lastFoldDocumentReference))
             {
@@ -137,16 +142,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 lastFoldDocumentReference = document.getDocumentReference();
             }
             return true;
-        }
-        // If not in fold event, process the last remaining document.
-        if (lastFoldDocumentReference != null) {
-            try {
-                updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
-            } catch (XWikiException e) {
-                logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference, e);
-            } finally {
-                lastFoldDocumentReference = null;
-            }
         }
         return false;
     }
