@@ -20,6 +20,7 @@
 
 package com.xwiki.task.internal.notifications;
 
+import java.util.Date;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * Event sent when a blog post has been published.
  *
  * @version $Id$
- * @since 3.5.2
+ * @since 3.7
  */
 @Singleton
 @Named(TaskChangedEventConverter.NAME)
@@ -65,29 +66,6 @@ public class TaskChangedEventConverter implements RecordableEventConverter
     @Inject
     private Logger logger;
 
-    @Override
-    public Event convert(RecordableEvent recordableEvent, String source, Object data) throws Exception
-    {
-        TaskChangedEvent event = (TaskChangedEvent) recordableEvent;
-
-        XWikiContext context = contextProvider.get();
-        Event convertedEvent = this.defaultConverter.convert(event, source, data);
-        XWikiDocument document = context.getWiki().getDocument(event.getDocumentReference(), context);
-
-        convertedEvent.setDocument(event.getDocumentReference());
-        convertedEvent.setDocumentVersion(event.getDocumentVersion());
-        convertedEvent.setDocumentTitle(document.getRenderedTitle(context));
-        convertedEvent.setBody(serializeParams(event.getEventInfo()));
-
-        return convertedEvent;
-    }
-
-    @Override
-    public List<RecordableEvent> getSupportedEvents()
-    {
-        return Arrays.asList(new TaskChangedEvent());
-    }
-
     /**
      * Utility method to convert an object to JSON.
      *
@@ -103,5 +81,35 @@ public class TaskChangedEventConverter implements RecordableEventConverter
             logger.warn("Error while serializing parameters of TaskChangedEvent:", e);
         }
         return json;
+    }
+
+    @Override
+    public Event convert(RecordableEvent recordableEvent, String source, Object data) throws Exception
+    {
+        TaskChangedEvent event = (TaskChangedEvent) recordableEvent;
+
+        XWikiContext context = contextProvider.get();
+        XWikiDocument document = event.getDocument();
+        Event convertedEvent = this.defaultConverter.convert(event, source, data);
+
+        convertedEvent.setType(recordableEvent.getClass().getCanonicalName());
+        convertedEvent.setApplication("TaskManager");
+        convertedEvent.setDate(new Date());
+        convertedEvent.setUser(context.getUserReference());
+        convertedEvent.setWiki(context.getWikiReference());
+
+        convertedEvent.setDocument(event.getDocument().getDocumentReference());
+        convertedEvent.setDocumentVersion(event.getDocument().getVersion());
+        convertedEvent.setDocumentTitle(document.getRenderedTitle(context));
+        convertedEvent.setTitle(new TaskChangedEventDescriptor().getEventTitle());
+        convertedEvent.setBody(serializeParams(event.getEventInfo()));
+
+        return convertedEvent;
+    }
+
+    @Override
+    public List<RecordableEvent> getSupportedEvents()
+    {
+        return Arrays.asList(new TaskChangedEvent());
     }
 }

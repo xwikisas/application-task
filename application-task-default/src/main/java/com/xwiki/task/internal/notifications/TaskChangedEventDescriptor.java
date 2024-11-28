@@ -30,7 +30,7 @@ import org.xwiki.eventstream.RecordableEventDescriptor;
  * Descriptor for the event {@link TaskChangedEvent}.
  *
  * @version $Id$
- * @since 3.5.2
+ * @since 3.7
  */
 @Component
 @Singleton
@@ -59,5 +59,11 @@ public class TaskChangedEventDescriptor implements RecordableEventDescriptor
     public String getApplicationIcon()
     {
         return "list";
+    }
+
+    @Override
+    public String getEventTitle()
+    {
+        return "taskmanager.events.taskChangedEvent.title";
     }
 }

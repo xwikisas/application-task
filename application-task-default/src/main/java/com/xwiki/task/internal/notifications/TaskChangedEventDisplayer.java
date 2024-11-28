@@ -42,7 +42,7 @@ import org.xwiki.template.TemplateManager;
  * Display a custom template for {@link TaskChangedEvent}.
  *
  * @version $Id$
- * @since 3.5.2
+ * @since 3.7
  */
 @Component
 @Singleton

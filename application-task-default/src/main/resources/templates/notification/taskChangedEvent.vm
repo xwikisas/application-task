@@ -23,65 +23,80 @@
 #set ($mainIcon = 'list')
 #set ($smallIcon = '')
 
-#macro (displayEventDetails $event)
-  #set ($document = $xwiki.getDocument($event.document))
-  #if ($event.type != 'com.xwiki.task.internal.notifications.TaskChangedEvent')
-    ## Do nothing if this event is from another source but it was grouped with the notifications from TaskManager.
-    ## Mostly for the default page created/edited events, but could also be from other applications.
-  #else
-    #set ($customEventInfo = $jsontool.fromString($event.getBody()) )
-    #if ("$!customEventInfo" == '')
-      ## Do nothing if the json is malformed or the body contains something else.
+
+#macro (getGenericFieldDescription $customEventInfo)
+  ## The notification text will be available in `$eventText` after calling this macro.
+  #set ($localizationParams = [
+    $customEventInfo['currentValue'],
+    $customEventInfo['previousValue']
+  ])
+  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams))
+#end
+
+#macro (getAssigneeDescription $customEventInfo)
+  #if ("$!customEventInfo['currentValue']" == '')
+    #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
     #else
-      <tr>
-        <td>
-          <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
-        </td>
-        #if ($customEventInfo['type'] == 'assignee')
-          #if ("$!customEventInfo['currentValue']" == '')
-            #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
-              #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
-            #else
-              #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
-            #end
-          #elseif ($customEventInfo['currentValue'] == $xwiki.getUser().getUser().getFullName())
-            #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
-          #end
-        #elseif ($customEventInfo['type'] == 'duedate')
-          ## Convert from Long date to human-readable date, using format configured in datemacro.
-          #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
-          #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
-          #if ($customEventInfo['previousValue'])
-            #if ($customEventInfo['previousValue'] < $customEventInfo['currentValue'])
-              #set ($customEventInfo['type'] = $customEventInfo['type'] + '.later')
-            #else
-              #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
-            #end
-            #set ($customEventInfo['previousValue'] = 
-              $!escapetool.xml($displayDateFormatter.print(
-                $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
-              ))
-            )
-          #end
-          #if ($customEventInfo['currentValue'])
-            #set ($customEventInfo['currentValue'] = 
-              $!escapetool.xml($displayDateFormatter.print(
-                $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
-              ))
-            )
-          #end
-        #end
-        #set ($localizationParams = [
-          $customEventInfo['currentValue'],
-          $customEventInfo['previousValue']
-        ])
-        #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
-        #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
-        <td class="description">$escapetool.xml($eventText)</td>
-        <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
-      </tr>
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
     #end
+  #elseif ($customEventInfo['currentValue'] == $xwiki.getUser().getUser().getFullName())
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
   #end
+  #set ($localizationParams = [
+    '__currentUser__',
+    '__previousUser__'
+  ])
+  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+  #set ($eventText = $eventText.replace('__currentUser__', $!xwiki.getUserName($customEventInfo['currentValue'])))
+  #set ($eventText = $eventText.replace('__previousUser__', $!xwiki.getUserName($customEventInfo['previousValue'])))
+#end
+
+#macro (getDueDateDescription $customEventInfo)
+  ## Send different messages if the due date was extended or reduced.
+  ## The date is displayed using the format configured in datemacro.
+  #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+  #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+  #if ($customEventInfo['previousValue'])
+    #if ($customEventInfo['previousValue'] < $customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.later')
+    #else
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
+    #end
+    #set ($customEventInfo['previousValue'] = 
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
+      ))
+    )
+  #end
+  #if ($customEventInfo['currentValue'])
+    #set ($customEventInfo['currentValue'] = 
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
+      ))
+    )
+  #end
+  #getGenericFieldDescription($customEventInfo)
+#end
+
+#macro (displayEventDetails $event)
+  <tr>
+    <td>
+      <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
+    </td>
+    #set ($customEventInfo = $jsontool.fromString($event.getBody()))
+    #if ($customEventInfo['type'] == 'assignee')
+      #getAssigneeDescription($customEventInfo)
+    #elseif ($customEventInfo['type'] == 'duedate')
+      #getDueDateDescription($customEventInfo)
+    #else
+      #getGenericFieldDescription($customEventInfo)
+    #end
+    <td class="description">$eventText</td>
+    <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>
+  </tr>
 #end
 
 #define ($content)
@@ -102,7 +117,9 @@
 #define ($details)
   #define ($rows)
     #foreach ($thisEvent in $compositeEvent.events)
-      #displayEventDetails($thisEvent)
+      #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.TaskChangedEvent')
+        #displayEventDetails($thisEvent)
+      #end
     #end
   #end
   #displayNotificationEventDetailsSkeletons($compositeEvent.events.size(), $rows)

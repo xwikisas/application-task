@@ -20,22 +20,28 @@
 
 package com.xwiki.task.internal.notifications;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.xwiki.eventstream.RecordableEvent;
-import org.xwiki.model.reference.DocumentReference;
+
+import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Event sent when a task has been changed.
  *
  * @version $Id$
- * @since 3.5.2
+ * @since 3.7
  */
 public class TaskChangedEvent implements RecordableEvent
 {
-    private DocumentReference documentReference;
+    protected static final String CURRENT_VALUE_KEY = "currentValue";
 
-    private String documentVersion;
+    protected static final String PREVIOUS_VALUE_KEY = "previousValue";
+
+    protected static final String TYPE_KEY = "type";
+
+    private XWikiDocument document;
 
     private Map<String, Object> eventInfo;
 
@@ -49,26 +55,24 @@ public class TaskChangedEvent implements RecordableEvent
     /**
      * Event which represents a property change in a task.
      *
-     * @param documentReference the document reference of the changed task.
-     * @param documentVersion the version of the task document which contains the changes made.
-     * @param eventInfo additional event info used to format the localization string of the notification.
+     * @param document the document of the changed task.
      */
-    public TaskChangedEvent(DocumentReference documentReference, String documentVersion, Map<String, Object> eventInfo)
+    public TaskChangedEvent(XWikiDocument document)
     {
-        this.documentReference = documentReference;
-        this.documentVersion = documentVersion;
-        this.eventInfo = eventInfo;
+        this.document = document;
+        this.eventInfo = new HashMap<>();
     }
 
     /**
      * Event which represents a property change in a task.
      *
-     * @param documentReference the document reference of the changed task.
-     * @param documentVersion the version of the task document which contains the changes made.
+     * @param document the document of the changed task.
+     * @param eventInfo additional event info used to format the localization string of the notification.
      */
-    public TaskChangedEvent(DocumentReference documentReference, String documentVersion)
+    public TaskChangedEvent(XWikiDocument document, Map<String, Object> eventInfo)
     {
-        this(documentReference, documentVersion, null);
+        this.document = document;
+        this.eventInfo = eventInfo;
     }
 
     @Override
@@ -78,23 +82,17 @@ public class TaskChangedEvent implements RecordableEvent
     }
 
     /**
-     * @return the document reference of the task which generated this event.
+     * @return the document of the task which generated this event.
      */
-    public DocumentReference getDocumentReference()
+    public XWikiDocument getDocument()
     {
-        return documentReference;
+        return document;
     }
 
     /**
-     * @return the version of the task document which generated this event.
-     */
-    public String getDocumentVersion()
-    {
-        return documentVersion;
-    }
-
-    /**
-     * @return the event info of this notification (contains modified field values).
+     * @return the event info of this notification (contains modified field values). It should contain a `currentValue`
+     *     and `previousValue` field (optional), containing the new and old values of the changed property, and a `type`
+     *     field containing the suffix of the localization string to use when displaying the notification.
      */
     public Map<String, Object> getEventInfo()
     {
@@ -102,12 +100,72 @@ public class TaskChangedEvent implements RecordableEvent
     }
 
     /**
-     * @param eventInfo a dictionary of parameters for use in the localization strings. It must contain a
+     * @param eventInfo a dictionary of parameters for use in the localization strings. It should contain a
      *     `currentValue` and `previousValue` field, containing the new and old values of the changed property, and a
      *     `type` field containing the suffix of the localization string to use when displaying the notification.
      */
     public void setEventInfo(Map<String, Object> eventInfo)
     {
         this.eventInfo = eventInfo;
+    }
+
+    /**
+     * Get the name of the changed property.
+     *
+     * @return the name of the property which was changed.
+     */
+    public String getType()
+    {
+        return (String) eventInfo.get(TaskChangedEvent.TYPE_KEY);
+    }
+
+    /**
+     * Set the name of the changed property.
+     *
+     * @param type the name of the changed property.
+     */
+    public void setType(String type)
+    {
+        eventInfo.put(TaskChangedEvent.TYPE_KEY, type);
+    }
+
+    /**
+     * Get the previous value of the changed property.
+     *
+     * @return the previous value of the property which was changed.
+     */
+    public Object getPreviousValue()
+    {
+        return eventInfo.get(TaskChangedEvent.PREVIOUS_VALUE_KEY);
+    }
+
+    /**
+     * Set the previous value of the changed property.
+     *
+     * @param previousValue the previous value of the changed property.
+     */
+    public void setPreviousValue(Object previousValue)
+    {
+        eventInfo.put(TaskChangedEvent.PREVIOUS_VALUE_KEY, previousValue);
+    }
+
+    /**
+     * Get the current value of the changed property.
+     *
+     * @return the current value of the property which was changed.
+     */
+    public Object getCurrentValue()
+    {
+        return eventInfo.get(TaskChangedEvent.CURRENT_VALUE_KEY);
+    }
+
+    /**
+     * Set the current value of the changed property.
+     *
+     * @param currentValue the current value of the changed property.
+     */
+    public void setCurrentValue(Object currentValue)
+    {
+        eventInfo.put(TaskChangedEvent.CURRENT_VALUE_KEY, currentValue);
     }
 }
