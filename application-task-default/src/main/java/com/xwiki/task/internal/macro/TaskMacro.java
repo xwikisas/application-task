@@ -155,15 +155,18 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
             String.format("<input type=\"checkbox\" data-taskId=\"%s\" %s class=\"task-status\">", taskId, checked);
         Block checkBoxBlock = new RawBlock(htmlCheckbox, Syntax.HTML_5_0);
 
-        ret.addChild(new FormatBlock(Collections.singletonList(checkBoxBlock), Format.NONE));
+        Block taskInfoBlock = new GroupBlock(Collections.singletonMap(HTML_CLASS, "task-info"));
+
+        taskInfoBlock.addChild(new FormatBlock(Collections.singletonList(checkBoxBlock), Format.NONE));
 
         try {
             Task task = taskManager.getTask(taskRef);
-            ret.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
+            taskInfoBlock.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
         } catch (TaskException ignored) {
             // The task page not existing is a valid scenario (when the user just added the task macro in the WYSIWYG).
         }
 
+        ret.addChild(taskInfoBlock);
         ret.addChild(new GroupBlock(contentBlocks, Collections.singletonMap(HTML_CLASS, "task-content")));
         return Collections.singletonList(ret);
     }
