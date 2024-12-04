@@ -60,7 +60,9 @@
   #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
   #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
   #if ($customEventInfo['previousValue'])
-    #if ($customEventInfo['previousValue'] < $customEventInfo['currentValue'])
+    #if (!$customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+    #elseif ($customEventInfo['previousValue'] < $customEventInfo['currentValue'])
       #set ($customEventInfo['type'] = $customEventInfo['type'] + '.later')
     #else
       #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
@@ -103,7 +105,7 @@
   ## All folded events should have the same document, so display the first one as a title for the group.
   #set ($document = $xwiki.getDocument($!compositeEvent.events[0].document))
   <div class="notification-page">
-    <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getObject('TaskManager.TaskManagerClass').get('name'))</a>
+    <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getDisplayTitle())</a>
     #if ($xcontext.getContext().getOriginalWikiId() != $document.getDocumentReference().getWikiReference().name)
       <span class="text-muted">($services.wiki.getById($document.getDocumentReference().getWikiReference().name).prettyName)</span>
     #end

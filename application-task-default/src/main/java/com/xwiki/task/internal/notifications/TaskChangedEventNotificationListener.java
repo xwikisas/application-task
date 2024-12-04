@@ -129,11 +129,11 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         // each property type.
         PropertyInterface property = obj.safeget(propertyName);
         if (property instanceof StringProperty) {
-            return Optional.of(((StringProperty) property).getValue());
+            return Optional.ofNullable(((StringProperty) property).getValue());
         } else if (property instanceof LargeStringProperty) {
-            return Optional.of(((LargeStringProperty) property).getValue());
+            return Optional.ofNullable(((LargeStringProperty) property).getValue());
         } else if (property instanceof DateProperty) {
-            return Optional.of(((DateProperty) property).getValue());
+            return Optional.ofNullable(((DateProperty) property).getValue());
         } else {
             return Optional.empty();
         }
@@ -148,7 +148,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      * @param taskPage the parent page of the modified object
      * @return the event describing the changes done to the specified field, null when no change occurred
      */
-    private Optional<TaskChangedEvent> getFieldChangedEvent(BaseObject currentObject, BaseObject previousObject,
+    private static Optional<TaskChangedEvent> getFieldChangedEvent(BaseObject currentObject, BaseObject previousObject,
         String propertyName, XWikiDocument taskPage)
     {
         Object currentValue = getPropertyValue(currentObject, propertyName).orElse(null);
@@ -181,9 +181,6 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
     private void watchTask(XWikiDocument taskDoc, String userFullName)
     {
-        // TODO: Use custom filters to only watch for TaskChangedEvent.
-        // The watchEntity API also automatically watches the 'Pages' event source, which is unintended in this case but
-        // that's the way the API works.
         WatchedLocationReference docRef =
             watchedEntityFactory.createWatchedLocationReference(taskDoc.getDocumentReference());
         if (!userFullName.equals("")) {

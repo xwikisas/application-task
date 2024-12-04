@@ -20,7 +20,6 @@
 
 package com.xwiki.task.internal.notifications;
 
-import java.util.Date;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -92,16 +91,12 @@ public class TaskChangedEventConverter implements RecordableEventConverter
         XWikiDocument document = event.getDocument();
         Event convertedEvent = this.defaultConverter.convert(event, source, data);
 
-        convertedEvent.setType(recordableEvent.getClass().getCanonicalName());
         convertedEvent.setApplication("TaskManager");
-        convertedEvent.setDate(new Date());
-        convertedEvent.setUser(context.getUserReference());
-        convertedEvent.setWiki(context.getWikiReference());
 
-        convertedEvent.setDocument(event.getDocument().getDocumentReference());
-        convertedEvent.setDocumentVersion(event.getDocument().getVersion());
+        convertedEvent.setDocument(document.getDocumentReference());
+        convertedEvent.setDocumentVersion(document.getVersion());
         convertedEvent.setDocumentTitle(document.getRenderedTitle(context));
-        convertedEvent.setTitle(new TaskChangedEventDescriptor().getEventTitle());
+
         convertedEvent.setBody(serializeParams(event.getEventInfo()));
 
         return convertedEvent;
