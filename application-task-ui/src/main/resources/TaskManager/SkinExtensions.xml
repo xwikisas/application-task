@@ -287,12 +287,11 @@
 
 .task-macro {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   width: 100%;
 }
 
 .task-info {
-  align-self: baseline;
   padding-right: 0.5em;
 }
 
