@@ -11,6 +11,7 @@ beginDocument
 beginMacroMarkerStandalone [tasks] [ids=1]
 beginMacroMarkerStandalone [task] [reference=Sandbox.Task|reporter=XWiki.User1|status=Done|createDate=2023/01/01 00:00|completeDate=2023/01/01 00:00] [Test name{{date value="2023/01/01 00:00"/}}]
 beginGroup [[class]=[task-macro]]
+beginGroup [[class]=[task-info]]
 beginFormat [NONE]
 onRawText [<input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status">] [html/5.0]
 endFormat [NONE]
@@ -18,6 +19,7 @@ beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
 onSpecialSymbol [#]
 onWord [1]
 endLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
+endGroup [[class]=[task-info]]
 beginGroup [[class]=[task-content]]
 beginMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
 beginParagraph
@@ -39,4 +41,4 @@ endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div>
+<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div>
