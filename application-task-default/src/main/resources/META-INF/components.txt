@@ -26,5 +26,5 @@ com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource
 com.xwiki.task.internal.notifications.TaskChangedEventConverter
 com.xwiki.task.internal.notifications.TaskChangedEventDescriptor
-com.xwiki.task.internal.notifications.TaskChangedEventDisplayer
 com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener
+com.xwiki.task.internal.notifications.TaskChangedEventPageWatcher

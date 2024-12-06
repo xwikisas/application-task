@@ -22,22 +22,14 @@ package com.xwiki.task.internal.notifications;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.LocalDocumentReference;
-import org.xwiki.notifications.NotificationException;
-import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
-import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
-import org.xwiki.notifications.filters.watch.WatchedLocationReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
@@ -46,12 +38,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.internal.event.XObjectAddedEvent;
 import com.xpn.xwiki.internal.event.XObjectUpdatedEvent;
-import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseObjectReference;
-import com.xpn.xwiki.objects.DateProperty;
-import com.xpn.xwiki.objects.LargeStringProperty;
-import com.xpn.xwiki.objects.PropertyInterface;
-import com.xpn.xwiki.objects.StringProperty;
 import com.xwiki.task.model.Task;
 
 /**
@@ -65,8 +52,6 @@ import com.xwiki.task.model.Task;
 @Named("com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener")
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
-    private static final LocalDocumentReference TASK_CLASS =
-        new LocalDocumentReference("TaskManager", "TaskManagerClass");
 
     private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
 
@@ -82,18 +67,6 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Inject
     private Provider<XWikiContext> contextProvider;
 
-    @Inject
-    private WatchedEntitiesManager watchedEntitiesManager;
-
-    @Inject
-    private WatchedEntityFactory watchedEntityFactory;
-
-    @Inject
-    private DocumentReferenceResolver<String> documentReferenceResolver;
-
-    @Inject
-    private Logger logger;
-
     /**
      * Initialize the listener.
      */
@@ -106,146 +79,19 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
+        List<String> events = null;
         if (event instanceof XObjectUpdatedEvent) {
-            onEvent((XObjectUpdatedEvent) event, (XWikiDocument) source, (XWikiContext) data);
+            events = WATCHED_FIELDS;
         } else if (event instanceof XObjectAddedEvent) {
-            onEvent((XObjectAddedEvent) event, (XWikiDocument) source, (XWikiContext) data);
-        }
-    }
-
-    /**
-     * Get the value of an XObject property, depending on its type.
-     *
-     * @param obj the base object
-     * @param propertyName the property to retrieve
-     * @return the value of the desired property, or null if the property doesn't exist or has unsupported type.
-     */
-    private static Optional<Object> getPropertyValue(BaseObject obj, String propertyName)
-    {
-        if (null == obj) {
-            return Optional.empty();
-        }
-        // Method getValue() always returns null from the Property interface implementation, so an `if` is needed for
-        // each property type.
-        PropertyInterface property = obj.safeget(propertyName);
-        if (property instanceof StringProperty) {
-            return Optional.ofNullable(((StringProperty) property).getValue());
-        } else if (property instanceof LargeStringProperty) {
-            return Optional.ofNullable(((LargeStringProperty) property).getValue());
-        } else if (property instanceof DateProperty) {
-            return Optional.ofNullable(((DateProperty) property).getValue());
+            // When a task is created, only generate one notification, for the assignee.
+            events = Arrays.asList(Task.ASSIGNEE);
         } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Get a {@link TaskChangedEvent} reflecting the changes made to a certain property, if a change happened.
-     *
-     * @param currentObject the current version of the object
-     * @param previousObject the previous version of the object
-     * @param propertyName the property to check for changes
-     * @param taskPage the parent page of the modified object
-     * @return the event describing the changes done to the specified field, null when no change occurred
-     */
-    private static Optional<TaskChangedEvent> getFieldChangedEvent(BaseObject currentObject, BaseObject previousObject,
-        String propertyName, XWikiDocument taskPage)
-    {
-        Object currentValue = getPropertyValue(currentObject, propertyName).orElse(null);
-        Object previousValue = getPropertyValue(previousObject, propertyName).orElse(null);
-
-        boolean valuesAreEqual;
-        if (currentValue != null) {
-            valuesAreEqual = currentValue.equals(previousValue);
-        } else {
-            valuesAreEqual = (previousValue == null);
+            return;
         }
 
-        String translationKeySuffix = propertyName;
-
-        if (valuesAreEqual) {
-            return Optional.empty();
-        }
-
-        TaskChangedEvent event = new TaskChangedEvent(taskPage);
-        if (currentValue != null) {
-            event.setCurrentValue(currentValue);
-        }
-        if (previousValue != null) {
-            event.setPreviousValue(previousValue);
-        }
-        event.setType(translationKeySuffix);
-
-        return Optional.of(event);
-    }
-
-    private void watchTask(XWikiDocument taskDoc, String userFullName)
-    {
-        WatchedLocationReference docRef =
-            watchedEntityFactory.createWatchedLocationReference(taskDoc.getDocumentReference());
-        if (!userFullName.equals("")) {
-            try {
-                watchedEntitiesManager.watchEntity(docRef, documentReferenceResolver.resolve(userFullName));
-            } catch (NotificationException e) {
-                logger.error("Failed to watch task page [{}] for user [{}]. Cause:", taskDoc, userFullName, e);
-            }
-        }
-    }
-
-    private void unwatchTask(XWikiDocument taskDoc, String userFullName)
-    {
-        WatchedLocationReference docRef =
-            watchedEntityFactory.createWatchedLocationReference(taskDoc.getDocumentReference());
-        if (!userFullName.equals("")) {
-            try {
-                watchedEntitiesManager.unwatchEntity(docRef, documentReferenceResolver.resolve(userFullName));
-            } catch (NotificationException e) {
-                logger.error("Failed to unwatch task page [{}] for user [{}]. Cause:", taskDoc, userFullName, e);
-            }
-        }
-    }
-
-    private void notifyOfEvent(TaskChangedEvent event, XWikiDocument sourceDoc, XWikiContext context)
-    {
-        // Auto watch/unwatch the task page for the assignee.
-        if (event.getType().equals(Task.ASSIGNEE)) {
-            // Watch task page BEFORE sending event for newly assigned user.
-            watchTask(event.getDocument(), (String) event.getCurrentValue());
-        }
-
-        observationManagerProvider.get().notify(event, sourceDoc.toString(), contextProvider.get());
-
-        if (event.getType().equals(Task.ASSIGNEE)) {
-            // Unwatch task page AFTER sending event for newly unassigned user.
-            // TODO: This doesn't work. The notification above is only received if unwatchTask is called after a delay.
-            unwatchTask(event.getDocument(), (String) event.getPreviousValue());
-        }
-    }
-
-    private void onEvent(XObjectUpdatedEvent event, XWikiDocument sourceDoc, XWikiContext context)
-    {
-        XWikiDocument previousDoc = sourceDoc.getOriginalDocument();
-
-        BaseObject currentObject = sourceDoc.getXObject(TASK_CLASS);
-        BaseObject previousObject = previousDoc.getXObject(TASK_CLASS);
-
-        WATCHED_FIELDS.forEach((String field) -> {
-            Optional<TaskChangedEvent> taskChangedEvent =
-                getFieldChangedEvent(currentObject, previousObject, field, sourceDoc);
-            if (taskChangedEvent.isPresent()) {
-                notifyOfEvent(taskChangedEvent.get(), sourceDoc, contextProvider.get());
-            }
+        XWikiDocument sourceDoc = (XWikiDocument) source;
+        TaskChangedEventFactory.getEvents(sourceDoc, events).forEach((TaskChangedEvent taskEvent) -> {
+            observationManagerProvider.get().notify(taskEvent, sourceDoc.toString(), contextProvider.get());
         });
-    }
-
-    private void onEvent(XObjectAddedEvent event, XWikiDocument sourceDoc, XWikiContext context)
-    {
-        BaseObject currentObject = sourceDoc.getXObject(TASK_CLASS);
-
-        // Only send one notification (for assignee) if the task was just created.
-        Optional<TaskChangedEvent> taskChangedEvent =
-            getFieldChangedEvent(currentObject, null, Task.ASSIGNEE, sourceDoc);
-
-        notifyOfEvent(taskChangedEvent.get(), sourceDoc, contextProvider.get());
     }
 }

@@ -103,7 +103,7 @@
 
 #define ($content)
   ## All folded events should have the same document, so display the first one as a title for the group.
-  #set ($document = $xwiki.getDocument($!compositeEvent.events[0].document))
+  #set ($document = $xwiki.getDocument($!event.events[0].document))
   <div class="notification-page">
     <a href="$!escapetool.xml($document.getURL())">$!escapetool.xml($!document.getDisplayTitle())</a>
     #if ($xcontext.getContext().getOriginalWikiId() != $document.getDocumentReference().getWikiReference().name)
@@ -112,19 +112,19 @@
   </div>
   <div class="notification-description">
     $services.localization.render("taskmanager.events.taskChangedEvent.title")
-    <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!compositeEvent.events[0].date))</small></div>
+    <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!event.events[0].date))</small></div>
   </div>
 #end
 
 #define ($details)
   #define ($rows)
-    #foreach ($thisEvent in $compositeEvent.events)
+    #foreach ($thisEvent in $event.events)
       #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.TaskChangedEvent')
         #displayEventDetails($thisEvent)
       #end
     #end
   #end
-  #displayNotificationEventDetailsSkeletons($compositeEvent.events.size(), $rows)
+  #displayNotificationEventDetailsSkeletons($event.events.size(), $rows)
 #end
 
 #displayNotificationEventSkeleton($mainIcon $smallIcon $content $details)
