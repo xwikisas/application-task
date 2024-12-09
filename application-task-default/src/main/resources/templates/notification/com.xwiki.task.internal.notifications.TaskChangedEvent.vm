@@ -23,8 +23,7 @@
 #set ($mainIcon = 'list')
 #set ($smallIcon = '')
 
-
-#macro (getGenericFieldDescription $customEventInfo)
+#macro (getGenericFieldDescription $customEventInfo $eventText)
   ## The notification text will be available in `$eventText` after calling this macro.
   #set ($localizationParams = [
     $customEventInfo['currentValue'],
@@ -34,7 +33,7 @@
   #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams))
 #end
 
-#macro (getAssigneeDescription $customEventInfo)
+#macro (getAssigneeDescription $customEventInfo $eventText)
   #if ("$!customEventInfo['currentValue']" == '')
     #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
       #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
@@ -54,7 +53,7 @@
   #set ($eventText = $eventText.replace('__previousUser__', $!xwiki.getUserName($customEventInfo['previousValue'])))
 #end
 
-#macro (getDueDateDescription $customEventInfo)
+#macro (getDueDateDescription $customEventInfo $eventText)
   ## Send different messages if the due date was extended or reduced.
   ## The date is displayed using the format configured in datemacro.
   #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
@@ -80,7 +79,7 @@
       ))
     )
   #end
-  #getGenericFieldDescription($customEventInfo)
+  #getGenericFieldDescription($customEventInfo $eventText)
 #end
 
 #macro (displayEventDetails $event)
@@ -89,12 +88,13 @@
       <span class="notification-event-user">$!xwiki.getUserName($event.user)</span>
     </td>
     #set ($customEventInfo = $jsontool.fromString($event.getBody()))
+    #set ($eventText = '')
     #if ($customEventInfo['type'] == 'assignee')
-      #getAssigneeDescription($customEventInfo)
+      #getAssigneeDescription($customEventInfo $eventText)
     #elseif ($customEventInfo['type'] == 'duedate')
-      #getDueDateDescription($customEventInfo)
+      #getDueDateDescription($customEventInfo $eventText)
     #else
-      #getGenericFieldDescription($customEventInfo)
+      #getGenericFieldDescription($customEventInfo $eventText)
     #end
     <td class="description">$eventText</td>
     <td class="text-right text-muted">$escapetool.xml($datetool.whenIs($event.date))</td>

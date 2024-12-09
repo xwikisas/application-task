@@ -28,6 +28,7 @@ import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.notifications.NotificationException;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
@@ -46,13 +47,9 @@ import com.xwiki.task.model.Task;
  */
 @Component
 @Singleton
-@Named("com.xwiki.task.internal.notifications.TaskChangedEventPageWatcher")
-public class TaskChangedEventPageWatcher extends AbstractEventListener
+@Named("com.xwiki.task.internal.notifications.TaskChangedEventListener")
+public class TaskChangedEventListener extends AbstractEventListener
 {
-
-    @Inject
-    private WatchedEntitiesManager watchedEntitiesManager;
-
     @Inject
     private WatchedEntityFactory watchedEntityFactory;
 
@@ -60,14 +57,17 @@ public class TaskChangedEventPageWatcher extends AbstractEventListener
     private DocumentReferenceResolver<String> documentReferenceResolver;
 
     @Inject
+    private WatchedEntitiesManager watchedEntitiesManager;
+
+    @Inject
     private Logger logger;
 
     /**
      * Initialize the listener.
      */
-    public TaskChangedEventPageWatcher()
+    public TaskChangedEventListener()
     {
-        super(TaskChangedEventPageWatcher.class.getName(), Arrays.asList(new TaskChangedEvent()));
+        super(TaskChangedEventListener.class.getName(), Arrays.asList(new TaskChangedEvent()));
     }
 
     @Override
@@ -89,8 +89,9 @@ public class TaskChangedEventPageWatcher extends AbstractEventListener
     private void watchTask(WatchedLocationReference docRef, String userFullName)
     {
         if (!userFullName.isEmpty()) {
+            DocumentReference user = documentReferenceResolver.resolve(userFullName);
             try {
-                watchedEntitiesManager.watchEntity(docRef, documentReferenceResolver.resolve(userFullName));
+                watchedEntitiesManager.watchEntity(docRef, user);
             } catch (NotificationException e) {
                 logger.error("Failed to watch task page [{}] for user [{}]. Cause:", docRef, userFullName, e);
             }
@@ -100,8 +101,9 @@ public class TaskChangedEventPageWatcher extends AbstractEventListener
     private void unwatchTask(WatchedLocationReference docRef, String userFullName)
     {
         if (!userFullName.isEmpty()) {
+            DocumentReference user = documentReferenceResolver.resolve(userFullName);
             try {
-                watchedEntitiesManager.unwatchEntity(docRef, documentReferenceResolver.resolve(userFullName));
+                watchedEntitiesManager.unwatchEntity(docRef, user);
             } catch (NotificationException e) {
                 logger.error("Failed to unwatch task page [{}] for user [{}]. Cause:", docRef, userFullName, e);
             }

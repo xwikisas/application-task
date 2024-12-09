@@ -52,7 +52,6 @@ import com.xwiki.task.model.Task;
 @Named("com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener")
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
-
     private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
 
     /**
@@ -60,6 +59,9 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      */
     private static final List<String> WATCHED_FIELDS =
         Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY);
+
+    @Inject
+    private TaskChangedEventFactory taskChangedEventFactory;
 
     @Inject
     private Provider<ObservationManager> observationManagerProvider;
@@ -79,7 +81,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        List<String> events = null;
+        List<String> events;
         if (event instanceof XObjectUpdatedEvent) {
             events = WATCHED_FIELDS;
         } else if (event instanceof XObjectAddedEvent) {
@@ -90,7 +92,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
         }
 
         XWikiDocument sourceDoc = (XWikiDocument) source;
-        TaskChangedEventFactory.getEvents(sourceDoc, events).forEach((TaskChangedEvent taskEvent) -> {
+        taskChangedEventFactory.getEvents(sourceDoc, events).forEach((TaskChangedEvent taskEvent) -> {
             observationManagerProvider.get().notify(taskEvent, sourceDoc.toString(), contextProvider.get());
         });
     }
