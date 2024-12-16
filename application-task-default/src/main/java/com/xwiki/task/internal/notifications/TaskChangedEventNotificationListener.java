@@ -52,13 +52,13 @@ import com.xwiki.task.model.Task;
 @Named("com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener")
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
-    private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
-
     /**
      * The fields of the Task class which are watched for changes.
      */
-    private static final List<String> WATCHED_FIELDS =
+    public static final List<String> WATCHED_FIELDS =
         Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY);
+
+    private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
 
     @Inject
     private TaskChangedEventFactory taskChangedEventFactory;
@@ -86,7 +86,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
             events = WATCHED_FIELDS;
         } else if (event instanceof XObjectAddedEvent) {
             // When a task is created, only generate one notification, for the assignee.
-            events = Arrays.asList(Task.ASSIGNEE);
+            events = List.of(Task.ASSIGNEE);
         } else {
             return;
         }

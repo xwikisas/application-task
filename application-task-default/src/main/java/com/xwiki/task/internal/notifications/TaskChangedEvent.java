@@ -50,6 +50,7 @@ public class TaskChangedEvent implements RecordableEvent
      */
     public TaskChangedEvent()
     {
+        this.eventInfo = new HashMap<>();
     }
 
     /**
@@ -61,18 +62,6 @@ public class TaskChangedEvent implements RecordableEvent
     {
         this.document = document;
         this.eventInfo = new HashMap<>();
-    }
-
-    /**
-     * Event which represents a property change in a task.
-     *
-     * @param document the document of the changed task.
-     * @param eventInfo additional event info used to format the localization string of the notification.
-     */
-    public TaskChangedEvent(XWikiDocument document, Map<String, Object> eventInfo)
-    {
-        this.document = document;
-        this.eventInfo = eventInfo;
     }
 
     @Override

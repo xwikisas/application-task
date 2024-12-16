@@ -20,7 +20,6 @@
 
 package com.xwiki.task.internal.notifications;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +82,7 @@ public class TaskChangedEventConverter implements RecordableEventConverter
     @Override
     public List<RecordableEvent> getSupportedEvents()
     {
-        return Arrays.asList(new TaskChangedEvent());
+        return List.of(new TaskChangedEvent());
     }
 
     /**

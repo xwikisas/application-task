@@ -44,7 +44,7 @@ import com.xpn.xwiki.objects.StringProperty;
  */
 @Component(roles = TaskChangedEventFactory.class)
 @Singleton
-public final class TaskChangedEventFactory
+public class TaskChangedEventFactory
 {
     private static final LocalDocumentReference TASK_CLASS =
         new LocalDocumentReference("TaskManager", "TaskManagerClass");

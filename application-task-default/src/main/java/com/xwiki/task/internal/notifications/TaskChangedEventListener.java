@@ -20,7 +20,7 @@
 
 package com.xwiki.task.internal.notifications;
 
-import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,7 +67,7 @@ public class TaskChangedEventListener extends AbstractEventListener
      */
     public TaskChangedEventListener()
     {
-        super(TaskChangedEventListener.class.getName(), Arrays.asList(new TaskChangedEvent()));
+        super(TaskChangedEventListener.class.getName(), List.of(new TaskChangedEvent()));
     }
 
     @Override
