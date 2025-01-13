@@ -287,8 +287,12 @@
 
 .task-macro {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   width: 100%;
+}
+
+.task-info {
+  padding-right: 0.5em;
 }
 
 .task-status {
