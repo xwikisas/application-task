@@ -37,4 +37,10 @@ class AllITs
     class NestedTaskManagerIT extends TaskManagerIT
     {
     }
+
+    @Nested
+    @DisplayName("Task Manager Notifications")
+    class NestedNotificationIT extends NotificationIT
+    {
+    }
 }
