@@ -177,12 +177,17 @@
       <content>{{velocity}}
   #panelheader($services.localization.render('taskmanager.panel.paneltitle'))
   #if(!$isGuest)
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as document where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and document.assignee=:currentUser order by document.duedate asc")
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as document where doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' and document.assignee=:currentUser and document.status &lt;&gt; 'Done' order by document.duedate asc")
   #set($results = $services.query.xwql("$query").bindValue("currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
   #foreach($result in $results)
     #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))
     * $services.icon.render('accept') **[[$object.getProperty('name').value&gt;&gt;$result]]**
-    (% class="text-muted small" %)$services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
+    (% class="text-muted small" %)##
+    #if ($object.getProperty('duedate').value)
+      $services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
+    #else
+      $services.localization.render('taskmanager.panel.untildate.nodate')
+    #end
   #end
   #if($results.size() == 0)
     (% class="pull-left"%)$services.localization.render('taskmanager.panel.noactivetasks')

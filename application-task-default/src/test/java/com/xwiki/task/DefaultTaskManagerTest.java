@@ -109,6 +109,7 @@ class DefaultTaskManagerTest
     {
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getWiki()).thenReturn(this.wiki);
+        when(this.context.getWikiId()).thenReturn("xwiki");
         when(this.wiki.getDocument(this.documentReference, this.context)).thenReturn(this.document);
         when(this.wiki.getDocument((EntityReference) this.documentReference, this.context)).thenReturn(this.document);
         when(this.document.getXObject(any(EntityReference.class))).thenReturn(this.taskObject);
@@ -159,6 +160,7 @@ class DefaultTaskManagerTest
             + "AND idProp.value = :id";
 
         when(this.queryManager.createQuery(queryStatement, Query.HQL)).thenReturn(this.query);
+        when(this.query.setWiki("xwiki")).thenReturn(this.query);
         when(this.query.bindValue("id", 1)).thenReturn(this.query);
         when(this.query.execute()).thenReturn(Collections.singletonList(documentReference.toString()));
 

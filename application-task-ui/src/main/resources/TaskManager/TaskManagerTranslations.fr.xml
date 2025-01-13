@@ -113,6 +113,7 @@ xe.index.order=Ordre
 # Panel
 taskmanager.panel.paneltitle=Mes tâches prévues
 taskmanager.panel.untildate=avant
+taskmanager.panel.untildate.nodate=Pas de date d'échéance
 taskmanager.panel.fulltasklist=Accéder à la liste complète
 taskmanager.panel.noactivetasks=Aucune tâche active
 

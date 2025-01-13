@@ -107,7 +107,10 @@ public class DefaultTaskManager implements TaskManager
                 + "AND taskObj.className = 'TaskManager.TaskManagerClass' "
                 + "AND taskObj.id = idProp.id.id AND idProp.id.name = 'number' "
                 + "AND idProp.value = :id";
-            List<String> results = queryManager.createQuery(statement, Query.HQL).bindValue("id", id).execute();
+
+            List<String> results =
+                queryManager.createQuery(statement, Query.HQL).setWiki(context.getWikiId()).bindValue("id", id)
+                    .execute();
             if (results.size() > 0) {
                 DocumentReference documentReference = resolver.resolve(results.get(0));
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);

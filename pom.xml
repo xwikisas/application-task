@@ -29,7 +29,7 @@
   </parent>
   <groupId>com.xwiki.task</groupId>
   <artifactId>application-task</artifactId>
-  <version>3.6.1-SNAPSHOT</version>
+  <version>3.6.4-SNAPSHOT</version>
   <name>Task Manager Application - Parent POM</name>
   <packaging>pom</packaging>
   <description>The parent POM of the Task Manager Application (Pro).</description>
