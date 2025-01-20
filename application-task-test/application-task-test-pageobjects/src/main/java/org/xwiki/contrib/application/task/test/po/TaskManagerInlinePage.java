@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
@@ -93,7 +94,7 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setDueDate(String dueDate)
     {
-        this.dueDateElement.clear();
+        this.dueDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         this.dueDateElement.sendKeys(dueDate);
     }
 
@@ -116,7 +117,12 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setAssignee(String assignee)
     {
-        new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions().sendKeys(assignee).selectTypedText();
+        if (assignee.isEmpty()) {
+            new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions();
+        } else {
+            new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions().sendKeys(assignee)
+                .selectTypedText();
+        }
     }
 
     /**

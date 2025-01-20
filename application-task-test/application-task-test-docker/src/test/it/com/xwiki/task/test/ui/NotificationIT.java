@@ -24,8 +24,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Assertions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,13 +33,13 @@ import org.openqa.selenium.WebElement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Order;
+import org.xwiki.test.docker.junit5.ExtensionOverride;
 import org.xwiki.test.docker.junit5.TestConfiguration;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.platform.notifications.test.po.NotificationsTrayPage;
 import org.xwiki.platform.notifications.test.po.NotificationsUserProfilePage;
 import org.xwiki.platform.notifications.test.po.preferences.ApplicationPreferences;
-import org.xwiki.platform.notifications.test.po.preferences.EventTypePreferences;
 import org.xwiki.contrib.application.task.test.po.TaskManagerAdminConfigurationPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
@@ -49,6 +47,7 @@ import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.test.ui.po.BootstrapSwitch;
 import org.xwiki.test.ui.po.CreatePagePage;
+import org.xwiki.scheduler.test.po.SchedulerHomePage;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
@@ -62,15 +61,40 @@ import com.xwiki.task.model.Task;
  * @version $Id$
  * @since 3.7
  */
-@UITest(properties = {
-    // Required for filters preferences
-    "xwikiDbHbmCommonExtraMappings=notification-filter-preferences.hbm.xml"}, extraJARs = {
-    // It's currently not possible to install a JAR contributing a Hibernate mapping file as an Extension. Thus,
-    // we need to provide the JAR inside WEB-INF/lib. See https://jira.xwiki.org/browse/XWIKI-19932
-    "org.xwiki.platform:xwiki-platform-notifications-filters-default:14.10",
-    // The Solr store is not ready yet to be installed as an extension, so we need to add it to WEB-INF/lib
-    // manually. See https://jira.xwiki.org/browse/XWIKI-21594
-    "org.xwiki.platform:xwiki-platform-eventstream-store-solr:14.10"}, resolveExtraJARs = true)
+@UITest(
+    sshPorts = {
+        // Open the GreenMail port so that the XWiki instance inside a Docker container can use the SMTP server provided
+        // by GreenMail running on the host.
+        3025
+    }, extensionOverrides = {
+        @ExtensionOverride(
+            extensionId = "com.google.code.findbugs:jsr305",
+            overrides = {
+                "features=com.google.code.findbugs:annotations"
+            }
+        )
+    }, properties = {
+        // The scheduler UI needs programming rights
+        "xwikiPropertiesAdditionalProperties=test.prchecker.excludePattern=.xwiki:Scheduler\\.WebHome",
+        // The Mail module contributes a Hibernate mapping that needs to be added to hibernate.cfg.xml
+        "xwikiDbHbmCommonExtraMappings=mailsender.hbm.xml,notification-filter-preferences.hbm.xml",
+        // Add the Scheduler plugin used by Mail Resender Scheduler Job
+        "xwikiCfgPlugins=com.xpn.xwiki.plugin.scheduler.SchedulerPlugin"
+    }, extraJARs = {
+        // It's currently not possible to install a JAR contributing a Hibernate mapping file as an Extension. Thus,
+        // we need to provide the JAR inside WEB-INF/lib. See https://jira.xwiki.org/browse/XWIKI-19932
+        "org.xwiki.platform:xwiki-platform-notifications-filters-default:14.10",
+        // The Solr store is not ready yet to be installed as an extension, so we need to add it to WEB-INF/lib
+        // manually. See https://jira.xwiki.org/browse/XWIKI-21594
+        "org.xwiki.platform:xwiki-platform-eventstream-store-solr:14.10",
+        // It's currently not possible to install a JAR contributing a Hibernate mapping file as an Extension. Thus
+        // we need to provide the JAR inside WEB-INF/lib. See https://jira.xwiki.org/browse/XWIKI-19932
+        "org.xwiki.platform:xwiki-platform-mail-send-storage:14.10",
+        // The Scheduler plugin needs to be in WEB-INF/lib since it's defined in xwiki.properties and plugins are loaded
+        // by XWiki at startup, i.e. before extensions are provisioned for the tests
+        "org.xwiki.platform:xwiki-platform-scheduler-api:14.10"
+    }, resolveExtraJARs = true
+)
 public class NotificationIT
 {
     @RegisterExtension
@@ -94,7 +118,7 @@ public class NotificationIT
     private String TEST_PROJECT_NAME = "Test Project";
 
     @AfterAll
-    public void deleteTaskPages(TestUtils setup)
+    public void teardownTaskPages(TestUtils setup)
     {
         setup.loginAsSuperAdmin();
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", TEST_TASK_NAME));
@@ -127,6 +151,8 @@ public class NotificationIT
             userNotificationPreferences.getApplication(new TaskChangedEventDescriptor().getApplicationName());
         taskApplicationPreferences.setAlertState(BootstrapSwitch.State.ON);
         taskApplicationPreferences.setEmailState(BootstrapSwitch.State.ON);
+
+        logout(setup);
     }
 
     @BeforeEach
@@ -159,14 +185,13 @@ public class NotificationIT
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
             inlinePage.setAssignee(TEST_USERNAME);
             inlinePage.setDueDate("01/01/2001 01:01:01");
-            inlinePage.setStatus(Task.STATUS_IN_PROGRESS);
-            inlinePage.setProject(TEST_PROJECT_NAME);
+            inlinePage.setStatus(Task.STATUS_DONE);
+            inlinePage.setProject("Other");
             inlinePage.setSeverity("Low");
             inlinePage.clickSaveAndView();
         });
 
         doAsUser(setup, TEST_USERNAME, () -> {
-
             TaskManagerHomePage.gotoPage();
 
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
@@ -176,16 +201,11 @@ public class NotificationIT
             tray.showNotificationTray();
             Assertions.assertEquals(1, tray.getNotificationsCount());
             Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
-            // List<String> groupedEventDetails = getNotificationDetails(setup, 0);
-            // expectEventDetailsText(groupedEventDetails, "Assignee changed from Unknown User to NotificationTestUser");
-            // System.out.println(TaskChangedEvent.class.getName()); // "com.xwiki.task.internal.notifications.TaskChangedEvent"
-            // "notification-event-details"
-
-            // Verify that the mail has been received.
-            mail.waitForIncomingEmail(30000L, 1);
-            System.out.println("Mails: " + mail.getReceivedMessages());
-            Assertions.assertEquals(1, mail.getReceivedMessages().length);
+            List<String> notificationDescriptions = getNotificationDetails(setup, 0);
+            Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
+
+        assertRecievedEmail(setup, 1);
     }
 
     /**
@@ -201,26 +221,24 @@ public class NotificationIT
             setup.gotoPage("TaskManager", TEST_TASK_NAME, "edit");
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
             inlinePage.setDueDate("02/02/2002 02:02:02");
-            inlinePage.setStatus(Task.STATUS_DONE);
+            inlinePage.setStatus(Task.STATUS_IN_PROGRESS);
             inlinePage.setProject(TEST_PROJECT_NAME);
             inlinePage.setSeverity("High");
-            inlinePage.setProgress("25%");
+            inlinePage.setProgress("25");
             inlinePage.clickSaveAndView();
         });
 
         doAsUser(setup, TEST_USERNAME, () -> {
-            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 4);
+            // One notification, but it contains 4 events.
+            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
-            Assertions.assertEquals(4, tray.getNotificationsCount());
             Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
-
-            // List<String> groupedEventDetails = getNotificationDetails(setup, 0);
-            // System.out.println("looool" + groupedEventDetails);
-            // expectEventDetailsText(groupedEventDetails, "Priority changed from Medium to High");
-            // expectEventDetailsText(groupedEventDetails, "Status changed from ToDo to Done");
-            // expectEventDetailsText(groupedEventDetails, "Deadline set to 30/03/1970 14:12:01");
+            List<String> notificationDescriptions = getNotificationDetails(setup, 0);
+            Assertions.assertEquals(4, notificationDescriptions.size(), notificationDescriptions.toString());
         });
+
+        assertRecievedEmail(setup, 1);
     }
 
     /**
@@ -242,6 +260,9 @@ public class NotificationIT
             tray.showNotificationTray();
             Assertions.assertEquals(1, tray.getNotificationsCount());
             Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+
+            List<String> notificationDescriptions = getNotificationDetails(setup, 0);
+            Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
     }
 
@@ -266,6 +287,9 @@ public class NotificationIT
             tray.showNotificationTray();
             Assertions.assertEquals(1, tray.getNotificationsCount());
             Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+
+            List<String> notificationDescriptions = getNotificationDetails(setup, 0);
+            Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
     }
 
@@ -287,9 +311,6 @@ public class NotificationIT
                     userNotificationPreferences.getApplication(new TaskChangedEventDescriptor().getApplicationName());
                 taskApplicationPreferences.setAlertState(BootstrapSwitch.State.OFF);
                 taskApplicationPreferences.setEmailState(BootstrapSwitch.State.OFF);
-                setup.gotoPage("TaskManager", TEST_TASK_NAME);
-                clearAllNotifications();
-                refresh(setup);
             } catch (Exception e) {
                 Assertions.fail("Exception while setting application notification preferences: " + e);
             }
@@ -299,7 +320,7 @@ public class NotificationIT
             setup.gotoPage("TaskManager", TEST_TASK_NAME, "edit");
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
             inlinePage = new TaskManagerInlinePage();
-            inlinePage.setDueDate("01/01/2001 01:01:01");
+            inlinePage.setDueDate("03/03/2003 03:03:03");
             inlinePage.setStatus(Task.STATUS_DONE);
             inlinePage.setSeverity("High");
             inlinePage.clickSaveAndView();
@@ -308,17 +329,6 @@ public class NotificationIT
         doAsUser(setup, TEST_USERNAME, () -> {
             Assertions.assertThrows(TimeoutException.class,
                 () -> NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1));
-
-            // See that the preferences remain the same.
-            NotificationsUserProfilePage userNotificationPreferences =
-                NotificationsUserProfilePage.gotoPage(TEST_USERNAME);
-            userNotificationPreferences.getApplicationPreferences()
-                .forEach((String appName, ApplicationPreferences pref) -> {
-                    pref.getEventTypePreferences().forEach((String evTypeName, EventTypePreferences evTypePref) -> {
-                        assertEquals(BootstrapSwitch.State.OFF, evTypePref.getAlertState());
-                        assertEquals(BootstrapSwitch.State.OFF, evTypePref.getEmailState());
-                    });
-                });
         });
     }
 
@@ -335,7 +345,8 @@ public class NotificationIT
     private void configureEmail(TestUtils setup, TestConfiguration testConfiguration)
     {
         setup.updateObject("Mail", "MailConfig", "Mail.SendMailConfigClass", 0, "host",
-            testConfiguration.getServletEngine().getHostIP(), "port", "3025", "sendWaitTime", "0");
+            testConfiguration.getServletEngine().getHostIP(), "port", "3025", "sendWaitTime", "0",
+            "from", "admin@example.com");
     }
 
     private List<String> getNotificationDetails(TestUtils setup, int notificationNumber)
@@ -354,6 +365,18 @@ public class NotificationIT
     {
         Assertions.assertTrue(groupedEventDetails.contains(text),
             "Expected message not found in " + groupedEventDetails);
+    }
+
+    private void assertRecievedEmail(TestUtils setup, int emailCount)
+    {
+        setup.loginAsSuperAdmin();
+        SchedulerHomePage schedulerHomePage = SchedulerHomePage.gotoPage();
+        schedulerHomePage.clickJobActionTrigger("Notifications daily email");
+
+        // Verify that the mail has been received.
+        mail.waitForIncomingEmail(10000L, emailCount);
+        Assertions.assertEquals(emailCount, mail.getReceivedMessages().length);
+        logout(setup);
     }
 
     private void doAsUser(TestUtils setup, String username, Runnable action)

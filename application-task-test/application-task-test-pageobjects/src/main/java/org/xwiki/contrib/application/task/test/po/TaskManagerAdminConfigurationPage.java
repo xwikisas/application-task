@@ -19,7 +19,6 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -58,7 +57,6 @@ public class TaskManagerAdminConfigurationPage extends ViewPage
      */
     public void addNewProject(String projectName)
     {
-        System.out.println("baba" + addProjectTextInput.getAttribute("innerHTML"));
         addProjectTextInput.click();
         addProjectTextInput.clear();
         addProjectTextInput.sendKeys(projectName);
@@ -73,6 +71,7 @@ public class TaskManagerAdminConfigurationPage extends ViewPage
      */
     public void addNewSeverity(String severityName)
     {
+        addSeverityTextInput.click();
         addSeverityTextInput.clear();
         addSeverityTextInput.sendKeys(severityName);
         addSeverityTextInput.sendKeys(Keys.ENTER);
@@ -86,6 +85,7 @@ public class TaskManagerAdminConfigurationPage extends ViewPage
      */
     public void addNewStatus(String statusName)
     {
+        addStatusTextInput.click();
         addStatusTextInput.clear();
         addStatusTextInput.sendKeys(statusName);
         addStatusTextInput.sendKeys(Keys.ENTER);
