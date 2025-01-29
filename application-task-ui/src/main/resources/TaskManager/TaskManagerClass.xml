@@ -355,9 +355,9 @@
   #set($translation = $services.localization.render($key))
   &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $services.rendering.escape($rValue.key, 'xwiki/2.1')
+      $escapetool.xml($rValue.key)
     #else
-      $services.rendering.escape($translation, 'xwiki/2.1')
+      $escapetool.xml($translation)
     #end
   &lt;/option&gt;
 #end
@@ -436,9 +436,9 @@
   #set($translation = $services.localization.render($key))
   &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $services.rendering.escape($rValue.key, 'xwiki/2.1')
+      $escapetool.xml($rValue.key)
     #else
-      $services.rendering.escape($translation, 'xwiki/2.1')
+      $escapetool.xml($translation)
     #end
   &lt;/option&gt;
 #end
@@ -508,9 +508,9 @@
   #set($translation = $services.localization.render($key))
   &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $services.rendering.escape($rValue.key, 'xwiki/2.1')
+      $escapetool.xml($rValue.key)
     #else
-      $services.rendering.escape($translation, 'xwiki/2.1')
+      $escapetool.xml($translation)
     #end
   &lt;/option&gt;
 #end
