@@ -67,7 +67,6 @@ public class DateMacroParameters
     /**
      * @param format see {@link #getFormat()}
      */
-    @PropertyDisplayHidden
     public void setFormat(String format)
     {
         this.format = format;
@@ -84,7 +83,6 @@ public class DateMacroParameters
     /**
      * @param displayFormat see {@link #getDisplayFormat()}
      */
-    @PropertyDisplayHidden
     public void setDisplayFormat(String displayFormat)
     {
         this.displayFormat = displayFormat;
