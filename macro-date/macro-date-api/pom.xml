@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.xwiki.date</groupId>
     <artifactId>macro-date</artifactId>
-    <version>3.6.6</version>
+    <version>3.6.7-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
