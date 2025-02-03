@@ -19,6 +19,7 @@
  */
 package com.xwiki.date.macro;
 
+import org.xwiki.properties.annotation.PropertyAdvanced;
 import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
@@ -66,6 +67,7 @@ public class DateMacroParameters
     /**
      * @param format see {@link #getFormat()}
      */
+    @PropertyAdvanced
     public void setFormat(String format)
     {
         this.format = format;
@@ -82,6 +84,7 @@ public class DateMacroParameters
     /**
      * @param displayFormat see {@link #getDisplayFormat()}
      */
+    @PropertyAdvanced
     public void setDisplayFormat(String displayFormat)
     {
         this.displayFormat = displayFormat;
