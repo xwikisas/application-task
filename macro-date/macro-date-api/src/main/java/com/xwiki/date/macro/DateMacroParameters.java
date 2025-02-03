@@ -22,7 +22,6 @@ package com.xwiki.date.macro;
 import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
-import org.xwiki.properties.annotation.PropertyDisplayHidden;
 import com.xwiki.date.DateType;
 
 /**
