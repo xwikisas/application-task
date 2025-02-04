@@ -18,7 +18,7 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 
-#template('notification/macros.vm')
+#template('notification/email/macros.vm')
 
 #set ($mainIcon = 'list')
 #set ($smallIcon = '')
@@ -82,7 +82,7 @@
   #getGenericFieldDescription($customEventInfo $eventText)
 #end
 
-#macro (displayEventDetails $event)
+#macro (displayTaskChangedEventDetails $event)
   #set ($customEventInfo = $jsontool.fromString($event.getBody()))
   #set ($diffUrl = $xwiki.getURL($event.document, 'view', "viewer=changes&rev2=${event.documentVersion}"))
   #set ($eventText = '')
@@ -93,10 +93,10 @@
   #else
     #getGenericFieldDescription($customEventInfo $eventText)
   #end
-  <tr>
-    <td><span class="notification-event-user">#displayNotificationEventUser($event.user)</span></td>
-    <td class="description">$eventText</td>
-    <td class="text-right text-muted">
+  <tr style="vertical-align: top;">
+    <td>#displayEmailNotificationEventUser($event.user, false)</td>
+    <td>$eventText</td>
+    <td style="text-align: right;">
       #if($diffUrl!='')<a href="$escapetool.xml($diffUrl)">#end
       $escapetool.xml($xwiki.formatDate($event.date))
       #if($diffUrl!='')</a>#end
@@ -104,30 +104,34 @@
   </tr>
 #end
 
-#define ($content)
-  ## All folded events should have the same document, so display the first one as a title for the group.
-  #set ($document = $xwiki.getDocument($!event.events[0].document))
-  <div class="notification-page">
-    <a href="$!escapetool.xml($document.getURL())">$!document.getDisplayTitle()</a>
-    #if ($xcontext.getContext().getOriginalWikiId() != $document.getDocumentReference().getWikiReference().name)
-      <span class="text-muted">($services.wiki.getById($document.getDocumentReference().getWikiReference().name).prettyName)</span>
-    #end
-  </div>
-  <div class="notification-description">
-    $services.localization.render('taskmanager.events.taskChangedEvent.title', 'xhtml/1.0', [])
-    <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!event.events[0].date))</small></div>
-  </div>
-#end
-
-#define ($details)
-  #define ($rows)
+#macro (displayTaskNotificationDetails $event)
+  <table class="notification-event-details">
     #foreach ($thisEvent in $event.events)
       #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.TaskChangedEvent')
-        #displayEventDetails($thisEvent)
+        #displayTaskChangedEventDetails($thisEvent)
       #end
     #end
-  #end
-  #displayNotificationEventDetailsSkeletons($event.events.size(), $rows)
+  </table>
 #end
 
-#displayNotificationEventSkeleton($mainIcon $smallIcon $content $details)
+#define ($rightCell)
+  ###
+  ### Link to the Page
+  ###
+  #displayNotificationPage($event)
+  ###
+  ### Description, users and date
+  ###
+  $services.localization.render('taskmanager.events.taskChangedEvent.title', 'xhtml/1.0', [])
+  #displayNotificationDate($event)
+  ###
+  ### Details
+  ###
+  #displayTaskNotificationDetails($event)
+#end
+
+#define ($leftCell)
+  <strong>$!escapetool.xml($services.localization.render('TaskManager.panels.name'))</strong>
+#end
+
+#displayNotificationSkeleton($leftCell, $rightCell)

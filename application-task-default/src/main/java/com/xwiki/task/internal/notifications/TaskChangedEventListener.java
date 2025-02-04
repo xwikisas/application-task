@@ -88,7 +88,7 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     private void watchTask(WatchedLocationReference docRef, String userFullName)
     {
-        if (!userFullName.isEmpty()) {
+        if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
             try {
                 watchedEntitiesManager.watchEntity(docRef, user);
@@ -100,7 +100,7 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     private void unwatchTask(WatchedLocationReference docRef, String userFullName)
     {
-        if (!userFullName.isEmpty()) {
+        if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
             try {
                 watchedEntitiesManager.unwatchEntity(docRef, user);
