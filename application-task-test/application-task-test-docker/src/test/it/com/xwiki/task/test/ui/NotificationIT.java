@@ -129,7 +129,7 @@ public class NotificationIT
     public void logout(TestUtils setup)
     {
         setup.setSession(null);
-        refresh(setup);
+        setup.getDriver().navigate().refresh();
     }
 
     @BeforeAll
@@ -138,8 +138,10 @@ public class NotificationIT
         setup.loginAsSuperAdmin();
         setup.createUser(TEST_USERNAME, PASSWORD, "", "email", "testUser@xwiki.org");
         setup.createUser(TEST_EDITOR_USERNAME, PASSWORD, "", "email", "testEditor@xwiki.org");
+
         // Configure the SMTP host/port for the wiki so that it points to GreenMail.
-        configureEmail(setup, config);
+        setup.updateObject("Mail", "MailConfig", "Mail.SendMailConfigClass", 0, "host",
+            config.getServletEngine().getHostIP(), "port", "3025", "sendWaitTime", "0", "from", "admin@example.com");
 
         TaskManagerAdminConfigurationPage taskManagerConfigPage = TaskManagerAdminConfigurationPage.gotoPage();
 
@@ -160,7 +162,7 @@ public class NotificationIT
     {
         doAsUser(setup, TEST_USERNAME, () -> {
             TaskManagerHomePage.gotoPage();
-            clearAllNotifications();
+            new NotificationsTrayPage().clearAllNotifications();
         });
     }
 
@@ -229,6 +231,7 @@ public class NotificationIT
         });
 
         doAsUser(setup, TEST_USERNAME, () -> {
+            TaskManagerHomePage.gotoPage();
             // One notification, but it contains 4 events.
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
@@ -255,6 +258,7 @@ public class NotificationIT
         });
 
         doAsUser(setup, TEST_USERNAME, () -> {
+            TaskManagerHomePage.gotoPage();
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
@@ -282,6 +286,7 @@ public class NotificationIT
         });
 
         doAsUser(setup, TEST_USERNAME, () -> {
+            TaskManagerHomePage.gotoPage();
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
@@ -327,26 +332,10 @@ public class NotificationIT
         });
 
         doAsUser(setup, TEST_USERNAME, () -> {
+            TaskManagerHomePage.gotoPage();
             Assertions.assertThrows(TimeoutException.class,
                 () -> NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1));
         });
-    }
-
-    private void clearAllNotifications()
-    {
-        new NotificationsTrayPage().clearAllNotifications();
-    }
-
-    private void refresh(TestUtils setup)
-    {
-        setup.getDriver().navigate().refresh();
-    }
-
-    private void configureEmail(TestUtils setup, TestConfiguration testConfiguration)
-    {
-        setup.updateObject("Mail", "MailConfig", "Mail.SendMailConfigClass", 0, "host",
-            testConfiguration.getServletEngine().getHostIP(), "port", "3025", "sendWaitTime", "0",
-            "from", "admin@example.com");
     }
 
     private List<String> getNotificationDetails(TestUtils setup, int notificationNumber)
@@ -384,7 +373,6 @@ public class NotificationIT
         TaskManagerHomePage.gotoPage();
         logout(setup);
         setup.login(username, PASSWORD);
-        TaskManagerHomePage.gotoPage();
         action.run();
         logout(setup);
     }
