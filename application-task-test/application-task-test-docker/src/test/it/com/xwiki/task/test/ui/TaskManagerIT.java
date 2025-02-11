@@ -20,6 +20,7 @@
 package com.xwiki.task.test.ui;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
@@ -69,6 +70,7 @@ class TaskManagerIT
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
     @BeforeAll
+    @AfterAll
     void setup(TestUtils setup) {
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
