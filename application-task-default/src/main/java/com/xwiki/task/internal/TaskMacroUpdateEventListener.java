@@ -20,8 +20,8 @@ package com.xwiki.task.internal;
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +44,6 @@ import org.xwiki.security.authorization.Right;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.TaskException;
@@ -70,9 +69,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     @Inject
     @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
-
-    @Inject
-    private DocumentRevisionProvider revisionProvider;
 
     @Inject
     private TaskManager taskManager;
@@ -152,23 +148,15 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
         List<Task> tasks = this.taskXDOMProcessor.extract(documentContent, document.getDocumentReference());
 
-        String previousVersion = document.getPreviousVersion();
-        List<Task> previousDocTasks = new ArrayList<>();
+        List<Task> previousDocTasks = Collections.emptyList();
 
-        if (previousVersion != null) {
-            try {
-                XWikiDocument previousVersionDoc = revisionProvider.getRevision(document, previousVersion);
-                if (previousVersionDoc != null) {
-                    XDOM previousContent = previousVersionDoc.getXDOM();
-                    previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference());
-                    List<DocumentReference> currentTasksIds =
-                        tasks.stream().map(Task::getReference).collect(Collectors.toList());
-                    previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
-                }
-            } catch (XWikiException e) {
-                logger.warn("There was an exception when attempting to remove the task pages associated to the task "
-                        + "macros present in the previous version of the document:", e);
-            }
+        if (document.getPreviousVersion() != null && document.getOriginalDocument() != null) {
+            XWikiDocument previousVersionDoc = document.getOriginalDocument();
+            XDOM previousContent = previousVersionDoc.getXDOM();
+            previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference());
+            List<DocumentReference> currentTasksIds =
+                tasks.stream().map(Task::getReference).collect(Collectors.toList());
+            previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
         }
         if (!tasks.isEmpty() || !previousDocTasks.isEmpty()) {
             context.put(TASK_UPDATE_FLAG, true);

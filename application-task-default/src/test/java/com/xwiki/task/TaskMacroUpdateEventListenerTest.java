@@ -72,9 +72,6 @@ class TaskMacroUpdateEventListenerTest
     private ContextualAuthorizationManager authorizationManager;
 
     @MockComponent
-    private DocumentRevisionProvider revisionProvider;
-
-    @MockComponent
     @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
 
@@ -146,7 +143,7 @@ class TaskMacroUpdateEventListenerTest
         when(this.docWithTasks.getDocumentReference()).thenReturn(this.pageWithMacro);
         when(this.docWithTasks.getXDOM()).thenReturn(this.docXDOM);
         when(this.docWithTasks.getPreviousVersion()).thenReturn(DOC_PREV_VERSION);
-        when(this.revisionProvider.getRevision(this.docWithTasks, DOC_PREV_VERSION)).thenReturn(this.prevVersionDoc);
+        when(this.docWithTasks.getOriginalDocument()).thenReturn(this.prevVersionDoc);
         when(this.prevVersionDoc.getXDOM()).thenReturn(this.prevVersionDocXDOM);
         when(this.docWithTasks.clone()).thenReturn(this.docWithTasks);
         when(this.prevVersionDoc.clone()).thenReturn(this.prevVersionDoc);
