@@ -24,14 +24,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.swing.plaf.basic.BasicSliderUI.ActionScroller;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.xwiki.test.ui.po.ViewPage;
 
@@ -49,8 +46,8 @@ public class TaskManagerGanttMacro extends ViewPage
     {
         this.ganttElement = ganttElement;
         // Wait for tasks to load.
-        new WebDriverWait(getDriver(), Duration.ofSeconds(getDriver().getTimeout()))
-        .until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//div[position()=5]")));
+        new WebDriverWait(getDriver(), Duration.ofSeconds(getDriver().getTimeout())).until(
+            ExpectedConditions.presenceOfElementLocated(By.xpath(".//div[position()=5]")));
     }
 
     static public List<TaskManagerGanttMacro> getGanttMacrosOnCurrentPage()
@@ -107,7 +104,7 @@ public class TaskManagerGanttMacro extends ViewPage
     public void openTaskPage(String id)
     {
         WebElement taskBar = this.getTaskBar(id).findElement(By.cssSelector(".bar"));
-        Actions builder = new Actions(getDriver());
+        Actions builder = new Actions(getDriver().getWrappedDriver());
         builder.moveToElement(this.ganttElement).doubleClick(taskBar).perform();
     }
 
@@ -172,7 +169,6 @@ public class TaskManagerGanttMacro extends ViewPage
     public void dragTask(String id, int offset)
     {
         WebElement taskBar = this.getTaskBar(id).findElement(By.cssSelector(".bar"));
-        System.err.println("Bababooey " + taskBar.getAttribute("outerHTML"));
         dragElementHorizontal(taskBar, offset);
     }
 
@@ -183,8 +179,9 @@ public class TaskManagerGanttMacro extends ViewPage
 
     private void dragElementHorizontal(WebElement element, int offset)
     {
-        Actions dragAndDrop = new Actions(getDriver()).moveToElement(this.ganttElement)
-            .clickAndHold(element).moveByOffset(offset, 0).release();
+        Actions dragAndDrop =
+            new Actions(getDriver().getWrappedDriver()).moveToElement(this.ganttElement).clickAndHold(element)
+                .moveByOffset(offset, 0).release();
         dragAndDrop.perform();
     }
 }
