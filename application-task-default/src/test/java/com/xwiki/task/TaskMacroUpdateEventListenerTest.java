@@ -142,7 +142,6 @@ class TaskMacroUpdateEventListenerTest
         when(this.context.getWiki()).thenReturn(this.wiki);
         when(this.docWithTasks.getDocumentReference()).thenReturn(this.pageWithMacro);
         when(this.docWithTasks.getXDOM()).thenReturn(this.docXDOM);
-        when(this.docWithTasks.getPreviousVersion()).thenReturn(DOC_PREV_VERSION);
         when(this.docWithTasks.getOriginalDocument()).thenReturn(this.prevVersionDoc);
         when(this.prevVersionDoc.getXDOM()).thenReturn(this.prevVersionDocXDOM);
         when(this.docWithTasks.clone()).thenReturn(this.docWithTasks);

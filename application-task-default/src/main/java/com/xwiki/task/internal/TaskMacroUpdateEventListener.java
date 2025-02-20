@@ -150,7 +150,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
         List<Task> previousDocTasks = Collections.emptyList();
 
-        if (document.getPreviousVersion() != null && document.getOriginalDocument() != null) {
+        if (document.getOriginalDocument() != null) {
             XWikiDocument previousVersionDoc = document.getOriginalDocument();
             XDOM previousContent = previousVersionDoc.getXDOM();
             previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference());
