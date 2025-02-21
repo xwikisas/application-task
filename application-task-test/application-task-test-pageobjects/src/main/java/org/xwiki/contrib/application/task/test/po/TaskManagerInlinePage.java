@@ -19,10 +19,12 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 import org.xwiki.test.ui.po.InlinePage;
+import org.xwiki.test.ui.po.SuggestInputElement;
 
 /**
  * Represents a Task entry page being added (inline mode).
@@ -36,7 +38,7 @@ public class TaskManagerInlinePage extends InlinePage
 
     @FindBy(id = CLASS_PREFIX + "name")
     private WebElement nameElement;
-    
+
     @FindBy(id = CLASS_PREFIX + "project")
     private WebElement projectElement;
 
@@ -45,6 +47,9 @@ public class TaskManagerInlinePage extends InlinePage
 
     @FindBy(id = CLASS_PREFIX + "duedate")
     private WebElement dueDateElement;
+
+    @FindBy(id = CLASS_PREFIX + "startDate")
+    private WebElement startDateElement;
 
     @FindBy(id = CLASS_PREFIX + "severity")
     private WebElement severityElement;
@@ -78,7 +83,7 @@ public class TaskManagerInlinePage extends InlinePage
         Select projectSelect = new Select(this.projectElement);
         projectSelect.selectByValue(project);
     }
-    
+
     /**
      * @return The creation date of the task (automatically set)
      */
@@ -92,8 +97,17 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setDueDate(String dueDate)
     {
-        this.dueDateElement.clear();
+        this.dueDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         this.dueDateElement.sendKeys(dueDate);
+    }
+
+    /**
+     * @param startDate the start date for the task entry
+     */
+    public void setStartDate(String startDate)
+    {
+        this.startDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        this.startDateElement.sendKeys(startDate);
     }
 
     /**
@@ -104,7 +118,7 @@ public class TaskManagerInlinePage extends InlinePage
         Select severitySelect = new Select(this.severityElement);
         severitySelect.selectByValue(severity);
     }
-    
+
     public String getReporter()
     {
         return this.reporterElement.getAttribute("value");
@@ -115,8 +129,12 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setAssignee(String assignee)
     {
-        this.assigneeElement.clear();
-        this.assigneeElement.sendKeys(assignee);
+        if (assignee.isEmpty()) {
+            new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions();
+        } else {
+            new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions().sendKeys(assignee)
+                .selectTypedText();
+        }
     }
 
     /**

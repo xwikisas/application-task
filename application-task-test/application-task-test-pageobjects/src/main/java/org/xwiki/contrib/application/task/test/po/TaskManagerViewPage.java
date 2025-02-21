@@ -45,6 +45,9 @@ public class TaskManagerViewPage extends ViewPage
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "duedate\"]/../../dd")
     private WebElement dueDateElement;
 
+    @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "startDate\"]/../../dd")
+    private WebElement startDateElement;
+
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "completeDate\"]/../../dd")
     private WebElement completionDateElement;
 
@@ -88,19 +91,28 @@ public class TaskManagerViewPage extends ViewPage
         return progressElement.getText();
     }
 
-    public String getCreateDate() {
+    public String getCreateDate()
+    {
         return completionDateElement.getText();
     }
 
-    public String getCompletionDate() {
+    public String getCompletionDate()
+    {
         return completionDateElement.getText();
     }
 
-    public String getDueDate() {
+    public String getDueDate()
+    {
         return dueDateElement.getText();
     }
 
-    public String getReporter() {
+    public String getStartDate()
+    {
+        return startDateElement.getText();
+    }
+
+    public String getReporter()
+    {
         return reporterElement.getText();
     }
 }
