@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -59,6 +60,9 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
 {
+    private static final Set<String> TASK_MACRO_FIELDS = Set.of(Task.ASSIGNEE, Task.CREATE_DATE,
+        Task.STATUS, Task.COMPLETE_DATE, Task.REPORTER, Task.DESCRIPTION, Task.DUE_DATE);
+
     private static final LocalDocumentReference TEMPLATE_REFERENCE =
         new LocalDocumentReference("TaskManager", "TaskManagerTemplate");
 
@@ -113,8 +117,7 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                 XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
                 if (!ownerDocument.isNew()) {
                     ownerDocument.setContent(
-                        taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
-                            ownerDocument.getSyntax()));
+                        taskXDOMProcessor.updateTaskMacroCall(taskObj, ownerDocument, document));
                     context.getWiki().saveDocument(ownerDocument,
                         String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
                 }

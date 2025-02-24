@@ -126,9 +126,16 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                    task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
-                    task.getName(), storageFormat), context.getSyntax());
+                // Since 3.7.0, we store the content on the Task macro in the `description` property of the Task Object.
+                String taskContent = task.getDescription();
+                // Prior to 3.7.0, the content of the task macro was computed from the `name`, `assignee` and
+                // `deadline` properties.
+                if (taskContent == null || taskContent.trim().isEmpty()) {
+                    taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+                        task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
+                        task.getName(), storageFormat), context.getSyntax());
+                }
+
 
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
             } catch (NumberFormatException | ComponentLookupException | TaskException e) {

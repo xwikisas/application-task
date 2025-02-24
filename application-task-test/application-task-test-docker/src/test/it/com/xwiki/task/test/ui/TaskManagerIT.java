@@ -126,10 +126,10 @@ class TaskManagerIT
         int taskStatusCellIndex = liveTableElement.getColumnIndex("Status") + 1;
         assertEquals(2, liveTableElement.getRowCount());
         WebElement row = liveTableElement.getRow(1);
-        assertEquals("Do this", liveTableElement.getCell(row, taskTileCellIndex).getText());
+        assertEquals("Task_1", liveTableElement.getCell(row, taskTileCellIndex).getText());
         assertEquals("Done", liveTableElement.getCell(row, taskStatusCellIndex).getText());
         row = liveTableElement.getRow(2);
-        assertEquals("Do this as well", liveTableElement.getCell(row, taskTileCellIndex).getText());
+        assertEquals("Task_2", liveTableElement.getCell(row, taskTileCellIndex).getText());
         assertEquals("In Progress", liveTableElement.getCell(row, taskStatusCellIndex).getText());
     }
 
@@ -191,7 +191,7 @@ class TaskManagerIT
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
         row = taskReport.getRow(2);
-        assertEquals("#3\nDo this  as late as @Admin 2023/01/01 12:00",
+        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
         assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
         assertEquals("Admin", taskReport.getCell(row, taskAssigneeCellIndex).getText());
@@ -200,6 +200,44 @@ class TaskManagerIT
 
     @Test
     @Order(7)
+    void changeTaskPageAssigneeAndDuedate(TestUtils setup) {
+        setup.gotoPage("Task_3", "WebHome");
+        TaskManagerViewPage viewPage = new TaskManagerViewPage();
+        // Check initial value.
+        assertEquals("Do this @Admin as late as 2023/01/01 12:00", viewPage.getDescription());
+        // Changing the assignee and deadline should update the description/task macro content accordingly.
+        viewPage.edit();
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        inlinePage.setAssignee("XWiki.Admin2");
+        inlinePage.setDueDate("01/01/2025 12:00:00");
+        inlinePage.clickSaveAndView(true);
+        viewPage = new TaskManagerViewPage();
+        assertEquals("Do this @Admin2 as late as 2025/01/01 12:00", viewPage.getDescription());
+        // Clearing the assignee and deadline should remove the macro calls from the content.
+        viewPage.edit();
+        inlinePage = new TaskManagerInlinePage();
+        inlinePage.clearAssignee();
+        inlinePage.clearDueDate();
+        inlinePage.clickSaveAndView(true);
+        viewPage = new TaskManagerViewPage();
+        assertEquals("Do this  as late as ", viewPage.getDescription());
+        // Setting new assignee and deadline should append them at the end of the description.
+        viewPage.edit();
+        inlinePage = new TaskManagerInlinePage();
+        inlinePage.setAssignee("XWiki.Admin");
+        inlinePage.setDueDate("01/01/2025 12:00:00");
+        inlinePage.clickSaveAndView(true);
+        viewPage = new TaskManagerViewPage();
+        assertEquals("Do this  as late as @Admin 2025/01/01 12:00", viewPage.getDescription());
+        // Make sure the task macro was also updated.
+        setup.gotoPage(pageWithComplexTaskMacros);
+        ViewPage pageWithMacro = new ViewPage();
+        assertEquals("#3\nDo this  as late as @Admin 2025/01/01 12:00", pageWithMacro.getContent());
+
+    }
+
+    @Test
+    @Order(8)
     void deleteTaskPage(TestUtils setup) throws Exception
     {
         // Deleting the page that contains task macros should also delete the task pages.
@@ -212,7 +250,7 @@ class TaskManagerIT
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     void deleteTaskMacro(TestUtils setup) throws Exception
     {
         // Deleting a task page should also delete the task macro from the owner page.
