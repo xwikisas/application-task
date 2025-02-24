@@ -110,7 +110,7 @@ public class Task
     public static final String PROGRESS = "progress";
 
     /**
-     * The name of the PROGRESS field.
+     * The name of the DESCRIPTION field.
      */
     public static final String DESCRIPTION = "description";
 

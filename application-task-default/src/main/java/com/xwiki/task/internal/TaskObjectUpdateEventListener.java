@@ -60,9 +60,6 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
 {
-    private static final Set<String> TASK_MACRO_FIELDS = Set.of(Task.ASSIGNEE, Task.CREATE_DATE,
-        Task.STATUS, Task.COMPLETE_DATE, Task.REPORTER, Task.DESCRIPTION, Task.DUE_DATE);
-
     private static final LocalDocumentReference TEMPLATE_REFERENCE =
         new LocalDocumentReference("TaskManager", "TaskManagerTemplate");
 
