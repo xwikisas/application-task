@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.internal.notifications;
+package com.xwiki.task.internal.notifications.taskchanged;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +49,7 @@ import com.xwiki.task.model.Task;
  */
 @Component
 @Singleton
-@Named("com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener")
+@Named("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener")
 public class TaskChangedEventNotificationListener extends AbstractEventListener
 {
     /**

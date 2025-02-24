@@ -19,7 +19,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.notifications;
+package com.xwiki.task.notifications.taskchanged;
 
 import java.util.Date;
 import java.util.List;
@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.test.junit5.mockito.ComponentTest;
+import org.xwiki.test.junit5.mockito.InjectMockComponents;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -38,9 +39,9 @@ import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.StringProperty;
-import com.xwiki.task.internal.notifications.TaskChangedEvent;
-import com.xwiki.task.internal.notifications.TaskChangedEventFactory;
-import com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventFactory;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener;
 import com.xwiki.task.model.Task;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -60,8 +61,8 @@ class TaskChangedEventFactoryTest
             Task.STATUS, List.of(Task.STATUS_IN_PROGRESS, Task.STATUS_DONE)
     );
 
-    // Component under test.
-    private TaskChangedEventFactory taskChangedEventFactory = new TaskChangedEventFactory();
+    @InjectMockComponents
+    private TaskChangedEventFactory taskChangedEventFactory;
 
     @Mock
     private XWikiDocument currTaskPage;

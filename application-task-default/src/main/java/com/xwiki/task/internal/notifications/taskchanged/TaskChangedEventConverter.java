@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.internal.notifications;
+package com.xwiki.task.internal.notifications.taskchanged;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * @since 3.7
  */
 @Singleton
-@Named("com.xwiki.task.internal.notifications.TaskChangedEventConverter")
+@Named("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventConverter")
 @Component
 public class TaskChangedEventConverter implements RecordableEventConverter
 {

@@ -19,7 +19,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.notifications;
+package com.xwiki.task.notifications.taskchanged;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,9 +40,9 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.internal.event.XObjectAddedEvent;
 import com.xpn.xwiki.internal.event.XObjectUpdatedEvent;
-import com.xwiki.task.internal.notifications.TaskChangedEvent;
-import com.xwiki.task.internal.notifications.TaskChangedEventFactory;
-import com.xwiki.task.internal.notifications.TaskChangedEventNotificationListener;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventFactory;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener;
 import com.xwiki.task.model.Task;
 
 import static org.mockito.ArgumentMatchers.any;

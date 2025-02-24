@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.internal.notifications;
+package com.xwiki.task.internal.notifications.taskchanged;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -34,7 +34,7 @@ import org.xwiki.eventstream.RecordableEventDescriptor;
  */
 @Component
 @Singleton
-@Named("com.xwiki.task.internal.notifications.TaskChangedEventDescriptor")
+@Named("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventDescriptor")
 public class TaskChangedEventDescriptor implements RecordableEventDescriptor
 {
     @Override

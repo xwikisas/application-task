@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.internal.notifications;
+package com.xwiki.task.internal.notifications.taskchanged;
 
 import java.util.List;
 
@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
@@ -47,7 +48,7 @@ import com.xwiki.task.model.Task;
  */
 @Component
 @Singleton
-@Named("com.xwiki.task.internal.notifications.TaskChangedEventListener")
+@Named("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventListener")
 public class TaskChangedEventListener extends AbstractEventListener
 {
     @Inject
@@ -82,7 +83,9 @@ public class TaskChangedEventListener extends AbstractEventListener
         }
         WatchedLocationReference docRef =
             watchedEntityFactory.createWatchedLocationReference(taskChangedEvent.getDocument().getDocumentReference());
+        // In order to receive notifications, watch the task page for the newly assigned user.
         watchTask(docRef, (String) taskChangedEvent.getCurrentValue());
+        // In order to stop receiving notifications, unwatch the task page for the unassigned user.
         unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue());
     }
 
@@ -93,7 +96,8 @@ public class TaskChangedEventListener extends AbstractEventListener
             try {
                 watchedEntitiesManager.watchEntity(docRef, user);
             } catch (NotificationException e) {
-                logger.error("Failed to watch task page [{}] for user [{}]. Cause:", docRef, userFullName, e);
+                logger.error("Failed to watch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
+                    docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }
@@ -105,7 +109,8 @@ public class TaskChangedEventListener extends AbstractEventListener
             try {
                 watchedEntitiesManager.unwatchEntity(docRef, user);
             } catch (NotificationException e) {
-                logger.error("Failed to unwatch task page [{}] for user [{}]. Cause:", docRef, userFullName, e);
+                logger.error("Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
+                    docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }

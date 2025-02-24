@@ -97,9 +97,9 @@
     <td>#displayEmailNotificationEventUser($event.user, false)</td>
     <td>$eventText</td>
     <td style="text-align: right;">
-      #if($diffUrl!='')<a href="$escapetool.xml($diffUrl)">#end
+      #if ($diffUrl != '')<a href="$escapetool.xml($diffUrl)">#end
       $escapetool.xml($xwiki.formatDate($event.date))
-      #if($diffUrl!='')</a>#end
+      #if ($diffUrl != '')</a>#end
     </td>
   </tr>
 #end
@@ -107,7 +107,7 @@
 #macro (displayTaskNotificationDetails $event)
   <table class="notification-event-details">
     #foreach ($thisEvent in $event.events)
-      #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.TaskChangedEvent')
+      #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent')
         #displayTaskChangedEventDetails($thisEvent)
       #end
     #end

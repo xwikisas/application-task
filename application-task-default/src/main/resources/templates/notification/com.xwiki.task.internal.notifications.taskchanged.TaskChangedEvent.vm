@@ -97,9 +97,9 @@
     <td><span class="notification-event-user">#displayNotificationEventUser($event.user)</span></td>
     <td class="description">$eventText</td>
     <td class="text-right text-muted">
-      #if($diffUrl!='')<a href="$escapetool.xml($diffUrl)">#end
+      #if ($diffUrl != '')<a href="$escapetool.xml($diffUrl)">#end
       $escapetool.xml($xwiki.formatDate($event.date))
-      #if($diffUrl!='')</a>#end
+      #if ($diffUrl != '')</a>#end
     </td>
   </tr>
 #end
@@ -122,7 +122,7 @@
 #define ($details)
   #define ($rows)
     #foreach ($thisEvent in $event.events)
-      #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.TaskChangedEvent')
+      #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent')
         #displayEventDetails($thisEvent)
       #end
     #end

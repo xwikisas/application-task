@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.task.internal.notifications;
+package com.xwiki.task.internal.notifications.taskchanged;
 
 import java.util.HashMap;
 import java.util.Map;
