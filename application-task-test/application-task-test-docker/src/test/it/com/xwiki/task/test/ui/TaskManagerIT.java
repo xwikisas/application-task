@@ -126,10 +126,10 @@ class TaskManagerIT
         int taskStatusCellIndex = liveTableElement.getColumnIndex("Status") + 1;
         assertEquals(2, liveTableElement.getRowCount());
         WebElement row = liveTableElement.getRow(1);
-        assertEquals("Task_1", liveTableElement.getCell(row, taskTileCellIndex).getText());
+        assertEquals("Do this", liveTableElement.getCell(row, taskTileCellIndex).getText());
         assertEquals("Done", liveTableElement.getCell(row, taskStatusCellIndex).getText());
         row = liveTableElement.getRow(2);
-        assertEquals("Task_2", liveTableElement.getCell(row, taskTileCellIndex).getText());
+        assertEquals("Do this as well", liveTableElement.getCell(row, taskTileCellIndex).getText());
         assertEquals("In Progress", liveTableElement.getCell(row, taskStatusCellIndex).getText());
     }
 

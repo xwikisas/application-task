@@ -277,9 +277,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     private void populateObjectWithMacroParams(XWikiContext context, Task task, BaseObject object)
     {
-        if (object.getStringValue(Task.NAME).isEmpty()) {
-            object.set(Task.NAME, task.getName(), context);
-        }
+        object.set(Task.NAME, task.getName(), context);
 
         object.set(Task.REPORTER, serializer.serialize(task.getReporter()), context);
 

@@ -132,7 +132,7 @@ public class TaskXDOMProcessor
                     return MacroBlockFinder.Lookup.SKIP;
                 }
                 task.setReference(taskRef);
-                task.setName(taskRef.getName().equals("WebHome") ? taskRef.getParent().getName() : taskRef.getName());
+                task.setName(macro.getContent());
                 tasks.add(task);
             }
             return MacroBlockFinder.Lookup.CONTINUE;
