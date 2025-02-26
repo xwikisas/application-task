@@ -31,8 +31,10 @@ import javax.inject.Singleton;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.observation.AbstractEventListener;
+import org.xwiki.observation.ObservationContext;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
+import org.xwiki.refactoring.event.DocumentRenamingEvent;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -69,6 +71,9 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Inject
     private Provider<XWikiContext> contextProvider;
 
+    @Inject
+    private ObservationContext observationContext;
+
     /**
      * Initialize the listener.
      */
@@ -81,6 +86,11 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
+        if (observationContext.isIn(new DocumentRenamingEvent())) {
+            // If the page is renamed, don't send notifications like it was a newly created task.
+            return;
+        }
+
         List<String> events;
         if (event instanceof XObjectUpdatedEvent) {
             events = WATCHED_FIELDS;
