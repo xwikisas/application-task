@@ -217,11 +217,7 @@
               $services.icon.render('application_view_list')
               $escapetool.xml($doc.displayPrettyName('description', false, false))
             &lt;/label&gt;
-          : #if("$!doc.getValue('owner')" != '')
-            $doc.display('description', 'view')
-            #else
-            $doc.display('description')
-            #end
+          : $doc.display('description')
         )))
         (% class="form-group col-xs-12 col-sm-12 col-md-12" %)
         (((
