@@ -19,7 +19,6 @@
  */
 package com.xwiki.task;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -44,6 +43,8 @@ import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.listener.MetaData;
 import org.xwiki.rendering.macro.MacroExecutionException;
+import org.xwiki.rendering.parser.ParseException;
+import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
@@ -53,7 +54,6 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.MacroBlockFinder;
-import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
@@ -92,6 +92,10 @@ public class TaskXDOMProcessorTest
     @MockComponent
     @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
+
+    @MockComponent
+    @Named("xwiki/2.1")
+    private Parser xwikiParser;
 
     @Captor
     private ArgumentCaptor<Function<MacroBlock, MacroBlockFinder.Lookup>> visitorLambdaCaptor;
@@ -137,7 +141,7 @@ public class TaskXDOMProcessorTest
     private final DocumentReference contentSource = new DocumentReference("xwiki", "XWiki", "Doc");
 
     @BeforeEach
-    void setup() throws TaskException, MacroExecutionException, ComponentLookupException
+    void setup() throws TaskException, MacroExecutionException, ComponentLookupException, ParseException
     {
         Map<String, String> taskMacro2Params = initTaskMacroParams(TASK2_ID, DEFAULT_TASK_DATE_STRING,
             Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
@@ -160,6 +164,7 @@ public class TaskXDOMProcessorTest
         when(this.taskDocument.getDocumentReference()).thenReturn(task1Reference);
         when(this.ownerDocument.getDocumentReference()).thenReturn(contentSource);
         when(this.taskDocument.getContent()).thenReturn(TASK1_ID);
+        when(this.xwikiParser.parse(any())).thenReturn(this.docContent);
     }
 
     @Test
@@ -178,7 +183,7 @@ public class TaskXDOMProcessorTest
         assertEquals(1, result.size());
         Task task = result.get(0);
         assertEquals(task1Reference.getName(), task.getName());
-        assertEquals(TASK1_ID, task.getDescription());
+        assertEquals(TASK1_ID, task.getName());
         assertEquals(this.task1Reference, task.getReference());
     }
 

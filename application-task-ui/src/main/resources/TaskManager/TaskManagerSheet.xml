@@ -31,7 +31,7 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>#set($name = $!{doc.getObject('TaskManager.TaskManagerClass').getProperty('name').value})#if("$!name" != '')$stringtool.abbreviate($name.trim(), 30)#elseif("$!request.title"!='')$request.title#elseif($doc.documentReference.name != 'WebHome')$doc.documentReference.name#else$doc.documentReference.parent.name#end</title>
+  <title>#if("$!doc.getValue('owner')"!='')#set($name="$!doc.title")#else#set($name="$!doc.getValue('name')")#end#if("$!name"!='')$name#elseif("$!request.title"!='')$request.title#elseif($doc.documentReference.name!='WebHome')$doc.documentReference.name#else$doc.documentReference.parent.name#end</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
@@ -133,6 +133,7 @@
         (((
           (% class="form-group" %)
           (((
+          #if ("$!doc.getValue('owner')" == '')
             ## Automatically set task name property from the document name
             ; &lt;label for="TaskManager.TaskManagerClass_0_name"&gt;
                 $services.icon.render('book')
@@ -147,6 +148,12 @@
                 #end
               #end
             :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($taskName)"/&gt;
+          #else
+            ; &lt;label for="xwikidoctitleinput"&gt;
+                $escapetool.xml($services.localization.render('core.editors.content.titleField.label'))
+              &lt;/label&gt;
+            : &lt;input type="text" id="xwikidoctitleinput" name="title" value="$!escapetool.xml($!doc.title)" /&gt;
+          #end
           )))
         )))
         (% class="col-xs-12 col-sm-4 col-md-4" %)

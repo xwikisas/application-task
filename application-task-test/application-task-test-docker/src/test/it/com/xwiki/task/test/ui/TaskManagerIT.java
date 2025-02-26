@@ -203,35 +203,36 @@ class TaskManagerIT
     void changeTaskPageAssigneeAndDuedate(TestUtils setup) {
         setup.gotoPage("Task_3", "WebHome");
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
-        // Check initial value.
-        assertEquals("Do this @Admin as late as 2023/01/01 12:00", viewPage.getDescription());
         // Changing the assignee and deadline should update the description/task macro content accordingly.
         viewPage.edit();
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
         inlinePage.setAssignee("XWiki.Admin2");
         inlinePage.setDueDate("01/01/2025 12:00:00");
         inlinePage.clickSaveAndView(true);
-        viewPage = new TaskManagerViewPage();
-        assertEquals("Do this @Admin2 as late as 2025/01/01 12:00", viewPage.getDescription());
+        setup.gotoPage(pageWithComplexTaskMacros);
+        ViewPage pageWithMacro = new ViewPage();
+        assertEquals("#3\nDo this @Admin2 as late as 2025/01/01 12:00", pageWithMacro.getContent());
         // Clearing the assignee and deadline should remove the macro calls from the content.
+        setup.gotoPage("Task_3", "WebHome");
+        viewPage = new TaskManagerViewPage();
         viewPage.edit();
         inlinePage = new TaskManagerInlinePage();
         inlinePage.clearAssignee();
         inlinePage.clearDueDate();
         inlinePage.clickSaveAndView(true);
-        viewPage = new TaskManagerViewPage();
-        assertEquals("Do this  as late as ", viewPage.getDescription());
+        setup.gotoPage(pageWithComplexTaskMacros);
+        pageWithMacro = new ViewPage();
+        assertEquals("#3\nDo this  as late as ", pageWithMacro.getContent());
         // Setting new assignee and deadline should append them at the end of the description.
+        setup.gotoPage("Task_3", "WebHome");
+        viewPage = new TaskManagerViewPage();
         viewPage.edit();
         inlinePage = new TaskManagerInlinePage();
         inlinePage.setAssignee("XWiki.Admin");
         inlinePage.setDueDate("01/01/2025 12:00:00");
         inlinePage.clickSaveAndView(true);
-        viewPage = new TaskManagerViewPage();
-        assertEquals("Do this  as late as @Admin 2025/01/01 12:00", viewPage.getDescription());
-        // Make sure the task macro was also updated.
         setup.gotoPage(pageWithComplexTaskMacros);
-        ViewPage pageWithMacro = new ViewPage();
+        pageWithMacro = new ViewPage();
         assertEquals("#3\nDo this  as late as @Admin 2025/01/01 12:00", pageWithMacro.getContent());
 
     }

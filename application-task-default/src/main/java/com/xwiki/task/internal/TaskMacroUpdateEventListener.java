@@ -257,10 +257,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (docChanged) {
             taskDoc.setXObject(taskObj.getNumber(), clonedObj);
         }
-        if (!taskDoc.getContent().equals(task.getDescription())) {
-            taskDoc.setContent(task.getDescription());
-            docChanged = true;
-        }
 
         if (taskDoc.isNew()) {
             taskDoc.setHidden(true);
