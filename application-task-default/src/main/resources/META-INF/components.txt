@@ -24,3 +24,8 @@ com.xwiki.task.internal.macro.TaskMacro
 com.xwiki.task.internal.macro.TasksMacro
 com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource
+com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventConverter
+com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventDescriptor
+com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener
+com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventListener
+com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventFactory

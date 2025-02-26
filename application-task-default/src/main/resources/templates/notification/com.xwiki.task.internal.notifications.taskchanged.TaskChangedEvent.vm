@@ -1,0 +1,133 @@
+## ---------------------------------------------------------------------------
+## See the NOTICE file distributed with this work for additional
+## information regarding copyright ownership.
+##
+## This is free software; you can redistribute it and/or modify it
+## under the terms of the GNU Lesser General Public License as
+## published by the Free Software Foundation; either version 2.1 of
+## the License, or (at your option) any later version.
+##
+## This software is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public
+## License along with this software; if not, write to the Free
+## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+## ---------------------------------------------------------------------------
+
+#template('notification/macros.vm')
+
+#set ($mainIcon = 'list')
+#set ($smallIcon = '')
+
+#macro (getGenericFieldDescription $customEventInfo $eventText)
+  ## The notification text will be available in `$eventText` after calling this macro.
+  #set ($localizationParams = [
+    $customEventInfo['currentValue'],
+    $customEventInfo['previousValue']
+  ])
+  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams))
+#end
+
+#macro (getAssigneeDescription $customEventInfo $eventText)
+  #if ("$!customEventInfo['currentValue']" == '')
+    #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
+    #else
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+    #end
+  #elseif ($customEventInfo['currentValue'] == $xwiki.getUser().getUser().getFullName())
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #end
+  #set ($localizationParams = [
+    '__currentUser__',
+    '__previousUser__'
+  ])
+  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+  #set ($eventText = $eventText.replace('__currentUser__', $!xwiki.getUserName($customEventInfo['currentValue'])))
+  #set ($eventText = $eventText.replace('__previousUser__', $!xwiki.getUserName($customEventInfo['previousValue'])))
+#end
+
+#macro (getDueDateDescription $customEventInfo $eventText)
+  ## Send different messages if the due date was extended or reduced.
+  ## The date is displayed using the format configured in datemacro.
+  #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+  #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+  #if ($customEventInfo['previousValue'])
+    #if (!$customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+    #elseif ($customEventInfo['previousValue'] < $customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.later')
+    #else
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
+    #end
+    #set ($customEventInfo['previousValue'] = 
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
+      ))
+    )
+  #end
+  #if ($customEventInfo['currentValue'])
+    #set ($customEventInfo['currentValue'] = 
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
+      ))
+    )
+  #end
+  #getGenericFieldDescription($customEventInfo $eventText)
+#end
+
+#macro (displayEventDetails $event)
+  #set ($customEventInfo = $jsontool.fromString($event.getBody()))
+  #set ($diffUrl = $xwiki.getURL($event.document, 'view', "viewer=changes&rev2=${event.documentVersion}"))
+  #set ($eventText = '')
+  #if ($customEventInfo['type'] == 'assignee')
+    #getAssigneeDescription($customEventInfo $eventText)
+  #elseif ($customEventInfo['type'] == 'duedate')
+    #getDueDateDescription($customEventInfo $eventText)
+  #else
+    #getGenericFieldDescription($customEventInfo $eventText)
+  #end
+  <tr>
+    <td><span class="notification-event-user">#displayNotificationEventUser($event.user)</span></td>
+    <td class="description">$eventText</td>
+    <td class="text-right text-muted">
+      #if ($diffUrl != '')<a href="$escapetool.xml($diffUrl)">#end
+      $escapetool.xml($xwiki.formatDate($event.date))
+      #if ($diffUrl != '')</a>#end
+    </td>
+  </tr>
+#end
+
+#define ($content)
+  ## All folded events should have the same document, so display the first one as a title for the group.
+  #set ($document = $xwiki.getDocument($!event.events[0].document))
+  <div class="notification-page">
+    <a href="$!escapetool.xml($document.getURL())">$!document.getDisplayTitle()</a>
+    #if ($xcontext.getContext().getOriginalWikiId() != $document.getDocumentReference().getWikiReference().name)
+      <span class="text-muted">($services.wiki.getById($document.getDocumentReference().getWikiReference().name).prettyName)</span>
+    #end
+  </div>
+  <div class="notification-description">
+    $services.localization.render('taskmanager.events.taskChangedEvent.title', 'xhtml/1.0', [])
+    <div><small class="text-muted">$escapetool.xml($!services.date.displayTimeAgo($!event.events[0].date))</small></div>
+  </div>
+#end
+
+#define ($details)
+  #define ($rows)
+    #foreach ($thisEvent in $event.events)
+      #if ($thisEvent.type == 'com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent')
+        #displayEventDetails($thisEvent)
+      #end
+    #end
+  #end
+  #displayNotificationEventDetailsSkeletons($event.events.size(), $rows)
+#end
+
+#displayNotificationEventSkeleton($mainIcon $smallIcon $content $details)
