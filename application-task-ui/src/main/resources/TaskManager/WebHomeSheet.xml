@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content>{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
-#if ($services.licensing.licensor.hasLicensureForEntity($mainReference))
+#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
 #else
 
