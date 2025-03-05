@@ -187,12 +187,13 @@ class TaskManagerIT
 
     @Test
     @Order(6)
-    void taskReport(TestUtils setup) {
+    void taskReport(TestUtils setup)
+    {
         setup.createPage(pageWithTaskRaport, TASK_REPORT_MACRO);
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
         LiveTableElement taskReport = viewPage.getTaskReportLiveTable();
         taskReport.waitUntilReady();
-        assertEquals(2, taskReport.getRowCount());
+        assertEquals(3, taskReport.getRowCount());
         int taskTileCellIndex = taskReport.getColumnIndex("Task") + 1;
         int taskDeadlineCellIndex = taskReport.getColumnIndex("Deadline") + 1;
         int taskAssigneeCellIndex = taskReport.getColumnIndex("Assignee") + 1;
@@ -203,6 +204,11 @@ class TaskManagerIT
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
         row = taskReport.getRow(2);
+        assertEquals("#2\nDo this as well",
+            taskReport.getCell(row, taskTileCellIndex).getText());
+        assertEquals("-", taskReport.getCell(row, taskDeadlineCellIndex).getText());
+        assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
+        row = taskReport.getRow(3);
         assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
         assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
