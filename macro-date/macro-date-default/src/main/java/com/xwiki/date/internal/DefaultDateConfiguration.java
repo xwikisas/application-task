@@ -53,28 +53,19 @@ public class DefaultDateConfiguration implements DateMacroConfiguration
     private ConfigurationSource xwikiProperties;
 
     @Inject
-    @Named("wiki")
-    private ConfigurationSource preferencesConfiguration;
-
-    @Inject
     @Named(DateMacroConfigurationSource.HINT)
     private ConfigurationSource configurationSource;
 
     @Override
     public String getStorageDateFormat()
     {
-        return getProperty(STORAGE_FORMAT_KEY, getDefaultDateFormat());
+        return getProperty(STORAGE_FORMAT_KEY, DEFAULT_DATE_FORMAT);
     }
 
     @Override
     public String getDisplayDateFormat()
     {
-        return getProperty(DISPLAY_FORMAT_KEY, getDefaultDateFormat());
-    }
-
-    private String getDefaultDateFormat()
-    {
-        return preferencesConfiguration.getProperty("dateformat", DEFAULT_DATE_FORMAT);
+        return getProperty(DISPLAY_FORMAT_KEY, DEFAULT_DATE_FORMAT);
     }
 
     private <T> T getProperty(String key, T defaultValue)
