@@ -42,10 +42,16 @@ public interface TaskConfiguration
 
     /**
      * @return a list of fold events during which the task listeners should execute. By default, the listeners do not
-     * execute during fold events.
+     *     execute during fold events.
      * @since 3.1.1
      */
     List<String> getNotSkippedFoldEvents();
+
+    /**
+     * @return the status that will be set by default when creating a task macro.
+     * @since 3.7.0
+     */
+    String getDefaultInlineStatus();
 
     /**
      * @return the date format that should be used for displaying purposes.

@@ -238,6 +238,7 @@ rendering.macro.task-report.parameter.id.name=Table ID
 rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
 
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
+TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
 
 ## Kanban Board
 rendering.macro.kanbanboard.parameter.columns.name=Columns

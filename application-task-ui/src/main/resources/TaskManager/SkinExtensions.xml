@@ -137,7 +137,7 @@
       }
       let baseURL = new XWiki.Document(taskDocument).getRestURL();
 
-      let restURL = baseURL + '/task' + '?status=' + (checkbox.is(':checked') ? "Done" : "InProgress");
+      let restURL = baseURL + '/task?status=toggle';
 
       checkbox.prop("disabled", true);
       let notification = new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.inprogress')), "inprogress");

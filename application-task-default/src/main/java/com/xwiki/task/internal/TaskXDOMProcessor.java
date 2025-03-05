@@ -54,6 +54,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
@@ -93,6 +94,9 @@ public class TaskXDOMProcessor
 
     @Inject
     private MacroUtils macroUtils;
+
+    @Inject
+    private TaskConfiguration taskConfiguration;
 
     @Inject
     @Named("xwiki/2.1")
@@ -367,7 +371,7 @@ public class TaskXDOMProcessor
             task.setReporter(resolver.resolve(reporter));
         }
 
-        String taskStatus = macroParams.getOrDefault(Task.STATUS, Task.STATUS_IN_PROGRESS);
+        String taskStatus = macroParams.getOrDefault(Task.STATUS, taskConfiguration.getDefaultInlineStatus());
         task.setStatus(taskStatus);
 
         String strCreateDate = macroParams.getOrDefault(Task.CREATE_DATE, "");
