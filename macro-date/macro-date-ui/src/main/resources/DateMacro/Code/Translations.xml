@@ -48,7 +48,9 @@ rendering.macro.date.parameter.displayFormat.name=Date display format
 rendering.macro.date.parameter.displayFormat.description=The format that will be used to display the date. The format should be in the Java Date Format Standard. For example, if you want the macro to display the date in the following manner `Sunday, 22.01`, this parameter should have the following value `EEEEE, dd.MM`.
 
 DateMacro.Code.ConfigurationClass_storageDateFormat=The format that will be used to store dates used in Task Manager.
-DateMacro.Code.ConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.</content>
+DateMacro.Code.ConfigurationClass_storageDateFormat.hint=Changing this value will only affect the (date and task) macros created from this moment onwards. The macros created before will have their date properties stored in the previous format and will not display correctly anymore. Change this property if you want the date macro parameters to have a different storage format.
+DateMacro.Code.ConfigurationClass_displayDateFormat=The format that will be used to display dates used in Task Manager.
+DateMacro.Code.ConfigurationClass_displayDateFormat.hint=Changing this property will affect how the existing and newly created date macros will display. i.e. 'MMM YYYY' will display 'Jan 2025'.</content>
   <object>
     <name>DateMacro.Code.Translations</name>
     <number>0</number>
