@@ -19,7 +19,6 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +27,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.interactions.Actions;
 import org.xwiki.test.ui.po.ViewPage;
 
@@ -46,8 +44,8 @@ public class TaskManagerGanttMacro extends ViewPage
     {
         this.ganttElement = ganttElement;
         // Wait for tasks to load.
-        new WebDriverWait(getDriver(), Duration.ofSeconds(getDriver().getTimeout())).until(
-            ExpectedConditions.presenceOfElementLocated(By.xpath(".//div[position()=5]")));
+        getDriver().waitUntilCondition(
+            ExpectedConditions.presenceOfElementLocated(By.cssSelector(".gantt-container, .box")));
     }
 
     static public List<TaskManagerGanttMacro> getGanttMacrosOnCurrentPage()
@@ -89,6 +87,12 @@ public class TaskManagerGanttMacro extends ViewPage
         return this.getSvgGantt().findElement(By.cssSelector(".bar-wrapper[data-id='" + id + "']"));
     }
 
+    /**
+     * Get all task ids of tasks present in the gantt diagram.
+     *
+     * @return a list of ids of all tasks in the gantt diagram. The task ids are page references in the
+     *     'xwiki:Space.Page' format.
+     */
     public List<String> getTaskIds()
     {
         return this.getSvgGantt().findElements(By.cssSelector(".bar-wrapper")).stream().map((elem) -> {

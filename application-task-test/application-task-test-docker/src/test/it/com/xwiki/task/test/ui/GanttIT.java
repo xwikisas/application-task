@@ -19,18 +19,15 @@
  */
 package com.xwiki.task.test.ui;
 
-import java.time.Duration;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Order;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CreatePagePage;
@@ -45,8 +42,13 @@ import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
- * UI Tests for the notifications received when being assigned to a task.
+ * UI Tests for the Gantt diagram macro. The application uses the frappe-gantt library to draw the diagram, with several
+ * custom patches. Updating the version of frappe-gantt might cause the tests to break.
  *
  * @version $Id$
  * @since 3.7
@@ -59,10 +61,10 @@ public class GanttIT
     private static final String PASSWORD = "password";
 
     private static final DocumentReference GANTT_MACROS_PAGE =
-        new DocumentReference("xwiki", "Test Space", "TestTaskGantt");
+        new DocumentReference("xwiki", "TestSpace", "TestTaskGantt");
 
     private static final DocumentReference TASK_MACROS_PAGE =
-        new DocumentReference("xwiki", "Test Space", "TestTaskMacros");
+        new DocumentReference("xwiki", "TestSpace", "TestTaskMacros");
 
     private static final String GANTT_MACRO =
         "\n\n{{taskgantt readonly=\"false\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
@@ -77,33 +79,16 @@ public class GanttIT
         "\n\n{{taskgantt projects=\"Other,Test Project\" hideNoDueDate=\"true\"}}{{/taskgantt}}";
 
     private static final String GANTT_MACRO_FILTER_SPACES =
-        "\n\n{{taskgantt spaces=\"Test Space\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
+        "\n\n{{taskgantt spaces=\"TestSpace\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
 
     private static final String GANTT_MACROS =
         GANTT_MACRO + GANTT_MACRO_READONLY + GANTT_MACRO_FILTER_ASSIGNEES + GANTT_MACRO_FILTER_PROJECTS
             + GANTT_MACRO_FILTER_SPACES;
 
-    private static final String TASK_MACROS = "{{task reference=\"Test Space/Task_0\" reporter=\"XWiki.Admin\" "
+    private static final String TASK_MACROS = "{{task reference=\"TestSpace/Task_0\" reporter=\"XWiki.Admin\" "
         + "createDate=\"2001/01/01 12:00\" status=\"Done\" " + "completeDate=\"2001/01/01 12:00\"}}"
         + "Do this {{mention reference=\"XWiki.Admin\"/}} as late as {{date value=\"2001/01/03 12:00\"/}}"
         + "{{/task}}";
-
-    @AfterAll
-    public void teardownTaskPages(TestUtils setup)
-    {
-        setup.loginAsSuperAdmin();
-        setup.deletePage(TASK_MACROS_PAGE);
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Test 0"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Test 1"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Test 2"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Test 3"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "No due date test"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Rights test view"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Rights test edit"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_Test Project"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_Test Project 2"));
-        logout(setup);
-    }
 
     @BeforeAll
     void setup(TestUtils setup) throws Exception
@@ -119,27 +104,27 @@ public class GanttIT
 
         // Create test tasks.
 
-        createTaskPage("Test 0", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki.Admin", "Other", "Low",
+        createTaskPage("TestTask0", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki.Admin", "Other", "Low",
             Task.STATUS_IN_PROGRESS, "50");
-        createTaskPage("Test 1", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki." + TEST_USERNAME, "Test Project",
-            "Low", Task.STATUS_IN_PROGRESS, "50");
-        createTaskPage("Test 2", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2", "Low",
+        createTaskPage("TestTask1", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki." + TEST_USERNAME,
+            "Test Project", "Low", Task.STATUS_IN_PROGRESS, "50");
+        createTaskPage("TestTask2", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2", "Low",
             Task.STATUS_IN_PROGRESS, "50");
-        createTaskPage("Test 3", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2", "Low",
-            Task.STATUS_IN_PROGRESS, "50");
-
-        createTaskPage("No due date test", "01/01/2001 00:00:00", " ", "XWiki.Admin", "Other", "Medium",
+        createTaskPage("TestTask3", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2", "Low",
             Task.STATUS_IN_PROGRESS, "50");
 
-        createTaskPage("Rights test view", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Other", "Low",
+        createTaskPage("NoDueDateTest", "01/01/2001 00:00:00", " ", "XWiki.Admin", "Other", "Medium",
             Task.STATUS_IN_PROGRESS, "50");
-        setup.setRights(new DocumentReference("xwiki", "TaskManager", "Rights test view"), null,
-            "XWiki." + TEST_USERNAME, "view", false);
 
-        createTaskPage("Rights test edit", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Test Project 2", "Low",
+        createTaskPage("NoViewRights", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Other", "Low",
             Task.STATUS_IN_PROGRESS, "50");
-        setup.setRights(new DocumentReference("xwiki", "TaskManager", "Rights test edit"), null,
-            "XWiki." + TEST_USERNAME, "edit", false);
+        setup.setRights(new DocumentReference("xwiki", "TaskManager", "NoViewRights"), null, "XWiki." + TEST_USERNAME,
+            "view", false);
+
+        createTaskPage("NoEditRights", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Test Project 2", "Low",
+            Task.STATUS_IN_PROGRESS, "50");
+        setup.setRights(new DocumentReference("xwiki", "TaskManager", "NoEditRights"), null, "XWiki." + TEST_USERNAME,
+            "edit", false);
 
         setup.createPage(TASK_MACROS_PAGE, TASK_MACROS, "Task Macros");
 
@@ -147,10 +132,27 @@ public class GanttIT
         // of the macro in a page.
         setup.createPage(GANTT_MACROS_PAGE, GANTT_MACROS, "Gantt Macros");
 
-        logout(setup);
-        TaskManagerHomePage.gotoPage();
         setup.login(TEST_USERNAME, PASSWORD);
         setup.gotoPage(GANTT_MACROS_PAGE);
+    }
+
+    @AfterAll
+    void teardownTaskPages(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+        setup.deletePage(TASK_MACROS_PAGE);
+        setup.deletePage(GANTT_MACROS_PAGE);
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask0"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask1"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask2"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask3"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoDueDateTest"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoViewRights"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoEditRights"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_Test Project"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_Test Project 2"));
+        setup.deletePage(new DocumentReference("xwiki", "XWiki", TEST_USERNAME));
+        logout(setup);
     }
 
     /**
@@ -165,39 +167,41 @@ public class GanttIT
         TaskManagerGanttMacro gantt = TaskManagerGanttMacro.getGanttMacrosOnCurrentPage().get(0);
         gantt.changeViewMode("Day");
 
-        gantt.dragTask("xwiki:TaskManager.Test 0", 50);
+        // For Day View Mode, task updates occur only when moving more than 38px (independently of window size).
+        // This value is hardcoded in the frappe-gantt library. Might break if the library is modified, or one of the
+        // following functions are overridden in javascript: get_snap_position, update_view_scale.
+        gantt.dragTask("xwiki:TaskManager.TestTask0", 50);
         assertNotificationType(setup, "info");
-        gantt.dragTaskStart("xwiki:TaskManager.Test 1", -50);
+        gantt.dragTaskStart("xwiki:TaskManager.TestTask1", -50);
         assertNotificationType(setup, "info");
-        gantt.dragTaskEnd("xwiki:TaskManager.Test 2", -50);
+        gantt.dragTaskEnd("xwiki:TaskManager.TestTask2", -50);
         assertNotificationType(setup, "info");
-        gantt.dragProgress("xwiki:TaskManager.Test 3", 120);
+        gantt.dragProgress("xwiki:TaskManager.TestTask3", 120);
         assertNotificationType(setup, "info");
 
         // Test that the task was opened in a new tab.
-        gantt.openTaskPage("xwiki:TaskManager.Test 0");
+        gantt.openTaskPage("xwiki:TaskManager.TestTask0");
+        setup.getDriver().waitUntilCondition(input -> input.getWindowHandles().size() == 2);
         Object[] windowHandles = setup.getDriver().getWindowHandles().toArray();
-        Assertions.assertEquals(2, windowHandles.length);
+        assertEquals(2, windowHandles.length);
         setup.getDriver().switchTo().window((String) windowHandles[1]);
         // Wait for new tab to load.
-        new WebDriverWait(setup.getDriver(), Duration.ofSeconds(setup.getDriver().getTimeout())).until((driver) -> {
-            return !(setup.getDriver().getCurrentUrl().equals("about:blank"));
-        });
+        new TaskManagerViewPage().waitUntilPageIsReady();
         // See that the right page was opened.
-        Assertions.assertEquals(setup.getURL((EntityReference) new DocumentReference("xwiki", "TaskManager", "Test 0")),
+        assertEquals(setup.getURL((EntityReference) new DocumentReference("xwiki", "TaskManager", "TestTask0")),
             setup.getDriver().getCurrentUrl());
         // Close the new page.
         setup.getDriver().close();
         setup.getDriver().switchTo().window((String) windowHandles[0]);
 
         // Verify that all task objects were correctly updated.
-        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "Test 0"), "03/01/2001 15:43:02",
+        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "TestTask0"), "03/01/2001 15:43:02",
             "04/01/2001 17:22:12", "50%");
-        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "Test 1"), "01/01/2001 15:43:02",
+        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "TestTask1"), "01/01/2001 15:43:02",
             "03/01/2001 17:22:12", "50%");
-        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "Test 2"), "02/01/2001 15:43:02",
+        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "TestTask2"), "02/01/2001 15:43:02",
             "02/01/2001 17:22:12", "50%");
-        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "Test 3"), "02/01/2001 15:43:02",
+        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "TestTask3"), "02/01/2001 15:43:02",
             "03/01/2001 17:22:12", "100%");
     }
 
@@ -210,17 +214,18 @@ public class GanttIT
     @Order(2)
     void taskGanttRespectRights(TestUtils setup)
     {
+        assertEquals(TEST_USERNAME, setup.getLoggedInUserName());
         setup.gotoPage(GANTT_MACROS_PAGE);
         List<TaskManagerGanttMacro> gantts = TaskManagerGanttMacro.getGanttMacrosOnCurrentPage();
         for (int i = 0; i < gantts.size(); i++) {
-            Assertions.assertFalse(gantts.get(i).getTaskIds().contains("xwiki:TaskManager.Rights test view"),
+            assertFalse(gantts.get(i).getTaskIds().contains("xwiki:TaskManager.NoViewRights"),
                 "" + i + "-th gantt diagram bypasses view rights");
         }
-        Assertions.assertTrue(gantts.get(0).getTaskIds().contains("xwiki:TaskManager.Rights test edit"));
-        gantts.get(0).dragTask("xwiki:TaskManager.Rights test edit", 50);
+        assertTrue(gantts.get(0).getTaskIds().contains("xwiki:TaskManager.NoEditRights"));
+        gantts.get(0).dragTask("xwiki:TaskManager.NoEditRights", 50);
         WebElement notification = setup.getDriver().findElement(By.cssSelector(".xnotification"));
         // Editing was not successful for the uneditable task.
-        Assertions.assertTrue(notification.getAttribute("class").contains("xnotification-error"));
+        assertTrue(notification.getAttribute("class").contains("xnotification-error"));
         // Clear the notification.
         notification.click();
     }
@@ -240,24 +245,24 @@ public class GanttIT
 
         // Assignee filter and hide no due date
         ids = gantts.get(2).getTaskIds();
-        Assertions.assertEquals(3, ids.size(), ids.toString());
-        Assertions.assertTrue(ids.contains("xwiki:TaskManager.Test 0"), ids.toString());
-        Assertions.assertTrue(ids.contains("xwiki:TaskManager.No due date test"), ids.toString());
-        Assertions.assertTrue(ids.contains("xwiki:Test Space.Task_0.WebHome"), ids.toString());
+        assertEquals(3, ids.size(), ids.toString());
+        assertTrue(ids.contains("xwiki:TaskManager.TestTask0"), ids.toString());
+        assertTrue(ids.contains("xwiki:TaskManager.NoDueDateTest"), ids.toString());
+        assertTrue(ids.contains("xwiki:TestSpace.Task_0.WebHome"), ids.toString());
 
         // Project filter
         ids = gantts.get(3).getTaskIds();
-        Assertions.assertEquals(2, ids.size(), ids.toString());
-        Assertions.assertTrue(ids.contains("xwiki:TaskManager.Test 0"), ids.toString());
-        Assertions.assertTrue(ids.contains("xwiki:TaskManager.Test 1"), ids.toString());
+        assertEquals(2, ids.size(), ids.toString());
+        assertTrue(ids.contains("xwiki:TaskManager.TestTask0"), ids.toString());
+        assertTrue(ids.contains("xwiki:TaskManager.TestTask1"), ids.toString());
 
         // Space filter
         ids = gantts.get(4).getTaskIds();
-        Assertions.assertEquals(1, ids.size(), ids.toString());
-        Assertions.assertTrue(ids.contains("xwiki:Test Space.Task_0.WebHome"), ids.toString());
+        assertEquals(1, ids.size(), ids.toString());
+        assertTrue(ids.contains("xwiki:TestSpace.Task_0.WebHome"), ids.toString());
 
         // Readonly
-        gantts.get(1).dragTask("xwiki:TaskManager.Test 0", 50);
+        gantts.get(1).dragTask("xwiki:TaskManager.TestTask0", 50);
         // Editing was not successful for the read only task.
         assertNotificationType(setup, "error");
     }
@@ -277,15 +282,15 @@ public class GanttIT
     {
         setup.gotoPage(taskReference);
         TaskManagerViewPage taskPage = new TaskManagerViewPage();
-        Assertions.assertEquals(startDate, taskPage.getStartDate());
-        Assertions.assertEquals(duedate, taskPage.getDueDate());
-        Assertions.assertEquals(progress, taskPage.getProgress());
+        assertEquals(startDate, taskPage.getStartDate());
+        assertEquals(duedate, taskPage.getDueDate());
+        assertEquals(progress, taskPage.getProgress());
     }
 
     private void assertNotificationType(TestUtils setup, String xnotificationType)
     {
         WebElement notification = setup.getDriver().findElement(By.cssSelector(".xnotification"));
-        Assertions.assertTrue(notification.getAttribute("class").contains("xnotification-" + xnotificationType));
+        assertTrue(notification.getAttribute("class").contains("xnotification-" + xnotificationType));
         // Clear the notification.
         notification.click();
     }

@@ -32,8 +32,7 @@ import org.xwiki.test.docker.junit5.UITest;
  * @version $Id$
  * @since 2.6
  */
-@UITest(properties = {
-    "xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin" }, extraJARs = {
+@UITest(properties = {"xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin"}, extraJARs = {
     "org.xwiki.platform:xwiki-platform-jodatime:14.10"}, resolveExtraJARs = true)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 class AllITs

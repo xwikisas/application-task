@@ -97,6 +97,8 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setDueDate(String dueDate)
     {
+        // WebElement#clear does not send the right keyboard events, it's better to use a key combination
+        // to replace the actual content of the input.
         this.dueDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         this.dueDateElement.sendKeys(dueDate);
     }
@@ -106,6 +108,8 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setStartDate(String startDate)
     {
+        // WebElement#clear does not send the right keyboard events, it's better to use a key combination
+        // to replace the actual content of the input.
         this.startDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         this.startDateElement.sendKeys(startDate);
     }

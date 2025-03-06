@@ -70,12 +70,21 @@ class TaskManagerIT
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
     @BeforeAll
-    @AfterAll
-    void setup(TestUtils setup) {
+    void setup(TestUtils setup) throws Exception
+    {
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
     }
+
+    @AfterAll
+    void teardown(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+        setup.deletePage(pageWithTaskMacros);
+        setup.deletePage(pageWithComplexTaskMacros);
+    }
+
     @Test
     @Order(1)
     void applicationsPanelEntry(TestUtils setup)
