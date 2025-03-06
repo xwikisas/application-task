@@ -51,8 +51,8 @@ import org.xwiki.scheduler.test.po.SchedulerHomePage;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
-import com.xwiki.task.internal.notifications.TaskChangedEvent;
-import com.xwiki.task.internal.notifications.TaskChangedEventDescriptor;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent;
+import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventDescriptor;
 import com.xwiki.task.model.Task;
 
 /**
@@ -117,16 +117,7 @@ public class NotificationIT
 
     private String TEST_PROJECT_NAME = "Test Project";
 
-    @AfterAll
-    public void teardownTaskPages(TestUtils setup)
-    {
-        setup.loginAsSuperAdmin();
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", TEST_TASK_NAME));
-        setup.deletePage(TASK_MACRO_PAGE);
-        logout(setup);
-    }
-
-    public void logout(TestUtils setup)
+    private void logout(TestUtils setup)
     {
         setup.setSession(null);
         setup.getDriver().navigate().refresh();
@@ -147,6 +138,8 @@ public class NotificationIT
 
         taskManagerConfigPage.addNewProject(TEST_PROJECT_NAME);
 
+        // Configure the notification preferences for the Test User, such that they only receive notifications from the
+        // Task Manager Application.
         NotificationsUserProfilePage userNotificationPreferences = NotificationsUserProfilePage.gotoPage(TEST_USERNAME);
         userNotificationPreferences.disableAllParameters();
         ApplicationPreferences taskApplicationPreferences =
@@ -164,6 +157,15 @@ public class NotificationIT
             TaskManagerHomePage.gotoPage();
             new NotificationsTrayPage().clearAllNotifications();
         });
+    }
+
+    @AfterAll
+    void teardownTaskPages(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", TEST_TASK_NAME));
+        setup.deletePage(TASK_MACRO_PAGE);
+        logout(setup);
     }
 
     /**
@@ -207,7 +209,7 @@ public class NotificationIT
             Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
 
-        assertRecievedEmail(setup, 1);
+        assertReceivedEmail(setup, 1);
     }
 
     /**
@@ -241,7 +243,7 @@ public class NotificationIT
             Assertions.assertEquals(4, notificationDescriptions.size(), notificationDescriptions.toString());
         });
 
-        assertRecievedEmail(setup, 1);
+        assertReceivedEmail(setup, 1);
     }
 
     /**
@@ -350,13 +352,7 @@ public class NotificationIT
         }).collect(Collectors.toList());
     }
 
-    private void expectEventDetailsText(List<String> groupedEventDetails, String text)
-    {
-        Assertions.assertTrue(groupedEventDetails.contains(text),
-            "Expected message not found in " + groupedEventDetails);
-    }
-
-    private void assertRecievedEmail(TestUtils setup, int emailCount)
+    private void assertReceivedEmail(TestUtils setup, int emailCount)
     {
         setup.loginAsSuperAdmin();
         SchedulerHomePage schedulerHomePage = SchedulerHomePage.gotoPage();
@@ -370,8 +366,6 @@ public class NotificationIT
 
     private void doAsUser(TestUtils setup, String username, Runnable action)
     {
-        TaskManagerHomePage.gotoPage();
-        logout(setup);
         setup.login(username, PASSWORD);
         action.run();
         logout(setup);

@@ -25,7 +25,7 @@ import org.openqa.selenium.support.FindBy;
 import org.xwiki.test.ui.po.ViewPage;
 
 /**
- * Represents actions that can be done on the TaskManager.WebHome page.
+ * Represents actions that can be done in the Task Manager section of the Administration Page.
  *
  * @version $Id: b3d6b45d382bdfae77b31ceeb16805fefdbfcd21 $
  * @since 4.3M2
