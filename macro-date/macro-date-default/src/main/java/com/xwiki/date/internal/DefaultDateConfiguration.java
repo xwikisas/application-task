@@ -53,6 +53,10 @@ public class DefaultDateConfiguration implements DateMacroConfiguration
     private ConfigurationSource xwikiProperties;
 
     @Inject
+    @Named("wiki")
+    private ConfigurationSource preferencesConfiguration;
+
+    @Inject
     @Named(DateMacroConfigurationSource.HINT)
     private ConfigurationSource configurationSource;
 
@@ -65,7 +69,7 @@ public class DefaultDateConfiguration implements DateMacroConfiguration
     @Override
     public String getDisplayDateFormat()
     {
-        return getProperty(DISPLAY_FORMAT_KEY, DEFAULT_DATE_FORMAT);
+        return getProperty(DISPLAY_FORMAT_KEY, preferencesConfiguration.getProperty("dateformat", DEFAULT_DATE_FORMAT));
     }
 
     private <T> T getProperty(String key, T defaultValue)
