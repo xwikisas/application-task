@@ -843,7 +843,7 @@
       </type>
     </class>
     <property>
-      <defaultValue></defaultValue>
+      <defaultValue/>
     </property>
     <property>
       <description/>
@@ -855,7 +855,7 @@
       <name>status</name>
     </property>
     <property>
-      <type>com.xwiki.task.TaskStatuses</type>
+      <type>java.util.List&lt;com.xwiki.task.TaskStatus&gt;</type>
     </property>
   </object>
   <object>
