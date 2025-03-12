@@ -147,12 +147,12 @@
                   #set($taskName = $doc.documentReference.parent.name)
                 #end
               #end
-            :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($taskName)"/&gt;
+            :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($!services.rendering.escape($taskName, 'xwiki/2.1'))"/&gt;
           #else
             ; &lt;label for="xwikidoctitleinput"&gt;
                 $escapetool.xml($services.localization.render('core.editors.content.titleField.label'))
               &lt;/label&gt;
-            : &lt;input type="text" id="xwikidoctitleinput" name="title" value="$!escapetool.xml($!doc.title)" /&gt;
+            : &lt;input type="text" id="xwikidoctitleinput" name="title" value="$!escapetool.xml($!services.rendering.escape($!doc.title, 'xwiki/2.1'))" /&gt;
           #end
           )))
         )))
