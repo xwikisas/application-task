@@ -25,7 +25,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Order;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.xwiki.test.docker.junit5.UITest;
@@ -51,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * custom patches. Updating the version of frappe-gantt might cause the tests to break.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8
  */
 @UITest
 public class GanttIT
@@ -157,8 +156,6 @@ public class GanttIT
 
     /**
      * Test that changes made in the diagram are saved. (Tested in Day View Mode)
-     *
-     * @since 3.7
      */
     @Test
     @Order(1)
@@ -207,8 +204,6 @@ public class GanttIT
 
     /**
      * Test that only tasks which the current user can view are shown in the diagram.
-     *
-     * @since 3.7
      */
     @Test
     @Order(2)
@@ -232,8 +227,6 @@ public class GanttIT
 
     /**
      * Test that the various gantt parameters work.
-     *
-     * @since 3.7
      */
     @Test
     @Order(3)
