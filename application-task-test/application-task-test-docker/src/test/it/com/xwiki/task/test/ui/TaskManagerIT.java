@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
@@ -85,6 +86,15 @@ class TaskManagerIT
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
+    }
+
+    @AfterAll
+    void teardown(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+        setup.deletePage(pageWithTaskMacros);
+        setup.deletePage(pageWithComplexTaskMacros);
+        setup.deletePage(pageWithTaskMacrosWithDifferentStatus);
     }
 
     @Test
@@ -295,6 +305,7 @@ class TaskManagerIT
         // Deleting the page that contains task macros should also delete the task pages.
         setup.gotoPage(pageWithTaskMacros);
         assertTrue(setup.pageExists(task1Space, WEBHOME));
+        assertTrue(setup.pageExists(task2Space, WEBHOME));
         assertTrue(setup.pageExists(task2Space, WEBHOME));
         setup.deletePage(pageWithTaskMacros);
         assertFalse(setup.pageExists(task1Space, WEBHOME));
