@@ -289,7 +289,8 @@
 #end
 #set ($extraParams = {
   'space': $spaceFilter,
-  'status': $status,
+  'status': $status.split('\s*,\s*'),
+  'status/join_mode': 'or',
   'assignee': $assignees.split('\s*,\s*'),
   'assignee/join_mode': 'or',
   'reporter': $creator.split('\s*,\s*'),
@@ -308,7 +309,7 @@
   'completeDate': {'type': 'date', 'size': 10},
   'owner' : {'type': 'page', 'size': 10, 'html': true, 'link': 'view'},
   'createDate': {'type': 'hidden'},
-  'status': {'type': 'hidden', 'html': true},
+  'status': {'type': 'hidden', 'html': true, 'filterable': false},
   'reporter': {'type': 'hidden', 'html': true},
   'number': {'type': 'hidden'}
 })
@@ -842,7 +843,7 @@
       </type>
     </class>
     <property>
-      <defaultValue>Done</defaultValue>
+      <defaultValue/>
     </property>
     <property>
       <description/>
@@ -854,7 +855,7 @@
       <name>status</name>
     </property>
     <property>
-      <type>com.xwiki.task.TaskStatus</type>
+      <type>java.util.List&lt;com.xwiki.task.TaskStatus&gt;</type>
     </property>
   </object>
   <object>

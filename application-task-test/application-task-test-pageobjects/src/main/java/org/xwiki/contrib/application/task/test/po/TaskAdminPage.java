@@ -22,38 +22,59 @@ package org.xwiki.contrib.application.task.test.po;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.Select;
+import org.xwiki.administration.test.po.AdministrationSectionPage;
 import org.xwiki.test.ui.po.ViewPage;
 
 /**
- * Represents actions that can be done on the TaskManager.WebHome page.
+ * Page object of the Task Manager administration section.
  *
- * @version $Id: b3d6b45d382bdfae77b31ceeb16805fefdbfcd21 $
- * @since 4.3M2
+ * @since 3.7.0
  */
-public class TaskManagerAdminConfigurationPage extends ViewPage
+public class TaskAdminPage extends AdministrationSectionPage
 {
-    @FindBy(css = "input#project")
+    private static final String SECTION_ID = "Task Manager";
+
+    @FindBy(id = "TaskManager.TaskManagerClass_0_defaultInlineStatus")
+    private WebElement defaultInlineStatusElement;
+
+    @FindBy(id = "project")
     private WebElement addProjectTextInput;
 
-    @FindBy(css = "input#severity")
+    @FindBy(id = "severity")
     private WebElement addSeverityTextInput;
 
-    @FindBy(css = "input#status")
+    @FindBy(id = "status")
     private WebElement addStatusTextInput;
 
-    /**
-     * Opens the home page.
-     */
-    public static TaskManagerAdminConfigurationPage gotoPage()
+    private Select defaultInlineStatusSelect;
+
+    public TaskAdminPage()
     {
-        getUtil().gotoPage("XWiki", "XWikiPreferences", "admin", "section=Task Manager");
-        return new TaskManagerAdminConfigurationPage();
+        super(SECTION_ID);
+    }
+
+    public static TaskAdminPage gotoPage()
+    {
+        AdministrationSectionPage.gotoPage(SECTION_ID);
+        return new TaskAdminPage();
+    }
+
+    public String getDefaultInlineStatusValue()
+    {
+        return getDefaultInlineStatusSelect().getFirstSelectedOption().getText();
+    }
+
+    public void setDefaultInlineStatusValue(String value)
+    {
+        getDefaultInlineStatusSelect().selectByVisibleText(value);
     }
 
     /**
      * Create a new project for tasks.
      *
      * @param projectName Name that will be used for the new project
+     * @since 3.8.0
      */
     public void addNewProject(String projectName)
     {
@@ -68,6 +89,7 @@ public class TaskManagerAdminConfigurationPage extends ViewPage
      * Create a new severity class for tasks (e.g. High priority).
      *
      * @param severityName Name that will be used for the new severity class
+     * @since 3.8.0
      */
     public void addNewSeverity(String severityName)
     {
@@ -82,6 +104,7 @@ public class TaskManagerAdminConfigurationPage extends ViewPage
      * Create a new status for tasks (e.g. ToDo, Done).
      *
      * @param statusName Name that will be used for the new status
+     * @since 3.8.0
      */
     public void addNewStatus(String statusName)
     {
@@ -90,5 +113,13 @@ public class TaskManagerAdminConfigurationPage extends ViewPage
         addStatusTextInput.sendKeys(statusName);
         addStatusTextInput.sendKeys(Keys.ENTER);
         getDriver().waitUntilPageIsReloaded();
+    }
+
+    private Select getDefaultInlineStatusSelect()
+    {
+        if (defaultInlineStatusSelect == null) {
+            defaultInlineStatusSelect = new Select(defaultInlineStatusElement);
+        }
+        return defaultInlineStatusSelect;
     }
 }

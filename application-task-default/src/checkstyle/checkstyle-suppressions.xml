@@ -27,4 +27,6 @@
 <suppressions>
   <suppress checks="ClassFanOutComplexity"
     files="src/main/java/com/xwiki/task/internal/TaskMacroUpdateEventListener\.java"/>
+  <suppress checks="ClassFanOutComplexity"
+    files="src/main/java/com/xwiki/task/internal/TaskXDOMProcessor\.java"/>
 </suppressions>

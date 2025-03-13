@@ -33,7 +33,7 @@ import org.xwiki.test.ui.po.CreatePagePage;
 
 import com.xwiki.task.model.Task;
 
-import org.xwiki.contrib.application.task.test.po.TaskManagerAdminConfigurationPage;
+import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerGanttMacro;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
@@ -96,10 +96,10 @@ public class GanttIT
         setup.loginAsSuperAdmin();
         setup.createUser(TEST_USERNAME, PASSWORD, "");
 
-        TaskManagerAdminConfigurationPage taskManagerConfigPage = TaskManagerAdminConfigurationPage.gotoPage();
-        taskManagerConfigPage.addNewProject("Test Project");
-        taskManagerConfigPage = TaskManagerAdminConfigurationPage.gotoPage();
-        taskManagerConfigPage.addNewProject("Test Project 2");
+        TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.addNewProject("Test Project");
+        taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.addNewProject("Test Project 2");
 
         // Create test tasks.
 
@@ -299,7 +299,11 @@ public class GanttIT
         createPage.clickCreate();
 
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
-        inlinePage.setAssignee(assignee);
+        if (assignee.isEmpty()) {
+            inlinePage.clearAssignee();
+        } else {
+            inlinePage.setAssignee(assignee);
+        }
         inlinePage.setDueDate(dueDate);
         inlinePage.setStartDate(startDate);
         inlinePage.setStatus(status);

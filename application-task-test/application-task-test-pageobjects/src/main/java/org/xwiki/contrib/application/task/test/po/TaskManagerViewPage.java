@@ -57,6 +57,9 @@ public class TaskManagerViewPage extends ViewPage
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "progress\"]/../../dd/div/div/span")
     private WebElement progressElement;
 
+    @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "description\"]/../../dd/p")
+    private WebElement descriptionElement;
+
     /**
      * Opens the home page.
      */
@@ -114,5 +117,14 @@ public class TaskManagerViewPage extends ViewPage
     public String getReporter()
     {
         return reporterElement.getText();
+    }
+
+    /**
+     * @return the description of the task.
+     * @since 3.7.0
+     */
+    public String getDescription()
+    {
+        return descriptionElement.getText();
     }
 }
