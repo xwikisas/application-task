@@ -30,7 +30,7 @@ import org.xwiki.eventstream.RecordableEventDescriptor;
  * Descriptor for the event {@link TaskChangedEvent}.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 @Component
 @Singleton

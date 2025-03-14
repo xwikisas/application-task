@@ -44,7 +44,7 @@ import com.xwiki.task.model.Task;
  * Class which handles auto-watching tasks for users who are assigned to it.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 @Component
 @Singleton

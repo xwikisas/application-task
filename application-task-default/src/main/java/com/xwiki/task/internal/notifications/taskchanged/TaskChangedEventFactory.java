@@ -40,7 +40,7 @@ import com.xpn.xwiki.objects.StringProperty;
  * Create the necessary {@link TaskChangedEvent}s for a task update.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 @Component(roles = TaskChangedEventFactory.class)
 @Singleton

@@ -40,7 +40,7 @@ import org.xwiki.test.ui.TestUtils;
 import org.xwiki.platform.notifications.test.po.NotificationsTrayPage;
 import org.xwiki.platform.notifications.test.po.NotificationsUserProfilePage;
 import org.xwiki.platform.notifications.test.po.preferences.ApplicationPreferences;
-import org.xwiki.contrib.application.task.test.po.TaskManagerAdminConfigurationPage;
+import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
@@ -59,7 +59,7 @@ import com.xwiki.task.model.Task;
  * UI Tests for the notifications received when being assigned to a task.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 @UITest(
     sshPorts = {
@@ -117,12 +117,6 @@ public class NotificationIT
 
     private String TEST_PROJECT_NAME = "Test Project";
 
-    private void logout(TestUtils setup)
-    {
-        setup.setSession(null);
-        setup.getDriver().navigate().refresh();
-    }
-
     @BeforeAll
     void setup(TestUtils setup, TestConfiguration config) throws Exception
     {
@@ -134,9 +128,9 @@ public class NotificationIT
         setup.updateObject("Mail", "MailConfig", "Mail.SendMailConfigClass", 0, "host",
             config.getServletEngine().getHostIP(), "port", "3025", "sendWaitTime", "0", "from", "admin@example.com");
 
-        TaskManagerAdminConfigurationPage taskManagerConfigPage = TaskManagerAdminConfigurationPage.gotoPage();
+        TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
 
-        taskManagerConfigPage.addNewProject(TEST_PROJECT_NAME);
+        taskAdminPage.addNewProject(TEST_PROJECT_NAME);
 
         // Configure the notification preferences for the Test User, such that they only receive notifications from the
         // Task Manager Application.
@@ -170,8 +164,6 @@ public class NotificationIT
 
     /**
      * Test that the initial assignee notification is received for newly created Task Pages.
-     *
-     * @since 3.7
      */
     @Test
     @Order(1)
@@ -187,7 +179,7 @@ public class NotificationIT
             createPage.clickCreate();
 
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
-            inlinePage.setAssignee(TEST_USERNAME);
+            inlinePage.setAssignee("XWiki." + TEST_USERNAME);
             inlinePage.setDueDate("01/01/2001 01:01:01");
             inlinePage.setStatus(Task.STATUS_DONE);
             inlinePage.setProject("Other");
@@ -214,8 +206,6 @@ public class NotificationIT
 
     /**
      * Test that the notifications for all fields are received for Task Pages.
-     *
-     * @since 3.7
      */
     @Test
     @Order(2)
@@ -248,8 +238,6 @@ public class NotificationIT
 
     /**
      * Test that the initial assignee notification is received for newly created Task Macros.
-     *
-     * @since 3.7
      */
     @Test
     @Order(3)
@@ -274,8 +262,6 @@ public class NotificationIT
 
     /**
      * Test that the notifications for the status update when ticking a Task Macro checkbox.
-     *
-     * @since 3.7
      */
     @Test
     @Order(4)
@@ -302,8 +288,6 @@ public class NotificationIT
 
     /**
      * Test that no notifications are received when the filterPreference is off.
-     *
-     * @since 3.7
      */
     @Test
     @Order(5)
@@ -338,6 +322,12 @@ public class NotificationIT
             Assertions.assertThrows(TimeoutException.class,
                 () -> NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1));
         });
+    }
+
+    private void logout(TestUtils setup)
+    {
+        setup.setSession(null);
+        setup.getDriver().navigate().refresh();
     }
 
     private List<String> getNotificationDetails(TestUtils setup, int notificationNumber)
