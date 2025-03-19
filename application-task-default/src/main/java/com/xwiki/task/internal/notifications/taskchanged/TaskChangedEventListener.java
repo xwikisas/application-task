@@ -35,6 +35,8 @@ import org.xwiki.notifications.NotificationException;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
 import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
+import org.xwiki.notifications.preferences.NotificationPreference;
+import org.xwiki.notifications.preferences.NotificationPreferenceManager;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
@@ -60,6 +62,8 @@ public class TaskChangedEventListener extends AbstractEventListener
     @Inject
     private WatchedEntitiesManager watchedEntitiesManager;
 
+    @Inject
+    private NotificationPreferenceManager notificationPreferenceManager;
     @Inject
     private Logger logger;
 
@@ -94,7 +98,11 @@ public class TaskChangedEventListener extends AbstractEventListener
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
             try {
+                List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.watchEntity(docRef, user);
+                // Workaround for watchEntity unintentionally altering preferences.
+                // TODO: Remove when parent is greater than 14.10.
+                notificationPreferenceManager.savePreferences(preferences);
             } catch (NotificationException e) {
                 logger.error("Failed to watch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
                     docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
@@ -107,7 +115,11 @@ public class TaskChangedEventListener extends AbstractEventListener
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
             try {
+                List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.unwatchEntity(docRef, user);
+                // Workaround for watchEntity unintentionally altering preferences.
+                // TODO: Remove when parent is greater than 14.10.
+                notificationPreferenceManager.savePreferences(preferences);
             } catch (NotificationException e) {
                 logger.error("Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
                     docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));

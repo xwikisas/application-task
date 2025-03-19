@@ -20,9 +20,13 @@
 package com.xwiki.task.test.ui;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Assertions;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -110,8 +114,8 @@ public class NotificationIT
         new DocumentReference("xwiki", "Main", "TestTaskMacroNotifications");
 
     private final String TASK_MACRO_CONTENT =
-        "{{task reference=\"Task_0\" createDate=\"2024/12/20 15:13\" status=\"Done\" reporter=\"\"}}My task{{mention reference=\""
-            + TEST_USERNAME + "\" anchor=\"sss-QXfgr\" style=\"FULL_NAME\"/}}{{/task}}";
+        "{{task reference=\"Task_0\" status=\"Done\"}}My task{{mention reference=\"XWiki." + TEST_USERNAME + "\""
+            + " style=\"FULL_NAME\"}}{{/task}}";
 
     private String TEST_TASK_NAME = "Test Task";
 
@@ -138,9 +142,8 @@ public class NotificationIT
         userNotificationPreferences.disableAllParameters();
         ApplicationPreferences taskApplicationPreferences =
             userNotificationPreferences.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-        taskApplicationPreferences.setAlertState(BootstrapSwitch.State.ON);
-        taskApplicationPreferences.setEmailState(BootstrapSwitch.State.ON);
-
+        setAlertState(setup, taskApplicationPreferences, BootstrapSwitch.State.ON);
+        setEmailState(setup, taskApplicationPreferences, BootstrapSwitch.State.ON);
         logout(setup);
     }
 
@@ -169,6 +172,7 @@ public class NotificationIT
     @Order(1)
     void taskPageInitialNotification(TestUtils setup)
     {
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
         // Create a new task.
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
             TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
@@ -195,13 +199,14 @@ public class NotificationIT
             // Expected: Only one notification is sent, for the assignee.
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
-            Assertions.assertEquals(1, tray.getNotificationsCount());
-            Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+            assertEquals(1, tray.getNotificationsCount());
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
             List<String> notificationDescriptions = getNotificationDetails(setup, 0);
-            Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
+            assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
 
         assertReceivedEmail(setup, 1);
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
     }
 
     /**
@@ -211,6 +216,7 @@ public class NotificationIT
     @Order(2)
     void taskPageNotifications(TestUtils setup)
     {
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
             setup.gotoPage("TaskManager", TEST_TASK_NAME, "edit");
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
@@ -228,12 +234,13 @@ public class NotificationIT
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
-            Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
             List<String> notificationDescriptions = getNotificationDetails(setup, 0);
-            Assertions.assertEquals(4, notificationDescriptions.size(), notificationDescriptions.toString());
+            assertEquals(4, notificationDescriptions.size(), notificationDescriptions.toString());
         });
 
         assertReceivedEmail(setup, 1);
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
     }
 
     /**
@@ -243,6 +250,7 @@ public class NotificationIT
     @Order(3)
     void taskMacroInitial(TestUtils setup)
     {
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
             setup.createPage(TASK_MACRO_PAGE, TASK_MACRO_CONTENT, TASK_MACRO_PAGE.getName());
         });
@@ -252,12 +260,13 @@ public class NotificationIT
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
-            Assertions.assertEquals(1, tray.getNotificationsCount());
-            Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+            assertEquals(1, tray.getNotificationsCount());
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
 
             List<String> notificationDescriptions = getNotificationDetails(setup, 0);
-            Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
+            assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
     }
 
     /**
@@ -265,8 +274,9 @@ public class NotificationIT
      */
     @Test
     @Order(4)
-    void tasMacroCheckboxNotification(TestUtils setup)
+    void taskMacroCheckboxNotification(TestUtils setup)
     {
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
             setup.gotoPage(TASK_MACRO_PAGE);
             ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
@@ -278,12 +288,13 @@ public class NotificationIT
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1);
             NotificationsTrayPage tray = new NotificationsTrayPage();
             tray.showNotificationTray();
-            Assertions.assertEquals(1, tray.getNotificationsCount());
-            Assertions.assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+            assertEquals(1, tray.getNotificationsCount());
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
 
             List<String> notificationDescriptions = getNotificationDetails(setup, 0);
-            Assertions.assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
+            assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
         });
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
     }
 
     /**
@@ -300,10 +311,10 @@ public class NotificationIT
 
                 ApplicationPreferences taskApplicationPreferences =
                     userNotificationPreferences.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-                taskApplicationPreferences.setAlertState(BootstrapSwitch.State.OFF);
-                taskApplicationPreferences.setEmailState(BootstrapSwitch.State.OFF);
+                setAlertState(setup, taskApplicationPreferences, BootstrapSwitch.State.OFF);
+                setEmailState(setup, taskApplicationPreferences, BootstrapSwitch.State.OFF);
             } catch (Exception e) {
-                Assertions.fail("Exception while setting application notification preferences: " + e);
+                fail("Exception while setting application notification preferences: " + e);
             }
         });
 
@@ -319,8 +330,49 @@ public class NotificationIT
 
         doAsUser(setup, TEST_USERNAME, () -> {
             TaskManagerHomePage.gotoPage();
-            Assertions.assertThrows(TimeoutException.class,
+            assertThrows(TimeoutException.class,
                 () -> NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1));
+        });
+        checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.OFF);
+    }
+
+    private void setEmailState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
+        throws Exception
+    {
+        appPref.setEmailState(alertState);
+        setup.getDriver().findElement(By.className("xnotification-done")).click();
+    }
+
+    private void setAlertState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
+        throws Exception
+    {
+        appPref.setAlertState(alertState);
+        setup.getDriver().findElement(By.className("xnotification-done")).click();
+    }
+
+    /**
+     * Fails the test if the notification preferences change unexpectedly.
+     *
+     * @param setup
+     * @param expectedTaskState ON or OFF for both alert and email notifications for the TaskChanged notification
+     */
+    private void checkPreferences(TestUtils setup, String userName, BootstrapSwitch.State expectedTaskState)
+    {
+        doAsUser(setup, TEST_USERNAME, () -> {
+            try {
+                String taskAppName = new TaskChangedEventDescriptor().getApplicationName();
+                NotificationsUserProfilePage userNotificationPreferences =
+                    NotificationsUserProfilePage.gotoPage(userName);
+                for (String appName : userNotificationPreferences.getApplicationPreferences().keySet()) {
+                    ApplicationPreferences pref = userNotificationPreferences.getApplication(appName);
+                    BootstrapSwitch.State expectedState =
+                        appName.equals(taskAppName) ? expectedTaskState : BootstrapSwitch.State.OFF;
+                    assertEquals(expectedState, pref.getEmailState(), appName + " Email State");
+                    assertEquals(expectedState, pref.getAlertState(), appName + " Alert State");
+                }
+            } catch (Exception e) {
+                fail("Exception while reading application notification preferences: " + e);
+            }
         });
     }
 
@@ -350,7 +402,7 @@ public class NotificationIT
 
         // Verify that the mail has been received.
         mail.waitForIncomingEmail(10000L, emailCount);
-        Assertions.assertEquals(emailCount, mail.getReceivedMessages().length);
+        assertEquals(emailCount, mail.getReceivedMessages().length);
         logout(setup);
     }
 
