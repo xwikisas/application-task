@@ -47,7 +47,7 @@ import com.xwiki.task.model.Task;
  * Listener which fires when adding/modifying a task in order to notify users of the changes.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 @Component
 @Singleton
