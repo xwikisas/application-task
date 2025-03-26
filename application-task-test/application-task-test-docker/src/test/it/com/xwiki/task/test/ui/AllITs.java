@@ -21,6 +21,9 @@ package com.xwiki.task.test.ui;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestClassOrder;
+import org.junit.jupiter.api.ClassOrderer;
 import org.xwiki.test.docker.junit5.UITest;
 
 /**
@@ -30,11 +33,20 @@ import org.xwiki.test.docker.junit5.UITest;
  * @since 2.6
  */
 @UITest
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
 class AllITs
 {
     @Nested
+    @Order(1)
     @DisplayName("Overall Task Manager UI")
     class NestedTaskManagerIT extends TaskManagerIT
+    {
+    }
+
+    @Nested
+    @Order(2)
+    @DisplayName("Task Manager Notifications")
+    class NestedNotificationIT extends NotificationIT
     {
     }
 }

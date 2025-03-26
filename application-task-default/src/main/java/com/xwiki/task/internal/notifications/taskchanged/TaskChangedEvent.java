@@ -31,7 +31,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * Event sent when a task has been changed.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 public class TaskChangedEvent implements RecordableEvent
 {

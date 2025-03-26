@@ -43,7 +43,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * Converter for {@link TaskChangedEvent}.
  *
  * @version $Id$
- * @since 3.7
+ * @since 3.8.0
  */
 @Singleton
 @Named("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventConverter")
