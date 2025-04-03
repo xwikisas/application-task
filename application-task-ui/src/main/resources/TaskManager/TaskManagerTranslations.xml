@@ -73,7 +73,6 @@ TaskManager.TaskManagerClass_status_InProgress=In Progress
 TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_status_ToDo=To Do
 TaskManager.TaskManagerClass_status_Done=Done
-TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_severity=Priority
 TaskManager.TaskManagerClass_severity_Medium=Medium
 TaskManager.TaskManagerClass_severity_Low=Low
@@ -189,9 +188,6 @@ taskmanager.notification.statusChange.inprogress=Changing status..
 taskmanager.notification.referenceGeneration.fail=Failed to generate a task reference
 taskmanager.notification.referenceGeneration.inprogress=Generating task reference
 
-taskmanager.livetable.name=Task
-taskmanager.livetable.duedate=Deadline
-taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.owner=Location
 taskmanager.livetable.completeDate=Completed on
 taskmanager.livetable.createDate=Creation date
