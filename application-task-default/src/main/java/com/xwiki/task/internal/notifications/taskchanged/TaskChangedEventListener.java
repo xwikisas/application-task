@@ -101,7 +101,9 @@ public class TaskChangedEventListener extends AbstractEventListener
                 List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.watchEntity(docRef, user);
                 // Workaround for watchEntity unintentionally altering preferences.
-                // TODO: Remove when parent is greater than 14.10.
+                // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
+                // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
+                // is watched when nothing is watched
                 notificationPreferenceManager.savePreferences(preferences);
             } catch (NotificationException e) {
                 logger.error("Failed to watch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
@@ -118,7 +120,9 @@ public class TaskChangedEventListener extends AbstractEventListener
                 List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.unwatchEntity(docRef, user);
                 // Workaround for watchEntity unintentionally altering preferences.
-                // TODO: Remove when parent is greater than 14.10.
+                // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
+                // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
+                // is watched when nothing is watched
                 notificationPreferenceManager.savePreferences(preferences);
             } catch (NotificationException e) {
                 logger.error("Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
