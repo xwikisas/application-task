@@ -113,7 +113,7 @@ taskmanager.livetable.status=Status
 taskmanager.livetable.severity=Priority
 taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Assignee
-taskmanager.livetable.duedate=Due Date
+taskmanager.livetable.duedate=Deadline
 taskmanager.livetable.creationDate=Creation Date
 
 # Gantt Diagram
