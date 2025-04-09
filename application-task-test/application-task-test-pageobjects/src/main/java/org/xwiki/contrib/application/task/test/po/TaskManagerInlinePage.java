@@ -48,6 +48,9 @@ public class TaskManagerInlinePage extends InlinePage
     @FindBy(id = CLASS_PREFIX + "duedate")
     private WebElement dueDateElement;
 
+    @FindBy(id = CLASS_PREFIX + "startDate")
+    private WebElement startDateElement;
+
     @FindBy(id = CLASS_PREFIX + "severity")
     private WebElement severityElement;
 
@@ -99,8 +102,8 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setDueDate(String dueDate)
     {
-        this.dueDateElement.click();
-        this.dueDateElement.clear();
+        // WebElement#clear does not send the right keyboard events, it's better to use a key combination
+        // to replace the actual content of the input.
         this.dueDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         this.dueDateElement.sendKeys(dueDate);
         this.dueDateElement.sendKeys(Keys.ENTER);
@@ -108,6 +111,23 @@ public class TaskManagerInlinePage extends InlinePage
 
     public void clearDueDate() {
         this.dueDateElement.clear();
+    }
+
+    /**
+     * @param startDate the start date for the task entry
+     * @since 3.8.0
+     */
+    public void setStartDate(String startDate)
+    {
+        // WebElement#clear does not send the right keyboard events, it's better to use a key combination
+        // to replace the actual content of the input.
+        this.startDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        this.startDateElement.sendKeys(startDate);
+        this.startDateElement.sendKeys(Keys.ENTER);
+    }
+
+    public void clearStartDate() {
+        this.startDateElement.clear();
     }
 
     /**
