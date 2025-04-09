@@ -116,7 +116,9 @@ public class DefaultTaskManager implements TaskManager
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null) {
-                    return null;
+                    throw new TaskException(
+                        String.format("Could not retrieve the task object [%s] associated with the task with id [%d]",
+                            documentReference, id));
                 }
                 return getTaskFromXObject(taskObject);
             }
