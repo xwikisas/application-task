@@ -42,7 +42,14 @@
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
       TaskManager.Administration,
-      TaskManager.WebPreferences
+      TaskManager.WebPreferences,
+      TaskManager.ToDo,
+      TaskManager.InProgress,
+      TaskManager.Done,
+      TaskManager.Medium,
+      TaskManager.Low,
+      TaskManager.High,
+      TaskManager.Other
     </xwiki.extension.licensing.excludedDocuments>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
   </properties>

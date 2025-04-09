@@ -70,6 +70,8 @@ class TaskManagerIT
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
 
+    private static final String USER_NAME = "BOB";
+
     @BeforeAll
     void setup(TestUtils setup)
     {
@@ -231,5 +233,19 @@ class TaskManagerIT
         assertEquals(0, viewPage.getTaskMacros().size());
     }
 
+    @Test
+    @Order(9)
+    void deleteAdminDefaults(TestUtils testUtils)
+    {
+        testUtils.setGlobalRights("", "XWiki." + USER_NAME, "admin", true);
+        testUtils.createUserAndLogin(USER_NAME, "password");
+        TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.forceEdit();
+        List<String> ids = List.of("#projectTable", "#statusTable", "#severityTable");
+        List<Integer> expectedResults = List.of(1, 3, 3);
+        for (int i = 0; i < ids.size(); i++) {
+            assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
+        }
+    }
 
 }
