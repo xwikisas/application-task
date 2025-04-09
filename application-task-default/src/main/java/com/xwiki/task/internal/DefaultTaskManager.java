@@ -90,9 +90,7 @@ public class DefaultTaskManager implements TaskManager
             if (obj == null) {
                 throw new TaskException(String.format("The page [%s] does not have a Task Object.", reference));
             }
-            Task task = getTaskFromXObject(obj);
-            task.setDescription(doc.getContent());
-            return task;
+            return getTaskFromXObject(obj);
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the task from the page [%s]", reference));
         }
@@ -118,13 +116,9 @@ public class DefaultTaskManager implements TaskManager
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null) {
-                    throw new TaskException(
-                        String.format("Could not retrieve the task object [%s] associated with the task with id [%d]",
-                            documentReference, id));
+                    return null;
                 }
-                Task task = getTaskFromXObject(taskObject);
-                task.setDescription(document.getContent());
-                return task;
+                return getTaskFromXObject(taskObject);
             }
             throw new TaskException(String.format("There is no task with the id [%d].", id));
         } catch (QueryException | XWikiException e) {
