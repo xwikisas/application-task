@@ -19,10 +19,13 @@
  */
 package com.xwiki.task.test.ui;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
+import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
@@ -197,7 +200,7 @@ class TaskManagerIT
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
         row = taskReport.getRow(3);
-        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
+        assertEquals("#3\nDo this  as late as @Admin 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
         assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
         assertEquals("Admin", taskReport.getCell(row, taskAssigneeCellIndex).getText());
