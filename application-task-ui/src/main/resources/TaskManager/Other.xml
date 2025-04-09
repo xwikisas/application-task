@@ -140,10 +140,10 @@
       </users>
     </class>
     <property>
-      <allow>0</allow>
+      <allow>1</allow>
     </property>
     <property>
-      <groups>XWiki.XWikiAllGroup</groups>
+      <groups>XWiki.XWikiAdminGroup</groups>
     </property>
     <property>
       <levels>edit</levels>
