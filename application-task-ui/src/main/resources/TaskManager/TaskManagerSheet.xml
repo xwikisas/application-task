@@ -89,6 +89,9 @@
             #if ("$!doc.getValue('assignee')" != '')
               #displayPropertyCol('assignee', 'user')
             #end
+            #if ("$!doc.getValue('owner')" != '')
+              #displayPropertyCol('owner', 'home')
+            #end
           )))
         )))
         (% class="col-xs-12 col-sm-4 col-md-4" %)
