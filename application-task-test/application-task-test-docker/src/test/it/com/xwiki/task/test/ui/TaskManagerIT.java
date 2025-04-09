@@ -19,14 +19,10 @@
  */
 package com.xwiki.task.test.ui;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
-import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
@@ -57,22 +53,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }, resolveExtraJARs = true)
 class TaskManagerIT
 {
-    private static final String WEBHOME = "WebHome";
-
     private final DocumentReference pageWithTaskMacros = new DocumentReference("xwiki", "Main", "Test");
 
     private final DocumentReference pageWithComplexTaskMacros = new DocumentReference("xwiki", "Main", "Test2");
 
     private final DocumentReference pageWithTaskRaport = new DocumentReference("xwiki", "Main", "Test3");
 
-    private final DocumentReference pageWithTaskMacrosWithDifferentStatus =
-        new DocumentReference("xwiki", "Main", "Test4");
-
-    private static final String SIMPLE_TASKS = "{{task reference=\"/Task_1\"}}Do this{{/task}}\n\n"
-        + "{{task reference=\"/Task_2\" status=\"Done\"}}Do this as well{{/task}}";
+    private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
+        + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
 
     private static final String COMPLEX_TASKS =
-        "{{task reference=\"/Task_3\" reporter=\"XWiki.Admin\" createDate=\"2023/01/01 12:00\" status=\"Done\" "
+        "{{task reference=\"Task_3\" reporter=\"XWiki.Admin\" createDate=\"2023/01/01 12:00\" status=\"Done\" "
             + "completeDate=\"2023/01/01 12:00\"}}"
             + "Do this {{mention reference=\"XWiki.Admin\"/}} as late as {{date value=\"2023/01/01 12:00\"/}}"
             + "{{/task}}";
@@ -113,13 +104,13 @@ class TaskManagerIT
         // Check first, unchecked macro.
         assertEquals("Do this", page.getTaskMacroContent(0));
         assertEquals("#1", page.getTaskMacroLink(0).getText());
-        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Main/Test/Task_1"));
+        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Task_1"));
         assertFalse(page.isTaskMacroCheckboxChecked(0));
         page.clickTaskMacroCheckbox(0);
         // Check second, checked macro.
         assertEquals("Do this as well", page.getTaskMacroContent(1));
         assertEquals("#2", page.getTaskMacroLink(1).getText());
-        assertTrue(page.getTaskMacroLink(1).getAttribute("href").contains("/xwiki/bin/view/Main/Test/Task_2"));
+        assertTrue(page.getTaskMacroLink(1).getAttribute("href").contains("/xwiki/bin/view/Task_2"));
         assertTrue(page.isTaskMacroCheckboxChecked(1));
         page.clickTaskMacroCheckbox(1);
         // Refresh the page and make sure the changes are saved.
@@ -154,7 +145,7 @@ class TaskManagerIT
         ViewPageWithTasks page = new ViewPageWithTasks();
         assertEquals("Do this @Admin as late as 2023/01/01 12:00", page.getTaskMacroContent(0));
         assertEquals("#3", page.getTaskMacroLink(0).getText());
-        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Main/Test2/Task_3"));
+        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Task_3"));
         assertTrue(page.isTaskMacroCheckboxChecked(0));
         page.getTaskMacroLink(0).click();
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
@@ -205,11 +196,6 @@ class TaskManagerIT
         assertEquals("-", taskReport.getCell(row, taskDeadlineCellIndex).getText());
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
-        row = taskReport.getRow(2);
-        assertEquals("#2\nDo this as well",
-            taskReport.getCell(row, taskTileCellIndex).getText());
-        assertEquals("-", taskReport.getCell(row, taskDeadlineCellIndex).getText());
-        assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         row = taskReport.getRow(3);
         assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
@@ -218,93 +204,21 @@ class TaskManagerIT
         assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
     }
 
-    /**
-     * @since 3.7.0
-     */
     @Test
     @Order(7)
-    void changeTaskPageAssigneeAndDuedate(TestUtils setup)
-    {
-        DocumentReference task3Ref =
-            new DocumentReference("xwiki", Arrays.asList("Main", "Test2", "Task_3"), WEBHOME);
-        setup.gotoPage(task3Ref);
-        TaskManagerViewPage viewPage = new TaskManagerViewPage();
-        // Changing the assignee and deadline should update the description/task macro content accordingly.
-        viewPage.edit();
-        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
-        inlinePage.setAssignee("XWiki.Admin2");
-        inlinePage.setDueDate("01/01/2025 12:00:00");
-        inlinePage.clickSaveAndView(true);
-        setup.gotoPage(pageWithComplexTaskMacros);
-        ViewPage pageWithMacro = new ViewPage();
-        assertEquals("#3\nDo this @Admin2 as late as 2025/01/01 12:00", pageWithMacro.getContent());
-        // Clearing the assignee and deadline should remove the macro calls from the content.
-        setup.gotoPage(task3Ref);
-        viewPage = new TaskManagerViewPage();
-        viewPage.edit();
-        inlinePage = new TaskManagerInlinePage();
-        inlinePage.clearAssignee();
-        inlinePage.clearDueDate();
-        inlinePage.clickSaveAndView(true);
-        setup.gotoPage(pageWithComplexTaskMacros);
-        pageWithMacro = new ViewPage();
-        assertEquals("#3\nDo this  as late as ", pageWithMacro.getContent());
-        // Setting new assignee and deadline should append them at the end of the description.
-        setup.gotoPage(task3Ref);
-        viewPage = new TaskManagerViewPage();
-        viewPage.edit();
-        inlinePage = new TaskManagerInlinePage();
-        inlinePage.setAssignee("XWiki.Admin");
-        inlinePage.setDueDate("01/01/2025 12:00:00");
-        inlinePage.clickSaveAndView(true);
-        setup.gotoPage(pageWithComplexTaskMacros);
-        pageWithMacro = new ViewPage();
-        assertEquals("#3\nDo this  as late as @Admin 2025/01/01 12:00", pageWithMacro.getContent());
-    }
-
-    @Test
-    @Order(8)
-    void changeDefaultInlineStatus(TestUtils setup)
-    {
-        TaskAdminPage adminPage = TaskAdminPage.gotoPage();
-        adminPage.setDefaultInlineStatusValue("To Do");
-        adminPage.clickSave(true);
-
-        setup.createPage(pageWithTaskMacrosWithDifferentStatus, SIMPLE_TASKS,
-            pageWithTaskMacrosWithDifferentStatus.getName());
-        ViewPageWithTasks pageWithTasks = new ViewPageWithTasks();
-        pageWithTasks.getTaskMacroLink(0).click();
-
-        TaskManagerViewPage taskPage = new TaskManagerViewPage();
-        assertEquals("To Do", taskPage.getStatus());
-
-        setup.gotoPage(pageWithTaskMacrosWithDifferentStatus);
-        pageWithTasks = new ViewPageWithTasks();
-        pageWithTasks.clickTaskMacroCheckbox(1);
-        pageWithTasks.getTaskMacroLink(1).click();
-
-        taskPage = new TaskManagerViewPage();
-        assertEquals("To Do", taskPage.getStatus());
-    }
-
-    @Test
-    @Order(8)
     void deleteTaskPage(TestUtils setup) throws Exception
     {
-        List<String> task1Space = Arrays.asList("Main", "Test", "Task_1");
-        List<String> task2Space = Arrays.asList("Main", "Test", "Task_2");
-
         // Deleting the page that contains task macros should also delete the task pages.
         setup.gotoPage(pageWithTaskMacros);
-        assertTrue(setup.pageExists(task1Space, WEBHOME));
-        assertTrue(setup.pageExists(task2Space, WEBHOME));
+        assertTrue(setup.pageExists("Task_1", "WebHome"));
+        assertTrue(setup.pageExists("Task_2", "WebHome"));
         setup.deletePage(pageWithTaskMacros);
-        assertFalse(setup.pageExists(task1Space, WEBHOME));
-        assertFalse(setup.pageExists(task2Space, WEBHOME));
+        assertFalse(setup.pageExists("Task_1", "WebHome"));
+        assertFalse(setup.pageExists("Task_2", "WebHome"));
     }
 
     @Test
-    @Order(9)
+    @Order(8)
     void deleteTaskMacro(TestUtils setup) throws Exception
     {
         // Deleting a task page should also delete the task macro from the owner page.
@@ -320,7 +234,7 @@ class TaskManagerIT
     }
 
     @Test
-    @Order(10)
+    @Order(9)
     void deleteAdminDefaults(TestUtils testUtils)
     {
         testUtils.setGlobalRights("", "XWiki." + USER_NAME, "admin", true);
@@ -333,4 +247,5 @@ class TaskManagerIT
             assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
         }
     }
+
 }

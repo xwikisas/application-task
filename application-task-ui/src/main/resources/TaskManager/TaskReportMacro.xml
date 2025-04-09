@@ -268,12 +268,14 @@
 #set ($rowCount = $wikimacro.parameters.limit)
 #set ($tableId = $escapetool.xml($wikimacro.parameters.id))
 #set ($spaceFilter = [])
-#foreach($page in $pages.split('\s*,\s*'))
-  #if (!$page.endsWith('.WebHome'))
-    #set ($page = "${page}.WebHome")
+#if ("$!pages.trim()" != '')
+  #foreach($page in $pages.split('\s*,\s*'))
+    #if (!$page.endsWith('.WebHome'))
+      #set ($page = "${page}.WebHome")
+    #end
+    #set ($pageRef = $services.model.resolveDocument($page))
+    #set ($discard = $spaceFilter.add($services.model.serialize($pageRef.lastSpaceReference)))
   #end
-  #set ($pageRef = $services.model.resolveDocument($page))
-  #set ($discard = $spaceFilter.add($services.model.serialize($pageRef.lastSpaceReference)))
 #end
 #if ("$!tableId" == '')
   #set ($tableId = "$mathtool.random")

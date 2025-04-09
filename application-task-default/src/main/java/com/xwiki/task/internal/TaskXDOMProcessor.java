@@ -19,21 +19,16 @@
  */
 package com.xwiki.task.internal;
 
-import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -47,14 +42,12 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.block.match.MacroBlockMatcher;
 import org.xwiki.rendering.listener.MetaData;
 import org.xwiki.rendering.macro.MacroExecutionException;
-import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.syntax.Syntax;
 
-import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
-import com.xwiki.task.TaskConfiguration;
+import com.xwiki.task.TaskException;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
@@ -71,12 +64,6 @@ public class TaskXDOMProcessor
 
     private static final String MENTION_MACRO_ID = "mention";
 
-    private static final String PARAM_REFERENCE = "reference";
-
-    private static final String PARAM_VALUE = "value";
-
-    private static final String PARAM_FORMAT = "format";
-
     @Inject
     private DocumentReferenceResolver<String> resolver;
 
@@ -90,17 +77,13 @@ public class TaskXDOMProcessor
     private Logger logger;
 
     @Inject
+    private TaskBlockProcessor taskBlockProcessor;
+
+    @Inject
     private MacroBlockFinder blockFinder;
 
     @Inject
     private MacroUtils macroUtils;
-
-    @Inject
-    private TaskConfiguration taskConfiguration;
-
-    @Inject
-    @Named("xwiki/2.1")
-    private Parser xwikiParser;
 
     /**
      * Extracts the existing Tasks that have a reference from a given XDOM.
@@ -145,7 +128,6 @@ public class TaskXDOMProcessor
                     return MacroBlockFinder.Lookup.SKIP;
                 }
                 task.setReference(taskRef);
-                task.setName(macro.getContent());
                 tasks.add(task);
             }
             return MacroBlockFinder.Lookup.CONTINUE;
@@ -156,19 +138,22 @@ public class TaskXDOMProcessor
     /**
      * Parse the content of a document and sync the task macro with a given task object.
      *
+     * @param documentReference the reference to the document that contains the task macro that needs updating.
      * @param taskObject the task object that will be used to update task macro.
-     * @param ownerDoc the document that maybe contains a task macro call that needs updating.
-     * @param taskDocument the document that contains the task object.
+     * @param content the content of the document that needs parsing.
+     * @param syntax the syntax of the document content.
      * @return the modified content.
      */
-    public XDOM updateTaskMacroCall(BaseObject taskObject, XWikiDocument ownerDoc, XWikiDocument taskDocument)
+    public XDOM updateTaskMacroCall(DocumentReference documentReference, BaseObject taskObject, XDOM content,
+        Syntax syntax)
     {
-        XDOM content = ownerDoc.getXDOM();
-        Syntax syntax = ownerDoc.getSyntax();
+        DocumentReference taskDocRef = taskObject.getDocumentReference();
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.getStorageDateFormat());
         blockFinder.find(content, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
-                if (maybeUpdateTaskMacroCall(ownerDoc, taskObject, taskDocument, storageFormat, macro)) {
+                if (maybeUpdateTaskMacroCall(documentReference, taskObject, taskDocRef, content, storageFormat,
+                    macro))
+                {
                     return MacroBlockFinder.Lookup.BREAK;
                 }
                 return MacroBlockFinder.Lookup.CONTINUE;
@@ -216,12 +201,13 @@ public class TaskXDOMProcessor
         try {
 
             XDOM macroContent = macroUtils.getMacroContentXDOM(macro, syntax);
+            task.setName(macroUtils.renderMacroContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
             task.setAssignee(extractAssignedUser(macroContent));
 
             Date deadline = extractDeadlineDate(macroContent);
 
             task.setDuedate(deadline);
-        } catch (MacroExecutionException e) {
+        } catch (MacroExecutionException | ComponentLookupException e) {
             logger.warn("Failed to extract the task with reference [{}] from the content of the page [{}]: [{}].",
                 task.getReference(), contentSource, ExceptionUtils.getRootCauseMessage(e));
             return null;
@@ -229,118 +215,34 @@ public class TaskXDOMProcessor
         return task;
     }
 
-    private boolean maybeUpdateTaskMacroCall(XWikiDocument ownerDoc, BaseObject taskObject,
-        XWikiDocument taskDoc, SimpleDateFormat storageFormat, MacroBlock macro)
+    private boolean maybeUpdateTaskMacroCall(DocumentReference documentReference, BaseObject taskObject,
+        DocumentReference taskDocRef, XDOM content, SimpleDateFormat storageFormat, MacroBlock macro)
     {
         DocumentReference taskRef =
             taskReferenceUtils.resolveAsDocumentReference(macro.getParameters().getOrDefault(Task.REFERENCE, ""),
-                ownerDoc.getDocumentReference());
-        if (taskRef.equals(taskDoc.getDocumentReference())) {
+                documentReference);
+        if (taskRef.equals(taskDocRef)) {
 
             setBasicMacroParameters(taskObject, storageFormat, macro);
 
-            XDOM parsedTaskName;
             try {
-                parsedTaskName = xwikiParser.parse(new StringReader(taskObject.getStringValue(Task.NAME)));
-            } catch (org.xwiki.rendering.parser.ParseException e) {
-                logger.warn("Failed to update the task macro identified by [{}]. Cause: [{}].", taskRef,
+                Syntax syntax =
+                    (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
+
+                List<Block> newTaskContentBlocks =
+                    taskBlockProcessor.generateTaskContentBlocks(taskObject.getLargeStringValue(Task.ASSIGNEE),
+                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getStringValue(Task.NAME), storageFormat);
+
+                String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
+
+                macroUtils.updateMacroContent(macro, newContent);
+            } catch (ComponentLookupException | TaskException e) {
+                logger.warn("Failed to update the task macro call for the task with reference [{}]: [{}].", taskDocRef,
                     ExceptionUtils.getRootCauseMessage(e));
-                return true;
             }
-
-            maybeSetAssignee(taskObject, parsedTaskName);
-            maybeSetDeadline(taskObject, parsedTaskName, storageFormat);
-
-            macroUtils.updateMacroContent(macro, taskObject.getStringValue(Task.NAME));
-
             return true;
         }
         return false;
-    }
-
-    private void maybeSetDeadline(BaseObject taskObject, XDOM parsedName, SimpleDateFormat storageFormat)
-    {
-        Date deadline = taskObject.getDateValue(Task.DUE_DATE);
-        MacroBlock dateBlock = parsedName.getFirstBlock(new MacroBlockMatcher(DATE_MACRO_ID),
-            Block.Axes.DESCENDANT);
-        boolean domChanged = false;
-        if (deadline != null) {
-            if (dateBlock == null) {
-                if (parsedName.getChildren().size() != 1) {
-                    dateBlock = new MacroBlock(DATE_MACRO_ID, Collections.emptyMap(), false);
-                    parsedName.addChild(dateBlock);
-                } else {
-                    dateBlock = new MacroBlock(DATE_MACRO_ID, Collections.emptyMap(), true);
-                    parsedName.getChildren().get(0).addChild(dateBlock);
-                }
-            }
-            String formattedDeadline = storageFormat.format(deadline);
-
-            String formatParam = dateBlock.getParameter(PARAM_FORMAT);
-            if (formatParam != null && !formatParam.isEmpty()) {
-                formattedDeadline = new SimpleDateFormat(formatParam).format(deadline);
-            }
-
-            String valueParam = dateBlock.getParameter(PARAM_VALUE);
-            if (!Objects.equals(valueParam, formattedDeadline)) {
-                domChanged = true;
-                dateBlock.setParameter(PARAM_VALUE, formattedDeadline);
-            }
-        } else {
-            if (dateBlock != null) {
-                domChanged = true;
-                dateBlock.getParent().removeBlock(dateBlock);
-            }
-        }
-        if (domChanged) {
-            try {
-                taskObject.setLargeStringValue(Task.NAME,
-                    macroUtils.renderMacroContent(parsedName.getChildren(), Syntax.XWIKI_2_1));
-            } catch (ComponentLookupException e) {
-                logger.warn("Failed to add date macro with value [{}] in the task name [{}]. Cause: [{}].",
-                    deadline, taskObject.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
-            }
-        }
-    }
-
-    private void maybeSetAssignee(BaseObject taskObject, XDOM parsedName)
-    {
-        String assignee = taskObject.getLargeStringValue(Task.ASSIGNEE);
-        MacroBlock mentionBlock = parsedName.getFirstBlock(new MacroBlockMatcher(MENTION_MACRO_ID),
-            Block.Axes.DESCENDANT);
-        boolean domChanged = false;
-        if (assignee != null && !assignee.isEmpty()) {
-            if (mentionBlock == null) {
-                if (parsedName.getChildren().size() != 1) {
-                    mentionBlock = new MacroBlock(MENTION_MACRO_ID, Collections.emptyMap(), false);
-                    parsedName.addChild(mentionBlock);
-                } else {
-                    mentionBlock = new MacroBlock(MENTION_MACRO_ID, Collections.emptyMap(), true);
-                    parsedName.getChildren().get(0).addChild(mentionBlock);
-                }
-            }
-            String parameterAssignee = mentionBlock.getParameter(PARAM_REFERENCE);
-            if (!Objects.equals(parameterAssignee, assignee)) {
-                domChanged = true;
-                mentionBlock.setParameter(PARAM_REFERENCE, assignee);
-                mentionBlock.setParameter("anchor",
-                    assignee.replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
-            }
-        } else {
-            if (mentionBlock != null) {
-                domChanged = true;
-                mentionBlock.getParent().removeBlock(mentionBlock);
-            }
-        }
-        if (domChanged) {
-            try {
-                taskObject.setLargeStringValue(Task.NAME,
-                    macroUtils.renderMacroContent(parsedName.getChildren(), Syntax.XWIKI_2_1));
-            } catch (ComponentLookupException e) {
-                logger.warn("Failed to add mention to user [{}] in the description of the task [{}]. Cause: [{}].",
-                    assignee, taskObject.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
-            }
-        }
     }
 
     private void setBasicMacroParameters(BaseObject taskObject, SimpleDateFormat storageFormat, MacroBlock macro)
@@ -371,7 +273,7 @@ public class TaskXDOMProcessor
             task.setReporter(resolver.resolve(reporter));
         }
 
-        String taskStatus = macroParams.getOrDefault(Task.STATUS, taskConfiguration.getDefaultInlineStatus());
+        String taskStatus = macroParams.getOrDefault(Task.STATUS, Task.STATUS_IN_PROGRESS);
         task.setStatus(taskStatus);
 
         String strCreateDate = macroParams.getOrDefault(Task.CREATE_DATE, "");
@@ -422,9 +324,9 @@ public class TaskXDOMProcessor
             return deadline;
         }
 
-        String dateValue = macro.getParameters().get(PARAM_VALUE);
+        String dateValue = macro.getParameters().get("value");
         try {
-            String formatParam = macro.getParameters().get(PARAM_FORMAT);
+            String formatParam = macro.getParameters().get("format");
             deadline = new SimpleDateFormat(formatParam != null && !formatParam.isEmpty() ? formatParam
                 : configuration.getStorageDateFormat()).parse(dateValue);
         } catch (ParseException e) {

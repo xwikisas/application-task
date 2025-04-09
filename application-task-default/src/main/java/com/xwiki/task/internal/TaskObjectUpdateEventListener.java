@@ -113,7 +113,8 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                 XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
                 if (!ownerDocument.isNew()) {
                     ownerDocument.setContent(
-                        taskXDOMProcessor.updateTaskMacroCall(taskObj, ownerDocument, document));
+                        taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
+                            ownerDocument.getSyntax()));
                     context.getWiki().saveDocument(ownerDocument,
                         String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
                 }

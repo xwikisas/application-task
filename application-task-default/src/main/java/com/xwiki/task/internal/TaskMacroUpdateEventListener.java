@@ -227,7 +227,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 {
                     continue;
                 }
-
                 boolean docChanged = maybeUpdateTaskDoc(document, context, task, taskObj, taskDoc, taskReference);
 
                 if (docChanged) {
@@ -244,20 +243,15 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         XWikiDocument taskDoc, DocumentReference taskReference)
     {
         BaseObject clonedObj = taskObj.clone();
-
         UserReference currentUser = userRefResolver.resolve(context.getUserReference());
         taskDoc.getAuthors().setEffectiveMetadataAuthor(currentUser);
-
         clonedObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference),
             context);
-
         populateObjectWithMacroParams(context, task, clonedObj);
-
         boolean docChanged = !clonedObj.getDiff(taskObj, context).isEmpty();
         if (docChanged) {
             taskDoc.setXObject(taskObj.getNumber(), clonedObj);
         }
-
         if (taskDoc.isNew()) {
             taskDoc.setHidden(true);
             taskDoc.getAuthors().setCreator(currentUser);

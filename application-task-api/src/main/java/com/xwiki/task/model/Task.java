@@ -109,11 +109,6 @@ public class Task
      */
     public static final String PROGRESS = "progress";
 
-    /**
-     * The name of the DESCRIPTION field.
-     */
-    public static final String DESCRIPTION = "description";
-
     private String name;
 
     private int number;
@@ -138,14 +133,11 @@ public class Task
 
     private int progress;
 
-    private String description;
-
     /**
      * Default constructor.
      */
     public Task()
     {
-
     }
 
     /**
@@ -347,21 +339,5 @@ public class Task
     public void setProgress(int progress)
     {
         this.progress = progress;
-    }
-
-    /**
-     * @return the description of the task. It can contain XWiki syntax 2.1.
-     */
-    public String getDescription()
-    {
-        return description;
-    }
-
-    /**
-     * @param description see {@link #getDescription()}.
-     */
-    public void setDescription(String description)
-    {
-        this.description = description;
     }
 }

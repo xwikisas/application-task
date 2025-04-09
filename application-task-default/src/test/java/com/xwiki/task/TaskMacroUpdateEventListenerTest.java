@@ -67,8 +67,6 @@ import static org.mockito.Mockito.when;
 @ComponentTest
 class TaskMacroUpdateEventListenerTest
 {
-    private static final String DOC_PREV_VERSION = "1";
-
     private static final String TASK_NAME = "Hello there";
 
     @InjectMockComponents
@@ -174,7 +172,6 @@ class TaskMacroUpdateEventListenerTest
         when(this.task_1Doc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE)).thenReturn(this.task_1Obj);
         when(this.task_1Doc.getDocumentReference()).thenReturn(this.taskPage_1);
         when(this.taskObj.getLargeStringValue(Task.OWNER)).thenReturn(this.pageWithMacro.toString());
-        when(this.taskObj.getStringValue(Task.NAME)).thenReturn("");
         when(this.task_1Obj.getLargeStringValue(Task.OWNER)).thenReturn(this.pageWithMacro.toString());
         when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage)).thenReturn(this.pageWithMacro);
         when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage_1)).thenReturn(this.pageWithMacro);
@@ -198,7 +195,6 @@ class TaskMacroUpdateEventListenerTest
         task_1.setNumber(1);
         task_1.setOwner(pageWithMacro);
         task_1.setCreateDate(date1);
-        task_1.setDescription(TASK_NAME);
 
         task.setReference(taskPage);
         task.setReporter(adminRef);
@@ -210,7 +206,6 @@ class TaskMacroUpdateEventListenerTest
         task.setNumber(2);
         task.setOwner(pageWithMacro);
         task.setCreateDate(date1);
-        task.setDescription(TASK_NAME);
     }
 
     @Test
