@@ -39,6 +39,7 @@ import org.xwiki.security.authorization.Right;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.model.Task;
 import com.xwiki.task.rest.TaskResource;
 
@@ -59,6 +60,9 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
     @Inject
     private ContextualAuthorizationManager contextualAuthorizationManager;
 
+    @Inject
+    private TaskConfiguration taskConfiguration;
+
     @Override
     public Response changeTaskStatus(String wikiName, String spaces, String pageName, String status)
         throws XWikiRestException
@@ -77,11 +81,19 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
-            taskObject.set(Task.STATUS, status, getXWikiContext());
+            String setStatus = taskObject.getStringValue(Task.STATUS);
+            String newStatus = status;
+
+            if ("toggle".equals(status)) {
+                newStatus =
+                    setStatus.equals(Task.STATUS_DONE) ? taskConfiguration.getDefaultInlineStatus() : Task.STATUS_DONE;
+            }
+
+            taskObject.set(Task.STATUS, newStatus, getXWikiContext());
 
             Date completeDate = null;
             int progress = 0;
-            if (status.equals(Task.STATUS_DONE)) {
+            if (newStatus.equals(Task.STATUS_DONE)) {
                 completeDate = new Date();
                 progress = 100;
             }

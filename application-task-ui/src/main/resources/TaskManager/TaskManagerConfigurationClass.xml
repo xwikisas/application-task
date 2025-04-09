@@ -46,6 +46,61 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <defaultInlineStatus>
+      <cache>0</cache>
+      <classname>TaskManager.StatusClass</classname>
+      <customDisplay>{{velocity}}
+#if($type=='edit')
+  #set($propertyClass = $object.getxWikiClass().get($name))
+  {{html}}
+  #set($name = 'defaultInlineStatus')
+  &lt;select size="1" name="TaskManager.TaskManagerConfigurationClass_0_defaultInlineStatus" id="TaskManager.TaskManagerClass_0_defaultInlineStatus"&gt;
+    #foreach($rValue in $propertyClass.mapValues.entrySet())
+      #set($key = "TaskManager.TaskManagerClass_status_$rValue.key")
+      #set($translation = $services.localization.render($key))
+      &lt;option value="$escapetool.xml($rValue.key)" #if($value == $rValue.key) selected='selected' #end&gt;
+        #if ($translation == $key)
+          $escapetool.xml($rValue.key)
+        #else
+          $escapetool.xml($translation)
+        #end
+      &lt;/option&gt;
+    #end
+  {{/html}}
+#else
+  #set($key = "TaskManager.TaskManagerClass_status_$value")
+  #set($translation = $services.localization.render($key))
+  #if ($translation == $key)
+    $services.rendering.escape($value, 'xwiki/2.1')
+  #else
+    $services.rendering.escape($translation, 'xwiki/2.1')
+  #end
+#end
+{{/velocity}}</customDisplay>
+      <defaultValue>InProgress</defaultValue>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <freeText/>
+      <hint/>
+      <idField/>
+      <largeStorage>0</largeStorage>
+      <multiSelect>0</multiSelect>
+      <name>defaultInlineStatus</name>
+      <number>2</number>
+      <picker>1</picker>
+      <prettyName>defaultInlineStatus</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort/>
+      <sql>select prop1.value from BaseObject as obj, StringProperty as prop1 where obj.className='TaskManager.StatusClass' and obj.id=prop1.id.id and prop1.id.name='status'</sql>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </defaultInlineStatus>
     <notSkippedFoldEvents>
       <contenttype>PureText</contenttype>
       <customDisplay/>

@@ -70,7 +70,7 @@
     #if ("$!row.number" == '')
       #set ($row.name = $services.localization.render('taskmanager.livetable.noRights'))
     #else
-      #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+      #set ($row.name = $doc.getRenderedContentRestricted("{{tasks ids='${row.number}'/}}", $doc.syntax))
     #end
   #end
   #jsonResponse($map)

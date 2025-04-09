@@ -151,7 +151,7 @@
         /&gt;
     #end
     &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
-    &lt;span class="task-manager-status-${taskstatus}"&gt;[${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]&lt;/span&gt;
+    &lt;span class="task-manager-status-$escapetool.xml(${taskstatus})"&gt;[${escapetool.xml($services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}"))}]&lt;/span&gt;
     &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($taskpage.getURL('view'))"&gt;${escapetool.xml($tasktitle)}&lt;/a&gt;&lt;/span&gt;
     ($services.rendering.escape($services.localization.render('TaskManager.TaskManagerClass_duedate'), 'xwiki/2.1') ${taskduedate})
     #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
@@ -355,9 +355,9 @@
   #set($translation = $services.localization.render($key))
   &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $services.rendering.escape($rValue.key, 'xwiki/2.1')
+      $escapetool.xml($rValue.key)
     #else
-      $services.rendering.escape($translation, 'xwiki/2.1')
+      $escapetool.xml($translation)
     #end
   &lt;/option&gt;
 #end
@@ -427,7 +427,7 @@
       <customDisplay>{{velocity}}
 #if($type=='edit')
 {{html}}
-#set($name ="severity")
+#set($name = 'severity')
 #set($propertyClass = $object.getxWikiClass().get($name))
 #set($existingValue = $object.getValue('severity'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_severity" id="TaskManager.TaskManagerClass_0_severity"&gt;
@@ -436,9 +436,9 @@
   #set($translation = $services.localization.render($key))
   &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $services.rendering.escape($rValue.key, 'xwiki/2.1')
+      $escapetool.xml($rValue.key)
     #else
-      $services.rendering.escape($translation, 'xwiki/2.1')
+      $escapetool.xml($translation)
     #end
   &lt;/option&gt;
 #end
@@ -499,7 +499,7 @@
       <customDisplay>{{velocity}}
 #if($type=='edit')
 {{html}}
-#set($name ="status")
+#set($name = 'status')
 #set($propertyClass = $object.getxWikiClass().get($name))
 #set($existingValue = $object.getValue('status'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_status" id="TaskManager.TaskManagerClass_0_status"&gt;
@@ -508,9 +508,9 @@
   #set($translation = $services.localization.render($key))
   &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
     #if ($translation == $key)
-      $services.rendering.escape($rValue.key, 'xwiki/2.1')
+      $escapetool.xml($rValue.key)
     #else
-      $services.rendering.escape($translation, 'xwiki/2.1')
+      $escapetool.xml($translation)
     #end
   &lt;/option&gt;
 #end
