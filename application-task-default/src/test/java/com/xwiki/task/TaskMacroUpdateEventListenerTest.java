@@ -32,6 +32,7 @@ import org.mockito.Mock;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.model.EntityType;
+import org.xwiki.model.document.DocumentAuthors;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceProvider;
@@ -43,6 +44,9 @@ import org.xwiki.security.authorization.Right;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceResolver;
+import org.xwiki.user.internal.document.DocumentUserReference;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -50,19 +54,19 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.ObjectDiff;
 import com.xwiki.task.internal.AbstractTaskEventListener;
 import com.xwiki.task.internal.TaskMacroUpdateEventListener;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ComponentTest
 class TaskMacroUpdateEventListenerTest
 {
-    private static final String DOC_PREV_VERSION = "1";
-
     private static final String TASK_NAME = "Hello there";
 
     @InjectMockComponents
@@ -86,6 +90,10 @@ class TaskMacroUpdateEventListenerTest
 
     @MockComponent
     private EntityReferenceProvider referenceProvider;
+
+    @MockComponent
+    @Named("document")
+    private UserReferenceResolver<DocumentReference> userReferenceResolver;
 
     @Mock
     private XWikiContext context;
@@ -120,6 +128,9 @@ class TaskMacroUpdateEventListenerTest
     @Mock
     private BaseObject task_1Obj;
 
+    @Mock
+    private DocumentAuthors documentAuthors;
+
     private final DocumentReference adminRef = new DocumentReference("xwiki", "XWiki", "Admin");
 
     private final DocumentReference pageWithMacro = new DocumentReference("xwiki", "XWiki", "Home");
@@ -127,6 +138,10 @@ class TaskMacroUpdateEventListenerTest
     private final DocumentReference taskPage = new DocumentReference("xwiki", "XWiki", "Task");
 
     private final DocumentReference taskPage_1 = new DocumentReference("xwiki", "XWiki", "Task_1");
+
+    private final DocumentReference userDocRef = new DocumentReference("xwiki", "XWiki", "User1");
+
+    private final UserReference userRef = new DocumentUserReference(userDocRef, true);
 
     private Task task = new Task();
 
@@ -162,6 +177,13 @@ class TaskMacroUpdateEventListenerTest
         when(this.resolver.resolve(this.pageWithMacro.toString(), this.taskPage_1)).thenReturn(this.pageWithMacro);
         when(this.serializer.serialize(this.pageWithMacro, this.taskPage)).thenReturn(this.pageWithMacro.toString());
         when(this.serializer.serialize(this.pageWithMacro, this.taskPage_1)).thenReturn(this.pageWithMacro.toString());
+        when(this.taskDoc.getAuthors()).thenReturn(this.documentAuthors);
+        when(this.taskDoc.getContent()).thenReturn("");
+        when(this.context.getUserReference()).thenReturn(this.userDocRef);
+        when(this.userReferenceResolver.resolve(this.userDocRef)).thenReturn(this.userRef);
+        when(this.taskObj.clone()).thenReturn(this.taskObj);
+        when(this.taskObj.getDiff(this.taskObj, this.context)).thenReturn(
+            Collections.singletonList(mock(ObjectDiff.class)));
 
         task_1.setReference(taskPage_1);
         task_1.setReporter(adminRef);
@@ -199,7 +221,7 @@ class TaskMacroUpdateEventListenerTest
     {
         when(this.taskXDOMProcessor.extract(this.docXDOM, this.pageWithMacro)).thenReturn(
             new ArrayList<>(Collections.singletonList(task)));
-        when(this.taskXDOMProcessor.extract(this.prevVersionDocXDOM, this.pageWithMacro)).thenReturn(
+        when(this.taskXDOMProcessor.extract(this.prevVersionDocXDOM, this.pageWithMacro, true)).thenReturn(
             new ArrayList<>(Collections.singletonList(task_1)));
         when(this.taskDoc.isNew()).thenReturn(true);
         when(this.authorizationManager.hasAccess(Right.EDIT, taskPage)).thenReturn(true);
@@ -208,6 +230,8 @@ class TaskMacroUpdateEventListenerTest
         this.eventListener.onEvent(new DocumentUpdatingEvent(), this.docWithTasks, this.context);
 
         verify(this.taskObj).set(Task.OWNER, this.pageWithMacro.toString(), this.context);
+        verify(this.documentAuthors).setEffectiveMetadataAuthor(this.userRef);
+        verify(this.taskObj).set(Task.NAME, "Hello there", this.context);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);
     }

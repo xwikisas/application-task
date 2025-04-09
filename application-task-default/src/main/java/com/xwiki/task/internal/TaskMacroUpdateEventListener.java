@@ -41,6 +41,8 @@ import org.xwiki.observation.event.Event;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceResolver;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -72,6 +74,10 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     @Inject
     private TaskManager taskManager;
+
+    @Inject
+    @Named("document")
+    private UserReferenceResolver<DocumentReference> userRefResolver;
 
     private DocumentReference lastFoldDocumentReference;
 
@@ -153,7 +159,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (document.getOriginalDocument() != null) {
             XWikiDocument previousVersionDoc = document.getOriginalDocument();
             XDOM previousContent = previousVersionDoc.getXDOM();
-            previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference());
+            previousDocTasks = this.taskXDOMProcessor.extract(previousContent, document.getDocumentReference(), true);
             List<DocumentReference> currentTasksIds =
                 tasks.stream().map(Task::getReference).collect(Collectors.toList());
             previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
@@ -221,22 +227,36 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 {
                     continue;
                 }
-                taskDoc.setAuthorReference(context.getUserReference());
+                boolean docChanged = maybeUpdateTaskDoc(document, context, task, taskObj, taskDoc, taskReference);
 
-                taskObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference), context);
-
-                populateObjectWithMacroParams(context, task, taskObj);
-
-                if (taskDoc.isNew()) {
-                    taskDoc.setHidden(true);
+                if (docChanged) {
+                    context.getWiki().saveDocument(taskDoc, "Task updated!", context);
                 }
-
-                context.getWiki().saveDocument(taskDoc, "Task updated!", context);
             } catch (XWikiException e) {
                 logger.error("Failed to retrieve the document that contains the Task Object with id [{}]:",
                     taskReference, e);
             }
         }
+    }
+
+    private boolean maybeUpdateTaskDoc(XWikiDocument document, XWikiContext context, Task task, BaseObject taskObj,
+        XWikiDocument taskDoc, DocumentReference taskReference)
+    {
+        BaseObject clonedObj = taskObj.clone();
+        UserReference currentUser = userRefResolver.resolve(context.getUserReference());
+        taskDoc.getAuthors().setEffectiveMetadataAuthor(currentUser);
+        clonedObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference),
+            context);
+        populateObjectWithMacroParams(context, task, clonedObj);
+        boolean docChanged = !clonedObj.getDiff(taskObj, context).isEmpty();
+        if (docChanged) {
+            taskDoc.setXObject(taskObj.getNumber(), clonedObj);
+        }
+        if (taskDoc.isNew()) {
+            taskDoc.setHidden(true);
+            taskDoc.getAuthors().setCreator(currentUser);
+        }
+        return docChanged;
     }
 
     private boolean isChildOfTasksSubspace(EntityReference possibleChild, DocumentReference possibleParent)
