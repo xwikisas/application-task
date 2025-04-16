@@ -71,7 +71,7 @@
     'rowCount' : 15,
     'description' : 'This table lists all projects configured within the Task Application.',
     'className' : 'TaskManager.ProjectClass',
-    'queryFilters': ' '
+    'queryFilters': 'currentlanguage'
   })
 #livetable("projectTable" $columns $columnsProperties $options)
 #else

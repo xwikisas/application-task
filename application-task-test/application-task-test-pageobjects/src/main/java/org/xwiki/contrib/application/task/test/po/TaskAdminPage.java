@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -49,15 +50,19 @@ public class TaskAdminPage extends AdministrationSectionPage
 
     private Select defaultInlineStatusSelect;
 
-    public TaskAdminPage()
-    {
-        super(SECTION_ID);
-    }
-
     public static TaskAdminPage gotoPage()
     {
         AdministrationSectionPage.gotoPage(SECTION_ID);
         return new TaskAdminPage();
+    }
+
+    public void forceEdit(){
+        getDriver().findElement(By.cssSelector(".panel-body > a")).click();;
+    }
+
+    public TaskAdminPage()
+    {
+        super(SECTION_ID);
     }
 
     public String getDefaultInlineStatusValue()
@@ -121,5 +126,10 @@ public class TaskAdminPage extends AdministrationSectionPage
             defaultInlineStatusSelect = new Select(defaultInlineStatusElement);
         }
         return defaultInlineStatusSelect;
+    }
+
+    public int countSectionElements(String sectionId)
+    {
+        return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
     }
 }
