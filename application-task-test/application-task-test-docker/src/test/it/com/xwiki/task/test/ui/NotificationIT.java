@@ -19,45 +19,43 @@
  */
 package com.xwiki.task.test.ui;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.api.Order;
-import org.xwiki.test.docker.junit5.ExtensionOverride;
-import org.xwiki.test.docker.junit5.TestConfiguration;
-import org.xwiki.test.docker.junit5.UITest;
-import org.xwiki.test.ui.TestUtils;
-import org.xwiki.platform.notifications.test.po.NotificationsTrayPage;
-import org.xwiki.platform.notifications.test.po.NotificationsUserProfilePage;
-import org.xwiki.platform.notifications.test.po.preferences.ApplicationPreferences;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.platform.notifications.test.po.NotificationsTrayPage;
+import org.xwiki.platform.notifications.test.po.NotificationsUserProfilePage;
+import org.xwiki.platform.notifications.test.po.preferences.ApplicationPreferences;
+import org.xwiki.scheduler.test.po.SchedulerHomePage;
+import org.xwiki.test.docker.junit5.ExtensionOverride;
+import org.xwiki.test.docker.junit5.TestConfiguration;
+import org.xwiki.test.docker.junit5.UITest;
+import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.BootstrapSwitch;
 import org.xwiki.test.ui.po.CreatePagePage;
-import org.xwiki.scheduler.test.po.SchedulerHomePage;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent;
 import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventDescriptor;
 import com.xwiki.task.model.Task;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * UI Tests for the notifications received when being assigned to a task.
@@ -101,14 +99,14 @@ import com.xwiki.task.model.Task;
 )
 public class NotificationIT
 {
+    private static final String TEST_USERNAME = "NotificationTestUser";
+
+    private static final String TEST_EDITOR_USERNAME = "NotificationTestEditor";
+
+    private static final String PASSWORD = "password";
+
     @RegisterExtension
     static GreenMailExtension mail = new GreenMailExtension(ServerSetupTest.SMTP);
-
-    private static String TEST_USERNAME = "NotificationTestUser";
-
-    private static String TEST_EDITOR_USERNAME = "NotificationTestEditor";
-
-    private static String PASSWORD = "password";
 
     private final DocumentReference TASK_MACRO_PAGE =
         new DocumentReference("xwiki", "Main", "TestTaskMacroNotifications");
@@ -117,9 +115,9 @@ public class NotificationIT
         "{{task reference=\"Task_0\" status=\"Done\"}}My task{{mention reference=\"XWiki." + TEST_USERNAME + "\""
             + " style=\"FULL_NAME\"}}{{/task}}";
 
-    private String TEST_TASK_NAME = "Test Task";
+    private final String TEST_TASK_NAME = "Test Task";
 
-    private String TEST_PROJECT_NAME = "Test Project";
+    private final String TEST_PROJECT_NAME = "Test Project";
 
     @BeforeAll
     void setup(TestUtils setup, TestConfiguration config) throws Exception
@@ -355,11 +353,12 @@ public class NotificationIT
      * Fails the test if the notification preferences change unexpectedly.
      *
      * @param setup
+     * @param userName the user whose notification preferences to check
      * @param expectedTaskState ON or OFF for both alert and email notifications for the TaskChanged notification
      */
     private void checkPreferences(TestUtils setup, String userName, BootstrapSwitch.State expectedTaskState)
     {
-        doAsUser(setup, TEST_USERNAME, () -> {
+        doAsUser(setup, userName, () -> {
             try {
                 String taskAppName = new TaskChangedEventDescriptor().getApplicationName();
                 NotificationsUserProfilePage userNotificationPreferences =
