@@ -19,12 +19,12 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 import org.xwiki.administration.test.po.AdministrationSectionPage;
-import org.xwiki.test.ui.po.ViewPage;
 
 /**
  * Page object of the Task Manager administration section.
@@ -58,6 +58,10 @@ public class TaskAdminPage extends AdministrationSectionPage
     {
         AdministrationSectionPage.gotoPage(SECTION_ID);
         return new TaskAdminPage();
+    }
+
+    public void forceEdit(){
+        getDriver().findElement(By.cssSelector(".panel-body > a")).click();;
     }
 
     public String getDefaultInlineStatusValue()
@@ -121,5 +125,10 @@ public class TaskAdminPage extends AdministrationSectionPage
             defaultInlineStatusSelect = new Select(defaultInlineStatusElement);
         }
         return defaultInlineStatusSelect;
+    }
+
+    public int countSectionElements(String sectionId)
+    {
+        return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
     }
 }

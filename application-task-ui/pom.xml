@@ -25,7 +25,7 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task</artifactId>
-    <version>3.6.7-SNAPSHOT</version>
+    <version>3.7.1-SNAPSHOT</version>
   </parent>
   <artifactId>application-task-ui</artifactId>
   <name>Task Manager Application - UI</name>
@@ -42,7 +42,14 @@
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
       TaskManager.Administration,
-      TaskManager.WebPreferences
+      TaskManager.WebPreferences,
+      TaskManager.ToDo,
+      TaskManager.InProgress,
+      TaskManager.Done,
+      TaskManager.Medium,
+      TaskManager.Low,
+      TaskManager.High,
+      TaskManager.Other
     </xwiki.extension.licensing.excludedDocuments>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
   </properties>
@@ -62,6 +69,13 @@
       <groupId>org.webjars.npm</groupId>
       <artifactId>frappe-gantt</artifactId>
       <version>${gantt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.xwiki.commons</groupId>
+      <artifactId>xwiki-pro-commons-pickers-ui</artifactId>
+      <version>${xwikiprocommons.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.contrib</groupId>

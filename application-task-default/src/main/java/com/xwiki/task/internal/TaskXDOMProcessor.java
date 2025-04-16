@@ -95,14 +95,39 @@ public class TaskXDOMProcessor
      */
     public List<Task> extract(XDOM content, DocumentReference contentSource)
     {
+        return extract(content, contentSource, false);
+    }
+
+    /**
+     * Extracts the existing Tasks that have a reference from a given XDOM.
+     *
+     * @param content the XDOM from which one desires to extract or check for the existence of Tasks.
+     * @param contentSource the source of the document.
+     * @param onlyReferences whether the returned tasks should contain only the references or all the details.
+     * @return a list of found Tasks or an empty list if the XDOM didn't contain any valid task. Where a valid task is
+     *     one that has an id.
+     * @since 3.7.0
+     */
+    public List<Task> extract(XDOM content, DocumentReference contentSource, boolean onlyReferences)
+    {
         List<Task> tasks = new ArrayList<>();
         Syntax syntax = (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
         blockFinder.find(content, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
+                String serializedRef = macro.getParameters().get(Task.REFERENCE);
+                if (StringUtils.isEmpty(serializedRef)) {
+                    return MacroBlockFinder.Lookup.SKIP;
+                }
+                DocumentReference taskRef = taskReferenceUtils.resolveAsDocumentReference(serializedRef, contentSource);
+                if (onlyReferences) {
+                    tasks.add(new Task(taskRef));
+                    return MacroBlockFinder.Lookup.CONTINUE;
+                }
                 Task task = initTask(syntax, contentSource, macro);
                 if (task == null) {
                     return MacroBlockFinder.Lookup.SKIP;
                 }
+                task.setReference(taskRef);
                 tasks.add(task);
             }
             return MacroBlockFinder.Lookup.CONTINUE;
@@ -131,7 +156,7 @@ public class TaskXDOMProcessor
                 {
                     return MacroBlockFinder.Lookup.BREAK;
                 }
-                return MacroBlockFinder.Lookup.SKIP;
+                return MacroBlockFinder.Lookup.CONTINUE;
             }
             return MacroBlockFinder.Lookup.CONTINUE;
         });
@@ -169,13 +194,8 @@ public class TaskXDOMProcessor
     private Task initTask(Syntax syntax, DocumentReference contentSource, MacroBlock macro)
     {
         Map<String, String> macroParams = macro.getParameters();
-        String taskReference = macroParams.get(Task.REFERENCE);
         Task task = new Task();
 
-        if (StringUtils.isEmpty(taskReference)) {
-            return null;
-        }
-        task.setReference(taskReferenceUtils.resolveAsDocumentReference(taskReference, contentSource));
         extractBasicProperties(macroParams, task);
 
         try {

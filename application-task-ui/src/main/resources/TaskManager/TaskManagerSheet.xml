@@ -89,6 +89,9 @@
             #if ("$!doc.getValue('assignee')" != '')
               #displayPropertyCol('assignee', 'user')
             #end
+            #if ("$!doc.getValue('owner')" != '')
+              #displayPropertyCol('owner', 'home')
+            #end
           )))
         )))
         (% class="col-xs-12 col-sm-4 col-md-4" %)
@@ -146,7 +149,7 @@
                   #set($taskName = $doc.documentReference.parent.name)
                 #end
               #end
-            :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($taskName)"/&gt;
+            :   &lt;input class="form-control" type="input" name="TaskManager.TaskManagerClass_0_name" id="TaskManager.TaskManagerClass_0_name" value="$!escapetool.xml($!services.rendering.escape($taskName, 'xwiki/2.1'))"/&gt;
           )))
         )))
         (% class="col-xs-12 col-sm-4 col-md-4" %)

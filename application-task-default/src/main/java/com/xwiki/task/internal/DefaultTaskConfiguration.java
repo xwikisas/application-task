@@ -75,4 +75,14 @@ public class DefaultTaskConfiguration implements TaskConfiguration
     {
         throw new NotImplementedException(METHOD_DEPRECATED);
     }
+
+    @Override
+    public String getDefaultInlineStatus()
+    {
+        String defaultStatus = configurationSource.getProperty("defaultInlineStatus");
+        if (defaultStatus == null || defaultStatus.isEmpty()) {
+            defaultStatus = "InProgress";
+        }
+        return defaultStatus;
+    }
 }

@@ -148,6 +148,21 @@ public class Task
     private String severity;
 
     /**
+     * Default constructor.
+     */
+    public Task()
+    {
+    }
+
+    /**
+     * @param documentReference the reference to this Task.
+     */
+    public Task(DocumentReference documentReference)
+    {
+        this.reference = documentReference;
+    }
+
+    /**
      * @return the reference of the document where this task resides.
      */
     public DocumentReference getOwner()

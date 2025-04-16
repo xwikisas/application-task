@@ -19,10 +19,13 @@
  */
 package com.xwiki.task.test.ui;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
+import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
@@ -33,7 +36,6 @@ import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.LiveTableElement;
 import org.xwiki.test.ui.po.ViewPage;
-import org.xwiki.test.ui.po.editor.EditPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -48,7 +50,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @UITest(
     // Needed for the dependency to the mentions macro that uses solr.
     extraJARs = {
-        "org.xwiki.platform:xwiki-platform-eventstream-store-solr"
+        "org.xwiki.platform:xwiki-platform-eventstream-store-solr:14.10",
+        "com.xwiki.date:macro-date-api",
+        "com.xwiki.date:macro-date-default"
     }, resolveExtraJARs = true)
 class TaskManagerIT
 {
@@ -68,12 +72,17 @@ class TaskManagerIT
             + "{{/task}}";
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
+
+    private static final String USER_NAME = "BOB";
+
     @BeforeAll
-    void setup(TestUtils setup) {
+    void setup(TestUtils setup)
+    {
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
     }
+
     @Test
     @Order(1)
     void applicationsPanelEntry(TestUtils setup)
@@ -153,7 +162,8 @@ class TaskManagerIT
 
     @Test
     @Order(5)
-    void taskMacroAndTaskPageRelation(TestUtils setup) {
+    void taskMacroAndTaskPageRelation(TestUtils setup)
+    {
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
         viewPage.edit();
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
@@ -173,12 +183,13 @@ class TaskManagerIT
 
     @Test
     @Order(6)
-    void taskReport(TestUtils setup) {
+    void taskReport(TestUtils setup)
+    {
         setup.createPage(pageWithTaskRaport, TASK_REPORT_MACRO);
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
         LiveTableElement taskReport = viewPage.getTaskReportLiveTable();
         taskReport.waitUntilReady();
-        assertEquals(2, taskReport.getRowCount());
+        assertEquals(3, taskReport.getRowCount());
         int taskTileCellIndex = taskReport.getColumnIndex("Task") + 1;
         int taskDeadlineCellIndex = taskReport.getColumnIndex("Deadline") + 1;
         int taskAssigneeCellIndex = taskReport.getColumnIndex("Assignee") + 1;
@@ -188,7 +199,7 @@ class TaskManagerIT
         assertEquals("-", taskReport.getCell(row, taskDeadlineCellIndex).getText());
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
-        row = taskReport.getRow(2);
+        row = taskReport.getRow(3);
         assertEquals("#3\nDo this  as late as @Admin 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
         assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
@@ -225,5 +236,19 @@ class TaskManagerIT
         assertEquals(0, viewPage.getTaskMacros().size());
     }
 
+    @Test
+    @Order(9)
+    void deleteAdminDefaults(TestUtils testUtils)
+    {
+        testUtils.setGlobalRights("", "XWiki." + USER_NAME, "admin", true);
+        testUtils.createUserAndLogin(USER_NAME, "password");
+        TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.forceEdit();
+        List<String> ids = List.of("#projectTable", "#statusTable", "#severityTable");
+        List<Integer> expectedResults = List.of(1, 3, 3);
+        for (int i = 0; i < ids.size(); i++) {
+            assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
+        }
+    }
 
 }

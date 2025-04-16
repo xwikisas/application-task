@@ -73,7 +73,6 @@ TaskManager.TaskManagerClass_status_InProgress=In Progress
 TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_status_ToDo=To Do
 TaskManager.TaskManagerClass_status_Done=Done
-TaskManager.TaskManagerClass_status_Late=Late
 TaskManager.TaskManagerClass_severity=Priority
 TaskManager.TaskManagerClass_severity_Medium=Medium
 TaskManager.TaskManagerClass_severity_Low=Low
@@ -87,6 +86,7 @@ TaskManager.TaskManagerClass_completeDate=Completion Date
 TaskManager.TaskManagerClass_dependencies=Dependencies
 TaskManager.TaskManagerClass_dependencies_nodependencies=Please create other tasks before adding dependencies.
 TaskManager.TaskManagerClass_progress=Progress
+TaskManager.TaskManagerClass_owner=Task Location
 
 # Live table generic keys
 taskmanager.livetable.doc.title=Page Title
@@ -114,7 +114,7 @@ taskmanager.livetable.status=Status
 taskmanager.livetable.severity=Priority
 taskmanager.livetable.reporter=Reporter
 taskmanager.livetable.assignee=Assignee
-taskmanager.livetable.duedate=Due Date
+taskmanager.livetable.duedate=Deadline
 taskmanager.livetable.creationDate=Creation Date
 
 # Notifications for changed tasks
@@ -204,9 +204,6 @@ taskmanager.notification.statusChange.inprogress=Changing status..
 taskmanager.notification.referenceGeneration.fail=Failed to generate a task reference
 taskmanager.notification.referenceGeneration.inprogress=Generating task reference
 
-taskmanager.livetable.name=Task
-taskmanager.livetable.duedate=Deadline
-taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.owner=Location
 taskmanager.livetable.completeDate=Completed on
 taskmanager.livetable.createDate=Creation date
@@ -253,6 +250,9 @@ rendering.macro.task-report.parameter.id.name=Table ID
 rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
 
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
+TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold evebts based on your preferences. The values should be comma separated.
+TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
+TaskManager.TaskManagerConfigurationClass_defaultInlineStatus.hint=Changing this value will affect the task macros created from this moment onwards. The newly created task macros will have the default status as the one selected here. Additionally, unchecking a task macro will set its status to this value.
 
 ## Kanban Board
 rendering.macro.kanbanboard.parameter.columns.name=Columns
