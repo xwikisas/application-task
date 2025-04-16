@@ -20,7 +20,10 @@
 
 package com.xwiki.task.internal.notifications.taskchanged;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -53,6 +56,8 @@ import com.xwiki.task.model.Task;
 @Named("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventListener")
 public class TaskChangedEventListener extends AbstractEventListener
 {
+    private static final String SEPARATOR = ",";
+
     @Inject
     private WatchedEntityFactory watchedEntityFactory;
 
@@ -64,6 +69,7 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     @Inject
     private NotificationPreferenceManager notificationPreferenceManager;
+
     @Inject
     private Logger logger;
 
@@ -87,46 +93,92 @@ public class TaskChangedEventListener extends AbstractEventListener
         }
         WatchedLocationReference docRef =
             watchedEntityFactory.createWatchedLocationReference(taskChangedEvent.getDocument().getDocumentReference());
+        String oldValue = (String) taskChangedEvent.getPreviousValue();
+        String currentValue = (String) taskChangedEvent.getCurrentValue();
+
+        Set<String> previousAssignees = new HashSet<>(List.of(oldValue.split(SEPARATOR)));
+        Set<String> currentAssignees = new HashSet<>(List.of(currentValue.split(SEPARATOR)));
+
+        List<String> unassignees = identifyUnassignedUsers(currentAssignees, previousAssignees);
+        List<String> assignees = identifyNewAssigneesUsers(currentAssignees, previousAssignees);
+
         // In order to receive notifications, watch the task page for the newly assigned user.
-        watchTask(docRef, (String) taskChangedEvent.getCurrentValue());
+        watchTask(docRef, assignees);
         // In order to stop receiving notifications, unwatch the task page for the unassigned user.
-        unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue());
+        unwatchTask(docRef, (unassignees));
     }
 
-    private void watchTask(WatchedLocationReference docRef, String userFullName)
+    private List<String> identifyNewAssigneesUsers(Set<String> currentAssignees, Set<String> previousAssignees)
     {
-        if (userFullName != null && !userFullName.isEmpty()) {
-            DocumentReference user = documentReferenceResolver.resolve(userFullName);
+        List<String> newAssignees = new ArrayList<>();
+        for (String currentAssignee : currentAssignees) {
+            if (!previousAssignees.contains(currentAssignee)) {
+                newAssignees.add(currentAssignee);
+            }
+        }
+        return newAssignees;
+    }
+
+    private List<String> identifyUnassignedUsers(Set<String> currentAssignees, Set<String> previousAssignees)
+    {
+        List<String> unassignedUsers = new ArrayList<>();
+        for (String oldAssignee : previousAssignees) {
+            if (!currentAssignees.contains(oldAssignee)) {
+                unassignedUsers.add(oldAssignee);
+            }
+        }
+        return unassignedUsers;
+    }
+
+    private void watchTask(WatchedLocationReference docRef, List<String> users)
+    {
+        if (users != null && !users.isEmpty()) {
             try {
-                List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
-                watchedEntitiesManager.watchEntity(docRef, user);
-                // Workaround for watchEntity unintentionally altering preferences.
-                // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
-                // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
-                // is watched when nothing is watched
-                notificationPreferenceManager.savePreferences(preferences);
+                for (String userName : users) {
+                    DocumentReference user = documentReferenceResolver.resolve(userName);
+                    bindUserToTask(docRef, user);
+                }
             } catch (NotificationException e) {
                 logger.error("Failed to watch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
-                    docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
+                    docRef, users, ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }
 
-    private void unwatchTask(WatchedLocationReference docRef, String userFullName)
+    private void bindUserToTask(WatchedLocationReference docRef, DocumentReference user) throws NotificationException
     {
-        if (userFullName != null && !userFullName.isEmpty()) {
-            DocumentReference user = documentReferenceResolver.resolve(userFullName);
-            try {
-                List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
-                watchedEntitiesManager.unwatchEntity(docRef, user);
-                // Workaround for watchEntity unintentionally altering preferences.
-                // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
-                // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
-                // is watched when nothing is watched
-                notificationPreferenceManager.savePreferences(preferences);
-            } catch (NotificationException e) {
-                logger.error("Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
-                    docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
+        List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
+        watchedEntitiesManager.watchEntity(docRef, user);
+        // Workaround for watchEntity unintentionally altering preferences.
+        // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
+        // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
+        // is watched when nothing is watched
+        notificationPreferenceManager.savePreferences(preferences);
+    }
+
+    private void unbindUserToTask(WatchedLocationReference docRef, DocumentReference user) throws NotificationException
+    {
+        List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
+        watchedEntitiesManager.unwatchEntity(docRef, user);
+        // Workaround for watchEntity unintentionally altering preferences.
+        // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
+        // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole
+        // wiki is watched when nothing is watched
+        notificationPreferenceManager.savePreferences(preferences);
+    }
+
+    private void unwatchTask(WatchedLocationReference docRef, List<String> users)
+    {
+        if (users != null && !users.isEmpty()) {
+            for (String userName : users) {
+                DocumentReference user = documentReferenceResolver.resolve(userName);
+                try {
+                    unbindUserToTask(docRef, user);
+                } catch (NotificationException e) {
+                    logger.error(
+                        "Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
+                        docRef, user, ExceptionUtils.getRootCauseMessage(e));
+                }
             }
         }
     }
