@@ -60,8 +60,9 @@ public class TaskAdminPage extends AdministrationSectionPage
         return new TaskAdminPage();
     }
 
-    public void forceEdit(){
-        getDriver().findElement(By.cssSelector(".panel-body > a")).click();;
+    public void forceEdit()
+    {
+        getDriver().navigate().to(getDriver().getCurrentUrl() + "&forceEdit=1&force=1");
     }
 
     public String getDefaultInlineStatusValue()
@@ -119,16 +120,16 @@ public class TaskAdminPage extends AdministrationSectionPage
         getDriver().waitUntilPageIsReloaded();
     }
 
+    public int countSectionElements(String sectionId)
+    {
+        return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
+    }
+
     private Select getDefaultInlineStatusSelect()
     {
         if (defaultInlineStatusSelect == null) {
             defaultInlineStatusSelect = new Select(defaultInlineStatusElement);
         }
         return defaultInlineStatusSelect;
-    }
-
-    public int countSectionElements(String sectionId)
-    {
-        return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
     }
 }

@@ -133,6 +133,7 @@ public class NotificationIT
             config.getServletEngine().getHostIP(), "port", "3025", "sendWaitTime", "0", "from", "admin@example.com");
 
         TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.forceEdit();
 
         taskAdminPage.addNewProject(TEST_PROJECT_NAME);
 
