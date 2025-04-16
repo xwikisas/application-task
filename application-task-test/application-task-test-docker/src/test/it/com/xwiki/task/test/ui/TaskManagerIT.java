@@ -22,6 +22,7 @@ package com.xwiki.task.test.ui;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
@@ -81,6 +82,15 @@ class TaskManagerIT
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
+    }
+
+    @AfterAll
+    void teardown(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+        setup.deletePage(pageWithTaskMacros);
+        setup.deletePage(pageWithComplexTaskMacros);
+        setup.deletePage(pageWithTaskMacrosWithDifferentStatus);
     }
 
     @Test
