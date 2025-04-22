@@ -86,6 +86,7 @@ TaskManager.TaskManagerClass_completeDate=Completion Date
 TaskManager.TaskManagerClass_dependencies=Dependencies
 TaskManager.TaskManagerClass_dependencies_nodependencies=Please create other tasks before adding dependencies.
 TaskManager.TaskManagerClass_progress=Progress
+TaskManager.TaskManagerClass_owner=Task Location
 
 # Live table generic keys
 taskmanager.livetable.doc.title=Page Title

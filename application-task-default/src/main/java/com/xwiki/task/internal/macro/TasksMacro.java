@@ -43,10 +43,10 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -126,12 +126,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = task.getName();
-                // From 3.7.0, the name of the task objects contain the full content of the task macro. In order to
-                // not break the previous mode of display of already existing tasks, {name assignee duedate}, we need
-                // to make sure whether the name contains any xwiki syntax. After saving a task macro once, the task
-                // name will be updated with the correct value and this check will be redundant.
-                taskContent = maybeGetContentPrior3dot7(context, task, taskContent, storageFormat);
+                String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+                    task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
+                    task.getName(), storageFormat), context.getSyntax());
 
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
             } catch (NumberFormatException | ComponentLookupException | TaskException e) {
@@ -145,19 +142,5 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
         }
         blocks.addAll(errorList);
         return blocks;
-    }
-
-    // TODO: Remove it  after the release of 3.7.0 is old enough (maybe 1 year).
-    private String maybeGetContentPrior3dot7(MacroTransformationContext context, Task task, String taskContent,
-        SimpleDateFormat storageFormat) throws ComponentLookupException, TaskException
-    {
-        if ((task.getAssignee() != null && !taskContent.contains("{{mention"))
-            || (task.getDueDate() != null && !taskContent.contains("{{date")))
-        {
-            return macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
-                task.getName(), storageFormat), context.getSyntax());
-        }
-        return taskContent;
     }
 }

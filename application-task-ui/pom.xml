@@ -25,7 +25,7 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task</artifactId>
-    <version>3.7.0-rc-2-SNAPSHOT</version>
+    <version>3.7.1-SNAPSHOT</version>
   </parent>
   <artifactId>application-task-ui</artifactId>
   <name>Task Manager Application - UI</name>
@@ -42,7 +42,14 @@
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
       TaskManager.Administration,
-      TaskManager.WebPreferences
+      TaskManager.WebPreferences,
+      TaskManager.ToDo,
+      TaskManager.InProgress,
+      TaskManager.Done,
+      TaskManager.Medium,
+      TaskManager.Low,
+      TaskManager.High,
+      TaskManager.Other
     </xwiki.extension.licensing.excludedDocuments>
     <xwiki.extension.name>Task Manager Application (Pro)</xwiki.extension.name>
   </properties>

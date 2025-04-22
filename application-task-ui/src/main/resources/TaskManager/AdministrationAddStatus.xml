@@ -77,7 +77,7 @@
     'rowCount' : 15,
     'description' : 'This table lists all the statuses that a task can have.',
     'className' : 'TaskManager.StatusClass',
-    'queryFilters': ' '
+    'queryFilters': 'currentlanguage'
   })
 #livetable("statusTable" $columns $columnsProperties $options)
 #else
