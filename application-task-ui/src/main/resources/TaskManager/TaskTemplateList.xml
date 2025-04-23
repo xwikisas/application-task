@@ -47,12 +47,10 @@
 {{/html}}
 
 #set ($columnsProperties = {
-  'name' : { 'link' : 'view', 'displayName' : $escapetool.xml($services.localization.render('taskmanager.templateList.livetable.providerName')) },
-  'description' : {},
-  'template' : { 'html' : 'true', 'displayName' : $escapetool.xml($services.localization.render('taskmanager.templateList.livetable.taskName')) },
-  'doc.date'  : { 'type' : 'date' },
+  'name' : { 'link' : 'view', 'displayName' : $services.localization.render('taskmanager.templateList.livetable.providerName') },
+  'template' : { 'html' : true, 'displayName' : $services.localization.render('taskmanager.templateList.livetable.taskName') },
   'doc.author' : { 'link' : 'author' },
-  '_actions': {'actions': ['edit','delete']}
+  '_actions': { 'actions' : ['edit', 'delete'] }
 })
 #set ($options = {
   'tagCloud': true,
