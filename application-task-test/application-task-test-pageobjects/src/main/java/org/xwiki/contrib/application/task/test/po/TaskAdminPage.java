@@ -25,7 +25,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 import org.xwiki.administration.test.po.AdministrationSectionPage;
-import org.xwiki.test.ui.po.ViewPage;
 
 /**
  * Page object of the Task Manager administration section.
@@ -56,7 +55,8 @@ public class TaskAdminPage extends AdministrationSectionPage
         return new TaskAdminPage();
     }
 
-    public void forceEdit(){
+    public void forceEdit()
+    {
         getDriver().navigate().to(getDriver().getCurrentUrl() + "&forceEdit=1&force=1");
     }
 
@@ -79,7 +79,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new project for tasks.
      *
      * @param projectName Name that will be used for the new project
-     * @since 3.8.0
+     * @since 3.7.1
      */
     public void addNewProject(String projectName)
     {
@@ -94,7 +94,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new severity class for tasks (e.g. High priority).
      *
      * @param severityName Name that will be used for the new severity class
-     * @since 3.8.0
+     * @since 3.7.1
      */
     public void addNewSeverity(String severityName)
     {
@@ -109,7 +109,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new status for tasks (e.g. ToDo, Done).
      *
      * @param statusName Name that will be used for the new status
-     * @since 3.8.0
+     * @since 3.7.1
      */
     public void addNewStatus(String statusName)
     {

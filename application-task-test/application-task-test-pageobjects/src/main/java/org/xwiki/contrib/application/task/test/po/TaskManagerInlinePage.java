@@ -106,7 +106,7 @@ public class TaskManagerInlinePage extends InlinePage
 
     /**
      * @param startDate the start date for the task entry
-     * @since 3.8.0
+     * @since 3.7.1
      */
     public void setStartDate(String startDate)
     {
@@ -117,7 +117,8 @@ public class TaskManagerInlinePage extends InlinePage
         this.startDateElement.sendKeys(Keys.ENTER);
     }
 
-    public void clearStartDate() {
+    public void clearStartDate()
+    {
         this.startDateElement.clear();
     }
 

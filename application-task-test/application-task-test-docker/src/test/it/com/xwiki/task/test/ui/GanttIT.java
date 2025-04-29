@@ -23,23 +23,21 @@ import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.xwiki.test.docker.junit5.UITest;
-import org.xwiki.test.ui.TestUtils;
-import org.xwiki.test.ui.po.CreatePagePage;
-
-import com.xwiki.task.model.Task;
-
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerGanttMacro;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.EntityReference;
+import org.xwiki.test.docker.junit5.UITest;
+import org.xwiki.test.ui.TestUtils;
+import org.xwiki.test.ui.po.CreatePagePage;
+
+import com.xwiki.task.model.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -50,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * custom patches. Updating the version of frappe-gantt might cause the tests to break.
  *
  * @version $Id$
- * @since 3.8
+ * @since 3.7.1
  */
 @UITest
 public class GanttIT
@@ -90,7 +88,7 @@ public class GanttIT
         + "{{/task}}";
 
     @BeforeAll
-    void setup(TestUtils setup) throws Exception
+    void setup(TestUtils setup)
     {
         teardownTaskPages(setup);
         setup.loginAsSuperAdmin();
@@ -187,7 +185,7 @@ public class GanttIT
         // Wait for new tab to load.
         new TaskManagerViewPage().waitUntilPageIsReady();
         // See that the right page was opened.
-        assertEquals(setup.getURL((EntityReference) new DocumentReference("xwiki", "TaskManager", "TestTask0")),
+        assertEquals(setup.getURL(new DocumentReference("xwiki", "TaskManager", "TestTask0")),
             setup.getDriver().getCurrentUrl());
         // Close the new page.
         setup.getDriver().close();
@@ -216,7 +214,7 @@ public class GanttIT
         List<TaskManagerGanttMacro> gantts = TaskManagerGanttMacro.getGanttMacrosOnCurrentPage();
         for (int i = 0; i < gantts.size(); i++) {
             assertFalse(gantts.get(i).getTaskIds().contains("xwiki:TaskManager.NoViewRights"),
-                "" + i + "-th gantt diagram bypasses view rights");
+                i + "-th gantt diagram bypasses view rights");
         }
         assertTrue(gantts.get(0).getTaskIds().contains("xwiki:TaskManager.NoEditRights"));
         gantts.get(0).dragTask("xwiki:TaskManager.NoEditRights", 50);
