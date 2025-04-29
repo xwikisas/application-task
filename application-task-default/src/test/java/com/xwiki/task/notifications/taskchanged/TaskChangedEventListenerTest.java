@@ -21,6 +21,7 @@
 
 package com.xwiki.task.notifications.taskchanged;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -39,10 +40,12 @@ import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.internal.event.XObjectAddedEvent;
 import com.xpn.xwiki.internal.event.XObjectUpdatedEvent;
+import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent;
 import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventListener;
 import com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener;
@@ -77,15 +80,21 @@ class TaskChangedEventListenerTest
     private XWikiContext context;
 
     @MockComponent
+    private XWiki xwiki;
+
+    @MockComponent
     private WatchedEntityFactory watchedEntityFactory;
 
     @MockComponent
     private DocumentReferenceResolver<String> documentReferenceResolver;
 
+    @MockComponent
+    private XWikiDocument userDocument;
+
     private TaskChangedEvent event;
 
     @BeforeEach
-    void setup()
+    void setup() throws Exception
     {
         this.event = new TaskChangedEvent(this.taskPage);
         this.event.setPreviousValue(adminRef.toString());
@@ -106,6 +115,20 @@ class TaskChangedEventListenerTest
                 return new WatchedLocationReference(i.getArgument(0), null, null, null, null);
             }
         });
+
+        // Notification Preferences
+        when(this.context.getWiki()).thenReturn(this.xwiki);
+        when(this.xwiki.getDocument((DocumentReference) any(), any())).thenReturn(this.userDocument);
+        when(
+            this.userDocument.resolveClassReference("XWiki.Notifications.Code.NotificationPreferenceClass")).thenReturn(
+            new DocumentReference("XWiki", "Notifications.Code", "NotificationPreferenceClass"));
+
+        BaseObject taskChangedEventNotificationPreference = new BaseObject();
+        taskChangedEventNotificationPreference.setStringValue("eventType",
+            "com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent");
+        taskChangedEventNotificationPreference.setIntValue("notificationEnabled", 1);
+        // User is watching for task changed notifications.
+        when(this.userDocument.getXObjects(any())).thenReturn(List.of(taskChangedEventNotificationPreference));
     }
 
     @ParameterizedTest
@@ -138,9 +161,21 @@ class TaskChangedEventListenerTest
 
         this.eventListener.onEvent(event, this.taskPage, this.context);
 
-        // Should probably replace this with a NotificationFilterPreference check.
         verify(this.watchedEntitiesManager).unwatchEntity(this.taskWatchedLocationReference, adminRef);
         verify(this.watchedEntitiesManager).watchEntity(this.taskWatchedLocationReference, userRef);
+    }
+
+    @Test
+    void watchUnwatchOnAssigneeChangedNoPreference() throws NotificationException
+    {
+        // The user is not subscribed to receive task notifications.
+        when(this.userDocument.getXObjects(any())).thenReturn(List.of());
+        this.event.setType(Task.ASSIGNEE);
+
+        this.eventListener.onEvent(event, this.taskPage, this.context);
+
+        verify(this.watchedEntitiesManager, never()).unwatchEntity(this.taskWatchedLocationReference, adminRef);
+        verify(this.watchedEntitiesManager, never()).watchEntity(this.taskWatchedLocationReference, userRef);
     }
 
     private static Stream<Arguments> getOtherFields()

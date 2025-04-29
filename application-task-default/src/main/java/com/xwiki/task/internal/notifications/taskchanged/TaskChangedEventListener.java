@@ -40,6 +40,10 @@ import org.xwiki.notifications.preferences.NotificationPreferenceManager;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.model.Task;
 
 /**
@@ -64,6 +68,7 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     @Inject
     private NotificationPreferenceManager notificationPreferenceManager;
+
     @Inject
     private Logger logger;
 
@@ -88,15 +93,40 @@ public class TaskChangedEventListener extends AbstractEventListener
         WatchedLocationReference docRef =
             watchedEntityFactory.createWatchedLocationReference(taskChangedEvent.getDocument().getDocumentReference());
         // In order to receive notifications, watch the task page for the newly assigned user.
-        watchTask(docRef, (String) taskChangedEvent.getCurrentValue());
+        watchTask(docRef, (String) taskChangedEvent.getCurrentValue(), (XWikiContext) data);
         // In order to stop receiving notifications, unwatch the task page for the unassigned user.
-        unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue());
+        unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue(), (XWikiContext) data);
     }
 
-    private void watchTask(WatchedLocationReference docRef, String userFullName)
+    private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user, XWikiContext context)
+    {
+        try {
+            XWikiDocument userDocument = context.getWiki().getDocument(user, context);
+            List<BaseObject> events = userDocument.getXObjects(
+                userDocument.resolveClassReference("XWiki.Notifications.Code.NotificationPreferenceClass"));
+            for (BaseObject event : events) {
+                if (event != null && event.getStringValue("eventType")
+                    .equals("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent")
+                    && event.getIntValue("notificationEnabled") == 1)
+                {
+                    return true;
+                }
+            }
+            return false;
+        } catch (XWikiException e) {
+            logger.error("Failed to get notification preferences for user [{}]. Cause:", user, e);
+            return false;
+        }
+    }
+
+    private void watchTask(WatchedLocationReference docRef, String userFullName, XWikiContext context)
     {
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
+            // Only watch if notifications are enabled.
+            if (!hasTaskNotificationPreferenceEnabled(user, context)) {
+                return;
+            }
             try {
                 List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.watchEntity(docRef, user);
@@ -112,10 +142,14 @@ public class TaskChangedEventListener extends AbstractEventListener
         }
     }
 
-    private void unwatchTask(WatchedLocationReference docRef, String userFullName)
+    private void unwatchTask(WatchedLocationReference docRef, String userFullName, XWikiContext context)
     {
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
+            // Only unwatch if notifications are enabled.
+            if (!hasTaskNotificationPreferenceEnabled(user, context)) {
+                return;
+            }
             try {
                 List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.unwatchEntity(docRef, user);

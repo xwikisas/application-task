@@ -33,8 +33,9 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationContext;
 import org.xwiki.observation.ObservationManager;
+import org.xwiki.observation.event.BeginEvent;
+import org.xwiki.observation.event.BeginFoldEvent;
 import org.xwiki.observation.event.Event;
-import org.xwiki.refactoring.event.DocumentRenamingEvent;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -62,6 +63,8 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
 
     private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
 
+    private static final BeginEvent FOLD_EVENT_MATCHER = event -> event instanceof BeginFoldEvent;
+
     @Inject
     private TaskChangedEventFactory taskChangedEventFactory;
 
@@ -86,7 +89,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        if (observationContext.isIn(new DocumentRenamingEvent())) {
+        if (observationContext.isIn(FOLD_EVENT_MATCHER)) {
             // If the page is renamed, don't send notifications like it was a newly created task.
             return;
         }
