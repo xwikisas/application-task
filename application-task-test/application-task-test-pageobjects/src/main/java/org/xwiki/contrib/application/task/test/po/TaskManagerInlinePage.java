@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
@@ -135,5 +136,18 @@ public class TaskManagerInlinePage extends InlinePage
     {
         this.progressElement.clear();
         this.progressElement.sendKeys(progress);
+    }
+
+    /**
+     * @param userReference the reference of the user that you want to assign.
+     */
+    public void appendAssignee(String userReference)
+    {
+        WebElement input =
+            getDriver().findElement(By.cssSelector("#TaskManager\\.TaskManagerClass_0_assignee" + "-selectized"));
+        input.sendKeys(userReference);
+        input.click();
+        WebElement select = getDriver().findElement(By.cssSelector(".selectize-dropdown-content > div"));
+        select.click();
     }
 }

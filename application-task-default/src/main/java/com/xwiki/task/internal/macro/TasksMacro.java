@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -43,10 +44,10 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -125,10 +126,11 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                     task.getCreateDate() != null ? storageFormat.format(task.getCreateDate()) : "");
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
-
                 String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                    task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
-                    task.getName(), storageFormat), context.getSyntax());
+                        task.getAssignees() != null ? task.getAssignees().stream().map(
+                            user -> serializer.serialize(user)).collect(Collectors.toList())
+                            : null, task.getDueDate(), task.getName(), storageFormat),
+                    context.getSyntax());
 
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
             } catch (NumberFormatException | ComponentLookupException | TaskException e) {

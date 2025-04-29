@@ -275,7 +275,10 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
         object.set(Task.CREATE_DATE, task.getCreateDate(), context);
 
-        object.set(Task.ASSIGNEE, serializer.serialize(task.getAssignee()), context);
+        String assignees =
+            task.getAssignees().stream().map(user -> serializer.serialize(user))
+                .collect(Collectors.joining(","));
+        object.set(Task.ASSIGNEE, assignees, context);
 
         object.set(Task.DUE_DATE, task.getDueDate(), context);
 

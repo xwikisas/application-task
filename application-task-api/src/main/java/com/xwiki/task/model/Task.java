@@ -20,6 +20,7 @@
 package com.xwiki.task.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.stability.Unstable;
@@ -121,7 +122,7 @@ public class Task
 
     private DocumentReference reporter;
 
-    private DocumentReference assignee;
+    private List<DocumentReference> assignees;
 
     private Date createDate;
 
@@ -216,17 +217,17 @@ public class Task
     /**
      * @return a list of references to the users that are assigned to this task.
      */
-    public DocumentReference getAssignee()
+    public List<DocumentReference> getAssignees()
     {
-        return assignee;
+        return assignees;
     }
 
     /**
-     * @param assignee a list of references to the users that are assigned to this task.
+     * @param assignees a list of references to the users that are assigned to this task.
      */
-    public void setAssignee(DocumentReference assignee)
+    public void setAssignees(List<DocumentReference> assignees)
     {
-        this.assignee = assignee;
+        this.assignees = assignees;
     }
 
     /**

@@ -19,6 +19,9 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.xwiki.test.ui.po.ViewPage;
@@ -34,7 +37,7 @@ public class TaskManagerViewPage extends ViewPage
     private WebElement severityElement;
 
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "assignee\"]/../../dd/ul/li")
-    private WebElement assigneeElement;
+    private List<WebElement> assigneeElement;
 
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "reporter\"]/../../dd/ul/li")
     private WebElement reporterElement;
@@ -75,7 +78,8 @@ public class TaskManagerViewPage extends ViewPage
 
     public String getAssignee()
     {
-        return assigneeElement.getText();
+        return assigneeElement.stream().map(element -> element.getText())
+            .collect(Collectors.joining(","));
     }
 
     public String getStatus()

@@ -31,7 +31,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.rendering.block.Block;
@@ -101,14 +100,14 @@ public class TaskBlockProcessor
      * Generate the content of a Task macro as a list of blocks. This list can be rendered in different syntaxes i.e.
      * xwiki/2.1.
      *
-     * @param assignee the string that will be used to generate a mention macro.
+     * @param assignees the list of strings that will be used to generate a mention macros.
      * @param duedate the date that will be formatted and used to generate a date macro.
      * @param text the message of the task that will precede the assignee and due date.
      * @param storageFormat the format desired for the date.
      * @return a list of blocks that represent the content of a macro.
      * @throws TaskException if the text parameter failed to be parsed.
      */
-    public List<Block> generateTaskContentBlocks(String assignee, Date duedate, String text,
+    public List<Block> generateTaskContentBlocks(List<String> assignees, Date duedate, String text,
         SimpleDateFormat storageFormat) throws TaskException
     {
         XDOM newTaskContentXDOM = null;
@@ -125,14 +124,19 @@ public class TaskBlockProcessor
             insertionPoint = newTaskContentXDOM;
         }
 
-        if (!StringUtils.isEmpty(assignee)) {
-            Map<String, String> mentionParams = new HashMap<>();
-            mentionParams.put("style", "FULL_NAME");
-            mentionParams.put("reference", assignee);
-            // TODO: Possible improvement: use the IdGenerator from the XDOM of the document.
-            mentionParams.put("anchor", assignee.replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
-            MacroBlock mentionBlock = new MacroBlock("mention", mentionParams, true);
-            insertionPoint.addChild(mentionBlock);
+        if (assignees != null && !assignees.isEmpty()) {
+            for (String assignee : assignees) {
+                if (!assignee.isEmpty()) {
+                    Map<String, String> mentionParams = new HashMap<>();
+                    mentionParams.put("style", "FULL_NAME");
+                    mentionParams.put("reference", assignee);
+                    // TODO: Possible improvement: use the IdGenerator from the XDOM of the document.
+                    mentionParams.put("anchor",
+                        assignee.replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
+                    MacroBlock mentionBlock = new MacroBlock("mention", mentionParams, true);
+                    insertionPoint.addChild(mentionBlock);
+                }
+            }
         }
 
         if (duedate != null) {
