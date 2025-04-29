@@ -57,7 +57,7 @@ public class TaskAdminPage extends AdministrationSectionPage
     }
 
     public void forceEdit(){
-        getDriver().findElement(By.cssSelector(".panel-body > a")).click();;
+        getDriver().navigate().to(getDriver().getCurrentUrl() + "&forceEdit=1&force=1");
     }
 
     public TaskAdminPage()

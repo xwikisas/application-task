@@ -97,8 +97,10 @@ public class GanttIT
         setup.createUser(TEST_USERNAME, PASSWORD, "");
 
         TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.forceEdit();
         taskAdminPage.addNewProject("Test Project");
         taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.forceEdit();
         taskAdminPage.addNewProject("Test Project 2");
 
         // Create test tasks.
@@ -299,11 +301,7 @@ public class GanttIT
         createPage.clickCreate();
 
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
-        if (assignee.isEmpty()) {
-            inlinePage.clearAssignee();
-        } else {
-            inlinePage.setAssignee(assignee);
-        }
+        inlinePage.setAssignee(assignee);
         inlinePage.setDueDate(dueDate);
         inlinePage.setStartDate(startDate);
         inlinePage.setStatus(status);

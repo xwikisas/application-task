@@ -90,7 +90,6 @@ class TaskManagerIT
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
-        setup.deletePage(pageWithTaskMacrosWithDifferentStatus);
     }
 
     @Test
