@@ -197,6 +197,9 @@ define('taskgantt-service-urls', ['jquery'], function ($) {
     if (undefined !== ganttDiv.data('hide-no-due-date')) {
       params['hideNoDueDate'] = ganttDiv.data('hide-no-due-date');
     }
+    if (undefined !== ganttDiv.data('max-tasks')) {
+      params['maxTasks'] = ganttDiv.data('max-tasks');
+    }
     const query = $.param(params);
     return jsonSourceBaseURL + query;
   };
@@ -1871,6 +1874,9 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
 {{html}}
 &lt;div class='taskgantt'
   data-readonly="$diagramIsReadonly"
+  #if ("$!xcontext.macro.params.maxTasks" != '')
+    data-max-tasks="${escapetool.html($xcontext.macro.params.maxTasks)}"
+  #end
   #if ("$!xcontext.macro.params.from" != '')
     #set ($fromMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.from, $storageDateTimeFormatter).getMillis())
     data-date-from="${escapetool.html($fromMillis)}"
@@ -2549,6 +2555,85 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
     </property>
     <property>
       <type>java.lang.Boolean</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>7</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>1cdd0103-628f-45aa-aa15-e6ca5b6aab39</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>50</defaultValue>
+    </property>
+    <property>
+      <description>Show at most this many tasks in the gantt diagram.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>maxTasks</name>
+    </property>
+    <property>
+      <type>java.lang.Integer</type>
     </property>
   </object>
 </xwikidoc>

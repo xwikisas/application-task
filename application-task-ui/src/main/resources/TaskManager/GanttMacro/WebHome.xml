@@ -54,5 +54,7 @@
 
 {{code}}{{taskgantt hideNoDueDate="true"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.hideNoDueDate"/}}
 
+{{code}}{{taskgantt maxTasks="20"/}}{{/code}} - {{translation key="taskmanager.gantt.documentation.examples.maxTasks"/}}
+
 {{taskgantt/}}</content>
 </xwikidoc>
