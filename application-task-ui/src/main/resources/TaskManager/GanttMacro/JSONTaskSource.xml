@@ -121,9 +121,14 @@
             '))'
       )
     #end
+    #if ("$!request.maxTasks" != '')
+      #set ($maxTasks = $numbertool.toNumber($request.maxTasks))
+    #else
+      #set ($maxTasks = 50)
+    #end
     ## Sort the tasks by project and name to ensure a stable order.
     #set ($query = $query + ' order by UPPER(task.project), task.project, UPPER(task.name), task.name')
-    #set ($query = $services.query.xwql($query).setLimit(50))
+    #set ($query = $services.query.xwql($query).setLimit($maxTasks))
     #if ($spaces)
       #set ($query = $query.bindValue("spaces", $spaces))
       #set ($index = 0)
@@ -139,7 +144,7 @@
     #if ($from)      #set ($query = $query.bindValue('from', $from))           #end
     #if ($to)        #set ($query = $query.bindValue('to', $to))               #end
   #end
-  #set ($queryResult = $query.execute())
+  #set ($queryResult = $query.addFilter('hidden').addFilter('currentlanguage').execute())
 
   #set ($tasks = [])
   #foreach ($taskDocument in $queryResult)
