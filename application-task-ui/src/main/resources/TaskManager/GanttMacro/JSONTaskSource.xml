@@ -139,7 +139,7 @@
     #if ($from)      #set ($query = $query.bindValue('from', $from))           #end
     #if ($to)        #set ($query = $query.bindValue('to', $to))               #end
   #end
-  #set ($queryResult = $query.execute())
+  #set ($queryResult = $query.addFilter('hidden').addFilter('currentlanguage').execute())
 
   #set ($tasks = [])
   #foreach ($taskDocument in $queryResult)
