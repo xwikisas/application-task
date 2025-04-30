@@ -625,7 +625,7 @@ define('taskgantt-frappe-methods', [
       Day_upper: (this.options.column_width * 30) / 2,
       Week_lower: 0,
       Week_upper: (this.options.column_width * 4) / 2,
-      Month_lower: this.options.column_width * 1.5, // Changed: Alignment (was width * 2). Now month names are actually above their corresponding column.
+      Month_lower: this.options.column_width * 0.5, // Changed: Alignment (was width * 2). Now month names are actually above their corresponding column.
       Month_upper: (this.options.column_width * 12) / 2,
       Year_lower: this.options.column_width / 2,
       Year_upper: (this.options.column_width * 30) / 2,
