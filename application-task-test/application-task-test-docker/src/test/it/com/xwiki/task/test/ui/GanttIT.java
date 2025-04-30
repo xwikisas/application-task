@@ -76,7 +76,7 @@ public class GanttIT
         "\n\n{{taskgantt projects=\"Other,Test Project\" hideNoDueDate=\"true\"}}{{/taskgantt}}";
 
     private static final String GANTT_MACRO_FILTER_SPACES =
-        "\n\n{{taskgantt spaces=\"TestSpace\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
+        "\n\n{{taskgantt spaces=\"TaskManager.TestSpace\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
 
     private static final String GANTT_MACROS =
         GANTT_MACRO + GANTT_MACRO_READONLY + GANTT_MACRO_FILTER_ASSIGNEES + GANTT_MACRO_FILTER_PROJECTS
@@ -103,25 +103,25 @@ public class GanttIT
 
         // Create test tasks.
 
-        createTaskPage("TestTask0", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki.Admin", "Other", "Low",
-            Task.STATUS_IN_PROGRESS, "50");
-        createTaskPage("TestTask1", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki." + TEST_USERNAME,
-            "Test Project", "Low", Task.STATUS_IN_PROGRESS, "50");
-        createTaskPage("TestTask2", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2", "Low",
-            Task.STATUS_IN_PROGRESS, "50");
-        createTaskPage("TestTask3", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2", "Low",
+        createTaskPage("TestTask0", "TaskManager", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "XWiki.Admin", "Other",
+            "Low", Task.STATUS_IN_PROGRESS, "50");
+        createTaskPage("TestTask1", "TaskManager", "02/01/2001 15:43:02", "03/01/2001 17:22:12",
+            "XWiki." + TEST_USERNAME, "Test Project", "Low", Task.STATUS_IN_PROGRESS, "50");
+        createTaskPage("TestTask2", "TaskManager", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "", "Test Project 2",
+            "Low", Task.STATUS_IN_PROGRESS, "50");
+        createTaskPage("TestTask3", "TaskManager.TestSpace", "02/01/2001 15:43:02", "03/01/2001 17:22:12", "",
+            "Test Project 2", "Low", Task.STATUS_IN_PROGRESS, "50");
+
+        createTaskPage("NoDueDateTest", "TaskManager", "01/01/2001 00:00:00", " ", "XWiki.Admin", "Other", "Medium",
             Task.STATUS_IN_PROGRESS, "50");
 
-        createTaskPage("NoDueDateTest", "01/01/2001 00:00:00", " ", "XWiki.Admin", "Other", "Medium",
-            Task.STATUS_IN_PROGRESS, "50");
-
-        createTaskPage("NoViewRights", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Other", "Low",
+        createTaskPage("NoViewRights", "TaskManager", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Other", "Low",
             Task.STATUS_IN_PROGRESS, "50");
         setup.setRights(new DocumentReference("xwiki", "TaskManager", "NoViewRights"), null, "XWiki." + TEST_USERNAME,
             "view", false);
 
-        createTaskPage("NoEditRights", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "", "Test Project 2", "Low",
-            Task.STATUS_IN_PROGRESS, "50");
+        createTaskPage("NoEditRights", "TaskManager", "01/01/2001 00:00:00", "02/01/2001 00:00:00", "",
+            "Test Project 2", "Low", Task.STATUS_IN_PROGRESS, "50");
         setup.setRights(new DocumentReference("xwiki", "TaskManager", "NoEditRights"), null, "XWiki." + TEST_USERNAME,
             "edit", false);
 
@@ -144,7 +144,7 @@ public class GanttIT
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask0"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask1"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask2"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask3"));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager.TestSpace", "TestTask3"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoDueDateTest"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoViewRights"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoEditRights"));
@@ -173,7 +173,7 @@ public class GanttIT
         assertNotificationType(setup, "info");
         gantt.dragTaskEnd("xwiki:TaskManager.TestTask2", -50);
         assertNotificationType(setup, "info");
-        gantt.dragProgress("xwiki:TaskManager.TestTask3", 120);
+        gantt.dragProgress("xwiki:TaskManager.TestSpace.TestTask3", 120);
         assertNotificationType(setup, "info");
 
         // Test that the task was opened in a new tab.
@@ -198,8 +198,8 @@ public class GanttIT
             "03/01/2001 17:22:12", "50%");
         assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "TestTask2"), "02/01/2001 15:43:02",
             "02/01/2001 17:22:12", "50%");
-        assertTaskProperties(setup, new DocumentReference("xwiki", "TaskManager", "TestTask3"), "02/01/2001 15:43:02",
-            "03/01/2001 17:22:12", "100%");
+        assertTaskProperties(setup, new DocumentReference("xwiki", List.of("TaskManager", "TestSpace"), "TestTask3"),
+            "02/01/2001 15:43:02", "03/01/2001 17:22:12", "100%");
     }
 
     /**
@@ -238,10 +238,9 @@ public class GanttIT
 
         // Assignee filter and hide no due date
         ids = gantts.get(2).getTaskIds();
-        assertEquals(3, ids.size(), ids.toString());
+        assertEquals(2, ids.size(), ids.toString());
         assertTrue(ids.contains("xwiki:TaskManager.TestTask0"), ids.toString());
         assertTrue(ids.contains("xwiki:TaskManager.NoDueDateTest"), ids.toString());
-        assertTrue(ids.contains("xwiki:TestSpace.Task_0.WebHome"), ids.toString());
 
         // Project filter
         ids = gantts.get(3).getTaskIds();
@@ -252,7 +251,7 @@ public class GanttIT
         // Space filter
         ids = gantts.get(4).getTaskIds();
         assertEquals(1, ids.size(), ids.toString());
-        assertTrue(ids.contains("xwiki:TestSpace.Task_0.WebHome"), ids.toString());
+        assertTrue(ids.contains("xwiki:TaskManager.TestSpace.TestTask3"), ids.toString());
 
         // Readonly
         gantts.get(1).dragTask("xwiki:TaskManager.TestTask0", 50);
@@ -288,14 +287,15 @@ public class GanttIT
         notification.click();
     }
 
-    private void createTaskPage(String title, String startDate, String dueDate, String assignee, String project,
-        String severity, String status, String progress)
+    private void createTaskPage(String title, String space, String startDate, String dueDate, String assignee,
+        String project, String severity, String status, String progress)
     {
         TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
         CreatePagePage createPage = taskManagerHomePage.createPage();
 
         createPage.getDocumentPicker().setTitle(title);
         createPage.setTemplate("TaskManager.TaskManagerTemplateProvider");
+        createPage.getDocumentPicker().setParent(space);
         createPage.clickCreate();
 
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();

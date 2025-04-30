@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.xwiki.test.ui.po.ViewPage;
 
 /**
@@ -38,7 +38,7 @@ public class TaskManagerGanttMacro extends ViewPage
     public static final List<String> viewModes =
         Arrays.asList("Quarter Day", "Half Day", "Day", "Week", "Month", "Year");
 
-    private WebElement ganttElement;
+    private final WebElement ganttElement;
 
     public TaskManagerGanttMacro(WebElement ganttElement)
     {
@@ -73,7 +73,7 @@ public class TaskManagerGanttMacro extends ViewPage
      */
     public boolean isOverlayActive()
     {
-        return (0 != ganttElement.findElements(By.cssSelector(".taskgantt-noedit-overlay.active")).size());
+        return (!ganttElement.findElements(By.cssSelector(".taskgantt-noedit-overlay.active")).isEmpty());
     }
 
     /**
@@ -95,9 +95,12 @@ public class TaskManagerGanttMacro extends ViewPage
      */
     public List<String> getTaskIds()
     {
-        return this.getSvgGantt().findElements(By.cssSelector(".bar-wrapper")).stream().map((elem) -> {
-            return elem.getAttribute("data-id");
-        }).collect(Collectors.toList());
+        if (this.getSvgGantt() != null) {
+            return this.getSvgGantt().findElements(By.cssSelector(".bar-wrapper")).stream()
+                .map((elem) -> elem.getAttribute("data-id")).collect(Collectors.toList());
+        } else {
+            return List.of();
+        }
     }
 
     /**
@@ -178,7 +181,8 @@ public class TaskManagerGanttMacro extends ViewPage
 
     private WebElement getSvgGantt()
     {
-        return ganttElement.findElement(By.cssSelector("svg.gantt"));
+        List<WebElement> svgGantt = ganttElement.findElements(By.cssSelector("svg.gantt"));
+        return svgGantt.isEmpty() ? null : svgGantt.get(0);
     }
 
     private void dragElementHorizontal(WebElement element, int offset)
