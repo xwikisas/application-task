@@ -570,7 +570,7 @@
   #if(!$tasktitle.trim().isEmpty())
     (% class="col-xs-12 task-card-title" %)
     (((
-      [[${tasktitle}&gt;&gt;${tasklink}]]
+      [[$services.rendering.escape($tasktitle,'xwiki/2.1')&gt;&gt;$services.rendering.escape($tasklink,'xwiki/2.1')]]
     )))
   #end
 #end
