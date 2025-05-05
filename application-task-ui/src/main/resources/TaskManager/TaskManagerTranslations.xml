@@ -106,7 +106,8 @@ taskmanager.livetable._actions.delete=Delete
 taskmanager.livetable.emptyvalue=-
 
 # Template list specific keys
-taskmanager.templateList.label=Template name
+taskmanager.templateList.label=Name
+taskmanager.templateList.hint=The name of the new template
 taskmanager.templateList.button=Create new template
 taskmanager.templateList.livetable.taskName=Template task page
 taskmanager.templateList.livetable.providerName=Template provider name

@@ -61,9 +61,9 @@
       #end
       ## If provider doesn't exist, copy the base provider and configure it
       #if (!$providerExists)
-        #if ($xwiki.exists('TaskManager.TaskManagerTemplateProvider'))
+        #if ($xwiki.exists('TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider'))
           #set ($discard = $xwiki.copyDocument(
-            $xwiki.getDocument('TaskManager.TaskManagerTemplateProvider').getDocumentReference(),
+            $xwiki.getDocument('TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider').getDocumentReference(),
             $providerDoc.getDocumentReference(),
             null, true, false
           ))

@@ -38,20 +38,19 @@
   <hidden>true</hidden>
   <content>{{velocity}}
 {{html}}
-&lt;form&gt;
-&lt;input name='outputSyntax' type='hidden' value='plain'&gt;
-&lt;label for='templateName'&gt;$escapetool.xml($services.localization.render('taskmanager.templateList.label'))&lt;/label&gt;
-&lt;input name='templateName' type='text' required&gt;&lt;/input&gt;
-&lt;button id='button-submit-template' class='btn btn-primary'&gt;$escapetool.xml($services.localization.render('taskmanager.templateList.button'))&lt;/button&gt;
+&lt;form class='xform'&gt;
+  &lt;input name='outputSyntax' type='hidden' value='plain'&gt;
+  &lt;dl&gt;
+    &lt;dt&gt;
+      &lt;label for='templateName'&gt;$escapetool.xml($services.localization.render('taskmanager.templateList.label'))&lt;/label&gt;
+      &lt;span class='xHint'&gt;$escapetool.xml($services.localization.render('taskmanager.templateList.hint'))&lt;/span&gt;
+    &lt;/dt&gt;
+    &lt;dd&gt;&lt;input name='templateName' type='text' required&gt;&lt;/input&gt;&lt;/dd&gt;
+  &lt;/dl&gt;
+  &lt;button id='button-submit-template' class='btn btn-primary'&gt;$escapetool.xml($services.localization.render('taskmanager.templateList.button'))&lt;/button&gt;
 &lt;/form&gt;
 {{/html}}
 
-#set ($columnsProperties = {
-  'name' : { 'link' : 'view', 'displayName' : $services.localization.render('taskmanager.templateList.livetable.providerName') },
-  'template' : { 'html' : true, 'displayName' : $services.localization.render('taskmanager.templateList.livetable.taskName') },
-  'doc.author' : { 'link' : 'author' },
-  '_actions': { 'actions' : ['edit', 'delete'] }
-})
 #set ($options = {
   'tagCloud': true,
   'className': 'XWiki.TemplateProviderClass',
@@ -59,8 +58,21 @@
   'resultPage': 'TaskManager.TaskTemplateListLivetableResults',
   'queryFilters': 'currentlanguage,unique'
 })
-#set ($columns = ['name', 'description', 'template', 'doc.date', 'doc.author', '_actions'])
-#livetable('taskmanagerTemplateList' $columns $columnsProperties $options)
+#set ($liveDataConfig = {'meta': {'propertyDescriptors': [
+  {'id': 'name', 'name' : "$services.localization.render('taskmanager.templateList.livetable.providerName')",
+    'displayer': {'id': 'link', 'propertyHref': 'doc.url' }},
+  {'id': 'template', 'name': "$services.localization.render('taskmanager.templateList.livetable.taskName')" },
+  { 'id': '_actions', 'displayer': { 'id': 'actions', 'actions': ['delete'] }}
+]}})
+
+{{liveData
+    id="taskManagerTemplates"
+    properties="name,description,template,doc.date,doc.author,_actions"
+    source="liveTable"
+    sourceParameters="$services.rendering.escape($escapetool.url($options), 'xwiki/2.1')"
+    }}
+$jsontool.serialize($liveDataConfig)
+{{/liveData}}
 {{/velocity}}</content>
   <object>
     <name>TaskManager.TaskTemplateList</name>
@@ -166,23 +178,20 @@ require(['jquery', 'xwiki-l10n!xwiki-task-template-list-notification-messages'],
     textHTMLEscape.textContent = text;
     return textHTMLEscape.innerHTML;
   };
-  console.log(l10n)
   $(document).on('click', '#button-submit-template', function (event) {
     const endpointURL = new XWiki.Document(
         XWiki.Model.resolve('TaskManager.CreateTaskTemplateEndpoint', XWiki.EntityType.DOCUMENT)
     ).getURL('get');
     event.preventDefault();
-    console.log('ahh');
     // Check that the template name is not empty.
     if (event.target.parentElement.reportValidity()) {
       let notification = new XWiki.widgets.Notification(escapeHTML(l10n.get('inprogress')), 'inprogress');
-      $.ajax(endpointURL + '?' + event.target.parentElement.serialize()).done((data) =&gt; {
+      $.ajax(endpointURL, { data : event.target.parentElement.serialize() }).done((data) =&gt; {
         notification.replace(new XWiki.widgets.Notification(escapeHTML(l10n.get('done')), 'done'));
         document.location = new XWiki.Document(
             XWiki.Model.resolve(data.templateDocument.reference, XWiki.EntityType.DOCUMENT)
         ).getURL('edit');
       }).fail((data) =&gt; {
-        console.log(data)
         let reason = l10n.get('fail');
         if (data.status === 401) {
             reason = l10n.get('fail.unauthorized');
