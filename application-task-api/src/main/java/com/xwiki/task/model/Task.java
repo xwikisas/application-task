@@ -122,6 +122,9 @@ public class Task
 
     private DocumentReference reporter;
 
+    @Deprecated(since = "3.7.2")
+    private DocumentReference assignee;
+
     private List<DocumentReference> assignees;
 
     private Date createDate;
@@ -212,6 +215,24 @@ public class Task
     public void setReporter(DocumentReference reporter)
     {
         this.reporter = reporter;
+    }
+
+    /**
+     * @return a list of references to the users that are assigned to this task.
+     */
+    @Deprecated(since = "3.7.2")
+    public DocumentReference getAssignee()
+    {
+        return assignee;
+    }
+
+    /**
+     * @param assignee a list of references to the users that are assigned to this task.
+     */
+    @Deprecated(since = "3.7.2")
+    public void setAssignee(DocumentReference assignee)
+    {
+        this.assignee = assignee;
     }
 
     /**

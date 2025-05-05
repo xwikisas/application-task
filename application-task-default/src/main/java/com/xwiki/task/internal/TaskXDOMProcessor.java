@@ -22,6 +22,7 @@ package com.xwiki.task.internal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -310,7 +311,7 @@ public class TaskXDOMProcessor
         List<MacroBlock> macros = taskContent.getBlocks(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
 
         if (macros == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         return macros.stream().map(macroBlock -> resolver.resolve(macroBlock.getParameters().get(Task.REFERENCE)))
