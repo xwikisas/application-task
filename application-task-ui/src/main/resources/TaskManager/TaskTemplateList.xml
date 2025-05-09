@@ -37,6 +37,7 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity}}
+#set ($discard = $xwiki.jsx.use('TaskManager.TaskTemplateList'))
 {{html}}
 &lt;form class='xform'&gt;
   &lt;input name='outputSyntax' type='hidden' value='plain'&gt;

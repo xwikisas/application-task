@@ -62,6 +62,7 @@ TaskManager.administration.addSeverity.submit=Add Priority
 TaskManager.adminitration.addProject=Add Project
 TaskManager.adminitration.addStatus=Add Status
 TaskManager.adminitration.addSeverity=Add Priority
+TaskManager.adminitration.templateList=Add Task Template
 
 # Class fields
 TaskManager.TaskManagerClass_name=Task
