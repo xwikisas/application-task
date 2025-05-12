@@ -21,17 +21,23 @@ package com.xwiki.task.script;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.job.Job;
 import org.xwiki.job.JobException;
 import org.xwiki.job.JobExecutor;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.query.Query;
+import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryManager;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
@@ -65,6 +71,12 @@ public class TaskScriptService implements ScriptService
 
     @Inject
     private JobExecutor jobExecutor;
+
+    @Inject
+    private QueryManager queryManager;
+
+    @Inject
+    private Logger logger;
 
     /**
      * @return the configuration of the application.
@@ -117,6 +129,25 @@ public class TaskScriptService implements ScriptService
             return taskMissingDataManager.getMissingDataTaskOwners();
         } catch (TaskException e) {
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * @return a list of statuses sorted by their order property.
+     */
+    public List<String> getSortedStatuses()
+    {
+
+        try {
+            Query query = queryManager.createQuery("select prop1.value from BaseObject as obj, "
+                + "StringProperty as prop1, IntegerProperty as prop2 where obj.className='TaskManager.StatusClass' and "
+                + "obj.id=prop1.id.id and prop1.id.name='status' and obj.id=prop2.id.id and prop2.id.name='order' "
+                + "order by prop2.value", Query.HQL);
+            List<String> results = query.execute().stream().map(Objects::toString).collect(Collectors.toList());
+            return results;
+        } catch (QueryException e) {
+            logger.error("Failed to retrieve the statuses.", e);
+            throw new RuntimeException(e);
         }
     }
 }
