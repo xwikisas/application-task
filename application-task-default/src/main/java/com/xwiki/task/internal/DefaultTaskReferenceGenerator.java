@@ -64,15 +64,29 @@ public class DefaultTaskReferenceGenerator implements TaskReferenceGenerator
     private DocumentReference getUniqueName(SpaceReference spaceRef) throws Exception
     {
 
-        int i = nameOccurences.getOrDefault(spaceRef, 0);
-        DocumentReference docRef = new DocumentReference(TASK_PAGE_NAME_PREFIX + i, spaceRef);
+        int i = nameOccurences.getOrDefault(spaceRef, 1);
+        String pageName = TASK_PAGE_NAME_PREFIX + i;
+        DocumentReference docRef = composeDocReference(pageName, spaceRef, false);
+        DocumentReference nonTerminalDocRef = composeDocReference(pageName, spaceRef, true);
 
-        while (documentAccessBridge.exists(docRef)) {
+        while (documentAccessBridge.exists(docRef) || documentAccessBridge.exists(nonTerminalDocRef)) {
             i++;
-            docRef = new DocumentReference(TASK_PAGE_NAME_PREFIX + i, spaceRef);
+            pageName = TASK_PAGE_NAME_PREFIX + i;
+            docRef = composeDocReference(pageName, spaceRef, false);
+            nonTerminalDocRef = composeDocReference(pageName, spaceRef, true);
             nameOccurences.put(spaceRef, i);
         }
         nameOccurences.put(spaceRef, ++i);
         return docRef;
+    }
+
+    private DocumentReference composeDocReference(String pageRef, SpaceReference spaceReference, boolean terminal)
+    {
+        if (!terminal) {
+            return new DocumentReference(pageRef, spaceReference);
+        } else {
+            SpaceReference spRef = new SpaceReference(pageRef, spaceReference);
+            return new DocumentReference("WebHome", spRef);
+        }
     }
 }

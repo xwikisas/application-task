@@ -52,14 +52,13 @@
 
 {{taskgantt readonly="false"/}}
 
-#set ($discard = $xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css'))
 #set ($columnsProperties = {
   'name': {'type': 'text', 'size': 10, 'link': 'view'},
   'project': {'type': 'list', 'size': 10, 'html': true},
   'status': {'type': 'list', 'size': 10, 'html': true},
   'severity': {'type': 'list', 'size': 10, 'html': true},
-  'reporter': {'type': 'text', 'size': 10, 'html': true},
-  'assignee': {'type': 'text', 'size': 10, 'html': true},
+  'reporter': {'size': 10, 'html': true},
+  'assignee': {'size': 10, 'html': true},
   'duedate': {'type': 'text', 'size': 10},
   '_actions': {'sortable': false,'filterable': false, 'html': true, 'actions': ['edit','delete']}
 })
