@@ -28,13 +28,19 @@ order by prop2.value")
 #set ($results = $services.query.hql($st).execute())
 #set ($options = [])
 #foreach ($status in $results)
-  #set ($discard = $options.add({ 'name': $status, 'value': $status}))
+  #set ($translationKey = $translationKeyPrefix + $status)
+  #if ($services.localization.get($translationKey))
+    #set ($label = $services.localization.render($translationKey))
+  #else
+    #set ($label = $status)
+  #end
+  #set ($discard = $options.add({ 'name': $label, 'value': $status}))
 #end
 #set ($parameters = {
   'name': $displayer.parameters.name,
   'value': $displayer.value,
   'multiple': 'multiple',
-  'prefix': 'TaskManager.TaskManagerClass_status_',
+  'prefix': ' ',
   'options': $options
 })
 #staticSelectPicker($parameters)
