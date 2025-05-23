@@ -18,10 +18,13 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 #template("pickers_macros.vm")
-#set ($st = "select prop1.value from BaseObject as obj, StringProperty as prop1
-  where obj.className='TaskManager.StatusClass'
-  and obj.id=prop1.id.id
-  and prop1.id.name='status'")
+#set ($st = "select prop1.value from BaseObject as obj, StringProperty as prop1, IntegerProperty as prop2
+where obj.className='TaskManager.StatusClass'
+and obj.id=prop1.id.id
+and prop1.id.name='status'
+and obj.id=prop2.id.id
+and prop2.id.name='order'
+order by prop2.value")
 #set ($results = $services.query.hql($st).execute())
 #set ($options = [])
 #foreach ($status in $results)
