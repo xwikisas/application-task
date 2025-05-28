@@ -37,13 +37,10 @@ import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
 import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
+import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.model.Task;
 
 /**
@@ -93,38 +90,31 @@ public class TaskChangedEventListener extends AbstractEventListener
         WatchedLocationReference docRef =
             watchedEntityFactory.createWatchedLocationReference(taskChangedEvent.getDocument().getDocumentReference());
         // In order to receive notifications, watch the task page for the newly assigned user.
-        watchTask(docRef, (String) taskChangedEvent.getCurrentValue(), (XWikiContext) data);
+        watchTask(docRef, (String) taskChangedEvent.getCurrentValue());
         // In order to stop receiving notifications, unwatch the task page for the unassigned user.
-        unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue(), (XWikiContext) data);
+        unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue());
     }
 
-    private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user, XWikiContext context)
+    private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user)
     {
         try {
-            XWikiDocument userDocument = context.getWiki().getDocument(user, context);
-            List<BaseObject> events = userDocument.getXObjects(
-                userDocument.resolveClassReference("XWiki.Notifications.Code.NotificationPreferenceClass"));
-            for (BaseObject event : events) {
-                if (event != null && event.getStringValue("eventType")
-                    .equals("com.xwiki.task.internal.notifications.taskchanged.TaskChangedEvent")
-                    && event.getIntValue("notificationEnabled") == 1)
-                {
-                    return true;
-                }
-            }
-            return false;
-        } catch (XWikiException e) {
-            logger.error("Failed to get notification preferences for user [{}]. Cause:", user, e);
+            List<NotificationPreference> notificationPreferences =
+                notificationPreferenceManager.getAllPreferences(user);
+            return notificationPreferences.stream().anyMatch(
+                preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
+                    .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
+        } catch (NotificationException e) {
+            logger.warn("Failed to get notification preferences for user [{}]. Cause:", user, e);
             return false;
         }
     }
 
-    private void watchTask(WatchedLocationReference docRef, String userFullName, XWikiContext context)
+    private void watchTask(WatchedLocationReference docRef, String userFullName)
     {
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
             // Only watch if notifications are enabled.
-            if (!hasTaskNotificationPreferenceEnabled(user, context)) {
+            if (!hasTaskNotificationPreferenceEnabled(user)) {
                 return;
             }
             try {
@@ -142,12 +132,12 @@ public class TaskChangedEventListener extends AbstractEventListener
         }
     }
 
-    private void unwatchTask(WatchedLocationReference docRef, String userFullName, XWikiContext context)
+    private void unwatchTask(WatchedLocationReference docRef, String userFullName)
     {
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
             // Only unwatch if notifications are enabled.
-            if (!hasTaskNotificationPreferenceEnabled(user, context)) {
+            if (!hasTaskNotificationPreferenceEnabled(user)) {
                 return;
             }
             try {
