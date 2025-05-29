@@ -106,7 +106,7 @@ public class TaskManagerInlinePage extends InlinePage
 
     /**
      * @param startDate the start date for the task entry
-     * @since 3.7.1
+     * @since 3.7.2
      */
     public void setStartDate(String startDate)
     {

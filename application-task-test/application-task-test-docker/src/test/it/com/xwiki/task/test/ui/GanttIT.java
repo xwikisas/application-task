@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * custom patches. Updating the version of frappe-gantt might cause the tests to break.
  *
  * @version $Id$
- * @since 3.7.1
+ * @since 3.7.2
  */
 @UITest
 public class GanttIT

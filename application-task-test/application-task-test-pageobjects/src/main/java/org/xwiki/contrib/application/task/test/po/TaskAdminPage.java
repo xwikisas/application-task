@@ -79,7 +79,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new project for tasks.
      *
      * @param projectName Name that will be used for the new project
-     * @since 3.7.1
+     * @since 3.7.2
      */
     public void addNewProject(String projectName)
     {
@@ -94,7 +94,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new severity class for tasks (e.g. High priority).
      *
      * @param severityName Name that will be used for the new severity class
-     * @since 3.7.1
+     * @since 3.7.2
      */
     public void addNewSeverity(String severityName)
     {
@@ -109,7 +109,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new status for tasks (e.g. ToDo, Done).
      *
      * @param statusName Name that will be used for the new status
-     * @since 3.7.1
+     * @since 3.7.2
      */
     public void addNewStatus(String statusName)
     {
