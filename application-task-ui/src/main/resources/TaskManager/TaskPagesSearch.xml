@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content>{{velocity output="false"}}
 #if($xcontext.action == 'get' &amp;&amp; "$!{request.outputSyntax}" == 'plain')
-  #set ($statement = "FROM doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' AND lower(doc.fullName) LIKE lower(:param)")
+  #set ($statement = "FROM doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.fullName &lt;&gt; 'TaskManager.TaskManagerTemplate' AND lower(doc.fullName) LIKE lower(:param)")
   #set ($param = $services.query.parameter().anyChars().literal("$!request.text").anyChars())
   #set ($query = $services.query.xwql($statement).addFilter('unique').addFilter('document').setLimit(10).bindValue('param', $param))
   #set ($array = [])

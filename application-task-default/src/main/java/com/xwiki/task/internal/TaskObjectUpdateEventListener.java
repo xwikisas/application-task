@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,7 +37,7 @@ import org.xwiki.job.Job;
 import org.xwiki.job.JobGroupPath;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.XWikiContext;
@@ -60,7 +59,8 @@ import com.xwiki.task.model.Task;
 @Singleton
 public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
 {
-    private static final List<String> TEMPLATE_SPACE_REFERENCES = List.of("TaskManager", "TaskManagerTemplates");
+    private static final LocalDocumentReference TEMPLATE_REFERENCE =
+        new LocalDocumentReference("TaskManager", "TaskManagerTemplate");
 
     @Inject
     private TaskCounter taskCounter;
@@ -88,13 +88,11 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
-        if (document.getDocumentReference().getSpaceReferences().stream().map(SpaceReference::getName)
-            .collect(Collectors.toList()).equals(TEMPLATE_SPACE_REFERENCES)) {
-            return;
-        }
-
         maybeSetTaskNumber(context, taskObj);
 
+        if (new LocalDocumentReference(document.getDocumentReference()).equals(TEMPLATE_REFERENCE)) {
+            return;
+        }
         // If the flag is set, the listener was triggered as a result of a save made by TaskMacroUpdateEventListener
         // which updated some task objects. Skip the execution.
         if (context.get(TASK_UPDATE_FLAG) != null) {
