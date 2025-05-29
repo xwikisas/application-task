@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>TaskManager.TaskManagerTemplateProvider</name>
+    <name>TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider</name>
     <number>0</number>
     <className>XWiki.TemplateProviderClass</className>
     <guid>b96ca89c-1e94-4911-a4c8-e3eec26526d9</guid>
@@ -261,7 +261,7 @@
       <spaces/>
     </property>
     <property>
-      <template>TaskManager.TaskManagerTemplate</template>
+      <template>TaskManager.TaskManagerTemplates.TaskManagerTemplate</template>
     </property>
     <property>
       <terminal>1</terminal>
