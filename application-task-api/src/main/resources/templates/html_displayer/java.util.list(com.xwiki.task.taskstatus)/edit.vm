@@ -27,6 +27,7 @@ and prop2.id.name='order'
 order by prop2.value")
 #set ($results = $services.query.hql($st).execute())
 #set ($options = [])
+#set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_status_')
 #foreach ($status in $results)
   #set ($translationKey = $translationKeyPrefix + $status)
   #if ($services.localization.get($translationKey))
