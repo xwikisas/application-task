@@ -37,6 +37,7 @@ import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
 import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
+import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
@@ -64,6 +65,7 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     @Inject
     private NotificationPreferenceManager notificationPreferenceManager;
+
     @Inject
     private Logger logger;
 
@@ -93,10 +95,28 @@ public class TaskChangedEventListener extends AbstractEventListener
         unwatchTask(docRef, (String) taskChangedEvent.getPreviousValue());
     }
 
+    private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user)
+    {
+        try {
+            List<NotificationPreference> notificationPreferences =
+                notificationPreferenceManager.getAllPreferences(user);
+            return notificationPreferences.stream().anyMatch(
+                preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
+                    .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
+        } catch (NotificationException e) {
+            logger.warn("Failed to get notification preferences for user [{}]. Cause:", user, e);
+            return false;
+        }
+    }
+
     private void watchTask(WatchedLocationReference docRef, String userFullName)
     {
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
+            // Only watch if notifications are enabled.
+            if (!hasTaskNotificationPreferenceEnabled(user)) {
+                return;
+            }
             try {
                 List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.watchEntity(docRef, user);
@@ -116,6 +136,10 @@ public class TaskChangedEventListener extends AbstractEventListener
     {
         if (userFullName != null && !userFullName.isEmpty()) {
             DocumentReference user = documentReferenceResolver.resolve(userFullName);
+            // Only unwatch if notifications are enabled.
+            if (!hasTaskNotificationPreferenceEnabled(user)) {
+                return;
+            }
             try {
                 List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.unwatchEntity(docRef, user);

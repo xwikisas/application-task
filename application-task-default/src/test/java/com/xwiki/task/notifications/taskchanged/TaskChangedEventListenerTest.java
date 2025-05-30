@@ -21,6 +21,8 @@
 
 package com.xwiki.task.notifications.taskchanged;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +36,10 @@ import org.xwiki.notifications.NotificationException;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
 import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
+import org.xwiki.notifications.preferences.NotificationPreference;
+import org.xwiki.notifications.preferences.NotificationPreferenceManager;
+import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
+import org.xwiki.notifications.preferences.internal.DefaultTargetableNotificationPreferenceBuilder;
 import org.xwiki.refactoring.event.DocumentRenamedEvent;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
@@ -75,6 +81,9 @@ class TaskChangedEventListenerTest
 
     @MockComponent
     private XWikiContext context;
+
+    @MockComponent
+    private NotificationPreferenceManager notificationPreferenceManager;
 
     @MockComponent
     private WatchedEntityFactory watchedEntityFactory;
@@ -135,12 +144,30 @@ class TaskChangedEventListenerTest
     void watchUnwatchOnAssigneeChanged() throws NotificationException
     {
         this.event.setType(Task.ASSIGNEE);
+        List<NotificationPreference> userPreferences = List.of(
+            new DefaultTargetableNotificationPreferenceBuilder().prepare().setEnabled(true)
+                .setProperties(Map.of(NotificationPreferenceProperty.EVENT_TYPE, TaskChangedEvent.class.getName()))
+                .build());
+        when(this.notificationPreferenceManager.getAllPreferences(any(DocumentReference.class))).thenReturn(
+            userPreferences);
 
         this.eventListener.onEvent(event, this.taskPage, this.context);
 
-        // Should probably replace this with a NotificationFilterPreference check.
         verify(this.watchedEntitiesManager).unwatchEntity(this.taskWatchedLocationReference, adminRef);
         verify(this.watchedEntitiesManager).watchEntity(this.taskWatchedLocationReference, userRef);
+    }
+
+    @Test
+    void watchUnwatchOnAssigneeChangedNoPreference() throws NotificationException
+    {
+        this.event.setType(Task.ASSIGNEE);
+        // The user is not subscribed to receive task notifications.
+        when(this.notificationPreferenceManager.getAllPreferences(any(DocumentReference.class))).thenReturn(List.of());
+
+        this.eventListener.onEvent(event, this.taskPage, this.context);
+
+        verify(this.watchedEntitiesManager, never()).unwatchEntity(this.taskWatchedLocationReference, adminRef);
+        verify(this.watchedEntitiesManager, never()).watchEntity(this.taskWatchedLocationReference, userRef);
     }
 
     private static Stream<Arguments> getOtherFields()
