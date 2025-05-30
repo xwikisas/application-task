@@ -18,20 +18,30 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 #template("pickers_macros.vm")
-#set ($st = "select prop1.value from BaseObject as obj, StringProperty as prop1
-  where obj.className='TaskManager.StatusClass'
-  and obj.id=prop1.id.id
-  and prop1.id.name='status'")
+#set ($st = "select prop1.value from BaseObject as obj, StringProperty as prop1, IntegerProperty as prop2
+where obj.className='TaskManager.StatusClass'
+and obj.id=prop1.id.id
+and prop1.id.name='status'
+and obj.id=prop2.id.id
+and prop2.id.name='order'
+order by prop2.value")
 #set ($results = $services.query.hql($st).execute())
 #set ($options = [])
+#set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_status_')
 #foreach ($status in $results)
-  #set ($discard = $options.add({ 'name': $status, 'value': $status}))
+  #set ($translationKey = $translationKeyPrefix + $status)
+  #if ($services.localization.get($translationKey))
+    #set ($label = $services.localization.render($translationKey))
+  #else
+    #set ($label = $status)
+  #end
+  #set ($discard = $options.add({ 'name': $label, 'value': $status}))
 #end
 #set ($parameters = {
   'name': $displayer.parameters.name,
   'value': $displayer.value,
   'multiple': 'multiple',
-  'prefix': 'TaskManager.TaskManagerClass_status_',
+  'prefix': ' ',
   'options': $options
 })
 #staticSelectPicker($parameters)
