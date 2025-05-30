@@ -68,6 +68,7 @@ public class DateMacroParameters
      * @param format see {@link #getFormat()}
      */
     @PropertyAdvanced
+    @Deprecated
     public void setFormat(String format)
     {
         this.format = format;
