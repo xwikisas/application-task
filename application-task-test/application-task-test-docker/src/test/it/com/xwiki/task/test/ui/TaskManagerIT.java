@@ -21,10 +21,11 @@ package com.xwiki.task.test.ui;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.openqa.selenium.WebElement;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
@@ -32,8 +33,13 @@ import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.panels.test.po.ApplicationsPanel;
+import org.xwiki.test.docker.junit5.TestConfiguration;
+import org.xwiki.test.docker.junit5.TestLocalReference;
 import org.xwiki.test.docker.junit5.UITest;
+import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.LiveTableElement;
 import org.xwiki.test.ui.po.ViewPage;
@@ -57,11 +63,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }, resolveExtraJARs = true)
 class TaskManagerIT
 {
-    private final DocumentReference pageWithTaskMacros = new DocumentReference("xwiki", "Main", "Test");
+    private final LocalDocumentReference pageWithTaskMacros = new LocalDocumentReference("Main", "Test");
 
-    private final DocumentReference pageWithComplexTaskMacros = new DocumentReference("xwiki", "Main", "Test2");
+    private final LocalDocumentReference pageWithComplexTaskMacros = new LocalDocumentReference("Main", "Test2");
 
-    private final DocumentReference pageWithTaskRaport = new DocumentReference("xwiki", "Main", "Test3");
+    private final LocalDocumentReference pageWithTaskRaport = new LocalDocumentReference("Main", "Test3");
 
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
@@ -107,22 +113,26 @@ class TaskManagerIT
         assertEquals(TaskManagerHomePage.getPage(), vp.getMetaDataValue("page"));
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
     @Order(2)
-    void simpleTaskMacros(TestUtils setup)
+    void simpleTaskMacros(WikiReference wiki, TestUtils setup)
     {
-        setup.createPage(pageWithTaskMacros, SIMPLE_TASKS, pageWithTaskMacros.getName());
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithTaskMacros, wiki);
+        setup.createPage(testRef, SIMPLE_TASKS, pageWithTaskMacros.getName());
+        System.out.println("Test123" + testRef);
         ViewPageWithTasks page = new ViewPageWithTasks();
         // Check first, unchecked macro.
         assertEquals("Do this", page.getTaskMacroContent(0));
         assertEquals("#1", page.getTaskMacroLink(0).getText());
-        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Task_1"));
+        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/view/Task_1"));
         assertFalse(page.isTaskMacroCheckboxChecked(0));
         page.clickTaskMacroCheckbox(0);
         // Check second, checked macro.
         assertEquals("Do this as well", page.getTaskMacroContent(1));
         assertEquals("#2", page.getTaskMacroLink(1).getText());
-        assertTrue(page.getTaskMacroLink(1).getAttribute("href").contains("/xwiki/bin/view/Task_2"));
+        assertTrue(page.getTaskMacroLink(1).getAttribute("href").contains("/view/Task_2"));
         assertTrue(page.isTaskMacroCheckboxChecked(1));
         page.clickTaskMacroCheckbox(1);
         // Refresh the page and make sure the changes are saved.
@@ -132,10 +142,12 @@ class TaskManagerIT
         assertFalse(page.isTaskMacroCheckboxChecked(1));
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(3)
-    void taskManagerHomePage()
+    void taskManagerHomePage(WikiReference wiki, TestUtils setup)
     {
+        setup.setCurrentWiki(wiki.getName());
         TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
         LiveTableElement liveTableElement = taskManagerHomePage.getTaskLiveTable();
         int taskTileCellIndex = liveTableElement.getColumnIndex("Task") + 1;
@@ -149,15 +161,18 @@ class TaskManagerIT
         assertEquals("In Progress", liveTableElement.getCell(row, taskStatusCellIndex).getText());
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(4)
-    void complexTaskMacros(TestUtils setup)
+    void complexTaskMacros(WikiReference wiki, TestUtils setup)
     {
-        setup.createPage(pageWithComplexTaskMacros, COMPLEX_TASKS, pageWithComplexTaskMacros.getName());
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithComplexTaskMacros, wiki);
+        setup.createPage(testRef, COMPLEX_TASKS, pageWithComplexTaskMacros.getName());
         ViewPageWithTasks page = new ViewPageWithTasks();
         assertEquals("Do this @Admin as late as 2023/01/01 12:00", page.getTaskMacroContent(0));
         assertEquals("#3", page.getTaskMacroLink(0).getText());
-        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/xwiki/bin/view/Task_3"));
+        assertTrue(page.getTaskMacroLink(0).getAttribute("href").contains("/view/Task_3"));
         assertTrue(page.isTaskMacroCheckboxChecked(0));
         page.getTaskMacroLink(0).click();
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
@@ -169,10 +184,16 @@ class TaskManagerIT
         assertEquals("Done", viewPage.getStatus());
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(5)
-    void taskMacroAndTaskPageRelation(TestUtils setup)
+    void taskMacroAndTaskPageRelation(WikiReference wiki, TestUtils setup)
     {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithComplexTaskMacros, wiki);
+        setup.gotoPage(testRef);
+        ViewPageWithTasks page = new ViewPageWithTasks();
+        page.getTaskMacroLink(0).click();
         TaskManagerViewPage viewPage = new TaskManagerViewPage();
         viewPage.edit();
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
@@ -180,7 +201,7 @@ class TaskManagerIT
         // Changing a property of the page should change the macro call.
         inlinePage.setStatus("ToDo");
         inlinePage.clickSaveAndView();
-        setup.gotoPage(pageWithComplexTaskMacros);
+        setup.gotoPage(testRef);
         ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
         assertFalse(viewPageWithTaskMacro.isTaskMacroCheckboxChecked(0));
         // Changing the property of the macro call should change the page.
@@ -190,11 +211,14 @@ class TaskManagerIT
         assertEquals("Done", viewPage.getStatus());
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(6)
-    void taskReport(TestUtils setup)
+    void taskReport(WikiReference wiki, TestUtils setup)
     {
-        setup.createPage(pageWithTaskRaport, TASK_REPORT_MACRO);
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithTaskRaport, wiki);
+        setup.createPage(testRef, TASK_REPORT_MACRO);
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
         LiveTableElement taskReport = viewPage.getTaskReportLiveTable();
         taskReport.waitUntilReady();
@@ -216,31 +240,37 @@ class TaskManagerIT
         assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(7)
-    void deleteTaskPage(TestUtils setup) throws Exception
+    void deleteTaskPage(WikiReference wiki, TestUtils setup) throws Exception
     {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithTaskMacros, wiki);
         // Deleting the page that contains task macros should also delete the task pages.
-        setup.gotoPage(pageWithTaskMacros);
+        setup.gotoPage(testRef);
         assertTrue(setup.pageExists("Task_1", "WebHome"));
         assertTrue(setup.pageExists("Task_2", "WebHome"));
-        setup.deletePage(pageWithTaskMacros);
+        setup.deletePage(testRef);
         assertFalse(setup.pageExists("Task_1", "WebHome"));
         assertFalse(setup.pageExists("Task_2", "WebHome"));
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(8)
-    void deleteTaskMacro(TestUtils setup) throws Exception
+    void deleteTaskMacro(WikiReference wiki, TestUtils setup) throws Exception
     {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithComplexTaskMacros, wiki);
         // Deleting a task page should also delete the task macro from the owner page.
-        setup.gotoPage(pageWithComplexTaskMacros);
+        setup.gotoPage(testRef);
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
         assertEquals(1, viewPage.getTaskMacros().size());
         viewPage.getTaskMacroLink(0).click();
         ViewPage taskPage = new ViewPage();
         taskPage.deletePage().confirmDeletePage();
-        setup.gotoPage(pageWithComplexTaskMacros);
+        setup.gotoPage(testRef);
         viewPage = new ViewPageWithTasks();
         assertEquals(0, viewPage.getTaskMacros().size());
     }
