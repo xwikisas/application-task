@@ -588,15 +588,16 @@ Example:
 #set ($columns = "$!{xcontext.macro.params.columns}")
 #set ($order = "$!{xcontext.macro.params.order}")
 #set ($limit = "$!{xcontext.macro.params.limit}")
-## Use kanban macro directly instead of awmkanban so we can use custom ordering:
-#set ($awmupdatepath = "/objects/TaskManager.TaskManagerClass/0/properties/status/")
-#set($source = $xwiki.getDocument("Macros.KanbanAWMSource").getURL("get", "xpage=plain&amp;outputSyntax=plain&amp;className=TaskManager.TaskManagerClass&amp;category=status&amp;displayedCategoryColumns=${escapetool.url($!columns)}&amp;title=name&amp;columns=${escapetool.url('assignee,progress,duedate')}&amp;xwql=${escapetool.url($!xwql)}&amp;colors=${escapetool.url($!colors)}&amp;order=${escapetool.url($!order)}&amp;limit=${escapetool.url($!limit)}"))
-#set($discard = $xwiki.ssx.use('Macros.AWMKanbanMacro'))
-{{kanban
-  source="$source"
-  updateService="" addBoardButton="false" addItemButton="false" removeBoardButton="false" removeItemButton="false"
-  awmupdatepath="/objects/TaskManager.TaskManagerClass/0/properties/status/"
-  width="$services.rendering.escape($!columnWidth, 'xwiki/2.1')"
+{{awmkanban
+  className="TaskManager.TaskManagerClass"
+  category="status"
+  displayedCategoryColumns="$!escapetool.xml($columns)"
+  title="name"
+  columns="assignee,progress,duedate"
+  width="$!escapetool.xml($columnWidth)"
+  colors="$!escapetool.xml($colors)"
+  order="$!escapetool.xml($order)"
+  limit="$!escapetool.xml($limit)"
 /}}
 {{/velocity}}
 </code>
