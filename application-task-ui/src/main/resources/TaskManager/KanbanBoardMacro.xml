@@ -586,14 +586,17 @@ Example:
   #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
 #end
 #set ($columns = "$!{xcontext.macro.params.columns}")
-{{awmkanban
-  className="TaskManager.TaskManagerClass"
-  category="status"
-  displayedCategoryColumns="$!escapetool.xml($columns)"
-  title="name"
-  columns="assignee,progress,duedate"
-  width="$!escapetool.xml($columnWidth)"
-  colors=$escapetool.xml($colors)
+#set ($order = "$!{xcontext.macro.params.order}")
+#set ($limit = "$!{xcontext.macro.params.limit}")
+## Use kanban macro directly instead of awmkanban so we can use custom ordering:
+#set ($awmupdatepath = "/objects/TaskManager.TaskManagerClass/0/properties/status/")
+#set($source = $xwiki.getDocument("Macros.KanbanAWMSource").getURL("get", "xpage=plain&amp;outputSyntax=plain&amp;className=TaskManager.TaskManagerClass&amp;category=status&amp;displayedCategoryColumns=${escapetool.url($!columns)}&amp;title=name&amp;columns=${escapetool.url('assignee,progress,duedate')}&amp;xwql=${escapetool.url($!xwql)}&amp;colors=${escapetool.url($!colors)}&amp;order=${escapetool.url($!order)}"))
+#set($discard = $xwiki.ssx.use('Macros.AWMKanbanMacro'))
+{{kanban
+  source="$source"
+  updateService="" addBoardButton="false" addItemButton="false" removeBoardButton="false" removeItemButton="false"
+  awmupdatepath="/objects/TaskManager.TaskManagerClass/0/properties/status/"
+  width="$services.rendering.escape($!columnWidth, 'xwiki/2.1')"
 /}}
 {{/velocity}}
 </code>
@@ -1103,6 +1106,164 @@ Example:
     </property>
     <property>
       <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>8</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>129816e7-4a96-487d-8e55-bc963752a365</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Field to order the tasks by. Example: 'name', 'doc.date desc', 'status'</description>
+    </property>
+    <property>
+      <mandatory/>
+    </property>
+    <property>
+      <name>order</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>9</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>2fb766f5-0f06-442b-aac5-e7c8e72ab5d6</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>20</defaultValue>
+    </property>
+    <property>
+      <description>The amount of tasks displayed for each status.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>limit</name>
+    </property>
+    <property>
+      <type>com.xpn.xwiki.objects.classes.NumberClass</type>
     </property>
   </object>
 </xwikidoc>

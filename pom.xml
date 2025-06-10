@@ -45,7 +45,7 @@
   </scm>
   <properties>
     <licensing.version>1.26</licensing.version>
-    <kanban-macro.version>1.4.0</kanban-macro.version>
+    <kanban-macro.version>1.4.1</kanban-macro.version>
     <gantt.version>0.6.1</gantt.version>
     <xwiki.extension.category>application</xwiki.extension.category>
     <xwikiprocommons.version>1.0.4</xwikiprocommons.version>
