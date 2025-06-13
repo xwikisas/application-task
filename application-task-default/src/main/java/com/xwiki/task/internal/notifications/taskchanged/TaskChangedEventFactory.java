@@ -32,6 +32,7 @@ import org.xwiki.model.reference.LocalDocumentReference;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
+import com.xpn.xwiki.objects.IntegerProperty;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.StringProperty;
@@ -88,15 +89,23 @@ public class TaskChangedEventFactory
         // Method getValue() always returns null from the Property interface implementation, so an `if` is needed for
         // each property type.
         PropertyInterface property = obj.safeget(propertyName);
+        Optional<Object> optional;
         if (property instanceof StringProperty) {
-            return Optional.ofNullable(((StringProperty) property).getValue());
+            optional = Optional.ofNullable(((StringProperty) property).getValue());
         } else if (property instanceof LargeStringProperty) {
-            return Optional.ofNullable(((LargeStringProperty) property).getValue());
+            optional = Optional.ofNullable(((LargeStringProperty) property).getValue());
         } else if (property instanceof DateProperty) {
-            return Optional.ofNullable(((DateProperty) property).getValue());
+            optional = Optional.ofNullable(((DateProperty) property).getValue());
+        } else if (property instanceof IntegerProperty) {
+            Integer value = (Integer) ((IntegerProperty) property).getValue();
+            if (value == null) {
+                value = 0;
+            }
+            optional = Optional.of(value);
         } else {
-            return Optional.empty();
+            optional = Optional.empty();
         }
+        return optional;
     }
 
     /**
