@@ -36,6 +36,7 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
+import com.xpn.xwiki.objects.IntegerProperty;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.StringProperty;
@@ -53,12 +54,13 @@ class TaskChangedEventFactoryTest
     private static final List<String> WATCHED_FIELDS = TaskChangedEventNotificationListener.WATCHED_FIELDS;
 
     private final Map<String, List<Object>> testValueMap = Map.of(
-            Task.ASSIGNEE, List.of("XWiki.Assignee1", "XWiki.Assignee2"),
-            Task.REPORTER, List.of("XWiki.Reporter1", "XWiki.Reporter2"),
-            Task.DUE_DATE, List.of(new Date(1000), new Date(1200)),
-            Task.PROJECT, List.of("Other", "XWiki"),
-            Task.SEVERITY, List.of("Low", "High"),
-            Task.STATUS, List.of(Task.STATUS_IN_PROGRESS, Task.STATUS_DONE)
+        Task.ASSIGNEE, List.of("XWiki.Assignee1", "XWiki.Assignee2"),
+        Task.REPORTER, List.of("XWiki.Reporter1", "XWiki.Reporter2"),
+        Task.DUE_DATE, List.of(new Date(1000), new Date(1200)),
+        Task.PROJECT, List.of("Other", "XWiki"),
+        Task.SEVERITY, List.of("Low", "High"),
+        Task.PROGRESS, List.of(10, 90),
+        Task.STATUS, List.of(Task.STATUS_IN_PROGRESS, Task.STATUS_DONE)
     );
 
     @InjectMockComponents
@@ -176,6 +178,11 @@ class TaskChangedEventFactoryTest
                 stringProperty.setName(field);
                 stringProperty.setValue(value);
                 valueProperty = stringProperty;
+            } else if (field.equals(Task.PROGRESS)) {
+                IntegerProperty integerProperty = new IntegerProperty();
+                integerProperty.setName(field);
+                integerProperty.setValue(value);
+                valueProperty = integerProperty;
             } else {
                 StringProperty stringProperty = new StringProperty();
                 stringProperty.setName(field);

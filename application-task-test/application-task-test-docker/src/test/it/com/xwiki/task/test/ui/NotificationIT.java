@@ -235,7 +235,7 @@ public class NotificationIT
             tray.showNotificationTray();
             assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
             List<String> notificationDescriptions = getNotificationDetails(setup, 0);
-            assertEquals(4, notificationDescriptions.size(), notificationDescriptions.toString());
+            assertEquals(5, notificationDescriptions.size(), notificationDescriptions.toString());
         });
 
         assertReceivedEmail(setup, 1);

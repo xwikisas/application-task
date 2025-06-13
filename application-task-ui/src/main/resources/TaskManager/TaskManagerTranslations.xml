@@ -131,6 +131,7 @@ taskmanager.events.taskChangedEvent.details.assignee.none=Nobody is assigned
 taskmanager.events.taskChangedEvent.details.assignee=Assignee changed from {1} to {0}
 taskmanager.events.taskChangedEvent.details.severity=Priority changed from {1} to {0}
 taskmanager.events.taskChangedEvent.details.project=This task was assigned to project {0}
+taskmanager.events.taskChangedEvent.details.progress=Progress changed from {1} to {0}
 
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
