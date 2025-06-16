@@ -1888,8 +1888,6 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.hideNoDueDate" != '')
     data-hide-no-due-date="${escapetool.html($xcontext.macro.params.hideNoDueDate)}"
   #end
-  ##TODO: Make `projects` use a Page picker (should support selecting multiple pages).
-  ##      When changed the JSONTaskSource should be updated aswell.
   #if ("$!xcontext.macro.params.projects" != '')
     data-projects="${escapetool.html($xcontext.macro.params.projects)}"
   #end
@@ -1899,8 +1897,6 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.reporters" != '')
     data-reporters="${escapetool.html($xcontext.macro.params.reporters)}"
   #end
-  ##TODO: Make `spaces` use a Space/Page picker (should support selecting multiple pages).
-  ##      When changed the JSONTaskSource should be updated aswell.
   #if ("$!xcontext.macro.params.spaces" != '')
     data-spaces="${escapetool.html($xcontext.macro.params.spaces)}"
   #end
@@ -1943,8 +1939,16 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #end
   #if ("$!xcontext.macro.params.projects" != '')
   &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.projects'))&lt;/b&gt;
+    #set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_project_')
     #foreach ($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
-      &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
+      #set ($project = $project.replace('\,',','))
+      #set ($translationKey = $translationKeyPrefix + $project)
+      #if ($services.localization.get($translationKey))
+        #set ($label = $services.localization.render($translationKey))
+      #else
+        #set ($label = $project)
+      #end
+      &lt;span class='xwiki-mention'&gt;$escapetool.html($label)&lt;/span&gt;
     #end
   &lt;/p&gt;
   #end
@@ -2238,7 +2242,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <name>projects</name>
     </property>
     <property>
-      <type/>
+      <type>java.util.List&lt;com.xwiki.task.ProjectReference&gt;</type>
     </property>
   </object>
   <object>
@@ -2475,7 +2479,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <name>spaces</name>
     </property>
     <property>
-      <type/>
+      <type>com.xwiki.pickers.SuggestSpacesReference</type>
     </property>
   </object>
   <object>
