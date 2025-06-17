@@ -569,7 +569,14 @@ Example:
 #set ($columnWidth = "$!{xcontext.macro.params.columnWidth}")
 #set ($colors = "$!{xcontext.macro.params.colors}")
 #if($user != '')
-  #set($xwql = "obj.assignee = '$escapetool.sql($user)'")
+  #set ($users = $user.split(','))
+  #foreach ($user in $users)
+    #if ($xwql.length() &gt; 0)
+      #set ($xwql = "$xwql OR")
+    #end
+    #set ($xwql = "$xwql obj.assignee = '$escapetool.sql($user)'")
+  #end
+  #set ($xwql = "($xwql)")
 #end
 #set($space = "$!{xcontext.macro.params.space}")
 #if($space != '')
@@ -707,7 +714,7 @@ Example:
       <name>user</name>
     </property>
     <property>
-      <type>org.xwiki.user.UserReference</type>
+      <type>com.xwiki.task.UserReferenceList</type>
     </property>
   </object>
   <object>
