@@ -32,15 +32,19 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.notifications.NotificationException;
+import org.xwiki.notifications.NotificationFormat;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
 import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
 import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
-import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
+import org.xwiki.notifications.preferences.script.NotificationPreferenceScriptService;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
+import org.xwiki.script.service.ScriptService;
+import org.xwiki.user.internal.document.DocumentUserReference;
 
+import com.xpn.xwiki.user.api.XWikiUser;
 import com.xwiki.task.model.Task;
 
 /**
@@ -68,6 +72,10 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     @Inject
     private Logger logger;
+
+    @Inject
+    @Named("notification.preferences")
+    private ScriptService notificationPreferenceScriptService;
 
     /**
      * Initialize the listener.
@@ -98,11 +106,14 @@ public class TaskChangedEventListener extends AbstractEventListener
     private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user)
     {
         try {
-            List<NotificationPreference> notificationPreferences =
-                notificationPreferenceManager.getAllPreferences(user);
-            return notificationPreferences.stream().anyMatch(
-                preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
-                    .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
+            // Use the script service so the preference status is the same one displayed in the User Profile.
+            // The default value for notifications was changed in 15.5, and is reflected in the service.
+            DocumentUserReference userReference = new DocumentUserReference(user, new XWikiUser(user).isMain());
+            return
+                ((NotificationPreferenceScriptService) notificationPreferenceScriptService).isEventTypeEnabledForUser(
+                    TaskChangedEvent.class.getCanonicalName(), NotificationFormat.ALERT, userReference)
+                    || ((NotificationPreferenceScriptService) notificationPreferenceScriptService).isEventTypeEnabledForUser(
+                    TaskChangedEvent.class.getCanonicalName(), NotificationFormat.EMAIL, userReference);
         } catch (NotificationException e) {
             logger.warn("Failed to get notification preferences for user [{}]. Cause:", user, e);
             return false;

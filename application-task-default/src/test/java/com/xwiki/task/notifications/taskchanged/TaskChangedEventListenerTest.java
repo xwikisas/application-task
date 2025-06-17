@@ -40,7 +40,9 @@ import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
 import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
 import org.xwiki.notifications.preferences.internal.DefaultTargetableNotificationPreferenceBuilder;
+import org.xwiki.notifications.preferences.script.NotificationPreferenceScriptService;
 import org.xwiki.refactoring.event.DocumentRenamedEvent;
+import org.xwiki.script.service.ScriptService;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
@@ -56,6 +58,7 @@ import com.xwiki.task.model.Task;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,6 +83,9 @@ class TaskChangedEventListenerTest
     private WatchedEntitiesManager watchedEntitiesManager;
 
     @MockComponent
+    private ScriptService scriptService;
+
+    @MockComponent
     private XWikiContext context;
 
     @MockComponent
@@ -94,8 +100,9 @@ class TaskChangedEventListenerTest
     private TaskChangedEvent event;
 
     @BeforeEach
-    void setup()
+    void setup() throws NotificationException
     {
+        NotificationPreferenceScriptService ns = mock(NotificationPreferenceScriptService.class);
         this.event = new TaskChangedEvent(this.taskPage);
         this.event.setPreviousValue(adminRef.toString());
         this.event.setCurrentValue(userRef.toString());
@@ -115,6 +122,8 @@ class TaskChangedEventListenerTest
                 return new WatchedLocationReference(i.getArgument(0), null, null, null, null);
             }
         });
+        when(ns.isEventTypeEnabledForUser(any(), any(), any())).thenReturn(true);
+        scriptService = ns;
     }
 
     @ParameterizedTest
@@ -162,7 +171,9 @@ class TaskChangedEventListenerTest
     {
         this.event.setType(Task.ASSIGNEE);
         // The user is not subscribed to receive task notifications.
-        when(this.notificationPreferenceManager.getAllPreferences(any(DocumentReference.class))).thenReturn(List.of());
+        NotificationPreferenceScriptService ns = mock(NotificationPreferenceScriptService.class);
+        when(ns.isEventTypeEnabledForUser(any(), any(), any())).thenReturn(false);
+        scriptService = ns;
 
         this.eventListener.onEvent(event, this.taskPage, this.context);
 
