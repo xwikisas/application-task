@@ -1385,6 +1385,11 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
   font-size: @font-size-base;
   /* Default gantt popup styles removed. */
 }
+.taskgantt-parameter {
+  background-color: rgba(194,194,194,0.8);
+  border-radius: 10px;
+  padding: 2px 5px 2px 5px;
+}
 .taskgantt-noedit-overlay {
   position:absolute;
   visibility:hidden;
@@ -1926,14 +1931,14 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.assignees" != '')
   &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.assignees'))&lt;/b&gt;
     #foreach ($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
-      &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
+      &lt;span class='taskgantt-parameter'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
     #end
   &lt;/p&gt;
   #end
   #if ("$!xcontext.macro.params.spaces" != '')
   &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.spaces'))&lt;/b&gt;
     #foreach ($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
-      &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
+      &lt;a class='taskgantt-parameter' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
     #end
   &lt;/p&gt;
   #end
@@ -1948,7 +1953,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       #else
         #set ($label = $project)
       #end
-      &lt;span class='xwiki-mention'&gt;$escapetool.html($label)&lt;/span&gt;
+      &lt;span class='taskgantt-parameter'&gt;$escapetool.html($label)&lt;/span&gt;
     #end
   &lt;/p&gt;
   #end
