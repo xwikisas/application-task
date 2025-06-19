@@ -1386,7 +1386,8 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
   /* Default gantt popup styles removed. */
 }
 .taskgantt-parameter {
-  background-color: rgba(194,194,194,0.8);
+  background-color: @panel-header-bg;
+  color: @panel-header-text;
   border-radius: 10px;
   padding: 2px 5px 2px 5px;
 }
