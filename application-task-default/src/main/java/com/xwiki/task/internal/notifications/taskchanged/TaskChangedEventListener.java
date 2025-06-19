@@ -29,6 +29,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.eventstream.EventFactory;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.notifications.NotificationException;
@@ -36,15 +37,12 @@ import org.xwiki.notifications.NotificationFormat;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
 import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
+import org.xwiki.notifications.notifiers.internal.UserEventManager;
 import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
-import org.xwiki.notifications.preferences.script.NotificationPreferenceScriptService;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
-import org.xwiki.script.service.ScriptService;
-import org.xwiki.user.internal.document.DocumentUserReference;
 
-import com.xpn.xwiki.user.api.XWikiUser;
 import com.xwiki.task.model.Task;
 
 /**
@@ -74,8 +72,10 @@ public class TaskChangedEventListener extends AbstractEventListener
     private Logger logger;
 
     @Inject
-    @Named("notification.preferences")
-    private ScriptService notificationPreferenceScriptService;
+    private UserEventManager userEventManager;
+
+    @Inject
+    private EventFactory eventFactory;
 
     /**
      * Initialize the listener.
@@ -105,19 +105,17 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user)
     {
-        try {
-            // Use the script service so the preference status is the same one displayed in the User Profile.
-            // The default value for notifications was changed in 15.5, and is reflected in the service.
-            DocumentUserReference userReference = new DocumentUserReference(user, new XWikiUser(user).isMain());
-            return
-                ((NotificationPreferenceScriptService) notificationPreferenceScriptService).isEventTypeEnabledForUser(
-                    TaskChangedEvent.class.getCanonicalName(), NotificationFormat.ALERT, userReference)
-                    || ((NotificationPreferenceScriptService) notificationPreferenceScriptService).isEventTypeEnabledForUser(
-                    TaskChangedEvent.class.getCanonicalName(), NotificationFormat.EMAIL, userReference);
-        } catch (NotificationException e) {
-            logger.warn("Failed to get notification preferences for user [{}]. Cause:", user, e);
-            return false;
-        }
+        org.xwiki.eventstream.Event event = eventFactory.createRawEvent();
+        event.setType(TaskChangedEvent.class.getName());
+        // The default value for notifications was changed in 15.5, and is reflected in the UserEventManager.
+        return userEventManager.isListening(event, user, NotificationFormat.ALERT)
+            || userEventManager.isListening(event, user, NotificationFormat.EMAIL);
+        // TODO: Replace return above with commented code when parent > 15.5
+//        List<NotificationPreference> notificationPreferences =
+//            notificationPreferenceManager.getAllPreferences(user);
+//        return notificationPreferences.isEmpty() || notificationPreferences.stream().anyMatch(
+//            preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
+//                .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
     }
 
     private void watchTask(WatchedLocationReference docRef, String userFullName)
