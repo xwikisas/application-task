@@ -104,7 +104,7 @@ class TaskChangedEventListenerTest
     private TaskChangedEvent event;
 
     @BeforeEach
-    void setup() throws NotificationException
+    void setup()
     {
         this.event = new TaskChangedEvent(this.taskPage);
         this.event.setPreviousValue(adminRef.toString());
