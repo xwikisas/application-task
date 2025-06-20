@@ -144,6 +144,12 @@
       <version>${rendering.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- TODO: Remove this dependency when the XWiki parent is > 15.5.  -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-notifiers-default</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

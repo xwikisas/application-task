@@ -110,7 +110,7 @@ public class TaskChangedEventListener extends AbstractEventListener
         // The default value for notifications was changed in 15.5, and is reflected in the UserEventManager.
         return userEventManager.isListening(event, user, NotificationFormat.ALERT)
             || userEventManager.isListening(event, user, NotificationFormat.EMAIL);
-        // TODO: Replace return above with commented code when parent > 15.5
+        // TODO: Replace the above return with commented code when the XWiki parent is > 15.5.
 //        List<NotificationPreference> notificationPreferences =
 //            notificationPreferenceManager.getAllPreferences(user);
 //        return notificationPreferences.isEmpty() || notificationPreferences.stream().anyMatch(
