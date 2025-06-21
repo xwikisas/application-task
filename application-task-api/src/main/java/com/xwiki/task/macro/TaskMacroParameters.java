@@ -46,6 +46,24 @@ public class TaskMacroParameters
 
     private String completeDate;
 
+    private IdDisplay idDisplayed;
+
+    /**
+     * We define the values for the isDisplayed property as an enum in order to be able to detect when the property is
+     * not set.
+     */
+    public enum IdDisplay
+    {
+        /**
+         * Denotes that the id should be displayed.
+         */
+        TRUE,
+        /**
+         * Denotes that the id should not be displayed.
+         */
+        FALSE
+    }
+
     /**
      * @return the id of the task.
      */
@@ -130,5 +148,21 @@ public class TaskMacroParameters
     public void setCompleteDate(String completeDate)
     {
         this.completeDate = completeDate;
+    }
+
+    /**
+     * @return whether the id and the link to the task page should be displayed.
+     */
+    public IdDisplay isIdDisplayed()
+    {
+        return idDisplayed;
+    }
+
+    /**
+     * @param idDisplayed see {@link #isIdDisplayed()}.
+     */
+    public void setIdDisplayed(IdDisplay idDisplayed)
+    {
+        this.idDisplayed = idDisplayed;
     }
 }

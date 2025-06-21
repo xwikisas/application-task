@@ -48,6 +48,7 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.skinx.SkinExtension;
 
 import com.xwiki.task.MacroUtils;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
 import com.xwiki.task.internal.TaskBlockProcessor;
@@ -97,6 +98,9 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
 
     @Inject
     private TaskReferenceUtils taskReferenceUtils;
+
+    @Inject
+    private TaskConfiguration taskConfiguration;
 
     /**
      * Default constructor.
@@ -159,13 +163,17 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
 
         taskInfoBlock.addChild(new FormatBlock(Collections.singletonList(checkBoxBlock), Format.NONE));
 
-        try {
-            Task task = taskManager.getTask(taskRef);
-            taskInfoBlock.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
-        } catch (TaskException ignored) {
-            // The task page not existing is a valid scenario (when the user just added the task macro in the WYSIWYG).
+        if (TaskMacroParameters.IdDisplay.TRUE.equals(parameters.isIdDisplayed())
+            || (parameters.isIdDisplayed() == null && taskConfiguration.isIdDisplayed()))
+        {
+            try {
+                Task task = taskManager.getTask(taskRef);
+                taskInfoBlock.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
+            } catch (TaskException ignored) {
+                // The task page not existing is a valid scenario (when the user just added the task macro in the
+                // WYSIWYG).
+            }
         }
-
         ret.addChild(taskInfoBlock);
         ret.addChild(new GroupBlock(contentBlocks, Collections.singletonMap(HTML_CLASS, "task-content")));
         return Collections.singletonList(ret);

@@ -66,7 +66,9 @@ public class IntegrationTests
     {
         componentManager.registerMockComponent(SkinExtension.class, "ssx");
         componentManager.registerMockComponent(SkinExtension.class, "jsx");
-        componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
+        ConfigurationSource taskCfgSc =
+            componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
+        when(taskCfgSc.getProperty("isIdDisplayed", true)).thenReturn(true);
         componentManager.registerMockComponent(ConfigurationSource.class, "datemacro");
         componentManager.registerMockComponent(ScriptService.class, "taskmanager");
         componentManager.registerMockComponent(ScriptService.class, "datemacro");
@@ -135,6 +137,7 @@ public class IntegrationTests
 
         ConfigurationSource prefs = componentManager.registerMockComponent(ConfigurationSource.class, "wiki");
         when(prefs.getProperty("dateformat", "yyyy/MM/dd HH:mm")).thenReturn("yyyy/MM/dd HH:mm");
+        when(prefs.getProperty("isIdDisplayed", true)).thenReturn(true);
 
         componentManager.registerComponent(ComponentManager.class, "context", componentManager);
         componentManager.registerMockComponent(DocumentReferenceResolver.TYPE_STRING, "macro");
