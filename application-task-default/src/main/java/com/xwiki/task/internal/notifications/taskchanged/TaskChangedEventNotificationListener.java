@@ -59,7 +59,7 @@ public class TaskChangedEventNotificationListener extends AbstractEventListener
      * The fields of the Task class which are watched for changes.
      */
     public static final List<String> WATCHED_FIELDS =
-        Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY);
+        Arrays.asList(Task.ASSIGNEE, Task.DUE_DATE, Task.PROJECT, Task.STATUS, Task.SEVERITY, Task.PROGRESS);
 
     private static final EntityReference CLASS_MATCHER = BaseObjectReference.any("TaskManager.TaskManagerClass");
 
