@@ -169,6 +169,7 @@ taskmanager.gantt.documentation.examples.projects=filter by projects (comma sepa
 taskmanager.gantt.documentation.examples.assignees=filter by assigned users (comma separated)
 taskmanager.gantt.documentation.examples.spaces=filter by parent spaces (comma separated)
 taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not have a due date set (default is true)
+taskmanager.gantt.documentation.examples.maxTasks=limit the amount of displayed tasks to this number (default is 50)
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks

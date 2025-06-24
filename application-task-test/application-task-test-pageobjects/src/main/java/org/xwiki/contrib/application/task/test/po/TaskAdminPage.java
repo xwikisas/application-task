@@ -49,11 +49,6 @@ public class TaskAdminPage extends AdministrationSectionPage
 
     private Select defaultInlineStatusSelect;
 
-    public TaskAdminPage()
-    {
-        super(SECTION_ID);
-    }
-
     public static TaskAdminPage gotoPage()
     {
         AdministrationSectionPage.gotoPage(SECTION_ID);
@@ -63,6 +58,11 @@ public class TaskAdminPage extends AdministrationSectionPage
     public void forceEdit()
     {
         getDriver().navigate().to(getDriver().getCurrentUrl() + "&forceEdit=1&force=1");
+    }
+
+    public TaskAdminPage()
+    {
+        super(SECTION_ID);
     }
 
     public String getDefaultInlineStatusValue()
@@ -79,7 +79,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new project for tasks.
      *
      * @param projectName Name that will be used for the new project
-     * @since 3.8.0
+     * @since 3.7.2
      */
     public void addNewProject(String projectName)
     {
@@ -94,7 +94,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new severity class for tasks (e.g. High priority).
      *
      * @param severityName Name that will be used for the new severity class
-     * @since 3.8.0
+     * @since 3.7.2
      */
     public void addNewSeverity(String severityName)
     {
@@ -109,7 +109,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new status for tasks (e.g. ToDo, Done).
      *
      * @param statusName Name that will be used for the new status
-     * @since 3.8.0
+     * @since 3.7.2
      */
     public void addNewStatus(String statusName)
     {
@@ -120,16 +120,16 @@ public class TaskAdminPage extends AdministrationSectionPage
         getDriver().waitUntilPageIsReloaded();
     }
 
-    public int countSectionElements(String sectionId)
-    {
-        return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
-    }
-
     private Select getDefaultInlineStatusSelect()
     {
         if (defaultInlineStatusSelect == null) {
             defaultInlineStatusSelect = new Select(defaultInlineStatusElement);
         }
         return defaultInlineStatusSelect;
+    }
+
+    public int countSectionElements(String sectionId)
+    {
+        return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
     }
 }

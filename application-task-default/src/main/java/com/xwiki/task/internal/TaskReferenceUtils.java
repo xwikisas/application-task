@@ -93,7 +93,7 @@ public class TaskReferenceUtils
         if (reference instanceof DocumentReference) {
             return serializer.serialize(reference, relativeTo);
         }
-        DocumentReference documentReference = docRefResolver.resolve(reference);
+        DocumentReference documentReference = docRefResolver.resolve(reference, relativeTo);
         return serializer.serialize(documentReference, relativeTo);
     }
 
@@ -109,7 +109,7 @@ public class TaskReferenceUtils
     {
         EntityReference reference = resolve(representation, relativeTo);
         if (reference instanceof PageReference) {
-            return docRefResolver.resolve(reference);
+            return docRefResolver.resolve(reference, relativeTo);
         }
         return (DocumentReference) reference;
     }

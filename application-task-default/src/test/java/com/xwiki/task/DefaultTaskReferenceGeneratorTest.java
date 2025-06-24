@@ -74,10 +74,10 @@ class DefaultTaskReferenceGeneratorTest
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
 
         DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
-        assertEquals(new DocumentReference("Task_0", documentReference.getLastSpaceReference()), generatedReference);
+        assertEquals(new DocumentReference("Task_1", documentReference.getLastSpaceReference()), generatedReference);
 
         DocumentReference generatedReference1 = this.referenceGenerator.generate(documentReference);
-        assertEquals(new DocumentReference("Task_1", documentReference.getLastSpaceReference()), generatedReference1);
+        assertEquals(new DocumentReference("Task_2", documentReference.getLastSpaceReference()), generatedReference1);
     }
 
     @Test
@@ -85,12 +85,12 @@ class DefaultTaskReferenceGeneratorTest
     {
         when(this.documentAccessBridge.exists(any(DocumentReference.class))).thenReturn(false);
         when(
-            this.documentAccessBridge.exists(new DocumentReference("Task_0", documentReference.getLastSpaceReference()))
+            this.documentAccessBridge.exists(new DocumentReference("Task_1", documentReference.getLastSpaceReference()))
         ).thenReturn(true);
 
         DocumentReference generatedReference = this.referenceGenerator.generate(documentReference);
 
-        assertEquals(new DocumentReference("Task_1", documentReference.getLastSpaceReference()),
+        assertEquals(new DocumentReference("Task_2", documentReference.getLastSpaceReference()),
             generatedReference);
     }
 }

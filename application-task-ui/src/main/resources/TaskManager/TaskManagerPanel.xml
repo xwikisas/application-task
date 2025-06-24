@@ -181,7 +181,7 @@
   #set($results = $services.query.xwql("$query").bindValue("currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
   #foreach($result in $results)
     #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))
-    * $services.icon.render('accept') **[[$object.getProperty('name').value&gt;&gt;$result]]**
+    * $services.icon.render('accept') **[[$services.rendering.escape($object.getProperty('name').value, 'xwiki/2.1')&gt;&gt;$services.rendering.escape($result, 'xwiki/2.1')]]**
     (% class="text-muted small" %)##
     #if ($object.getProperty('duedate').value)
       $services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
