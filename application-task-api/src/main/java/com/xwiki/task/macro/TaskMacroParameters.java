@@ -48,6 +48,8 @@ public class TaskMacroParameters
 
     private IdDisplay idDisplayed;
 
+    private String className;
+
     /**
      * We define the values for the isDisplayed property as an enum in order to be able to detect when the property is
      * not set.
@@ -164,5 +166,24 @@ public class TaskMacroParameters
     public void setIdDisplayed(IdDisplay idDisplayed)
     {
         this.idDisplayed = idDisplayed;
+    }
+
+    /**
+     * @return the name of the class that should identify this macro.
+     * @since 3.8.0
+     */
+    public String getClassName()
+    {
+        return className;
+    }
+
+    /**
+     * @param className see {@link #getClassName()}.
+     * @since 3.8.0
+     */
+    @PropertyDisplayHidden
+    public void setClassName(String className)
+    {
+        this.className = className;
     }
 }

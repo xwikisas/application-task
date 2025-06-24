@@ -3,15 +3,16 @@
 .input|xwiki/2.0
 .# Task macro test without displaying the id.
 .#-----------------------------------------------------
-{{task reference="Sandbox.Task" status="Done" idDisplayed="FALSE" }}
-Important task with the following deadline: {{date value="2021/09/07 00:00"/}}
-{{/task}}
+{{taskbox id="Sandbox.Task" checked="true" }}
+Important task with the following deadline
+{{/taskbox}}
 .#-----------------------------------------------------
 .expect|event/1.0
 .#-----------------------------------------------------
 beginDocument
-beginMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done|idDisplayed=FALSE] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
-beginGroup [[class]=[task-macro]]
+beginMacroMarkerStandalone [taskbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
+beginMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
+beginGroup [[class]=[task-macro taskbox]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
 onRawText [<input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status">] [html/5.0]
@@ -31,20 +32,14 @@ onSpace
 onWord [following]
 onSpace
 onWord [deadline]
-onSpecialSymbol [:]
-onSpace
-beginMacroMarkerInline [date] [value=2021/09/07 00:00]
-beginFormat [NONE] [[class]=[xwiki-date]]
-onWord [2021/09/07 00:00]
-endFormat [NONE] [[class]=[xwiki-date]]
-endMacroMarkerInline [date] [value=2021/09/07 00:00]
 endParagraph
 endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
 endGroup [[class]=[task-content]]
-endGroup [[class]=[task-macro]]
-endMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done|idDisplayed=FALSE] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
+endGroup [[class]=[task-macro taskbox]]
+endMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
+endMacroMarkerStandalone [taskbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"></div><div class="task-content"><p>Important task with the following deadline: <span class="xwiki-date">2021/09/07 00:00</span></p></div></div>
+<div class="task-macro taskbox"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"></div><div class="task-content"><p>Important task with the following deadline</p></div></div>

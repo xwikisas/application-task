@@ -46,6 +46,7 @@ import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.skinx.SkinExtension;
+import org.xwiki.xml.XMLUtils;
 
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskConfiguration;
@@ -144,7 +145,10 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         Block ret = new GroupBlock();
         Map<String, String> blockParameters = new HashMap<>();
 
-        blockParameters.put(HTML_CLASS, "task-macro");
+        String className = "task-macro";
+        className = parameters.getClassName() == null || parameters.getClassName().isEmpty() ? className
+            : XMLUtils.escape(String.join(" ", className, parameters.getClassName()));
+        blockParameters.put(HTML_CLASS, className);
         ret.setParameters(blockParameters);
         String checked = "";
         if ((parameters.getStatus() != null && parameters.getStatus().equals(Task.STATUS_DONE))) {
@@ -156,7 +160,8 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         EntityReference taskRef = taskReferenceUtils.resolve(parameters.getReference(), ownerDocRef);
         String taskId = taskReferenceUtils.serializeAsDocumentReference(taskRef, ownerDocRef);
         String htmlCheckbox =
-            String.format("<input type=\"checkbox\" data-taskId=\"%s\" %s class=\"task-status\">", taskId, checked);
+            String.format("<input type=\"checkbox\" data-taskId=\"%s\" data-rawid=\"%s\" %s class=\"task-status\">",
+                taskId, XMLUtils.escape(parameters.getReference()), checked);
         Block checkBoxBlock = new RawBlock(htmlCheckbox, Syntax.HTML_5_0);
 
         Block taskInfoBlock = new GroupBlock(Collections.singletonMap(HTML_CLASS, "task-info"));
