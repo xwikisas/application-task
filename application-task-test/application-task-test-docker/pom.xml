@@ -78,19 +78,6 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- Needed to trigger the scheduler job -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-scheduler-ui</artifactId>
-      <version>${platform.version}</version>
-      <type>xar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-scheduler-test-pageobjects</artifactId>
-      <version>${platform.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-panels-test-pageobjects</artifactId>
