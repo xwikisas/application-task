@@ -587,10 +587,18 @@ Example:
 #end
 #set($project = "$!{xcontext.macro.params.project}")
 #if($project != '')
-  #if ($xwql.length() &gt; 0)
-    #set ($xwql = "$xwql and")
+  #set ($xwqlProjects = '')
+  #set ($projects = $project.split(','))
+  #foreach ($project in $projects)
+    #if ($xwqlProjects.length() &gt; 0)
+      #set ($xwqlProjects = "$xwqlProjects OR")
+    #end
+    #set ($xwqlProjects = "$xwqlProjects obj.project = '$escapetool.sql($project)'")
   #end
-  #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
+  #if ($xwql.length() &gt; 0)
+    #set ($xwql = "$xwql and ")
+  #end
+  #set ($xwql = "($xwqlProjects)")
 #end
 #set ($columns = "$!{xcontext.macro.params.columns}")
 {{awmkanban
@@ -872,7 +880,7 @@ Example:
       <name>project</name>
     </property>
     <property>
-      <type>com.xwiki.task.ProjectReference</type>
+      <type>java.util.List&lt;com.xwiki.task.ProjectReference&gt;</type>
     </property>
   </object>
   <object>
@@ -951,7 +959,7 @@ Example:
       <name>columns</name>
     </property>
     <property>
-      <type/>
+      <type>java.util.List&lt;com.xwiki.task.TaskStatus&gt;</type>
     </property>
   </object>
   <object>
