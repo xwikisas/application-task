@@ -596,9 +596,9 @@ Example:
     #set ($xwqlProjects = "$xwqlProjects obj.project = '$escapetool.sql($project)'")
   #end
   #if ($xwql.length() &gt; 0)
-    #set ($xwql = "$xwql and ")
+    #set ($xwql = "$xwql and")
   #end
-  #set ($xwql = "$xwql($xwqlProjects)")
+  #set ($xwql = "$xwql ($xwqlProjects)")
 #end
 #set ($columns = "$!{xcontext.macro.params.columns}")
 {{awmkanban
