@@ -25,9 +25,9 @@ import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.date.DateType;
 import com.xwiki.task.TaskReference;
 import com.xwiki.task.TaskStatus;
-import com.xwiki.date.DateType;
 
 /**
  * @version $Id$
@@ -53,6 +53,8 @@ public class TaskMacroParameters
     /**
      * We define the values for the isDisplayed property as an enum in order to be able to detect when the property is
      * not set.
+     *
+     * @since 3.8.0
      */
     public enum IdDisplay
     {
@@ -154,6 +156,7 @@ public class TaskMacroParameters
 
     /**
      * @return whether the id and the link to the task page should be displayed.
+     * @since 3.8.0
      */
     public IdDisplay isIdDisplayed()
     {
@@ -162,6 +165,7 @@ public class TaskMacroParameters
 
     /**
      * @param idDisplayed see {@link #isIdDisplayed()}.
+     * @since 3.8.0
      */
     public void setIdDisplayed(IdDisplay idDisplayed)
     {

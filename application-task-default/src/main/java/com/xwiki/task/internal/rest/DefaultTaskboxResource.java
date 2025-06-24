@@ -84,6 +84,9 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
         } catch (XWikiException e) {
             throw new XWikiRestException("Could not retrieve document.", e);
         }
+        if (document.isNew()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         XDOM docDOM = document.getXDOM();
         AtomicReference<Boolean> contentChanged =
             maybeUpdateTaskbox(id, checked, docDOM, document);
@@ -97,8 +100,9 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
             } catch (XWikiException e) {
                 throw new XWikiRestException("Failed to update the content of the page.", e);
             }
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok().build();
     }
 
     private AtomicReference<Boolean> maybeUpdateTaskbox(String id, String checked, XDOM docDOM,

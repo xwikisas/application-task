@@ -61,6 +61,7 @@ public interface TaskConfiguration
 
     /**
      * @return whether the id (and link) of the task macro should be displayed or not.
+     * @since 3.8.0
      */
     boolean isIdDisplayed();
 }

@@ -161,7 +161,7 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         String taskId = taskReferenceUtils.serializeAsDocumentReference(taskRef, ownerDocRef);
         String htmlCheckbox =
             String.format("<input type=\"checkbox\" data-taskId=\"%s\" data-rawid=\"%s\" %s class=\"task-status\">",
-                taskId, XMLUtils.escape(parameters.getReference()), checked);
+                XMLUtils.escape(taskId), XMLUtils.escape(parameters.getReference()), checked);
         Block checkBoxBlock = new RawBlock(htmlCheckbox, Syntax.HTML_5_0);
 
         Block taskInfoBlock = new GroupBlock(Collections.singletonMap(HTML_CLASS, "task-info"));

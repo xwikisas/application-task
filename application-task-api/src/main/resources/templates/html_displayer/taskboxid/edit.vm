@@ -29,7 +29,8 @@
       #set ($id = $rnd.substring($rnd.length() - 5, $rnd.length()))
     #end
     #set ($discard = $displayer.put('value', $id))
-    data-randomid="$id"
+    ## We set a data attribute and initialize the id using JS because setting the value from here doesn't work.
+    data-randomid="$!escapetool.xml($id)"
   #end
   #foreach ($parameter in $displayer.parameters.entrySet())
     $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
