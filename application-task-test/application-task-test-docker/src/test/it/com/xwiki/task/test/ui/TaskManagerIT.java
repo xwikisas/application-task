@@ -38,11 +38,14 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.panels.test.po.ApplicationsPanel;
 import org.xwiki.test.docker.junit5.TestConfiguration;
 import org.xwiki.test.docker.junit5.TestLocalReference;
+import org.xwiki.test.docker.junit5.TestReference;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.LiveTableElement;
 import org.xwiki.test.ui.po.ViewPage;
+import org.xwiki.test.ui.po.editor.EditPage;
+import org.xwiki.test.ui.po.editor.WikiEditPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -68,6 +71,8 @@ class TaskManagerIT
     private final LocalDocumentReference pageWithComplexTaskMacros = new LocalDocumentReference("Main", "Test2");
 
     private final LocalDocumentReference pageWithTaskRaport = new LocalDocumentReference("Main", "Test3");
+
+    private final LocalDocumentReference docWithTaskboxes = new LocalDocumentReference("Taskboxes", "WebHome");
 
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
@@ -275,8 +280,28 @@ class TaskManagerIT
         assertEquals(0, viewPage.getTaskMacros().size());
     }
 
-    @Test
+    @ParameterizedTest
+    @WikisSource()
     @Order(9)
+    void taskboxMacro(WikiReference wiki, TestUtils setup,
+        TestLocalReference testLocalReference, TestReference testReference)
+    {
+        DocumentReference testRef = new DocumentReference(docWithTaskboxes, wiki);
+        setup.createPage(testRef, "{{taskbox id=\"someId\"}}Hello there{{/taskbox}}");
+        ViewPageWithTasks viewPageWithTasks = new ViewPageWithTasks();
+        assertEquals("Hello there", viewPageWithTasks.getTaskMacroContent(0));
+        assertEquals(false, viewPageWithTasks.isTaskMacroCheckboxChecked(0));
+        viewPageWithTasks.clickTaskMacroCheckbox(0);
+
+        WikiEditPage editPage = viewPageWithTasks.editWiki();
+        assertEquals("{{taskbox id=\"someId\" checked=\"true\"}}\nHello there\n{{/taskbox}}", editPage.getContent());
+        editPage.clickSaveAndView(true);
+        viewPageWithTasks = new ViewPageWithTasks();
+        assertEquals(true, viewPageWithTasks.isTaskMacroCheckboxChecked(0));
+    }
+
+    @Test
+    @Order(10)
     void deleteAdminDefaults(TestUtils testUtils)
     {
         testUtils.setGlobalRights("", "XWiki." + USER_NAME, "admin", true);
@@ -289,5 +314,7 @@ class TaskManagerIT
             assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
         }
     }
+
+
 
 }

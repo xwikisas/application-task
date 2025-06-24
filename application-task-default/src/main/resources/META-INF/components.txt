@@ -21,6 +21,8 @@ com.xwiki.task.internal.SuperCompactReferenceSerializer
 com.xwiki.task.internal.job.TaskDataInferringJob
 com.xwiki.task.internal.job.TaskReferenceRelativizerJob
 com.xwiki.task.internal.macro.TaskMacro
+com.xwiki.task.internal.macro.TaskboxMacro
 com.xwiki.task.internal.macro.TasksMacro
 com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource
+com.xwiki.task.internal.rest.DefaultTaskboxResource
