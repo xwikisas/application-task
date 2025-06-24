@@ -211,12 +211,14 @@ rendering.macro.task.parameter.createDate.name=Creation date
 rendering.macro.task.parameter.createDate.description=The date when the task was created.
 rendering.macro.task.parameter.completeDate.name=Completion date
 rendering.macro.task.parameter.completeDate.description=If you set the status of the task as "Done", you should also set the completion date.
+rendering.macro.task.parameter.idDisplayed.name=Is ID Displayed?
+rendering.macro.task.parameter.idDisplayed.description=Denotes whether the id and the link to the task page should be displayed.
 
 rendering.macro.taskbox.name=Taskbox
 rendering.macro.taskbox.description=Display a simple checkbox alongside some rich content.
 rendering.macro.taskbox.content.description=Rich content that describes this to-do item.
 rendering.macro.taskbox.parameter.id.name=Id
-rendering.macro.taskbox.parameter.id.description=Uniquely identifies the taskbox on the current page.
+rendering.macro.taskbox.parameter.id.description=Uniquely identifies the taskbox on the current page. It is recommended to use the autofilled value.
 rendering.macro.taskbox.parameter.checked.name=Checked?
 rendering.macro.taskbox.parameter.checked.description=Denotes whether the checkbox is ticked or not.
 
