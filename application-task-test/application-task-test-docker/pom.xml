@@ -73,29 +73,46 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.xwiki.licensing</groupId>
-      <artifactId>application-licensing-test-dependencies</artifactId>
-      <version>${licensing.version}</version>
-      <type>pom</type>
-      <scope>test</scope>
-    </dependency>
-    <!-- Remove when licensing application has the parent to 14.10. -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-model-api</artifactId>
-      <version>${platform.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.commons</groupId>
-      <artifactId>xwiki-commons-extension-api</artifactId>
-      <version>${commons.version}</version>
-    </dependency>
-    <!-- End remove. -->
-    <dependency>
       <groupId>com.xwiki.task</groupId>
       <artifactId>application-task-test-pageobjects</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+    </dependency>
+    <!-- Needed to trigger the scheduler job -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-scheduler-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-scheduler-test-pageobjects</artifactId>
+      <version>${platform.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-panels-test-pageobjects</artifactId>
+      <version>${platform.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Required for tests involving subwikis. -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-ui-mainwiki</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-creationjob</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-template-default</artifactId>
+      <version>${platform.version}</version>
     </dependency>
     <!-- Needed to trigger the scheduler job -->
     <dependency>
@@ -131,12 +148,6 @@
     <dependency>
       <groupId>com.sun.mail</groupId>
       <artifactId>jakarta.mail</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-panels-test-pageobjects</artifactId>
-      <version>${platform.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
