@@ -21,6 +21,7 @@ package com.xwiki.task.macro;
  */
 
 import org.xwiki.properties.annotation.PropertyDisplayType;
+import org.xwiki.properties.annotation.PropertyMandatory;
 
 import com.xwiki.task.TaskboxId;
 
@@ -48,6 +49,7 @@ public class TaskboxMacroParameters
      * @param id see {@link #getId()}.
      */
     @PropertyDisplayType(TaskboxId.class)
+    @PropertyMandatory
     public void setId(String id)
     {
         this.id = id;
