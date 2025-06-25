@@ -58,6 +58,6 @@ public interface TaskboxResource
         @PathParam("spaceName") @Encoded String spaces,
         @PathParam("pageName") String pageName,
         @PathParam("id") @DefaultValue("") String id,
-        @QueryParam("status") @DefaultValue("true") String checked
+        @QueryParam("checked") @DefaultValue("true") String checked
     ) throws XWikiRestException;
 }

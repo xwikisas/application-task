@@ -59,6 +59,8 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
 
     private static final Set<String> FALSE_VALUES = Set.of("false", "0");
 
+    private static final String PARAM_CHECKED = "checked";
+
     @Inject
     private ContextualAuthorizationManager contextualAuthorizationManager;
 
@@ -88,10 +90,9 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         XDOM docDOM = document.getXDOM();
-        AtomicReference<Boolean> contentChanged =
-            maybeUpdateTaskbox(id, checked, docDOM, document);
+        XDOM updatedXDOM = maybeUpdateTaskbox(id, checked, docDOM, document);
 
-        if (contentChanged.get()) {
+        if (updatedXDOM != null) {
             try {
                 document.setContent(docDOM);
                 context.getWiki()
@@ -105,11 +106,11 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
         }
     }
 
-    private AtomicReference<Boolean> maybeUpdateTaskbox(String id, String checked, XDOM docDOM,
+    private XDOM maybeUpdateTaskbox(String id, String checked, XDOM docDOM,
         XWikiDocument document)
     {
         AtomicReference<Boolean> contentChanged = new AtomicReference<>(false);
-        macroBlockFinder.find(docDOM, document.getSyntax(), (macroBlock -> {
+        XDOM updatedXDOM = macroBlockFinder.find(docDOM, document.getSyntax(), (macroBlock -> {
             if (!"taskbox".equals(macroBlock.getId())) {
                 return MacroBlockFinder.Lookup.CONTINUE;
             }
@@ -117,11 +118,19 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
             if (!id.equals(macroId)) {
                 return MacroBlockFinder.Lookup.CONTINUE;
             }
-            macroBlock.setParameter("checked", checked);
+            String macroChecked = macroBlock.getParameters().getOrDefault(PARAM_CHECKED, "");
+            if ((macroChecked.isEmpty() && Boolean.FALSE.toString().equals(checked)) || checked.equals(macroChecked)) {
+                return MacroBlockFinder.Lookup.BREAK;
+            }
+            macroBlock.setParameter(PARAM_CHECKED, checked);
             contentChanged.set(true);
 
             return MacroBlockFinder.Lookup.BREAK;
         }));
-        return contentChanged;
+        if (contentChanged.get()) {
+            return updatedXDOM;
+        } else {
+            return null;
+        }
     }
 }
