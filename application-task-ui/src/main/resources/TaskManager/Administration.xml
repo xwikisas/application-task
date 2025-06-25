@@ -121,6 +121,21 @@
         <valueField/>
         <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
       </defaultInlineStatus>
+      <isIdDisplayed>
+        <customDisplay/>
+        <defaultValue>1</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>checkbox</displayFormType>
+        <displayType/>
+        <hint/>
+        <name>isIdDisplayed</name>
+        <number>3</number>
+        <prettyName>isIdDisplayed</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </isIdDisplayed>
       <notSkippedFoldEvents>
         <contenttype>PureText</contenttype>
         <customDisplay/>
@@ -142,6 +157,9 @@
     </class>
     <property>
       <defaultInlineStatus>InProgress</defaultInlineStatus>
+    </property>
+    <property>
+      <isIdDisplayed/>
     </property>
     <property>
       <notSkippedFoldEvents>org.xwiki.filter.job.FilterConversionStarted</notSkippedFoldEvents>
