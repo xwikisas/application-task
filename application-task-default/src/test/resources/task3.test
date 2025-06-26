@@ -1,25 +1,21 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Task macro test with date macro inside the content.
+.# Task macro test without displaying the id.
 .#-----------------------------------------------------
-{{task reference="Sandbox.Task" status="Done"}}
+{{task reference="Sandbox.Task" status="Done" idDisplayed="FALSE" }}
 Important task with the following deadline: {{date value="2021/09/07 00:00"/}}
 {{/task}}
 .#-----------------------------------------------------
 .expect|event/1.0
 .#-----------------------------------------------------
 beginDocument
-beginMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
+beginMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done|idDisplayed=FALSE] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
 beginGroup [[class]=[task-macro]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
 onRawText [<input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status">] [html/5.0]
 endFormat [NONE]
-beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
-onSpecialSymbol [#]
-onWord [1]
-endLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
 endGroup [[class]=[task-info]]
 beginGroup [[class]=[task-content]]
 beginMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
@@ -46,9 +42,9 @@ endParagraph
 endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
 endGroup [[class]=[task-content]]
 endGroup [[class]=[task-macro]]
-endMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
+endMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done|idDisplayed=FALSE] [Important task with the following deadline: {{date value="2021/09/07 00:00"/}}]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><p>Important task with the following deadline: <span class="xwiki-date">2021/09/07 00:00</span></p></div></div>
+<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"></div><div class="task-content"><p>Important task with the following deadline: <span class="xwiki-date">2021/09/07 00:00</span></p></div></div>

@@ -25,7 +25,7 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task</artifactId>
-    <version>3.7.4-SNAPSHOT</version>
+    <version>3.8.1-SNAPSHOT</version>
   </parent>
   <name>Task Manager Application - Default</name>
   <description>The default implementation of the Task Manager Application API (Pro). This package is needed for the application to work properly.</description>
@@ -76,6 +76,26 @@
       <artifactId>xwiki-platform-model-api</artifactId>
       <version>${platform.version}</version>
     </dependency>
+    <!-- Needed for notifications sent when modifying events -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-notifiers-api</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-sources</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-filters-watch</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
     <!-- Used to inject the required JS and CSS extensions when the task macro is rendered. -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -123,6 +143,13 @@
       <artifactId>xwiki-rendering-syntax-event</artifactId>
       <version>${rendering.version}</version>
       <scope>test</scope>
+    </dependency>
+    <!-- TODO: This dependency was added as a temporarily fix for 249: Notifications default status is not 
+    respected in XWiki 16.10. This should removed when the XWiki parent is > 15.5.  -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-notifications-notifiers-default</artifactId>
+      <version>${platform.version}</version>
     </dependency>
   </dependencies>
   <build>

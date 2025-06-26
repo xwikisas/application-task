@@ -1,3 +1,5 @@
+package com.xwiki.task.macro;
+
 /*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,44 +19,55 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.xwiki.task.test.ui;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.TestClassOrder;
-import org.junit.jupiter.api.ClassOrderer;
-import org.xwiki.test.docker.junit5.UITest;
+import org.xwiki.properties.annotation.PropertyDisplayType;
+import org.xwiki.properties.annotation.PropertyMandatory;
+
+import com.xwiki.task.TaskboxId;
 
 /**
- * All UI tests for the Task Manager application.
+ * The parameters used by the taskbox macro.
  *
  * @version $Id$
- * @since 2.6
+ * @since 3.8.0
  */
-@UITest(properties = {"xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin"}, extraJARs = {
-    "org.xwiki.platform:xwiki-platform-jodatime:14.10"}, resolveExtraJARs = true)
-@TestClassOrder(ClassOrderer.OrderAnnotation.class)
-class AllITs
+public class TaskboxMacroParameters
 {
-    @Nested
-    @Order(1)
-    @DisplayName("Overall Task Manager UI")
-    class NestedTaskManagerIT extends TaskManagerIT
+    private String id;
+
+    private boolean checked;
+
+    /**
+     * @return unique identifier on the page.
+     */
+    public String getId()
     {
+        return id;
     }
 
-    @Nested
-    @Order(2)
-    @DisplayName("Gantt Task Manager UI")
-    class NestedGanttIT extends GanttIT
+    /**
+     * @param id see {@link #getId()}.
+     */
+    @PropertyDisplayType(TaskboxId.class)
+    @PropertyMandatory
+    public void setId(String id)
     {
+        this.id = id;
     }
 
-    @Nested
-    @Order(3)
-    @DisplayName("Task Manager Notifications")
-    class NestedNotificationIT extends NotificationIT
+    /**
+     * @return whether the macro is checked or not.
+     */
+    public boolean isChecked()
     {
+        return checked;
+    }
+
+    /**
+     * @param checked see {@link #isChecked()}.
+     */
+    public void setChecked(boolean checked)
+    {
+        this.checked = checked;
     }
 }

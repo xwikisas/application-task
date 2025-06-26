@@ -17,26 +17,22 @@
 ## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
-#template("pickers_macros.vm")
-#set ($hql =
-  "select prop.value from BaseObject obj, StringProperty prop where obj.className='TaskManager.ProjectClass' and prop.id.id=obj.id and prop.name='project'")
-#set ($results = $services.query.hql($hql).execute())
-#set ($options = [])
-#set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_project_')
-#foreach ($project in $results)
-  #set ($translationKey = $translationKeyPrefix + $project)
-  #if ($services.localization.get($translationKey))
-    #set ($label = $services.localization.render($translationKey))
-  #else
-    #set ($label = $project)
+#set ($discard = $xwiki.jsx.use('TaskManager.TaskboxInit'))
+<input
+  class="taskbox-id"
+  type="text"
+  #if ("$!displayer.value" == '')
+    #set ($rnd = "" + $mathtool.getRandom())
+    #if ($rnd.length() < 5)
+      #set ($id = $rnd)
+    #else
+      #set ($id = $rnd.substring($rnd.length() - 5, $rnd.length()))
+    #end
+    #set ($discard = $displayer.put('value', $id))
+    ## We set a data attribute and initialize the id using JS because setting the value from here doesn't work.
+    data-randomid="$!escapetool.xml($id)"
   #end
-  #set ($discard = $options.add({ 'name': $label, 'value': $project}))
-#end
-#set ($parameters = {
-  'name': $displayer.parameters.name,
-  'value': $displayer.value,
-  'multiple': 'multiple',
-  'prefix': ' ',
-  'options': $options
-})
-#staticSelectPicker($parameters)
+  #foreach ($parameter in $displayer.parameters.entrySet())
+    $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
+  #end
+/>

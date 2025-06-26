@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+package com.xwiki.task;
 
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,22 +18,17 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>com.xwiki.task</groupId>
-    <artifactId>application-task</artifactId>
-    <version>3.8.1-SNAPSHOT</version>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.xwiki.date</groupId>
-  <artifactId>macro-date</artifactId>
-  <packaging>pom</packaging>
-  <name>Date Macro - Parent POM</name>
-  <modules>
-    <module>macro-date-api</module>
-    <module>macro-date-default</module>
-    <module>macro-date-ui</module>
-  </modules>
-</project>
+import org.xwiki.stability.Unstable;
+
+/**
+ * Identifies the ID of the taskbox macro.
+ *
+ * @version $Id$
+ * @since 3.8.0
+ */
+@Unstable
+public interface TaskboxId
+{
+}
