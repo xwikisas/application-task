@@ -1176,7 +1176,7 @@ Example:
       <defaultValue/>
     </property>
     <property>
-      <description>Field to order the tasks by. Example: 'name', 'doc.date desc', 'status'</description>
+      <description>Field to order the tasks by. Example: 'name asc', 'doc.date desc', 'reporter asc,assignee desc'</description>
     </property>
     <property>
       <mandatory/>
