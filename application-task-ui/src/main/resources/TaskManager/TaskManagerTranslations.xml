@@ -274,12 +274,12 @@ rendering.macro.kanbanboard.parameter.colors.name=Colors
 rendering.macro.kanbanboard.parameter.colors.description=Define the colors that you want to use for the columns. The list must be comma separated, e.g., red,#00d126,yellow.
 rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
 rendering.macro.kanbanboard.name=Kanban board - Task Manager
-rendering.macro.kanbanboard.parameter.project.name=Project
-rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to this project.
+rendering.macro.kanbanboard.parameter.project.name=Projects
+rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to these projects.
 rendering.macro.kanbanboard.parameter.space.name=Space
 rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
-rendering.macro.kanbanboard.parameter.user.name=User
-rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to this user.
+rendering.macro.kanbanboard.parameter.user.name=Users
+rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to these users.
 
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks
