@@ -50,7 +50,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @version $Id$
  * @since 3.7.2
  */
-@UITest
+@UITest(
+    properties = {
+        "xwikiDbHbmCommonExtraMappings=notification-filter-preferences.hbm.xml"
+    },
+    extraJARs = {
+        "org.xwiki.platform:xwiki-platform-notifications-filters-default",
+    },
+    resolveExtraJARs = true
+)
 public class GanttIT
 {
     private static final String TEST_USERNAME = "TestUser";

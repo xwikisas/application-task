@@ -77,6 +77,12 @@ public class DefaultTaskConfiguration implements TaskConfiguration
     }
 
     @Override
+    public boolean isIdDisplayed()
+    {
+        return configurationSource.getProperty("isIdDisplayed", true);
+    }
+
+    @Override
     public String getDefaultInlineStatus()
     {
         String defaultStatus = configurationSource.getProperty("defaultInlineStatus");
