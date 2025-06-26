@@ -50,4 +50,11 @@ class AllITs
     class NestedGanttIT extends GanttIT
     {
     }
+
+    @Nested
+    @Order(3)
+    @DisplayName("Task Manager Notifications")
+    class NestedNotificationIT extends NotificationIT
+    {
+    }
 }

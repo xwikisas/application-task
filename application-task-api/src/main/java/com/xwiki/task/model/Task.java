@@ -109,6 +109,16 @@ public class Task
      */
     public static final String PROGRESS = "progress";
 
+    /**
+     * The name of the PROJECT field.
+     */
+    public static final String PROJECT = "project";
+
+    /**
+     * The name of the SEVERITY field.
+     */
+    public static final String SEVERITY = "severity";
+
     private String name;
 
     private int number;
@@ -132,6 +142,10 @@ public class Task
     private Date completeDate;
 
     private int progress;
+
+    private String project;
+
+    private String severity;
 
     /**
      * Default constructor.
@@ -339,5 +353,37 @@ public class Task
     public void setProgress(int progress)
     {
         this.progress = progress;
+    }
+
+    /**
+     * @return the severity of the task.
+     */
+    public String getSeverity()
+    {
+        return severity;
+    }
+
+    /**
+     * @param severity the severity of the task (Low,Medium,High).
+     */
+    public void setSeverity(String severity)
+    {
+        this.severity = severity;
+    }
+
+    /**
+     * @return the project the task is a part of.
+     */
+    public String getProject()
+    {
+        return project;
+    }
+
+    /**
+     * @param project the project the task is a part of.
+     */
+    public void setProject(String project)
+    {
+        this.project = project;
     }
 }
