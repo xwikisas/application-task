@@ -23,7 +23,7 @@ package com.xwiki.task;
 import org.xwiki.stability.Unstable;
 
 /**
- * Identifies the ID of the taskbox macro.
+ * Identifies the ID of the checkbox macro.
  *
  * @version $Id$
  * @since 3.8.0

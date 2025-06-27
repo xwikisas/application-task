@@ -50,7 +50,7 @@ import com.xwiki.task.model.Task;
  * @since 3.8.0
  */
 @Component
-@Named("taskbox")
+@Named("checkbox")
 @Singleton
 public class TaskboxMacro extends AbstractMacro<TaskboxMacroParameters>
 {

@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.5" reference="TaskManager.TaskboxInit" locale="">
+<xwikidoc version="1.5" reference="TaskManager.CheckboxInit" locale="">
   <web>TaskManager</web>
-  <name>TaskboxInit</name>
+  <name>CheckboxInit</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -31,14 +31,14 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>TaskboxInit</title>
+  <title>CheckboxInit</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>TaskManager.TaskboxInit</name>
+    <name>TaskManager.CheckboxInit</name>
     <number>0</number>
     <className>XWiki.JavaScriptExtension</className>
     <guid>cd788882-1c6e-4cda-96a6-acd6f69123b8</guid>

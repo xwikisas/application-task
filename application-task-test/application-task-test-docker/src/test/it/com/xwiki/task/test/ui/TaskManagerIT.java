@@ -283,18 +283,18 @@ class TaskManagerIT
     @ParameterizedTest
     @WikisSource()
     @Order(9)
-    void taskboxMacro(WikiReference wiki, TestUtils setup,
+    void checkboxMacro(WikiReference wiki, TestUtils setup,
         TestLocalReference testLocalReference, TestReference testReference)
     {
         DocumentReference testRef = new DocumentReference(docWithTaskboxes, wiki);
-        setup.createPage(testRef, "{{taskbox id=\"someId\"}}Hello there{{/taskbox}}");
+        setup.createPage(testRef, "{{checkbox id=\"someId\"}}Hello there{{/checkbox}}");
         ViewPageWithTasks viewPageWithTasks = new ViewPageWithTasks();
         assertEquals("Hello there", viewPageWithTasks.getTaskMacroContent(0));
         assertEquals(false, viewPageWithTasks.isTaskMacroCheckboxChecked(0));
         viewPageWithTasks.clickTaskMacroCheckbox(0);
 
         WikiEditPage editPage = viewPageWithTasks.editWiki();
-        assertEquals("{{taskbox id=\"someId\" checked=\"true\"}}\nHello there\n{{/taskbox}}", editPage.getContent());
+        assertEquals("{{checkbox id=\"someId\" checked=\"true\"}}\nHello there\n{{/checkbox}}", editPage.getContent());
         editPage.clickSaveAndView(true);
         viewPageWithTasks = new ViewPageWithTasks();
         assertEquals(true, viewPageWithTasks.isTaskMacroCheckboxChecked(0));

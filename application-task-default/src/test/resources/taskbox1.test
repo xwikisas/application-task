@@ -3,14 +3,14 @@
 .input|xwiki/2.0
 .# Task macro test without displaying the id.
 .#-----------------------------------------------------
-{{taskbox id="Sandbox.Task" checked="true" }}
+{{checkbox id="Sandbox.Task" checked="true" }}
 Important task with the following deadline
-{{/taskbox}}
+{{/checkbox}}
 .#-----------------------------------------------------
 .expect|event/1.0
 .#-----------------------------------------------------
 beginDocument
-beginMacroMarkerStandalone [taskbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
+beginMacroMarkerStandalone [checkbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
 beginMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
 beginGroup [[class]=[task-macro taskbox]]
 beginGroup [[class]=[task-info]]
@@ -37,7 +37,7 @@ endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.B
 endGroup [[class]=[task-content]]
 endGroup [[class]=[task-macro taskbox]]
 endMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
-endMacroMarkerStandalone [taskbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
+endMacroMarkerStandalone [checkbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
