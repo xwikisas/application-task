@@ -32,7 +32,7 @@ import org.xwiki.rest.XWikiRestException;
 import org.xwiki.stability.Unstable;
 
 /**
- * Updates the taskbox present in a given page, identified by its id.
+ * Updates the checkbox macro present in a given page, identified by its id.
  *
  * @version $Id$
  * @since 3.8.0
@@ -42,15 +42,15 @@ import org.xwiki.stability.Unstable;
 public interface TaskboxResource
 {
     /**
-     * Update the status of a taskbox macro.
+     * Update the status of a checkbox macro.
      *
-     * @param wikiName the wiki where the taskbox macro is located.
-     * @param spaces the spaces of the page where the taskbox macro is located.
-     * @param pageName the page where the taskbox macro is located.
-     * @param id the id of the taskbox that should be updated.
+     * @param wikiName the wiki where the checkbox macro is located.
+     * @param spaces the spaces of the page where the checkbox macro is located.
+     * @param pageName the page where the checkbox macro is located.
+     * @param id the id of the checkbox that should be updated.
      * @param checked the new status - either
      * @return status code 200 if it succeeds.
-     * @throws XWikiRestException if the status of the taskbox macro could not be changed.
+     * @throws XWikiRestException if the status of the checkbox macro could not be changed.
      */
     @PUT
     Response changeTaskStatus(

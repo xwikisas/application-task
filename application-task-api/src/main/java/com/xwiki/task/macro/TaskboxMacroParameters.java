@@ -26,7 +26,7 @@ import org.xwiki.properties.annotation.PropertyMandatory;
 import com.xwiki.task.TaskboxId;
 
 /**
- * The parameters used by the taskbox macro.
+ * The parameters used by the checkbox macro.
  *
  * @version $Id$
  * @since 3.8.0

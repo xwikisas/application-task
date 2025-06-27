@@ -45,7 +45,7 @@ import com.xwiki.task.rest.TaskboxResource;
 
 /**
  * The default implementation for the {@link TaskboxResource} that recursively looks through the content of a given page
- * and the content of its macros, finds the taskbox macro, updates the status and saves the page.
+ * and the content of its macros, finds the checkbox macro, updates the status and saves the page.
  *
  * @version $Id$
  * @since 3.8.0
@@ -96,7 +96,7 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
             try {
                 document.setContent(docDOM);
                 context.getWiki()
-                    .saveDocument(document, String.format("Updated the taskbox with id [%s].", id), context);
+                    .saveDocument(document, String.format("Updated the checkbox with id [%s].", id), context);
                 return Response.ok().build();
             } catch (XWikiException e) {
                 throw new XWikiRestException("Failed to update the content of the page.", e);
@@ -111,7 +111,7 @@ public class DefaultTaskboxResource extends XWikiResource implements TaskboxReso
     {
         AtomicReference<Boolean> contentChanged = new AtomicReference<>(false);
         XDOM updatedXDOM = macroBlockFinder.find(docDOM, document.getSyntax(), (macroBlock -> {
-            if (!"taskbox".equals(macroBlock.getId())) {
+            if (!"checkbox".equals(macroBlock.getId())) {
                 return MacroBlockFinder.Lookup.CONTINUE;
             }
             String macroId = macroBlock.getParameters().getOrDefault("id", "");
