@@ -117,6 +117,22 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Deadline
 taskmanager.livetable.creationDate=Creation Date
 
+# Notifications for changed tasks
+taskmanager.events.taskChangedEvent.description=A task which you are assigned to or you are watching was modified
+taskmanager.events.taskChangedEvent.title=Task was modified
+taskmanager.events.taskChangedEvent.details.status=Status changed from {1} to {0}
+taskmanager.events.taskChangedEvent.details.duedate=Deadline set to {0}
+taskmanager.events.taskChangedEvent.details.duedate.none=Deadline removed
+taskmanager.events.taskChangedEvent.details.duedate.later=Deadline extended from {1} to {0}
+taskmanager.events.taskChangedEvent.details.duedate.earlier=Deadline reduced from {1} to {0}
+taskmanager.events.taskChangedEvent.details.assignee.you.assigned=You were assigned
+taskmanager.events.taskChangedEvent.details.assignee.you.unassigned=You were unassigned
+taskmanager.events.taskChangedEvent.details.assignee.none=Nobody is assigned
+taskmanager.events.taskChangedEvent.details.assignee=Assignee changed from {1} to {0}
+taskmanager.events.taskChangedEvent.details.severity=Priority changed from {1} to {0}
+taskmanager.events.taskChangedEvent.details.project=This task was assigned to project {0}
+taskmanager.events.taskChangedEvent.details.progress=Progress changed from {1} to {0}
+
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
 taskmanager.gantt.taskEdit.error.generic=Task could not be updated
@@ -258,12 +274,12 @@ rendering.macro.kanbanboard.parameter.colors.name=Colors
 rendering.macro.kanbanboard.parameter.colors.description=Define the colors that you want to use for the columns. The list must be comma separated, e.g., red,#00d126,yellow.
 rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
 rendering.macro.kanbanboard.name=Kanban board - Task Manager
-rendering.macro.kanbanboard.parameter.project.name=Project
-rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to this project.
+rendering.macro.kanbanboard.parameter.project.name=Projects
+rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to these projects.
 rendering.macro.kanbanboard.parameter.space.name=Space
 rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
-rendering.macro.kanbanboard.parameter.user.name=User
-rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to this user.
+rendering.macro.kanbanboard.parameter.user.name=Users
+rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to these users.
 rendering.macro.kanbanboard.parameter.order.name=Order
 rendering.macro.kanbanboard.parameter.order.description=Field to order the tasks by. Example: 'name asc', 'doc.date desc', 'reporter asc,assignee desc'.
 rendering.macro.kanbanboard.parameter.limit.name=Limit
