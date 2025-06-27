@@ -19,7 +19,7 @@
 ## ---------------------------------------------------------------------------
 #set ($discard = $xwiki.jsx.use('TaskManager.CheckboxInit'))
 <input
-  class="task-checkbox-id"
+  class="taskbox-id"
   type="text"
   #if ("$!displayer.value" == '')
     #set ($rnd = "" + $mathtool.getRandom())

@@ -72,7 +72,7 @@ class TaskManagerIT
 
     private final LocalDocumentReference pageWithTaskRaport = new LocalDocumentReference("Main", "Test3");
 
-    private final LocalDocumentReference docWithCheckboxes = new LocalDocumentReference("Checkboxes", "WebHome");
+    private final LocalDocumentReference docWithTaskboxes = new LocalDocumentReference("Taskboxes", "WebHome");
 
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
@@ -286,7 +286,7 @@ class TaskManagerIT
     void checkboxMacro(WikiReference wiki, TestUtils setup,
         TestLocalReference testLocalReference, TestReference testReference)
     {
-        DocumentReference testRef = new DocumentReference(docWithCheckboxes, wiki);
+        DocumentReference testRef = new DocumentReference(docWithTaskboxes, wiki);
         setup.createPage(testRef, "{{checkbox id=\"someId\"}}Hello there{{/checkbox}}");
         ViewPageWithTasks viewPageWithTasks = new ViewPageWithTasks();
         assertEquals("Hello there", viewPageWithTasks.getTaskMacroContent(0));

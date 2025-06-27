@@ -37,9 +37,9 @@ import org.xwiki.stability.Unstable;
  * @version $Id$
  * @since 3.8.0
  */
-@Path("/wikis/{wikiName}/spaces/{spaceName: .+}/pages/{pageName}/task-checkbox/{id}")
+@Path("/wikis/{wikiName}/spaces/{spaceName: .+}/pages/{pageName}/taskbox/{id}")
 @Unstable
-public interface CheckboxResource
+public interface TaskboxResource
 {
     /**
      * Update the status of a checkbox macro.

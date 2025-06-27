@@ -23,7 +23,7 @@ package com.xwiki.task.macro;
 import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 
-import com.xwiki.task.CheckboxId;
+import com.xwiki.task.TaskboxId;
 
 /**
  * The parameters used by the checkbox macro.
@@ -31,7 +31,7 @@ import com.xwiki.task.CheckboxId;
  * @version $Id$
  * @since 3.8.0
  */
-public class CheckboxMacroParameters
+public class TaskboxMacroParameters
 {
     private String id;
 
@@ -48,7 +48,7 @@ public class CheckboxMacroParameters
     /**
      * @param id see {@link #getId()}.
      */
-    @PropertyDisplayType(CheckboxId.class)
+    @PropertyDisplayType(TaskboxId.class)
     @PropertyMandatory
     public void setId(String id)
     {

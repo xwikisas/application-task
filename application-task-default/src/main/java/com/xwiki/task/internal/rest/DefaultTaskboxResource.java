@@ -41,19 +41,19 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xwiki.task.internal.MacroBlockFinder;
-import com.xwiki.task.rest.CheckboxResource;
+import com.xwiki.task.rest.TaskboxResource;
 
 /**
- * The default implementation for the {@link CheckboxResource} that recursively looks through the content of a given page
+ * The default implementation for the {@link TaskboxResource} that recursively looks through the content of a given page
  * and the content of its macros, finds the checkbox macro, updates the status and saves the page.
  *
  * @version $Id$
  * @since 3.8.0
  */
 @Component
-@Named("com.xwiki.task.internal.rest.DefaultCheckboxResource")
+@Named("com.xwiki.task.internal.rest.DefaultTaskboxResource")
 @Singleton
-public class DefaultCheckboxResource extends XWikiResource implements CheckboxResource
+public class DefaultTaskboxResource extends XWikiResource implements TaskboxResource
 {
     private static final Set<String> TRUE_VALUES = Set.of("true", "1");
 
@@ -90,7 +90,7 @@ public class DefaultCheckboxResource extends XWikiResource implements CheckboxRe
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         XDOM docDOM = document.getXDOM();
-        XDOM updatedXDOM = maybeUpdateCheckbox(id, checked, docDOM, document);
+        XDOM updatedXDOM = maybeUpdateTaskbox(id, checked, docDOM, document);
 
         if (updatedXDOM != null) {
             try {
@@ -106,7 +106,7 @@ public class DefaultCheckboxResource extends XWikiResource implements CheckboxRe
         }
     }
 
-    private XDOM maybeUpdateCheckbox(String id, String checked, XDOM docDOM,
+    private XDOM maybeUpdateTaskbox(String id, String checked, XDOM docDOM,
         XWikiDocument document)
     {
         AtomicReference<Boolean> contentChanged = new AtomicReference<>(false);

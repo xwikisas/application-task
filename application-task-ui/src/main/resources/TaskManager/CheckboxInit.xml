@@ -127,10 +127,10 @@
     <property>
       <code>require(['jquery'], function ($) {
   let init = function () {
-    let checkboxIdElem = $('.task-checkbox-id');
-    if (checkboxIdElem.length &lt;= 0) return;
-    if (checkboxIdElem.val()) return;
-    checkboxIdElem.val(checkboxIdElem.data('randomid'));
+    let taskboxIdElem = $('.taskbox-id');
+    if (taskboxIdElem.length &lt;= 0) return;
+    if (taskboxIdElem.val()) return;
+    taskboxIdElem.val(taskboxIdElem.data('randomid'));
   };
   init();
   $(document).on('shown.bs.modal', '.modal', init);
