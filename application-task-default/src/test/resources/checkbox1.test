@@ -11,8 +11,8 @@ Important task with the following deadline
 .#-----------------------------------------------------
 beginDocument
 beginMacroMarkerStandalone [checkbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
-beginMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
-beginGroup [[class]=[task-macro taskbox]]
+beginMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=task-checkbox|status=Done] [Important task with the following deadline]
+beginGroup [[class]=[task-macro task-checkbox]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
 onRawText [<input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status">] [html/5.0]
@@ -35,11 +35,11 @@ onWord [deadline]
 endParagraph
 endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
 endGroup [[class]=[task-content]]
-endGroup [[class]=[task-macro taskbox]]
-endMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
+endGroup [[class]=[task-macro task-checkbox]]
+endMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=task-checkbox|status=Done] [Important task with the following deadline]
 endMacroMarkerStandalone [checkbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
 endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro taskbox"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"></div><div class="task-content"><p>Important task with the following deadline</p></div></div>
+<div class="task-macro task-checkbox"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"></div><div class="task-content"><p>Important task with the following deadline</p></div></div>

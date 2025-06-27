@@ -40,7 +40,7 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.macro.TaskMacroParameters;
-import com.xwiki.task.macro.TaskboxMacroParameters;
+import com.xwiki.task.macro.CheckboxMacroParameters;
 import com.xwiki.task.model.Task;
 
 /**
@@ -52,7 +52,7 @@ import com.xwiki.task.model.Task;
 @Component
 @Named("checkbox")
 @Singleton
-public class TaskboxMacro extends AbstractMacro<TaskboxMacroParameters>
+public class CheckboxMacro extends AbstractMacro<CheckboxMacroParameters>
 {
     @Inject
     private MacroUtils macroUtils;
@@ -63,10 +63,10 @@ public class TaskboxMacro extends AbstractMacro<TaskboxMacroParameters>
     /**
      * Default constructor.
      */
-    public TaskboxMacro()
+    public CheckboxMacro()
     {
         super("name", "description", new DefaultContentDescriptor("Content of the task.", false, Block.LIST_BLOCK_TYPE),
-            TaskboxMacroParameters.class);
+            CheckboxMacroParameters.class);
         setDefaultCategories(Collections.singleton(DEFAULT_CATEGORY_CONTENT));
     }
 
@@ -77,7 +77,7 @@ public class TaskboxMacro extends AbstractMacro<TaskboxMacroParameters>
     }
 
     @Override
-    public List<Block> execute(TaskboxMacroParameters parameters, String content, MacroTransformationContext context)
+    public List<Block> execute(CheckboxMacroParameters parameters, String content, MacroTransformationContext context)
         throws MacroExecutionException
     {
         Map<String, String> taskParams = new HashMap<>();
@@ -86,7 +86,7 @@ public class TaskboxMacro extends AbstractMacro<TaskboxMacroParameters>
             parameters.isChecked() ? Task.STATUS_DONE : taskConfiguration.getDefaultInlineStatus());
         taskParams.put("idDisplayed", TaskMacroParameters.IdDisplay.FALSE.name());
         taskParams.put("reference", parameters.getId());
-        taskParams.put("className", "taskbox");
+        taskParams.put("className", "task-checkbox");
 
         MacroBlock taskMacroBlock = new MacroBlock("task", taskParams, content, false);
         return Collections.singletonList(taskMacroBlock);

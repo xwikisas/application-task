@@ -137,9 +137,10 @@
     }
     let task = checkbox.closest('.task-macro');
     let restURL = "";
-    if (checkbox.closest(".taskbox").length &gt; 0) {
+    if (checkbox.closest(".task-checkbox").length &gt; 0) {
       let rawId = checkbox.data('rawid');
-      restURL = XWiki.currentDocument.getRestURL() + '/taskbox/' + encodeURI(rawId) + '?checked=' + checkbox.prop('checked');
+      restURL = XWiki.currentDocument.getRestURL() + '/task-checkbox/' + encodeURI(rawId) + '?checked=' +
+        checkbox.prop('checked');
     } else if (task.length &gt; 0) {
       let taskDocument = XWiki.Model.resolve(taskId, XWiki.EntityType.DOCUMENT, XWiki.currentDocument.documentReference);
       if (taskDocument.getReversedReferenceChain()[0].type != XWiki.EntityType.WIKI) {

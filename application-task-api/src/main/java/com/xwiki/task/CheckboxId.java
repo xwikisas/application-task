@@ -29,6 +29,6 @@ import org.xwiki.stability.Unstable;
  * @since 3.8.0
  */
 @Unstable
-public interface TaskboxId
+public interface CheckboxId
 {
 }
