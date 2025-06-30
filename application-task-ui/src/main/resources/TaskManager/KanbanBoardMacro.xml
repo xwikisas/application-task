@@ -1191,7 +1191,7 @@ Example:
       <defaultValue/>
     </property>
     <property>
-      <description>Field to order the tasks by. Example: 'name asc', 'doc.date desc', 'reporter asc,assignee desc'</description>
+      <description/>
     </property>
     <property>
       <mandatory/>
@@ -1270,7 +1270,7 @@ Example:
       <defaultValue>20</defaultValue>
     </property>
     <property>
-      <description>The amount of tasks displayed for each status.</description>
+      <description/>
     </property>
     <property>
       <mandatory>0</mandatory>
