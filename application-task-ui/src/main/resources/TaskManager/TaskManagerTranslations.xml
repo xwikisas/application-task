@@ -117,6 +117,22 @@ taskmanager.livetable.assignee=Assignee
 taskmanager.livetable.duedate=Deadline
 taskmanager.livetable.creationDate=Creation Date
 
+# Notifications for changed tasks
+taskmanager.events.taskChangedEvent.description=A task which you are assigned to or you are watching was modified
+taskmanager.events.taskChangedEvent.title=Task was modified
+taskmanager.events.taskChangedEvent.details.status=Status changed from {1} to {0}
+taskmanager.events.taskChangedEvent.details.duedate=Deadline set to {0}
+taskmanager.events.taskChangedEvent.details.duedate.none=Deadline removed
+taskmanager.events.taskChangedEvent.details.duedate.later=Deadline extended from {1} to {0}
+taskmanager.events.taskChangedEvent.details.duedate.earlier=Deadline reduced from {1} to {0}
+taskmanager.events.taskChangedEvent.details.assignee.you.assigned=You were assigned
+taskmanager.events.taskChangedEvent.details.assignee.you.unassigned=You were unassigned
+taskmanager.events.taskChangedEvent.details.assignee.none=Nobody is assigned
+taskmanager.events.taskChangedEvent.details.assignee=Assignee changed from {1} to {0}
+taskmanager.events.taskChangedEvent.details.severity=Priority changed from {1} to {0}
+taskmanager.events.taskChangedEvent.details.project=This task was assigned to project {0}
+taskmanager.events.taskChangedEvent.details.progress=Progress changed from {1} to {0}
+
 # Gantt Diagram
 taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
 taskmanager.gantt.taskEdit.error.generic=Task could not be updated
@@ -153,6 +169,7 @@ taskmanager.gantt.documentation.examples.projects=filter by projects (comma sepa
 taskmanager.gantt.documentation.examples.assignees=filter by assigned users (comma separated)
 taskmanager.gantt.documentation.examples.spaces=filter by parent spaces (comma separated)
 taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not have a due date set (default is true)
+taskmanager.gantt.documentation.examples.maxTasks=limit the amount of displayed tasks to this number (default is 50)
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
@@ -210,6 +227,16 @@ rendering.macro.task.parameter.createDate.name=Creation date
 rendering.macro.task.parameter.createDate.description=The date when the task was created.
 rendering.macro.task.parameter.completeDate.name=Completion date
 rendering.macro.task.parameter.completeDate.description=If you set the status of the task as "Done", you should also set the completion date.
+rendering.macro.task.parameter.idDisplayed.name=Is ID Displayed?
+rendering.macro.task.parameter.idDisplayed.description=Denotes whether the id and the link to the task page should be displayed.
+
+rendering.macro.checkbox.name=Checkbox
+rendering.macro.checkbox.description=Display a simple checkbox alongside some rich content.
+rendering.macro.checkbox.content.description=Rich content that describes this to-do item.
+rendering.macro.checkbox.parameter.id.name=Id
+rendering.macro.checkbox.parameter.id.description=Uniquely identifies the checkbox on the current page. It is recommended to use the autofilled value.
+rendering.macro.checkbox.parameter.checked.name=Checked?
+rendering.macro.checkbox.parameter.checked.description=Denotes whether the checkbox is ticked or not.
 
 rendering.macro.task-report.name=Task report macro
 rendering.macro.task-report.description=Create a custom report of the tasks within the wiki.
@@ -238,6 +265,8 @@ TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events d
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold evebts based on your preferences. The values should be comma separated.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus.hint=Changing this value will affect the task macros created from this moment onwards. The newly created task macros will have the default status as the one selected here. Additionally, unchecking a task macro will set its status to this value.
+TaskManager.TaskManagerConfigurationClass_isIdDisplayed=Is ID Displayed
+TaskManager.TaskManagerConfigurationClass_isIdDisplayed.hint=Denotes whether the task macro should also display the ID and link to the task page or not.
 
 ## Kanban Board
 rendering.macro.kanbanboard.parameter.columns.name=Columns
@@ -245,12 +274,12 @@ rendering.macro.kanbanboard.parameter.colors.name=Colors
 rendering.macro.kanbanboard.parameter.colors.description=Define the colors that you want to use for the columns. The list must be comma separated, e.g., red,#00d126,yellow.
 rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
 rendering.macro.kanbanboard.name=Kanban board - Task Manager
-rendering.macro.kanbanboard.parameter.project.name=Project
-rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to this project.
+rendering.macro.kanbanboard.parameter.project.name=Projects
+rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to these projects.
 rendering.macro.kanbanboard.parameter.space.name=Space
 rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
-rendering.macro.kanbanboard.parameter.user.name=User
-rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to this user.
+rendering.macro.kanbanboard.parameter.user.name=Users
+rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to these users.
 
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks

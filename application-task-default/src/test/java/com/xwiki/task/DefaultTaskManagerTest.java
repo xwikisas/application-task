@@ -32,6 +32,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -104,16 +105,19 @@ class DefaultTaskManagerTest
 
     private final DocumentReference userReference = new DocumentReference("xwiki", "XWiki", "User1");
 
+    private final WikiReference wikiRef = new WikiReference("xwiki");
+
     @BeforeEach
     void setup() throws XWikiException
     {
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getWiki()).thenReturn(this.wiki);
         when(this.context.getWikiId()).thenReturn("xwiki");
+        when(this.context.getWikiReference()).thenReturn(this.wikiRef);
         when(this.wiki.getDocument(this.documentReference, this.context)).thenReturn(this.document);
         when(this.wiki.getDocument((EntityReference) this.documentReference, this.context)).thenReturn(this.document);
         when(this.document.getXObject(any(EntityReference.class))).thenReturn(this.taskObject);
-        when(this.resolver.resolve(documentReference.toString())).thenReturn(documentReference);
+        when(this.resolver.resolve(documentReference.toString(), this.wikiRef)).thenReturn(documentReference);
         when(this.resolver.resolve(userReference.toString())).thenReturn(userReference);
         when(this.resolver.resolve(documentReference.toString(), documentReference)).thenReturn(documentReference);
         when(this.serializer.serialize(documentReference)).thenReturn(documentReference.toString());

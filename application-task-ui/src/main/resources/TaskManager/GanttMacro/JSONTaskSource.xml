@@ -63,7 +63,8 @@
 ##
 #if ($xcontext.action == 'get')
   #set ($discard = $response.setContentType('application/json'))
-  #set ($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'")
+  #set ($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template'" +
+    'and (task.startDate is not NULL or task.createDate is not NULL)')
   #if ("$!request.taskId" != '')
     ## Short-circuit if the request is for a specific task.
     #set ($query = $query + ' and doc.fullName = (:taskId)')
@@ -121,9 +122,14 @@
             '))'
       )
     #end
+    #if ("$!request.maxTasks" != '')
+      #set ($maxTasks = $numbertool.toNumber($request.maxTasks))
+    #else
+      #set ($maxTasks = 50)
+    #end
     ## Sort the tasks by project and name to ensure a stable order.
     #set ($query = $query + ' order by UPPER(task.project), task.project, UPPER(task.name), task.name')
-    #set ($query = $services.query.xwql($query).setLimit(50))
+    #set ($query = $services.query.xwql($query).setLimit($maxTasks))
     #if ($spaces)
       #set ($query = $query.bindValue("spaces", $spaces))
       #set ($index = 0)
@@ -139,7 +145,7 @@
     #if ($from)      #set ($query = $query.bindValue('from', $from))           #end
     #if ($to)        #set ($query = $query.bindValue('to', $to))               #end
   #end
-  #set ($queryResult = $query.execute())
+  #set ($queryResult = $query.addFilter('hidden').addFilter('currentlanguage').execute())
 
   #set ($tasks = [])
   #foreach ($taskDocument in $queryResult)

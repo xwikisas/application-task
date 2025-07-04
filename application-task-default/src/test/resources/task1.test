@@ -16,7 +16,7 @@ beginMacroMarkerStandalone [task] [reference=Sandbox.Task|status=Done] [* item1
 beginGroup [[class]=[task-macro]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
-onRawText [<input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status">] [html/5.0]
+onRawText [<input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status">] [html/5.0]
 endFormat [NONE]
 beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
 onSpecialSymbol [#]
@@ -42,4 +42,4 @@ endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><ul><li>item1</li><li>item2</li></ul></div></div>
+<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><ul><li>item1</li><li>item2</li></ul></div></div>
