@@ -801,7 +801,7 @@ Example:
       <name>space</name>
     </property>
     <property>
-      <type>com.xwiki.task.SpaceReference</type>
+      <type>com.xwiki.pickers.SuggestSpaceReference</type>
     </property>
   </object>
   <object>
