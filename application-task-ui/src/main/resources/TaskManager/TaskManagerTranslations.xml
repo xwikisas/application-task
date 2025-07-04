@@ -280,6 +280,10 @@ rendering.macro.kanbanboard.parameter.space.name=Space
 rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
 rendering.macro.kanbanboard.parameter.user.name=Users
 rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to these users.
+rendering.macro.kanbanboard.parameter.order.name=Order
+rendering.macro.kanbanboard.parameter.order.description=Field to order the tasks by. Example: 'name asc', 'doc.date desc', 'reporter asc,assignee desc'.
+rendering.macro.kanbanboard.parameter.limit.name=Limit
+rendering.macro.kanbanboard.parameter.limit.description=The amount of tasks displayed for each status.
 
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks
