@@ -140,7 +140,7 @@
       &lt;label class="xwiki-form-listclass" data-project="$escapetool.xml(${taskproject})" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
         &lt;input
           id="xwiki-form-dependencies-0-${foreach.index}"
-          value="${escapetool.xml($taskid)}"
+          value="${escapetool.xml($services.rendering.escape($taskid, 'xwiki/2.1'))}"
           #foreach($dependency in $value)
           #if($dependency == $taskid)
             checked
