@@ -245,6 +245,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         BaseObject clonedObj = taskObj.clone();
         UserReference currentUser = userRefResolver.resolve(context.getUserReference());
         taskDoc.getAuthors().setEffectiveMetadataAuthor(currentUser);
+        taskDoc.getAuthors().setOriginalMetadataAuthor(currentUser);
         clonedObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference),
             context);
         populateObjectWithMacroParams(context, task, clonedObj);
