@@ -97,7 +97,7 @@ import static org.junit.jupiter.api.Assertions.fail;
         "org.xwiki.platform:xwiki-platform-scheduler-api:14.10"
     }, resolveExtraJARs = true
 )
-public class NotificationIT
+class NotificationIT
 {
     private static final String TEST_USERNAME = "NotificationTestUser";
 

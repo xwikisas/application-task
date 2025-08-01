@@ -19,6 +19,7 @@
  */
 package com.xwiki.task.test.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
@@ -36,6 +37,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CreatePagePage;
+import org.xwiki.test.ui.po.editor.EditPage;
 
 import com.xwiki.task.model.Task;
 
@@ -59,7 +61,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     },
     resolveExtraJARs = true
 )
-public class GanttIT
+class GanttIT
 {
     private static final String TEST_USERNAME = "TestUser";
 
@@ -95,11 +97,26 @@ public class GanttIT
         + "Do this {{mention reference=\"XWiki.Admin\"/}} as late as {{date value=\"2001/01/03 12:00\"/}}"
         + "{{/task}}";
 
+    /**
+     * Helps registering broken rendering macros tht are stored in XWiki pages.
+     * TODO: Check if this workaround is fixed on parent upgrade.
+     *
+     * @version $Id$
+     * @since 3.9.2
+     */
+    void registerMacro(TestUtils setup, DocumentReference macroLocation)
+    {
+        setup.gotoPage(macroLocation, "edit", Collections.singletonMap("force", 1));
+        EditPage editPage = new EditPage();
+        editPage.clickSaveAndView();
+    }
+
     @BeforeAll
     void setup(TestUtils setup)
     {
         teardownTaskPages(setup);
         setup.loginAsSuperAdmin();
+        registerMacro(setup, new DocumentReference("xwiki", List.of("TaskManager", "GanttMacro"), "Macro"));
         setup.createUser(TEST_USERNAME, PASSWORD, "");
 
         TaskAdminPage taskAdminPage = TaskAdminPage.gotoPage();
