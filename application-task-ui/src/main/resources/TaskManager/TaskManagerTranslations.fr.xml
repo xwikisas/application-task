@@ -39,18 +39,19 @@
   <content># Application Panel title
 TaskManager.home.title=Gestionnaire de tâches
 TaskManager.panels.name=Gestionnaire de tâches
-
+### Missing: TaskManager.administration.noRights=You need to be an Administrator
+### Missing: TaskManager.administration.livetable.doc.date=Date
+### Missing: TaskManager.administration.livetable.doc.author=Last Author
+### Missing: TaskManager.administration.livetable._actions=Actions
+### Missing: TaskManager.administration.livetable.order=Order
 TaskManager.administration.addProject.label=Projet
 TaskManager.administration.addProject.submit=Ajouter un projet
-
 TaskManager.administration.addStatus.label=Statut
 TaskManager.administration.addStatus.orderPlaceholder=ordre
 TaskManager.administration.addStatus.statusPlaceholder=nom
 TaskManager.administration.addStatus.submit=Ajouter un statut
-
 TaskManager.administration.addSeverity.label=Importance
 TaskManager.administration.addSeverity.submit=Ajouter un niveau d'importance
-
 TaskManager.adminitration.addProject=Ajouter un projet
 TaskManager.adminitration.addStatus=Ajouter un statut
 TaskManager.adminitration.addSeverity=Ajouter un niveau d'importance
@@ -61,22 +62,24 @@ TaskManager.TaskManagerClass_number=Numéro de la tâche
 TaskManager.TaskManagerClass_project=Projet
 TaskManager.TaskManagerClass_description=Description de la tâche
 TaskManager.TaskManagerClass_status=Statut
-TaskManager.TaskManagerClass_status_ToDo=À faire
 TaskManager.TaskManagerClass_status_InProgress=En cours
-TaskManager.TaskManagerClass_status_Done=Effectuée
 TaskManager.TaskManagerClass_status_Late=En retard
+TaskManager.TaskManagerClass_status_ToDo=À faire
+TaskManager.TaskManagerClass_status_Done=Effectuée
 TaskManager.TaskManagerClass_severity=Importance
-TaskManager.TaskManagerClass_severity_Low=Basse
 TaskManager.TaskManagerClass_severity_Medium=Moyenne
+TaskManager.TaskManagerClass_severity_Low=Basse
 TaskManager.TaskManagerClass_severity_High=Haute
 TaskManager.TaskManagerClass_project_Other=Autre
 TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
 TaskManager.TaskManagerClass_duedate=Échéance
-TaskManager.TaskManagerClass_creationdate=Date de création
+### Missing: TaskManager.TaskManagerClass_createDate=Creation Date
+### Missing: TaskManager.TaskManagerClass_completeDate=Completion Date
 TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 TaskManager.TaskManagerClass_progress=Progrès
+### Missing: TaskManager.TaskManagerClass_owner=Task Location
 
 # Live table generic keys
 taskmanager.livetable.doc.title=Titre de la page
@@ -105,10 +108,61 @@ taskmanager.livetable.severity=Importance
 taskmanager.livetable.reporter=Créateur de la tâche
 taskmanager.livetable.assignee=Personne assignée
 taskmanager.livetable.duedate=Échéance
-taskmanager.livetable.creationdate=Date de création
+### Missing: taskmanager.livetable.creationDate=Creation Date
 
-# Status livetable
-xe.index.order=Ordre
+# Notifications for changed tasks
+### Missing: taskmanager.events.taskChangedEvent.description=A task which you are assigned to or you are watching was modified
+### Missing: taskmanager.events.taskChangedEvent.title=Task was modified
+### Missing: taskmanager.events.taskChangedEvent.details.status=Status changed from {1} to {0}
+### Missing: taskmanager.events.taskChangedEvent.details.duedate=Deadline set to {0}
+### Missing: taskmanager.events.taskChangedEvent.details.duedate.none=Deadline removed
+### Missing: taskmanager.events.taskChangedEvent.details.duedate.later=Deadline extended from {1} to {0}
+### Missing: taskmanager.events.taskChangedEvent.details.duedate.earlier=Deadline reduced from {1} to {0}
+### Missing: taskmanager.events.taskChangedEvent.details.assignee.you.assigned=You were assigned
+### Missing: taskmanager.events.taskChangedEvent.details.assignee.you.unassigned=You were unassigned
+### Missing: taskmanager.events.taskChangedEvent.details.assignee.none=Nobody is assigned
+### Missing: taskmanager.events.taskChangedEvent.details.assignee=Assignee changed from {1} to {0}
+### Missing: taskmanager.events.taskChangedEvent.details.severity=Priority changed from {1} to {0}
+### Missing: taskmanager.events.taskChangedEvent.details.project=This task was assigned to project {0}
+### Missing: taskmanager.events.taskChangedEvent.details.progress=Progress changed from {1} to {0}
+
+# Gantt Diagram
+### Missing: taskmanager.gantt.taskEdit.error.permissions=You do not have sufficient permissions to modify this task
+### Missing: taskmanager.gantt.taskEdit.error.generic=Task could not be updated
+### Missing: taskmanager.gantt.taskEdit.error.readonly=This diagram is read only
+### Missing: taskmanager.gantt.taskEdit.error.notExists=Task does not exist
+### Missing: taskmanager.gantt.taskEdit.error.missingObject=Task class does not exist
+### Missing: taskmanager.gantt.taskEdit.success=Task updated
+### Missing: taskmanager.gantt.taskEdit.comment=Edited through the Gantt Diagram UI
+### Missing: taskmanager.gantt.task.noDueDate=No due date set
+### Missing: taskmanager.gantt.task.unknownTaskTitle=Unknown Task
+### Missing: taskmanager.gantt.macro.title=Gantt Diagram
+### Missing: taskmanager.gantt.macro.wait=Please wait...
+### Missing: taskmanager.gantt.macro.date.from=From:
+### Missing: taskmanager.gantt.macro.date.to=To:
+### Missing: taskmanager.gantt.macro.projects=Projects:
+### Missing: taskmanager.gantt.macro.spaces=Spaces:
+### Missing: taskmanager.gantt.macro.assignees=Assignees:
+### Missing: taskmanager.gantt.macro.hideNoDueDate_0=Tasks without a due date are hidden
+### Missing: taskmanager.gantt.macro.hideNoDueDate_1=Tasks without a due date are shown
+### Missing: taskmanager.gantt.macro.noTasks=No tasks correspond to the given filter.
+### Missing: taskmanager.gantt.macro.popup.progress=Progress:
+### Missing: taskmanager.gantt.macro.viewmodes.quarterDay=Quarter Day
+### Missing: taskmanager.gantt.macro.viewmodes.halfDay=Half Day
+### Missing: taskmanager.gantt.macro.viewmodes.day=Day
+### Missing: taskmanager.gantt.macro.viewmodes.week=Week
+### Missing: taskmanager.gantt.macro.viewmodes.month=Month
+### Missing: taskmanager.gantt.macro.viewmodes.year=Year
+### Missing: taskmanager.gantt.documentation.description=The taskgantt macro draws an interactive Gantt diagram which shows tasks, optionally filtered by start/end date, assignee, space or project.
+### Missing: taskmanager.gantt.documentation.examples.sectiontitle=Examples
+### Missing: taskmanager.gantt.documentation.examples.readonly=enable editing through the UI (disabled by default)
+### Missing: taskmanager.gantt.documentation.examples.start=filter by start date
+### Missing: taskmanager.gantt.documentation.examples.startend=filter by start and end dates
+### Missing: taskmanager.gantt.documentation.examples.projects=filter by projects (comma separated, escape commas in project names with '\\,')
+### Missing: taskmanager.gantt.documentation.examples.assignees=filter by assigned users (comma separated)
+### Missing: taskmanager.gantt.documentation.examples.spaces=filter by parent spaces (comma separated)
+### Missing: taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not have a due date set (default is true)
+### Missing: taskmanager.gantt.documentation.examples.maxTasks=limit the amount of displayed tasks to this number (default is 50)
 
 # Panel
 taskmanager.panel.paneltitle=Mes tâches prévues
@@ -116,22 +170,126 @@ taskmanager.panel.untildate=avant
 taskmanager.panel.untildate.nodate=Pas de date d'échéance
 taskmanager.panel.fulltasklist=Accéder à la liste complète
 taskmanager.panel.noactivetasks=Aucune tâche active
+### Missing: taskmanager.panel.guest=You have to be logged in in order to view this panel
 
 # Template provider
 taskmanager.entry.name=Tâche
-
 taskmanager.extension.name=Gestionnaire de tâches (Pro)
+
 ## Used to indicate where deprecated keys start
 #@deprecatedstart
 
+TaskManager.StatusClass_status_InProgress=En cours
 #######################################
 ## until 2.5.1
 #######################################
 TaskManager.StatusClass_status_ToDo=À faire
-TaskManager.StatusClass_status_InProgress=En cours
 TaskManager.StatusClass_status_Done=Effectuée
-
 TaskManager.SeverityClass_severity_Low=Basse
 TaskManager.SeverityClass_severity_Medium=Moyenne
-TaskManager.SeverityClass_severity_High=Haute</content>
+TaskManager.SeverityClass_severity_High=Haute
+
+## Confluence-like tasks
+### Missing: taskmanager.notification.statusChange.success=Task status changed successfully!
+### Missing: taskmanager.notification.statusChange.restFail=Failed to change the status because of a server error!
+### Missing: taskmanager.notification.statusChange.noId=Failed to change the status because the task doesn't have an ID.
+### Missing: taskmanager.notification.statusChange.inprogress=Changing status..
+### Missing: taskmanager.notification.referenceGeneration.fail=Failed to generate a task reference
+### Missing: taskmanager.notification.referenceGeneration.inprogress=Generating task reference
+### Missing: taskmanager.livetable.owner=Location
+### Missing: taskmanager.livetable.completeDate=Completed on
+### Missing: taskmanager.livetable.createDate=Creation date
+### Missing: taskmanager.livetable.noRights=You don't have view rights for the document that contains this task.
+### Missing: taskmanager.macro.tasks.noRights=Some tasks have no been displayed because you don't have the rights to view them.
+### Missing: taskmanager.picker.taskpage.noValue=Choose a task.
+### Missing: rendering.macro.task.name=Task
+### Missing: rendering.macro.task.description=Create a task that you can assign an user to using the mention macro and use the date macro to set a deadline.
+### Missing: rendering.macro.task.parameter.status.name=The status of the task.
+### Missing: rendering.macro.task.parameter.status.description=Specify what is the current status of the task.
+### Missing: rendering.macro.task.parameter.id.name=ID
+### Missing: rendering.macro.task.parameter.id.description=An unique identifier for the task, relative to the current page.
+### Missing: rendering.macro.task.parameter.creator.name=Creator
+### Missing: rendering.macro.task.parameter.creator.description=The user that created the task.
+### Missing: rendering.macro.task.parameter.createDate.name=Creation date
+### Missing: rendering.macro.task.parameter.createDate.description=The date when the task was created.
+### Missing: rendering.macro.task.parameter.completeDate.name=Completion date
+### Missing: rendering.macro.task.parameter.completeDate.description=If you set the status of the task as "Done", you should also set the completion date.
+### Missing: rendering.macro.task.parameter.idDisplayed.name=Is ID Displayed?
+### Missing: rendering.macro.task.parameter.idDisplayed.description=Denotes whether the id and the link to the task page should be displayed.
+### Missing: rendering.macro.checkbox.name=Checkbox
+### Missing: rendering.macro.checkbox.description=Display a simple checkbox alongside some rich content.
+### Missing: rendering.macro.checkbox.content.description=Rich content that describes this to-do item.
+### Missing: rendering.macro.checkbox.parameter.id.name=Id
+### Missing: rendering.macro.checkbox.parameter.id.description=Uniquely identifies the checkbox on the current page. It is recommended to use the autofilled value.
+### Missing: rendering.macro.checkbox.parameter.checked.name=Checked?
+### Missing: rendering.macro.checkbox.parameter.checked.description=Denotes whether the checkbox is ticked or not.
+### Missing: rendering.macro.task-report.name=Task report macro
+### Missing: rendering.macro.task-report.description=Create a custom report of the tasks within the wiki.
+### Missing: rendering.macro.task-report.parameter.pages.name=Pages filter
+### Missing: rendering.macro.task-report.parameter.pages.description=Display the tasks found inside the specified pages or in their children.
+### Missing: rendering.macro.task-report.parameter.tags.name=Tags filter
+### Missing: rendering.macro.task-report.parameter.tags.description=Display only the tasks that are found on pages that have at least one these tags. This field should be a comma separated list of tags. e.g. "tech,blog,programming".
+### Missing: rendering.macro.task-report.parameter.assignees.name=Assignees filter
+### Missing: rendering.macro.task-report.parameter.assignees.description=Filter the tasks by their assigned users. The report will display the tasks that have at least one of their assignees in the users specified.
+### Missing: rendering.macro.task-report.parameter.reporters.name=Reporter filter
+### Missing: rendering.macro.task-report.parameter.reporters.description=Filter the tasks by the reporter. The report will display the tasks created by the users specified.
+### Missing: rendering.macro.task-report.parameter.createdAfter.name=Creation date filter
+### Missing: rendering.macro.task-report.parameter.createdAfter.description=Display all the tasks created after the specified date.
+### Missing: rendering.macro.task-report.parameter.status.name=Status filter
+### Missing: rendering.macro.task-report.parameter.status.description=Display all the tasks that have the specified status.
+### Missing: rendering.macro.task-report.parameter.limit.name=Live table limit
+### Missing: rendering.macro.task-report.parameter.limit.description=Specifies how many tasks should be displayed on a single page.
+### Missing: rendering.macro.task-report.parameter.columns.name=Live table display columns
+### Missing: rendering.macro.task-report.parameter.columns.description=A list task properties that you want the table to display. The possible values are: name, duedate, assignee, owner, reporter, number, status, completeDate, createDate.
+### Missing: rendering.macro.task-report.parameter.sortBy.name=Sort By
+### Missing: rendering.macro.task-report.parameter.sortBy.description=The column that will be used to order the table.
+### Missing: rendering.macro.task-report.parameter.id.name=Table ID
+### Missing: rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
+### Missing: TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
+### Missing: TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold evebts based on your preferences. The values should be comma separated.
+### Missing: TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
+### Missing: TaskManager.TaskManagerConfigurationClass_defaultInlineStatus.hint=Changing this value will affect the task macros created from this moment onwards. The newly created task macros will have the default status as the one selected here. Additionally, unchecking a task macro will set its status to this value.
+### Missing: TaskManager.TaskManagerConfigurationClass_isIdDisplayed=Is ID Displayed
+### Missing: TaskManager.TaskManagerConfigurationClass_isIdDisplayed.hint=Denotes whether the task macro should also display the ID and link to the task page or not.
+
+## Kanban Board
+### Missing: rendering.macro.kanbanboard.parameter.columns.name=Columns
+### Missing: rendering.macro.kanbanboard.parameter.colors.name=Colors
+### Missing: rendering.macro.kanbanboard.parameter.colors.description=Define the colors that you want to use for the columns. The list must be comma separated, e.g., red,#00d126,yellow.
+### Missing: rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
+### Missing: rendering.macro.kanbanboard.name=Kanban board - Task Manager
+rendering.macro.kanbanboard.parameter.project.name=Project
+rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to this project.
+### Missing: rendering.macro.kanbanboard.parameter.space.name=Space
+### Missing: rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
+rendering.macro.kanbanboard.parameter.user.name=User
+rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to this user.
+
+## Incomplete tasks
+### Missing: TaskManager.adminitration.incompleteTasks=Incomplete tasks
+### Missing: taskmanager.incompleteTasks.find=Find incomplete tasks
+### Missing: taskmanager.incompleteTasks.find.noTasks=There are no task macros with incomplete data.
+### Missing: taskmanager.incompleteTasks.fixAll=Infer missing data for all tasks
+### Missing: taskmanager.incompleteTasks.refresh=Refresh
+### Missing: taskmanager.incompleteTasks.fix=Infer missing data
+### Missing: taskmanager.incompleteTasks.job.finish.error=There was an error while trying to infer the missing data.
+### Missing: taskmanager.incompleteTasks.job.finish.canceled=The inferring process was canceled.
+### Missing: taskmanager.incompleteTasks.job.finish.warning=Missing data was inferred but some problems occurred.
+### Missing: taskmanager.incompleteTasks.job.finish.success=Missing data was inferred successfully.
+### Missing: taskmanager.incompleteTasks.notification.find.inprogress=Looking for incomplete task macros..
+### Missing: taskmanager.incompleteTasks.notification.find.done=Lookup finished
+### Missing: taskmanager.incompleteTasks.notification.find.error=Error while looking for incomplete task macros..
+### Missing: taskmanager.incompleteTasks.notification.fix.inprogress=Inferring data..
+### Missing: taskmanager.incompleteTasks.notification.fix.done=Data inferred succesfully
+### Missing: taskmanager.incompleteTasks.notification.fix.error=Error while trying to infer data
+### Missing: taskmanager.incompleteTasks.notification.fixAll.inprogress=Starting inferring process..
+### Missing: taskmanager.incompleteTasks.notification.fixAll.done=Inferring process started
+### Missing: taskmanager.incompleteTasks.notification.fixAll.error=Failed to start inferring process
+
+## Pickers translations
+### Missing: TaskManager.TaskManagerClass_project_empty=None
+### Missing: taskmanager.spacepicker.modal.title=Space Picker
+### Missing: taskmanager.spacepicker.modal.close=Close
+### Missing: taskmanager.spacepicker.modal.select=Select space
+</content>
 </xwikidoc>
