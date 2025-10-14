@@ -37,7 +37,6 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationContext;
-import org.xwiki.observation.event.BeginEvent;
 import org.xwiki.observation.event.Event;
 import org.xwiki.refactoring.event.DocumentCopyingEvent;
 import org.xwiki.refactoring.event.DocumentRenamingEvent;
@@ -109,7 +108,6 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
         XWikiDocument document = ((XWikiDocument) source).clone();
         logger.debug("Processing [{}].", document.getDocumentReference());
 
-
         // This listener handles only the copying/moving of Task pages.
         if (!observationContext.isIn(otherEvent -> {
             if (otherEvent instanceof DocumentCopyingEvent || otherEvent instanceof DocumentRenamingEvent) {
@@ -132,25 +130,39 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
 
         if (refactoringEvent instanceof DocumentCopyingEvent) {
             // When a Task Page is being copied, we should update the task number such that no duplicates will exist.
-            try {
-                changed = true;
-                int newNumber = taskCounter.getNextNumber();
-                logger.debug("Task doc [{}] was copied. Changing the id of the copied instance from [{}] to [{}].",
-                    taskObj.getDocumentReference(), taskObj.getIntValue(Task.NUMBER), newNumber);
-                taskObj.set(Task.NUMBER, newNumber, context);
-            } catch (TaskException e) {
-                logger.warn("Failed to set a new id to the copied task document [{}]. Cause: [{}].",
-                    document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
-            }
+            changed = maybeSetNewId(taskObj, context, document);
         } else if (refactoringEvent instanceof DocumentRenamingEvent) {
             // Do nothing.
         }
 
         context.put(EXECUTION_FLAG, true);
-        changed = maybeSetNewOwner(taskObj, context) || changed;
 
-        maybeSave(changed, context, document);
-        context.remove(EXECUTION_FLAG);
+        try {
+            changed = maybeSetNewOwner(taskObj, context) || changed;
+
+            maybeSave(changed, context, document);
+        } catch (Exception e) {
+            logger.error("There was an error during the handling of the copy/move of the task page [{}].",
+                document.getDocumentReference(), e);
+        } finally {
+            context.remove(EXECUTION_FLAG);
+        }
+    }
+
+    private boolean maybeSetNewId(BaseObject taskObj, XWikiContext context, XWikiDocument document)
+    {
+        boolean changed = false;
+        try {
+            changed = true;
+            int newNumber = taskCounter.getNextNumber();
+            logger.debug("Task doc [{}] was copied. Changing the id of the copied instance from [{}] to [{}].",
+                taskObj.getDocumentReference(), taskObj.getIntValue(Task.NUMBER), newNumber);
+            taskObj.set(Task.NUMBER, newNumber, context);
+        } catch (TaskException e) {
+            logger.warn("Failed to set a new id to the copied task document [{}]. Cause: [{}].",
+                document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
+        }
+        return changed;
     }
 
     private void maybeSave(boolean changed, XWikiContext context, XWikiDocument document)
@@ -159,7 +171,8 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
             try {
                 context.getWiki().saveDocument(document, context);
             } catch (XWikiException e) {
-                logger.warn("Failed to save the document.");
+                logger.error("Failed to save the document [{}] after updating its id and/or owner.",
+                    document.getDocumentReference(), e);
             }
         }
     }
