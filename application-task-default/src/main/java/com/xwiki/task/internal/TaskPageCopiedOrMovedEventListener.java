@@ -20,7 +20,6 @@
 package com.xwiki.task.internal;
 
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -38,6 +37,7 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationContext;
+import org.xwiki.observation.event.BeginEvent;
 import org.xwiki.observation.event.Event;
 import org.xwiki.refactoring.event.DocumentCopyingEvent;
 import org.xwiki.refactoring.event.DocumentRenamingEvent;
@@ -69,6 +69,8 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
 
     private static final String TASKS = "Tasks";
 
+    private static final String EXECUTION_FLAG = "task-copy-move-listener-flag";
+
     @Inject
     private ObservationContext observationContext;
 
@@ -86,8 +88,6 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
 
     private JobStartedEvent jobStartedEvent;
 
-    private EntityReference lastProcessedEntity;
-
     /**
      * Default constructor.
      */
@@ -101,14 +101,14 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
     {
         boolean changed = false;
         XWikiContext context = (XWikiContext) data;
-        XWikiDocument document = ((XWikiDocument) source).clone();
-        logger.debug("Processing [{}].", document.getDocumentReference());
-        // Don't process the same document twice in a row.
-        if (Objects.equals(lastProcessedEntity, document.getDocumentReference())) {
-            logger.debug("Already processed [{}]. Returning.", document.getDocumentReference());
+
+        // Stop recursion after save. (even tho it shouldn't happen)
+        if (context.get(EXECUTION_FLAG) != null) {
             return;
         }
-        lastProcessedEntity = document.getDocumentReference();
+        XWikiDocument document = ((XWikiDocument) source).clone();
+        logger.debug("Processing [{}].", document.getDocumentReference());
+
 
         // This listener handles only the copying/moving of Task pages.
         if (!observationContext.isIn(otherEvent -> {
@@ -146,9 +146,11 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
             // Do nothing.
         }
 
+        context.put(EXECUTION_FLAG, true);
         changed = maybeSetNewOwner(taskObj, context) || changed;
 
         maybeSave(changed, context, document);
+        context.remove(EXECUTION_FLAG);
     }
 
     private void maybeSave(boolean changed, XWikiContext context, XWikiDocument document)
