@@ -147,6 +147,8 @@ public class Task
 
     private String severity;
 
+    private String description;
+
     /**
      * Default constructor.
      */
@@ -385,5 +387,22 @@ public class Task
     public void setProject(String project)
     {
         this.project = project;
+    }
+
+    /**
+     * @return the description of the task.
+     * @since 3.9.4
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @param description see {@link #getDescription()}.
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 }
