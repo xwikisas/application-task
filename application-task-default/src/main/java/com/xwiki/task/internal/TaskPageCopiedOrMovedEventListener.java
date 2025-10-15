@@ -28,7 +28,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
-import org.xwiki.bridge.event.DocumentCreatedEvent;
+import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.job.event.JobStartedEvent;
 import org.xwiki.model.reference.DocumentReference;
@@ -92,16 +92,15 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
      */
     public TaskPageCopiedOrMovedEventListener()
     {
-        super("TaskPageCopiedOrMovedEventListener", Collections.singletonList(new DocumentCreatedEvent()));
+        super("TaskPageCopiedOrMovedEventListener", Collections.singletonList(new DocumentCreatingEvent()));
     }
 
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        boolean changed = false;
         XWikiContext context = (XWikiContext) data;
 
-        // Stop recursion after save. (even tho it shouldn't happen)
+        // Stop recursion after save in the case of moved pages.
         if (context.get(EXECUTION_FLAG) != null) {
             return;
         }
@@ -127,6 +126,8 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
             logger.debug("Created document [{}] does not contain a task object.", document.getDocumentReference());
             return;
         }
+
+        boolean changed = false;
 
         if (refactoringEvent instanceof DocumentCopyingEvent) {
             // When a Task Page is being copied, we should update the task number such that no duplicates will exist.
