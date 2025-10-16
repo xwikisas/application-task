@@ -1,0 +1,122 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="TaskManager.PropertySheets.Dependencies" locale="">
+  <web>TaskManager.PropertySheets</web>
+  <name>Dependencies</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>TaskManager.PropertySheets.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>Dependencies</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{velocity}}
+## The core will make available the following variables:
+## - $name[String] = the name of the displayed field ('dependencies')
+## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
+## - $object[com.xpn.xwiki.api.Object] = the displayed object
+## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property
+## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
+## - $value[DBList in this case] = the property value
+##
+#set($discard = $xwiki.jsx.use('TaskManager.TaskManagerClass'))
+#set($discard = $xwiki.ssx.use('TaskManager.TaskManagerClass'))
+#macro(displayTaskAsDependency $taskid)
+  #set($taskpageref = $services.model.resolveDocument($taskid))
+  #if ($services.security.authorization.hasAccess('view', $xcontext.userReference, $taskpageref))
+    #set($taskpage = $xwiki.getDocument($taskpageref))
+    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
+    #if("$!task" == '')
+      #break
+    #end
+    #set($tasktitle = $task.getProperty('name').value)
+    #if ("$tasktitle" == '')
+      #set ($tasktitle = $taskpageref.name)
+    #end
+    #set($tasklink = $services.model.serialize($taskpageref,'compactwiki'))
+    #set($taskstatus = $task.getProperty('status').value)
+    #set($taskduedate = $task.display('duedate', 'view'))
+    #set($taskproject = $task.getProperty('project').value)
+    #if($type == 'view')
+      ## Begin a list in XWiki Syntax
+      * ## Without this space the * is not parsed as XWiki syntax
+    #elseif($type == 'edit')
+      &lt;label class="xwiki-form-listclass" data-project="$escapetool.xml(${taskproject})" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+        &lt;input
+          id="xwiki-form-dependencies-0-${foreach.index}"
+          value="${escapetool.xml($taskid)}"
+          #foreach($dependency in $value)
+          #if($dependency == $taskid)
+            checked
+          #end
+          #end
+          name='TaskManager.TaskManagerClass_0_dependencies'
+          type='checkbox'
+        /&gt;
+    #end
+    &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
+    &lt;span class="task-manager-status-$escapetool.xml(${taskstatus})"&gt;[${escapetool.xml($services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}"))}]&lt;/span&gt;
+    &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($taskpage.getURL('view'))"&gt;${escapetool.xml($tasktitle)}&lt;/a&gt;&lt;/span&gt;
+    ($services.rendering.escape($services.localization.render('TaskManager.TaskManagerClass_duedate'), 'xwiki/2.1') ${taskduedate})
+    #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
+      &lt;span class="task-manager-status-Late"&gt;
+        ${services.icon.render('bell')}
+        $services.rendering.escape(${services.localization.render('TaskManager.TaskManagerClass_status_Late')}, 'xwiki/2.1')
+      &lt;/span&gt;
+    #end
+    #if($type == 'edit')
+      &lt;/label&gt;
+    #end
+  #end
+#end
+
+{{html clean="false" wiki="true"}}
+#if($type == 'edit')
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.fullName not like '%Template' and doc.fullName &lt;&gt; :fullName and task.project &lt;&gt; '' order by task.duedate")
+  #set($results = $services.query.xwql($query).bindValue('fullName', $doc.fullName).execute())
+  #if($results.size() != 0)
+    &lt;div id="TaskManager.TaskManagerClass_dependencies"&gt;
+    ## empty value to submit in case nothing is selected
+    &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_dependencies" value="" /&gt;
+    #foreach($taskid in $results)
+      #displayTaskAsDependency($taskid)
+    #end
+    &lt;/div&gt;
+  #else
+    {{info}}$services.rendering.escape(${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}, 'xwiki/2.1'){{/info}}
+  #end
+#else
+  #foreach($taskid in $value)
+    #displayTaskAsDependency($taskid)
+  #end
+#end
+{{/html}}
+
+{{/velocity}}</content>
+</xwikidoc>
