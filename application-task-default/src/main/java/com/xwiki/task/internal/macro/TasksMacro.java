@@ -32,7 +32,6 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
@@ -43,10 +42,10 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -126,12 +125,10 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                    task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
-                    task.getName(), storageFormat), context.getSyntax());
+                String taskContent = task.getDescription();
 
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
-            } catch (NumberFormatException | ComponentLookupException | TaskException e) {
+            } catch (NumberFormatException | TaskException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }

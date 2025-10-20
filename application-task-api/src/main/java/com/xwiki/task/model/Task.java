@@ -119,6 +119,13 @@ public class Task
      */
     public static final String SEVERITY = "severity";
 
+    /**
+     * The name of the DESCRIPTION field.
+     *
+     * @since 3.x
+     */
+    public static final String DESCRIPTION = "description";
+
     private String name;
 
     private int number;

@@ -25,23 +25,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.LinkBlock;
 import org.xwiki.rendering.block.MacroBlock;
-import org.xwiki.rendering.block.ParagraphBlock;
 import org.xwiki.rendering.block.SpecialSymbolBlock;
 import org.xwiki.rendering.block.WordBlock;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.block.match.ClassBlockMatcher;
+import org.xwiki.rendering.block.match.MacroBlockMatcher;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.rendering.macro.MacroExecutionException;
@@ -113,34 +112,102 @@ public class TaskBlockProcessor
     {
         XDOM newTaskContentXDOM = null;
         try {
+            // Parse the.
+
             newTaskContentXDOM = macroUtils.getMacroContentXDOM(
-                new MacroBlock("temporaryMacro", new HashMap<>(), text == null ? "" : text, false), Syntax.PLAIN_1_0);
+                new MacroBlock("temporaryMacro", new HashMap<>(), text == null ? "" : text, false), Syntax.XWIKI_2_1);
         } catch (MacroExecutionException e) {
             throw new TaskException(String.format("Failed to generate the XDOM for the given content [%s].", text), e);
         }
 
-        Block insertionPoint = newTaskContentXDOM.getFirstBlock(new ClassBlockMatcher(ParagraphBlock.class),
-            Block.Axes.DESCENDANT_OR_SELF);
-        if (insertionPoint == null) {
-            insertionPoint = newTaskContentXDOM;
+        List<Block> mentions =
+            newTaskContentXDOM.getBlocks(new MacroBlockMatcher("mention"), Block.Axes.DESCENDANT_OR_SELF);
+        Block deadline = newTaskContentXDOM.getFirstBlock(new MacroBlockMatcher("date"), Block.Axes.DESCENDANT_OR_SELF);
+
+        boolean changed = false;
+
+        changed |= handleDeadline(deadline, newTaskContentXDOM, duedate, storageFormat);
+
+        changed |= handleMentions(mentions, newTaskContentXDOM, assignee);
+
+        return newTaskContentXDOM.getChildren();
+    }
+
+    private boolean handleMentions(List<Block> mentions, XDOM newTaskContentXDOM, String assignees)
+    {
+        if (mentions.isEmpty() && assignees == null) {
+            // Nothing changed.
+            return false;
+        }
+        if (assignees == null || assignees.isEmpty()) {
+            // Task obj assignees were removed -> remove mentions from content.
+            for (Block mention : mentions) {
+                newTaskContentXDOM.removeBlock(mention);
+            }
+            return true;
         }
 
-        if (!StringUtils.isEmpty(assignee)) {
+        String[] splitAssignees = assignees.split(",");
+        if (mentions.stream().map(block -> block.getParameter("reference")).collect(Collectors.toList())
+            .equals(Arrays.asList(splitAssignees)))
+        {
+            // If the mentions and assignees are equal, nothing changed.
+            return false;
+        }
+
+        int i = 0;
+        for (Block mention : mentions) {
+            // Replace the existing mentions with the updated values coming from the task obj.
+            if (i >= splitAssignees.length) {
+                // If there are more mentions than assignees coming from the task obj, it means that they were removed.
+                newTaskContentXDOM.removeBlock(mention);
+                continue;
+            }
+            mention.setParameter("reference", splitAssignees[i++]);
+        }
+        // If there are more assignees than mentions, we need to create the said mentions.
+        for (int j = i; j < splitAssignees.length; j++) {
             Map<String, String> mentionParams = new HashMap<>();
             mentionParams.put("style", "FULL_NAME");
-            mentionParams.put("reference", assignee);
-            // TODO: Possible improvement: use the IdGenerator from the XDOM of the document.
-            mentionParams.put("anchor", assignee.replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
+            mentionParams.put("reference", splitAssignees[j]);
+            mentionParams.put("anchor",
+                splitAssignees[j].replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
             MacroBlock mentionBlock = new MacroBlock("mention", mentionParams, true);
-            insertionPoint.addChild(mentionBlock);
+            newTaskContentXDOM.addChild(mentionBlock);
+        }
+        return true;
+    }
+
+    private boolean handleDeadline(Block dateMacro, XDOM newTaskContentXDOM, Date deadlineProp,
+        SimpleDateFormat storageFormat)
+    {
+        if (deadlineProp == null && dateMacro == null) {
+            // Nothing changed.
+            return false;
+        }
+        if (deadlineProp == null) {
+            // Task obj deadline was removed -> remove date macro from content.
+            newTaskContentXDOM.removeBlock(dateMacro);
+            return true;
         }
 
-        if (duedate != null) {
+        if (dateMacro == null) {
+            String serializedDeadlineProp = storageFormat.format(deadlineProp);
             Map<String, String> dateParams = new HashMap<>();
-            dateParams.put("value", storageFormat.format(duedate));
+            dateParams.put("value", storageFormat.format(serializedDeadlineProp));
             MacroBlock dateBlock = new MacroBlock(DATE, dateParams, true);
-            insertionPoint.addChild(dateBlock);
+            newTaskContentXDOM.addChild(dateBlock);
+            // Task obj deadline was added -> add date macro to content.
+            return true;
         }
-        return newTaskContentXDOM.getChildren();
+
+        String serializedDeadlineProp = storageFormat.format(deadlineProp);
+        if (serializedDeadlineProp.equals(dateMacro.getParameter("value"))) {
+            // No change. Nothing to do.
+            return false;
+        } else {
+            dateMacro.setParameter("value", serializedDeadlineProp);
+            return true;
+        }
     }
 }
