@@ -56,6 +56,9 @@ public class TaskPageMovedListener extends TaskPageCopiedListener
      */
     public TaskPageMovedListener()
     {
+        // Due to the fact that modifications make by listeners do not apply on renamed documents (see:
+        // https://github.com/xwiki/xwiki-platform/blob/50dd573dd966b57a42bdc327ebf2e7d42c62cad0/xwiki-platform-core/xwiki-platform-oldcore/src/main/java/com/xpn/xwiki/XWiki.java#L4963
+        // ), we need to listen to the DocumentCreatedEvent, change the owner of the renamed document and resave it.
         super("TaskPageMovedListener", List.of(new DocumentCreatedEvent()));
     }
 
