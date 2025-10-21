@@ -32,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
+import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.job.event.JobStartedEvent;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -43,7 +44,6 @@ import org.xwiki.observation.event.BeginEvent;
 import org.xwiki.refactoring.event.DocumentCopyingEvent;
 import org.xwiki.refactoring.event.DocumentRenamingEvent;
 import org.xwiki.refactoring.job.CopyRequest;
-import org.xwiki.refactoring.job.DeleteRequest;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
@@ -53,7 +53,8 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xwiki.task.internal.TaskPageCopiedOrMovedEventListener;
+import com.xwiki.task.internal.listener.TaskPageMovedListener;
+import com.xwiki.task.internal.listener.TaskPageCopiedListener;
 import com.xwiki.task.model.Task;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -69,7 +70,10 @@ import static org.mockito.Mockito.when;
 public class TaskPageCopiedOrMovedTest
 {
     @InjectMockComponents
-    private TaskPageCopiedOrMovedEventListener listener;
+    private TaskPageCopiedListener copiedListener;
+
+    @InjectMockComponents
+    private TaskPageMovedListener movedEventListener;
 
     @MockComponent
     private ObservationContext observationContext;
@@ -81,7 +85,7 @@ public class TaskPageCopiedOrMovedTest
     private Logger logger;
 
     @MockComponent
-    @Named("compact")
+    @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
 
     @Mock
@@ -102,6 +106,8 @@ public class TaskPageCopiedOrMovedTest
 
     private ArgumentCaptor<BeginEvent> matcher = ArgumentCaptor.forClass(BeginEvent.class);
 
+    private JobStartedEvent jobStartedEvent;
+
     @BeforeEach
     void setup() throws TaskException
     {
@@ -113,7 +119,7 @@ public class TaskPageCopiedOrMovedTest
 
         CopyRequest copyRequest = new CopyRequest();
         copyRequest.setEntityReferences(Collections.singletonList(copiedEntityRef));
-        JobStartedEvent jobStartedEvent = new JobStartedEvent("type", "", copyRequest);
+        jobStartedEvent = new JobStartedEvent("type", "", copyRequest);
 
         setJobsThatEventIsIn(copyingEvent, jobStartedEvent);
 
@@ -146,15 +152,25 @@ public class TaskPageCopiedOrMovedTest
     @Test
     void changeNumberAndOwnerOfCopiedTaskPageTest() throws XWikiException
     {
+        copiedListener.onEvent(new DocumentCreatingEvent(), xWikiDocument, context);
+
+        verify(baseObject).set(Task.NUMBER, 1, context);
+        verify(baseObject).set(eq(Task.OWNER), eq(new DocumentReference("xwiki", "Smth", "WebHome").toString()),
+            eq(context));
+    }
+
+    @Test
+    void doNotRecurseIfDocumentIsSavedDuringARename() throws XWikiException
+    {
         // Check recursion.
         doAnswer(invocation -> {
-            listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
+            movedEventListener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
             return null;
         }).when(xWiki).saveDocument(xWikiDocument, context);
 
-        listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
+        setJobsThatEventIsIn(new DocumentRenamingEvent(), jobStartedEvent);
+        movedEventListener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
 
-        verify(baseObject).set(Task.NUMBER, 1, context);
         verify(baseObject).set(eq(Task.OWNER), eq(new DocumentReference("xwiki", "Smth", "WebHome").toString()),
             eq(context));
         verify(xWiki, atMostOnce()).saveDocument(xWikiDocument, context);
@@ -167,7 +183,7 @@ public class TaskPageCopiedOrMovedTest
         when(observationContext.isIn(any())).thenAnswer(invocation -> {
             return false;
         });
-        listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
+        copiedListener.onEvent(new DocumentCreatingEvent(), xWikiDocument, context);
 
         verify(baseObject, never()).set(any(), any(), any());
         verify(xWiki, never()).saveDocument(xWikiDocument, context);
@@ -178,36 +194,16 @@ public class TaskPageCopiedOrMovedTest
     {
         when(xWikiDocument.getXObject(any(EntityReference.class))).thenReturn(null);
 
-        listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
+        copiedListener.onEvent(new DocumentCreatingEvent(), xWikiDocument, context);
 
         verify(baseObject, never()).set(any(), any(), any());
-        verify(xWiki, never()).saveDocument(xWikiDocument, context);
-    }
-
-    @Test
-    void doNotChangeIdIfMovingPageTest() throws XWikiException
-    {
-        DocumentRenamingEvent docRenamingEvent = new DocumentRenamingEvent();
-
-        CopyRequest copyRequest = new CopyRequest();
-        copyRequest.setEntityReferences(Collections.singletonList(copiedEntityRef));
-        JobStartedEvent jobStartedEvent = new JobStartedEvent("type", "", copyRequest);
-        setJobsThatEventIsIn(docRenamingEvent, jobStartedEvent);
-
-        listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
-
-        verify(baseObject, never()).set(Task.NUMBER, 1, context);
-        verify(baseObject).set(eq(Task.OWNER), eq(new DocumentReference("xwiki", "Smth", "WebHome").toString()),
-            eq(context));
-        verify(xWiki, atMostOnce()).saveDocument(xWikiDocument, context);
     }
 
     @Test
     void doNotSetOwnerIfItsATaskPageWithoutOneTest() throws XWikiException
     {
-        setJobsThatEventIsIn(new DocumentRenamingEvent(), null);
         when(baseObject.getLargeStringValue(Task.OWNER)).thenReturn("");
-        listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
+        copiedListener.onEvent(new DocumentCreatingEvent(), xWikiDocument, context);
 
         verify(baseObject, never()).set(eq(Task.OWNER), any(EntityReference.class),
             eq(context));
@@ -217,9 +213,7 @@ public class TaskPageCopiedOrMovedTest
     @Test
     void doNotSetOwnerIfNotInARefactorJob() throws XWikiException
     {
-        JobStartedEvent jobStartedEvent = new JobStartedEvent("a", "b", new DeleteRequest());
-        setJobsThatEventIsIn(new DocumentRenamingEvent(), jobStartedEvent);
-        listener.onEvent(new DocumentCreatedEvent(), xWikiDocument, context);
+        copiedListener.onEvent(new DocumentCreatingEvent(), xWikiDocument, context);
 
         verify(baseObject, never()).set(eq(Task.OWNER), any(EntityReference.class),
             eq(context));

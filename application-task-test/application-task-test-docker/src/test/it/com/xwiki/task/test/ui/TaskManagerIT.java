@@ -28,8 +28,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
@@ -271,11 +269,9 @@ class TaskManagerIT
         }
         // Copy page.
         CopyPage copyPage = viewPage.copy();
-        WebElement title = setup.getDriver().findElement(By.id("targetTitle"));
-        title.clear();
-        title.sendKeys("Copy");
-        title.sendKeys(Keys.ENTER);
-        CopyOrRenameOrDeleteStatusPage statusPage = new CopyOrRenameOrDeleteStatusPage();
+        copyPage.getDocumentPicker().setTitle("Copy");
+
+        CopyOrRenameOrDeleteStatusPage statusPage = copyPage.clickCopyButton();
         statusPage.waitUntilFinished();
         statusPage.gotoNewPage();
         // Gather all task ids for comparison.
@@ -310,11 +306,8 @@ class TaskManagerIT
         }
         // Rename page.
         RenamePage movedPage = viewPage.rename();
-        WebElement title = setup.getDriver().findElement(By.id("targetTitle"));
-        title.clear();
-        title.sendKeys("Rename");
-        title.sendKeys(Keys.ENTER);
-        CopyOrRenameOrDeleteStatusPage statusPage = new CopyOrRenameOrDeleteStatusPage();
+        movedPage.getDocumentPicker().setTitle("Rename");
+        CopyOrRenameOrDeleteStatusPage statusPage = movedPage.clickRenameButton();
         statusPage.waitUntilFinished().gotoNewPage();
         // Gather all task ids for comparison.
         viewPage = new ViewPageWithTasks();

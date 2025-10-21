@@ -17,10 +17,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.xwiki.task.internal;
+package com.xwiki.task.internal.listener;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,11 +41,9 @@ import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationContext;
 import org.xwiki.observation.event.Event;
 import org.xwiki.refactoring.event.DocumentCopyingEvent;
-import org.xwiki.refactoring.event.DocumentRenamingEvent;
 import org.xwiki.refactoring.job.AbstractCopyOrMoveRequest;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.task.TaskCounter;
@@ -53,72 +53,64 @@ import com.xwiki.task.model.Task;
 import static com.xwiki.task.internal.AbstractTaskEventListener.TASK_CLASS_REFERENCE;
 
 /**
- * This listener handles the case when a page containing a task object is copied. The id of the task object should be
- * updated to a new one. No two tasks should have the same id.
+ * This listener handles the case when a page containing a task object is copied or a page containing task macros was
+ * copied. The id of the task object should be updated to a new one and the owner should be updated.
  *
  * @version $Id$
- * @since 3.5.2
+ * @since 3.10.0
  */
 @Component
-@Named("TaskPageCopiedOrMovedEventListener")
+@Named("TaskPageCopiedListener")
 @Singleton
-public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
+public class TaskPageCopiedListener extends AbstractEventListener
 {
     private static final String WEBHOME = "WebHome";
 
     private static final String TASKS = "Tasks";
 
-    private static final String EXECUTION_FLAG = "task-copy-move-listener-flag";
+    @Inject
+    protected ObservationContext observationContext;
 
     @Inject
-    private ObservationContext observationContext;
+    protected TaskCounter taskCounter;
 
     @Inject
-    private TaskCounter taskCounter;
+    protected Logger logger;
 
     @Inject
-    private Logger logger;
-
-    @Inject
-    @Named("compact")
+    @Named("compactwiki")
     private EntityReferenceSerializer<String> serializer;
-
-    private Object refactoringEvent;
-
-    private JobStartedEvent jobStartedEvent;
 
     /**
      * Default constructor.
      */
-    public TaskPageCopiedOrMovedEventListener()
+    public TaskPageCopiedListener()
     {
-        super("TaskPageCopiedOrMovedEventListener", Collections.singletonList(new DocumentCreatingEvent()));
+        super("TaskPageCopiedListener", Collections.singletonList(new DocumentCreatingEvent()));
+    }
+
+    /**
+     * Default constructor.
+     *
+     * @param name the name of the listener.
+     * @param events the list of events that this listener watches.
+     */
+    public TaskPageCopiedListener(String name, List<? extends Event> events)
+    {
+        super(name, events);
     }
 
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
         XWikiContext context = (XWikiContext) data;
-
-        // Stop recursion after save in the case of moved pages.
-        if (context.get(EXECUTION_FLAG) != null) {
-            return;
-        }
-        XWikiDocument document = ((XWikiDocument) source).clone();
+        XWikiDocument document = ((XWikiDocument) source);
         logger.debug("Processing [{}].", document.getDocumentReference());
 
-        // This listener handles only the copying/moving of Task pages.
-        if (!observationContext.isIn(otherEvent -> {
-            if (otherEvent instanceof DocumentCopyingEvent || otherEvent instanceof DocumentRenamingEvent) {
-                refactoringEvent = otherEvent;
-                return true;
-            }
-            return false;
-        }))
-        {
+        // This listener handles only the copying of Task pages.
+        if (!observationContext.isIn(otherEvent -> otherEvent instanceof DocumentCopyingEvent)) {
             logger.debug("Document [{}] was not created in a copying or renaming event. Returning.",
                 document.getDocumentReference());
-            refactoringEvent = null;
             return;
         }
         BaseObject taskObj = document.getXObject(TASK_CLASS_REFERENCE);
@@ -127,38 +119,20 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
             return;
         }
 
-        boolean changed = false;
+        maybeSetNewId(taskObj, context, document);
 
-        if (refactoringEvent instanceof DocumentCopyingEvent) {
-            // When a Task Page is being copied, we should update the task number such that no duplicates will exist.
-            changed = maybeSetNewId(taskObj, context, document);
-        } else if (refactoringEvent instanceof DocumentRenamingEvent) {
-            // Do nothing.
-        }
-
-        context.put(EXECUTION_FLAG, true);
-
-        try {
-            changed = maybeSetNewOwner(taskObj, context) || changed;
-
-            maybeSave(changed, context, document);
-        } catch (Exception e) {
-            logger.error("There was an error during the handling of the copy/move of the task page [{}].",
-                document.getDocumentReference(), e);
-        } finally {
-            context.remove(EXECUTION_FLAG);
-        }
+        maybeSetNewOwner(taskObj, context);
     }
 
-    private boolean maybeSetNewId(BaseObject taskObj, XWikiContext context, XWikiDocument document)
+    protected boolean maybeSetNewId(BaseObject taskObj, XWikiContext context, XWikiDocument document)
     {
         boolean changed = false;
         try {
-            changed = true;
             int newNumber = taskCounter.getNextNumber();
             logger.debug("Task doc [{}] was copied. Changing the id of the copied instance from [{}] to [{}].",
                 taskObj.getDocumentReference(), taskObj.getIntValue(Task.NUMBER), newNumber);
             taskObj.set(Task.NUMBER, newNumber, context);
+            changed = true;
         } catch (TaskException e) {
             logger.warn("Failed to set a new id to the copied task document [{}]. Cause: [{}].",
                 document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
@@ -166,31 +140,22 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
         return changed;
     }
 
-    private void maybeSave(boolean changed, XWikiContext context, XWikiDocument document)
-    {
-        if (changed) {
-            try {
-                context.getWiki().saveDocument(document, context);
-            } catch (XWikiException e) {
-                logger.error("Failed to save the document [{}] after updating its id and/or owner.",
-                    document.getDocumentReference(), e);
-            }
-        }
-    }
-
-    private boolean maybeSetNewOwner(BaseObject taskObj, XWikiContext context)
+    protected boolean maybeSetNewOwner(BaseObject taskObj, XWikiContext context)
     {
         // We are not interested in task pages that don't have owners.
         if (taskObj.getLargeStringValue(Task.OWNER).isEmpty()) {
             logger.debug("Task doc [{}] doesn't have an owner.", taskObj.getDocumentReference());
             return false;
         }
+        // If the Task Page was copied/moved together with its owner, the owner ref was changed so we should update
+        // the object field that stores that information.
         Optional<EntityReference> movedParentPage = getMovedOrCopiedEntity();
         if (!movedParentPage.isPresent()) {
             logger.debug("Task page [{}] was not moved as part of a move/copy job.", taskObj.getDocumentReference());
             return false;
         }
-
+        // If a task page is moved through the UI, we shouldn't update the owner.
+        // If a "Tasks" space is moved, we don't need to update the owner.
         if (isTaskPageMoved(taskObj, movedParentPage)) {
             logger.debug(
                 "Task page [{}] was created as a result of moving/copying either a task page or Tasks subspace [{}].",
@@ -221,11 +186,9 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
 
     private boolean isTaskPageMoved(BaseObject taskObj, Optional<EntityReference> movedParentPage)
     {
-        // If a task page is moved through the UI, we shouldn't update the owner.
         if (movedParentPage.get().equals(taskObj.getDocumentReference())) {
             return true;
         }
-        // If a Tasks page is moved, we don't need to update the owner.
         if (movedParentPage.get().getName().equals(TASKS)
             || (movedParentPage.get().getParent() != null && movedParentPage.get().getParent().getName().equals(TASKS)))
         {
@@ -236,24 +199,22 @@ public class TaskPageCopiedOrMovedEventListener extends AbstractEventListener
 
     private Optional<EntityReference> getMovedOrCopiedEntity()
     {
-        // If the Task Page was copied/moved together with its owner, the owner ref was changed so we should update
-        // the object field that stores that information.
+        AtomicReference<JobStartedEvent> jobStartedEvent = new AtomicReference<>();
         if (!observationContext.isIn(otherEvent -> {
             if (otherEvent instanceof JobStartedEvent) {
-                jobStartedEvent = (JobStartedEvent) otherEvent;
+                jobStartedEvent.set((JobStartedEvent) otherEvent);
                 return true;
             }
             return false;
         }))
         {
-            jobStartedEvent = null;
             return Optional.empty();
         }
 
-        if (!(jobStartedEvent.getRequest() instanceof AbstractCopyOrMoveRequest)) {
+        if (!(jobStartedEvent.get().getRequest() instanceof AbstractCopyOrMoveRequest)) {
             return Optional.empty();
         }
-        AbstractCopyOrMoveRequest copyOrMoveRequest = ((AbstractCopyOrMoveRequest) jobStartedEvent.getRequest());
+        AbstractCopyOrMoveRequest copyOrMoveRequest = ((AbstractCopyOrMoveRequest) jobStartedEvent.get().getRequest());
         return copyOrMoveRequest.getEntityReferences().stream().findFirst();
     }
 }
