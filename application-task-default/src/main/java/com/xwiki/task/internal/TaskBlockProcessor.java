@@ -118,8 +118,6 @@ public class TaskBlockProcessor
     {
         XDOM newTaskContentXDOM = null;
         try {
-            // Parse the.
-
             newTaskContentXDOM = macroUtils.getMacroContentXDOM(
                 new MacroBlock("temporaryMacro", new HashMap<>(), text == null ? "" : text, false), Syntax.XWIKI_2_1);
         } catch (MacroExecutionException e) {

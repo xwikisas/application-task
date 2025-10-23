@@ -122,7 +122,7 @@ public class Task
     /**
      * The name of the DESCRIPTION field.
      *
-     * @since 3.x
+     * @since 3.10.0
      */
     public static final String DESCRIPTION = "description";
 
@@ -397,8 +397,8 @@ public class Task
     }
 
     /**
-     * @return the description of the task.
-     * @since 3.9.4
+     * @return the description of the task that is stored in XWiki 2.1 syntax.
+     * @since 3.10.0
      */
     public String getDescription()
     {
@@ -407,6 +407,7 @@ public class Task
 
     /**
      * @param description see {@link #getDescription()}.
+     * @since 3.10.0
      */
     public void setDescription(String description)
     {
