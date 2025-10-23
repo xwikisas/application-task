@@ -232,7 +232,8 @@ public class TaskXDOMProcessor
 
                 List<Block> newTaskContentBlocks =
                     taskBlockProcessor.generateTaskContentBlocks(taskObject.getLargeStringValue(Task.ASSIGNEE),
-                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getStringValue(Task.NAME), storageFormat);
+                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
+                        storageFormat);
 
                 String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
 

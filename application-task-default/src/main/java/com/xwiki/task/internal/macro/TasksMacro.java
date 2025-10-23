@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
@@ -125,10 +126,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = task.getDescription();
-
+                String taskContent = getMacroContent(task, storageFormat, context);
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
-            } catch (NumberFormatException | TaskException e) {
+            } catch (NumberFormatException | TaskException | ComponentLookupException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }
@@ -139,5 +139,23 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
         }
         blocks.addAll(errorList);
         return blocks;
+    }
+
+    private String getMacroContent(Task task, SimpleDateFormat storageFormat,
+        MacroTransformationContext context) throws TaskException, ComponentLookupException
+    {
+        String taskContent = task.getDescription();
+
+        // For backwards compatibility. When the macro content was computed using the task name, assignee and
+        // due date.
+        if ((taskContent == null || taskContent.trim().isEmpty()) && (task.getName() != null && !task.getName().trim()
+            .isEmpty()))
+
+        {
+            taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+                task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
+                task.getName(), storageFormat), context.getSyntax());
+        }
+        return taskContent;
     }
 }

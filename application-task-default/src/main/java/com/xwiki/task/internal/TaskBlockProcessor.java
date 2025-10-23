@@ -61,6 +61,12 @@ public class TaskBlockProcessor
 {
     private static final String DATE = "date";
 
+    private static final String MENTION = "mention";
+
+    private static final String REFERENCE = "reference";
+
+    private static final String VALUE = "value";
+
     @Inject
     @Named("context")
     private ComponentManager contextComponentManager;
@@ -121,15 +127,13 @@ public class TaskBlockProcessor
         }
 
         List<Block> mentions =
-            newTaskContentXDOM.getBlocks(new MacroBlockMatcher("mention"), Block.Axes.DESCENDANT_OR_SELF);
-        Block deadline = newTaskContentXDOM.getFirstBlock(new MacroBlockMatcher("date"), Block.Axes.DESCENDANT_OR_SELF);
+            newTaskContentXDOM.getBlocks(new MacroBlockMatcher(MENTION), Block.Axes.DESCENDANT_OR_SELF);
+        Block deadline = newTaskContentXDOM.getFirstBlock(new MacroBlockMatcher(DATE), Block.Axes.DESCENDANT_OR_SELF);
 
         boolean changed = false;
-
-        changed |= handleDeadline(deadline, newTaskContentXDOM, duedate, storageFormat);
-
         changed |= handleMentions(mentions, newTaskContentXDOM, assignee);
 
+        changed |= handleDeadline(deadline, newTaskContentXDOM, duedate, storageFormat);
         return newTaskContentXDOM.getChildren();
     }
 
@@ -142,13 +146,13 @@ public class TaskBlockProcessor
         if (assignees == null || assignees.isEmpty()) {
             // Task obj assignees were removed -> remove mentions from content.
             for (Block mention : mentions) {
-                newTaskContentXDOM.removeBlock(mention);
+                mention.getParent().removeBlock(mention);
             }
             return true;
         }
 
         String[] splitAssignees = assignees.split(",");
-        if (mentions.stream().map(block -> block.getParameter("reference")).collect(Collectors.toList())
+        if (mentions.stream().map(block -> block.getParameter(REFERENCE)).collect(Collectors.toList())
             .equals(Arrays.asList(splitAssignees)))
         {
             // If the mentions and assignees are equal, nothing changed.
@@ -160,19 +164,19 @@ public class TaskBlockProcessor
             // Replace the existing mentions with the updated values coming from the task obj.
             if (i >= splitAssignees.length) {
                 // If there are more mentions than assignees coming from the task obj, it means that they were removed.
-                newTaskContentXDOM.removeBlock(mention);
+                mention.getParent().removeBlock(mention);
                 continue;
             }
-            mention.setParameter("reference", splitAssignees[i++]);
+            mention.setParameter(REFERENCE, splitAssignees[i++]);
         }
         // If there are more assignees than mentions, we need to create the said mentions.
         for (int j = i; j < splitAssignees.length; j++) {
             Map<String, String> mentionParams = new HashMap<>();
             mentionParams.put("style", "FULL_NAME");
-            mentionParams.put("reference", splitAssignees[j]);
+            mentionParams.put(REFERENCE, splitAssignees[j]);
             mentionParams.put("anchor",
                 splitAssignees[j].replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
-            MacroBlock mentionBlock = new MacroBlock("mention", mentionParams, true);
+            MacroBlock mentionBlock = new MacroBlock(MENTION, mentionParams, true);
             newTaskContentXDOM.addChild(mentionBlock);
         }
         return true;
@@ -187,14 +191,14 @@ public class TaskBlockProcessor
         }
         if (deadlineProp == null) {
             // Task obj deadline was removed -> remove date macro from content.
-            newTaskContentXDOM.removeBlock(dateMacro);
+            dateMacro.getParent().removeBlock(dateMacro);
             return true;
         }
 
         if (dateMacro == null) {
             String serializedDeadlineProp = storageFormat.format(deadlineProp);
             Map<String, String> dateParams = new HashMap<>();
-            dateParams.put("value", storageFormat.format(serializedDeadlineProp));
+            dateParams.put(VALUE, serializedDeadlineProp);
             MacroBlock dateBlock = new MacroBlock(DATE, dateParams, true);
             newTaskContentXDOM.addChild(dateBlock);
             // Task obj deadline was added -> add date macro to content.
@@ -202,11 +206,11 @@ public class TaskBlockProcessor
         }
 
         String serializedDeadlineProp = storageFormat.format(deadlineProp);
-        if (serializedDeadlineProp.equals(dateMacro.getParameter("value"))) {
+        if (serializedDeadlineProp.equals(dateMacro.getParameter(VALUE))) {
             // No change. Nothing to do.
             return false;
         } else {
-            dateMacro.setParameter("value", serializedDeadlineProp);
+            dateMacro.setParameter(VALUE, serializedDeadlineProp);
             return true;
         }
     }

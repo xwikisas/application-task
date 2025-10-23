@@ -21,6 +21,7 @@ package org.xwiki.contrib.application.task.test.po;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -42,6 +43,11 @@ public class ViewPageWithTasks extends ViewPage
     public List<WebElement> getTaskMacros()
     {
         return taskMacros;
+    }
+
+    public List<TaskElement> getTasks()
+    {
+        return taskMacros.stream().map(TaskElement::new).collect(Collectors.toList());
     }
 
     public String getTaskMacroContent(int index)
@@ -66,7 +72,8 @@ public class ViewPageWithTasks extends ViewPage
         this.waitForNotificationSuccessMessage("Task status changed successfully!");
     }
 
-    public LiveTableElement getTaskReportLiveTable() {
+    public LiveTableElement getTaskReportLiveTable()
+    {
         WebElement liveTableElement = getDriver().findElement(By.className("xwiki-livetable"));
         return new LiveTableElement(liveTableElement.getAttribute("id"));
     }
