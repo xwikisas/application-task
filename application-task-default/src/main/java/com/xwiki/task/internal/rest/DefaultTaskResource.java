@@ -35,6 +35,8 @@ import org.xwiki.rest.XWikiRestException;
 import org.xwiki.rest.internal.resources.pages.ModifiablePageResource;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceResolver;
 
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -61,6 +63,10 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
     private ContextualAuthorizationManager contextualAuthorizationManager;
 
     @Inject
+    @Named("document")
+    private UserReferenceResolver<DocumentReference> userRefResolver;
+
+    @Inject
     private TaskConfiguration taskConfiguration;
 
     @Override
@@ -75,6 +81,8 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
 
         try {
             XWikiDocument document = getXWikiContext().getWiki().getDocument(docRef, getXWikiContext()).clone();
+            UserReference currentUserReference = userRefResolver.resolve(getXWikiContext().getUserReference());
+            document.getAuthors().setOriginalMetadataAuthor(currentUserReference);
             BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
 
             if (taskObject == null) {

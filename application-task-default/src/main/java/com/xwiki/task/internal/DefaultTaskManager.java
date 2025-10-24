@@ -90,9 +90,7 @@ public class DefaultTaskManager implements TaskManager
             if (obj == null) {
                 throw new TaskException(String.format("The page [%s] does not have a Task Object.", reference));
             }
-            Task task = getTaskFromXObject(obj);
-            task.setDescription(doc.getContent());
-            return task;
+            return getTaskFromXObject(obj);
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the task from the page [%s]", reference));
         }
@@ -114,7 +112,7 @@ public class DefaultTaskManager implements TaskManager
                 queryManager.createQuery(statement, Query.HQL).setWiki(context.getWikiId()).bindValue("id", id)
                     .execute();
             if (results.size() > 0) {
-                DocumentReference documentReference = resolver.resolve(results.get(0));
+                DocumentReference documentReference = resolver.resolve(results.get(0), context.getWikiReference());
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null) {
@@ -122,9 +120,7 @@ public class DefaultTaskManager implements TaskManager
                         String.format("Could not retrieve the task object [%s] associated with the task with id [%d]",
                             documentReference, id));
                 }
-                Task task = getTaskFromXObject(taskObject);
-                task.setDescription(document.getContent());
-                return task;
+                return getTaskFromXObject(taskObject);
             }
             throw new TaskException(String.format("There is no task with the id [%d].", id));
         } catch (QueryException | XWikiException e) {
@@ -152,7 +148,7 @@ public class DefaultTaskManager implements TaskManager
 
             List<String> results = query.execute();
             for (String result : results) {
-                DocumentReference taskRef = resolver.resolve(result);
+                DocumentReference taskRef = resolver.resolve(result, context.getWikiReference());
                 XWikiDocument document = context.getWiki().getDocument(taskRef, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null || !resolver.resolve(taskObject.getLargeStringValue(Task.OWNER), taskRef)
@@ -182,6 +178,7 @@ public class DefaultTaskManager implements TaskManager
         task.setDuedate(obj.getDateValue(Task.DUE_DATE));
         task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
         task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
+        task.setDescription(obj.getLargeStringValue(Task.DESCRIPTION));
         return task;
     }
 }

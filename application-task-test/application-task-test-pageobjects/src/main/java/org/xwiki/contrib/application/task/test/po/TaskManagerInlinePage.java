@@ -48,6 +48,9 @@ public class TaskManagerInlinePage extends InlinePage
     @FindBy(id = CLASS_PREFIX + "duedate")
     private WebElement dueDateElement;
 
+    @FindBy(id = CLASS_PREFIX + "startDate")
+    private WebElement startDateElement;
+
     @FindBy(id = CLASS_PREFIX + "severity")
     private WebElement severityElement;
 
@@ -62,11 +65,6 @@ public class TaskManagerInlinePage extends InlinePage
 
     @FindBy(id = CLASS_PREFIX + "progress")
     private WebElement progressElement;
-
-    @FindBy(id = "content")
-    private WebElement descriptionElement;
-
-    private SuggestInputElement assigneeSuggestion;
 
     /**
      * @param name the name of the Task entry
@@ -99,15 +97,29 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setDueDate(String dueDate)
     {
-        this.dueDateElement.click();
-        this.dueDateElement.clear();
+        // WebElement#clear does not send the right keyboard events, it's better to use a key combination
+        // to replace the actual content of the input.
         this.dueDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         this.dueDateElement.sendKeys(dueDate);
         this.dueDateElement.sendKeys(Keys.ENTER);
     }
 
-    public void clearDueDate() {
-        this.dueDateElement.clear();
+    /**
+     * @param startDate the start date for the task entry
+     * @since 3.7.2
+     */
+    public void setStartDate(String startDate)
+    {
+        // WebElement#clear does not send the right keyboard events, it's better to use a key combination
+        // to replace the actual content of the input.
+        this.startDateElement.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        this.startDateElement.sendKeys(startDate);
+        this.startDateElement.sendKeys(Keys.ENTER);
+    }
+
+    public void clearStartDate()
+    {
+        this.startDateElement.clear();
     }
 
     /**
@@ -129,15 +141,12 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setAssignee(String assignee)
     {
-        getAssigneeSuggestion().clear().sendKeys(assignee).waitForSuggestions().sendKeys(Keys.ENTER);
-    }
-
-    /**
-     * Clear the value of the assignee field.
-     * @since 3.7.0
-     */
-    public void clearAssignee() {
-        getAssigneeSuggestion().clear();
+        if (assignee.isEmpty()) {
+            new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions();
+        } else {
+            new SuggestInputElement(this.assigneeElement).clearSelectedSuggestions().sendKeys(assignee)
+                .selectTypedText();
+        }
     }
 
     /**
@@ -156,35 +165,5 @@ public class TaskManagerInlinePage extends InlinePage
     {
         this.progressElement.clear();
         this.progressElement.sendKeys(progress);
-    }
-
-    /**
-     * @return the text value of the description/content element.
-     * @since 3.7.0
-     */
-    public String getDescription()
-    {
-        return descriptionElement.getText();
-    }
-
-    /**
-     * Clear the description element and set a new value to it.
-     *
-     * @param description the content that will be sent to the element.
-     * @since 3.7.0
-     */
-    public void setDescription(String description)
-    {
-        this.descriptionElement.clear();
-        this.descriptionElement.sendKeys(description);
-    }
-
-    private SuggestInputElement getAssigneeSuggestion()
-    {
-        if (this.assigneeSuggestion != null) {
-            return this.assigneeSuggestion;
-        }
-        this.assigneeSuggestion = new SuggestInputElement(this.assigneeElement);
-        return this.assigneeSuggestion;
     }
 }
