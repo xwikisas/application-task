@@ -59,8 +59,9 @@
 {{html wiki="true"}}
   #set ($discard = $doc.use('TaskManager.TaskManagerClass'))
   #set ($discard = $xwiki.jsx.use('TaskManager.TaskManagerSheet')) ## For auto-updating Status and Progress
+  #set ($isSheet = $services.model.resolveDocument('TaskManager.TaskManagerSheet').equals($doc.documentReference))
   #set($isEdit = ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
-  #if(!$isEdit)
+  #if(!$isEdit &amp;&amp; !$isSheet)
     (% class="xform" %)
     (((
       (% class="row" %)
@@ -127,7 +128,7 @@
       )))
     )))
   #end
-  #if($isEdit)
+  #if($isEdit &amp;&amp; !$isSheet)
     (% class="xform" %)
     (((
       (% class="row" %)
