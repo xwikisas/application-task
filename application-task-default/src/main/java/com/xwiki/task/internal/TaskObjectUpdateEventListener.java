@@ -39,6 +39,8 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.observation.event.Event;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceResolver;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -64,6 +66,10 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
 
     @Inject
     private TaskCounter taskCounter;
+
+    @Inject
+    @Named("document")
+    private UserReferenceResolver<DocumentReference> userRefResolver;
 
     /**
      * Constructor.
@@ -113,7 +119,10 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                 XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
                 if (!ownerDocument.isNew()) {
                     ownerDocument.setContent(
-                        taskXDOMProcessor.updateTaskMacroCall(taskObj, ownerDocument, document));
+                        taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
+                            ownerDocument.getSyntax()));
+                    UserReference currentUserReference = userRefResolver.resolve(context.getUserReference());
+                    ownerDocument.getAuthors().setOriginalMetadataAuthor(currentUserReference);
                     context.getWiki().saveDocument(ownerDocument,
                         String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
                 }

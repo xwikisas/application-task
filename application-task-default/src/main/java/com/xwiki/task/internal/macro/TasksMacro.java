@@ -126,15 +126,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = task.getName();
-                // From 3.7.0, the name of the task objects contain the full content of the task macro. In order to
-                // not break the previous mode of display of already existing tasks, {name assignee duedate}, we need
-                // to make sure whether the name contains any xwiki syntax. After saving a task macro once, the task
-                // name will be updated with the correct value and this check will be redundant.
-                taskContent = maybeGetContentPrior3dot7(context, task, taskContent, storageFormat);
-
+                String taskContent = getMacroContent(task, storageFormat, context);
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
-            } catch (NumberFormatException | ComponentLookupException | TaskException e) {
+            } catch (NumberFormatException | TaskException | ComponentLookupException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }
@@ -147,14 +141,18 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
         return blocks;
     }
 
-    // TODO: Remove it  after the release of 3.7.0 is old enough (maybe 1 year).
-    private String maybeGetContentPrior3dot7(MacroTransformationContext context, Task task, String taskContent,
-        SimpleDateFormat storageFormat) throws ComponentLookupException, TaskException
+    private String getMacroContent(Task task, SimpleDateFormat storageFormat,
+        MacroTransformationContext context) throws TaskException, ComponentLookupException
     {
-        if ((task.getAssignee() != null && !taskContent.contains("{{mention"))
-            || (task.getDueDate() != null && !taskContent.contains("{{date")))
+        String taskContent = task.getDescription();
+
+        // For backwards compatibility. When the macro content was computed using the task name, assignee and
+        // due date.
+        if ((taskContent == null || taskContent.trim().isEmpty()) && (task.getName() != null && !task.getName().trim()
+            .isEmpty()))
+
         {
-            return macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+            taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
                 task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
                 task.getName(), storageFormat), context.getSyntax());
         }

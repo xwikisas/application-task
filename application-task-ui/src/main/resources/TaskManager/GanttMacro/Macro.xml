@@ -197,6 +197,9 @@ define('taskgantt-service-urls', ['jquery'], function ($) {
     if (undefined !== ganttDiv.data('hide-no-due-date')) {
       params['hideNoDueDate'] = ganttDiv.data('hide-no-due-date');
     }
+    if (undefined !== ganttDiv.data('max-tasks')) {
+      params['maxTasks'] = ganttDiv.data('max-tasks');
+    }
     const query = $.param(params);
     return jsonSourceBaseURL + query;
   };
@@ -625,7 +628,7 @@ define('taskgantt-frappe-methods', [
       Day_upper: (this.options.column_width * 30) / 2,
       Week_lower: 0,
       Week_upper: (this.options.column_width * 4) / 2,
-      Month_lower: this.options.column_width * 1.5, // Changed: Alignment (was width * 2). Now month names are actually above their corresponding column.
+      Month_lower: this.options.column_width * 0.5, // Changed: Alignment (was width * 2). Now month names are actually above their corresponding column.
       Month_upper: (this.options.column_width * 12) / 2,
       Year_lower: this.options.column_width / 2,
       Year_upper: (this.options.column_width * 30) / 2,
@@ -1382,6 +1385,12 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
   font-size: @font-size-base;
   /* Default gantt popup styles removed. */
 }
+.taskgantt-parameter {
+  background-color: @xwiki-panel-header-bg;
+  color: @xwiki-panel-header-text;
+  border-radius: 10px;
+  padding: 2px 5px 2px 5px;
+}
 .taskgantt-noedit-overlay {
   position:absolute;
   visibility:hidden;
@@ -1871,6 +1880,9 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
 {{html}}
 &lt;div class='taskgantt'
   data-readonly="$diagramIsReadonly"
+  #if ("$!xcontext.macro.params.maxTasks" != '')
+    data-max-tasks="${escapetool.html($xcontext.macro.params.maxTasks)}"
+  #end
   #if ("$!xcontext.macro.params.from" != '')
     #set ($fromMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.from, $storageDateTimeFormatter).getMillis())
     data-date-from="${escapetool.html($fromMillis)}"
@@ -1882,8 +1894,6 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.hideNoDueDate" != '')
     data-hide-no-due-date="${escapetool.html($xcontext.macro.params.hideNoDueDate)}"
   #end
-  ##TODO: Make `projects` use a Page picker (should support selecting multiple pages).
-  ##      When changed the JSONTaskSource should be updated aswell.
   #if ("$!xcontext.macro.params.projects" != '')
     data-projects="${escapetool.html($xcontext.macro.params.projects)}"
   #end
@@ -1893,8 +1903,6 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.reporters" != '')
     data-reporters="${escapetool.html($xcontext.macro.params.reporters)}"
   #end
-  ##TODO: Make `spaces` use a Space/Page picker (should support selecting multiple pages).
-  ##      When changed the JSONTaskSource should be updated aswell.
   #if ("$!xcontext.macro.params.spaces" != '')
     data-spaces="${escapetool.html($xcontext.macro.params.spaces)}"
   #end
@@ -1924,21 +1932,29 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.assignees" != '')
   &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.assignees'))&lt;/b&gt;
     #foreach ($assignee in $xcontext.macro.params.assignees.split('(?&lt;!\\),'))
-      &lt;span class='xwiki-mention'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
+      &lt;span class='taskgantt-parameter'&gt;$xwiki.getUserName($assignee)&lt;/span&gt;
     #end
   &lt;/p&gt;
   #end
   #if ("$!xcontext.macro.params.spaces" != '')
   &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.spaces'))&lt;/b&gt;
     #foreach ($space in $xcontext.macro.params.spaces.split('(?&lt;!\\),'))
-      &lt;a class='xwiki-mention' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
+      &lt;a class='taskgantt-parameter' href="$xwiki.getDocument($space, '').getURL()"&gt;$escapetool.html($space.replace('\,',','))&lt;/a&gt;
     #end
   &lt;/p&gt;
   #end
   #if ("$!xcontext.macro.params.projects" != '')
   &lt;p&gt;&lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.projects'))&lt;/b&gt;
+    #set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_project_')
     #foreach ($project in $xcontext.macro.params.projects.split('(?&lt;!\\),'))
-      &lt;span class='xwiki-mention'&gt;$escapetool.html($project.replace('\,',','))&lt;/span&gt;
+      #set ($project = $project.replace('\,',','))
+      #set ($translationKey = $translationKeyPrefix + $project)
+      #if ($services.localization.get($translationKey))
+        #set ($label = $services.localization.render($translationKey))
+      #else
+        #set ($label = $project)
+      #end
+      &lt;span class='taskgantt-parameter'&gt;$escapetool.html($label)&lt;/span&gt;
     #end
   &lt;/p&gt;
   #end
@@ -2232,7 +2248,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <name>projects</name>
     </property>
     <property>
-      <type/>
+      <type>java.util.List&lt;com.xwiki.task.ProjectReference&gt;</type>
     </property>
   </object>
   <object>
@@ -2469,7 +2485,7 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
       <name>spaces</name>
     </property>
     <property>
-      <type/>
+      <type>com.xwiki.pickers.SuggestSpacesReference</type>
     </property>
   </object>
   <object>
@@ -2549,6 +2565,85 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
     </property>
     <property>
       <type>java.lang.Boolean</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>7</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>1cdd0103-628f-45aa-aa15-e6ca5b6aab39</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>50</defaultValue>
+    </property>
+    <property>
+      <description>Show at most this many tasks in the gantt diagram.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>maxTasks</name>
+    </property>
+    <property>
+      <type>java.lang.Integer</type>
     </property>
   </object>
 </xwikidoc>

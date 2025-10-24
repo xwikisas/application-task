@@ -172,6 +172,8 @@
   border-style: solid;
   border-width: 1px;
   border-color: ${xwikibordercolor};
+  padding-top: 1ex;
+  padding-bottom: 1ex;
 }
 .task-card .task-card-title {
   color: #2173AF;
@@ -193,6 +195,7 @@
   border-width: 8px;
   padding: 0;
   margin: 0;
+  top: 0;
   left: 0;
   z-index: 5;
 }
@@ -570,7 +573,7 @@
   #if(!$tasktitle.trim().isEmpty())
     (% class="col-xs-12 task-card-title" %)
     (((
-      [[${tasktitle}&gt;&gt;${tasklink}]]
+      [[$services.rendering.escape($tasktitle,'xwiki/2.1')&gt;&gt;$services.rendering.escape($tasklink,'xwiki/2.1')]]
     )))
   #end
 #end
@@ -637,13 +640,15 @@
       ${services.localization.render('TaskManager.TaskManagerClass_status_Late')}
     )))
   #end
-  #if($xcontext.macro.params.dependencies == 'true')
+  #if($xcontext.macro.params.dependencies == 'true' &amp;&amp; $taskdependencies.size() &gt; 0)
     #displayCardDependencies($taskdependencies)
   #end
   #displayCardStatus($taskstatus)
   #displayCardTitle($tasktitle, $tasklink)
   #displayCardDueDate($taskduedate)
-  #displayCardAssignee($taskassignee)
+  #if ("$!taskassignee" != '')
+    #displayCardAssignee($taskassignee)
+  #end
 )))
 {{/velocity}}
 </code>

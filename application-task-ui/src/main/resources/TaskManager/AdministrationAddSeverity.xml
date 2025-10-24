@@ -71,7 +71,7 @@
     'rowCount' : 15,
     'description' : 'This table lists all severities that can be assigned to a task.',
     'className' : 'TaskManager.SeverityClass',
-    'queryFilters': ' '
+    'queryFilters': 'currentlanguage'
   })
 #livetable("severityTable" $columns $columnsProperties $options)
 #else

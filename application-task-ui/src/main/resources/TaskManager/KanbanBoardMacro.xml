@@ -569,7 +569,14 @@ Example:
 #set ($columnWidth = "$!{xcontext.macro.params.columnWidth}")
 #set ($colors = "$!{xcontext.macro.params.colors}")
 #if($user != '')
-  #set($xwql = "obj.assignee = '$escapetool.sql($user)'")
+  #set ($users = $user.split(','))
+  #foreach ($user in $users)
+    #if ($xwql.length() &gt; 0)
+      #set ($xwql = "$xwql OR")
+    #end
+    #set ($xwql = "$xwql obj.assignee = '$escapetool.sql($user)'")
+  #end
+  #set ($xwql = "($xwql)")
 #end
 #set($space = "$!{xcontext.macro.params.space}")
 #if($space != '')
@@ -580,12 +587,22 @@ Example:
 #end
 #set($project = "$!{xcontext.macro.params.project}")
 #if($project != '')
+  #set ($xwqlProjects = '')
+  #set ($projects = $project.split(','))
+  #foreach ($project in $projects)
+    #if ($xwqlProjects.length() &gt; 0)
+      #set ($xwqlProjects = "$xwqlProjects OR")
+    #end
+    #set ($xwqlProjects = "$xwqlProjects obj.project = '$escapetool.sql($project)'")
+  #end
   #if ($xwql.length() &gt; 0)
     #set ($xwql = "$xwql and")
   #end
-  #set($xwql = "$xwql obj.project = '$escapetool.sql($project)'")
+  #set ($xwql = "$xwql ($xwqlProjects)")
 #end
 #set ($columns = "$!{xcontext.macro.params.columns}")
+#set ($order = "$!{xcontext.macro.params.order}")
+#set ($limit = "$!{xcontext.macro.params.limit}")
 {{awmkanban
   className="TaskManager.TaskManagerClass"
   category="status"
@@ -593,7 +610,9 @@ Example:
   title="name"
   columns="assignee,progress,duedate"
   width="$!escapetool.xml($columnWidth)"
-  colors=$escapetool.xml($colors)
+  colors="$!escapetool.xml($colors)"
+  order="$!escapetool.xml($order)"
+  limit="$!escapetool.xml($limit)"
 /}}
 {{/velocity}}
 </code>
@@ -707,7 +726,7 @@ Example:
       <name>user</name>
     </property>
     <property>
-      <type>org.xwiki.user.UserReference</type>
+      <type>com.xwiki.task.UserReferenceList</type>
     </property>
   </object>
   <object>
@@ -786,7 +805,7 @@ Example:
       <name>space</name>
     </property>
     <property>
-      <type>com.xwiki.task.SpaceReference</type>
+      <type>com.xwiki.pickers.SuggestSpaceReference</type>
     </property>
   </object>
   <object>
@@ -865,7 +884,7 @@ Example:
       <name>project</name>
     </property>
     <property>
-      <type>com.xwiki.task.ProjectReference</type>
+      <type>java.util.List&lt;com.xwiki.task.ProjectReference&gt;</type>
     </property>
   </object>
   <object>
@@ -944,7 +963,7 @@ Example:
       <name>columns</name>
     </property>
     <property>
-      <type/>
+      <type>java.util.List&lt;com.xwiki.task.TaskStatus&gt;</type>
     </property>
   </object>
   <object>
@@ -1103,6 +1122,164 @@ Example:
     </property>
     <property>
       <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>8</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>129816e7-4a96-487d-8e55-bc963752a365</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory/>
+    </property>
+    <property>
+      <name>order</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>9</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>2fb766f5-0f06-442b-aac5-e7c8e72ab5d6</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>20</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>limit</name>
+    </property>
+    <property>
+      <type>com.xpn.xwiki.objects.classes.NumberClass</type>
     </property>
   </object>
 </xwikidoc>
