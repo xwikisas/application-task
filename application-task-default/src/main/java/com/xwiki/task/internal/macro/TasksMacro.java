@@ -43,10 +43,10 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.internal.TaskBlockProcessor;
 import com.xwiki.task.macro.TasksMacroParameters;
 import com.xwiki.task.model.Task;
@@ -126,12 +126,9 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
-                String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                    task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
-                    task.getName(), storageFormat), context.getSyntax());
-
+                String taskContent = getMacroContent(task, storageFormat, context);
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
-            } catch (NumberFormatException | ComponentLookupException | TaskException e) {
+            } catch (NumberFormatException | TaskException | ComponentLookupException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }
@@ -142,5 +139,23 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
         }
         blocks.addAll(errorList);
         return blocks;
+    }
+
+    private String getMacroContent(Task task, SimpleDateFormat storageFormat,
+        MacroTransformationContext context) throws TaskException, ComponentLookupException
+    {
+        String taskContent = task.getDescription();
+
+        // For backwards compatibility. When the macro content was computed using the task name, assignee and
+        // due date.
+        if ((taskContent == null || taskContent.trim().isEmpty()) && (task.getName() != null && !task.getName().trim()
+            .isEmpty()))
+
+        {
+            taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+                task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
+                task.getName(), storageFormat), context.getSyntax());
+        }
+        return taskContent;
     }
 }

@@ -45,9 +45,9 @@ import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
@@ -202,6 +202,7 @@ public class TaskXDOMProcessor
 
             XDOM macroContent = macroUtils.getMacroContentXDOM(macro, syntax);
             task.setName(macroUtils.renderMacroContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
+            task.setDescription(macro.getContent());
             task.setAssignee(extractAssignedUser(macroContent));
 
             Date deadline = extractDeadlineDate(macroContent);
@@ -231,7 +232,8 @@ public class TaskXDOMProcessor
 
                 List<Block> newTaskContentBlocks =
                     taskBlockProcessor.generateTaskContentBlocks(taskObject.getLargeStringValue(Task.ASSIGNEE),
-                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getStringValue(Task.NAME), storageFormat);
+                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
+                        storageFormat);
 
                 String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
 

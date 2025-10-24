@@ -178,6 +178,7 @@ public class DefaultTaskManager implements TaskManager
         task.setDuedate(obj.getDateValue(Task.DUE_DATE));
         task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
         task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
+        task.setDescription(obj.getLargeStringValue(Task.DESCRIPTION));
         return task;
     }
 }
