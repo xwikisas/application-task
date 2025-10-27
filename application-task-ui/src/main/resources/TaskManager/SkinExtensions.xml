@@ -126,37 +126,50 @@
     </property>
     <property>
       <code>require(['jquery'], function ($) {
-  $(document).on('change', '.task-status', function() {
-    let taskId = $(this).data('taskid');
-    if (taskId !== undefined) {
-      let checkbox = $(this);
-      let task = checkbox.parent('.task-macro');
+  $(document).on('change', '.task-status', function () {
+    let checkbox = $(this);
+    let taskId = checkbox.data('taskid');
+    let previousVal = !checkbox.prop('checked');
+    if (!taskId) {
+      checkbox.prop('checked', previousVal);
+      let notification = new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.noId')), "error");
+      return;
+    }
+    let task = checkbox.closest('.task-macro');
+    let restURL = "";
+    if (checkbox.closest(".taskbox").length &gt; 0) {
+      let rawId = checkbox.data('rawid');
+      restURL = XWiki.currentDocument.getRestURL() + '/taskbox/' + encodeURI(rawId) + '?checked=' + checkbox.prop('checked');
+    } else if (task.length &gt; 0) {
       let taskDocument = XWiki.Model.resolve(taskId, XWiki.EntityType.DOCUMENT, XWiki.currentDocument.documentReference);
       if (taskDocument.getReversedReferenceChain()[0].type != XWiki.EntityType.WIKI) {
         taskDocument.getReversedReferenceChain()[0].parent = new XWiki.WikiReference(XWiki.currentWiki);
       }
       let baseURL = new XWiki.Document(taskDocument).getRestURL();
-
-      let restURL = baseURL + '/task?status=toggle';
-
-      checkbox.prop("disabled", true);
-      let notification = new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.inprogress')), "inprogress");
-      $.ajax({
-        url: restURL,
-        type: 'PUT',
-        success: function() {
-          notification.replace(new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.success')), "done"));
-        },
-        error: function () {
-          notification.replace(new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.restFail')), "error"));
-        },
-        complete: function () {
-          checkbox.prop("disabled", false);
-        }
-      });
-    } else {
-      let notification = new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.noId')), "error");
+      restURL = baseURL + '/task?status=toggle';
     }
+    if (restURL == '') {
+      checkbox.prop('checked', previousVal);
+      let notification = new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.noId')), "error");
+      return;
+    }
+
+    checkbox.prop("disabled", true);
+    let notification = new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.inprogress')), "inprogress");
+    $.ajax({
+      url: restURL,
+      type: 'PUT',
+      success: function () {
+        notification.replace(new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.success')), "done"));
+      },
+      error: function () {
+        checkbox.prop('checked', previousVal);
+        notification.replace(new XWiki.widgets.Notification($jsontool.serialize($services.localization.render('taskmanager.notification.statusChange.restFail')), "error"));
+      },
+      complete: function () {
+        checkbox.prop("disabled", false);
+      }
+    });
   });
 });</code>
     </property>

@@ -21,6 +21,9 @@ package com.xwiki.task.test.ui;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestClassOrder;
+import org.junit.jupiter.api.ClassOrderer;
 import org.xwiki.test.docker.junit5.UITest;
 
 /**
@@ -29,12 +32,29 @@ import org.xwiki.test.docker.junit5.UITest;
  * @version $Id$
  * @since 2.6
  */
-@UITest
+@UITest(properties = {"xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin"}, extraJARs = {
+    "org.xwiki.platform:xwiki-platform-jodatime:14.10"}, resolveExtraJARs = true)
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
 class AllITs
 {
     @Nested
+    @Order(1)
     @DisplayName("Overall Task Manager UI")
     class NestedTaskManagerIT extends TaskManagerIT
+    {
+    }
+
+    @Nested
+    @Order(2)
+    @DisplayName("Gantt Task Manager UI")
+    class NestedGanttIT extends GanttIT
+    {
+    }
+
+    @Nested
+    @Order(3)
+    @DisplayName("Task Manager Notifications")
+    class NestedNotificationIT extends NotificationIT
     {
     }
 }

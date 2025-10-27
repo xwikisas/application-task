@@ -196,6 +196,7 @@ public class TaskXDOMProcessorTest
         when(this.taskObject.getDocumentReference()).thenReturn(this.task1Reference);
         when(this.taskObject.getStringValue(Task.NAME)).thenReturn(TASK1_ID);
         when(this.taskObject.getStringValue(Task.STATUS)).thenReturn(Task.STATUS_DONE);
+        when(this.taskObject.getLargeStringValue(Task.DESCRIPTION)).thenReturn(TASK1_ID);
         when(this.taskObject.getLargeStringValue(Task.ASSIGNEE)).thenReturn(adminReference.toString());
         when(this.taskObject.getLargeStringValue(Task.REPORTER)).thenReturn(adminReference.toString());
         when(this.taskObject.getDateValue(Task.DUE_DATE)).thenReturn(DEFAULT_TASK_DATE);

@@ -114,7 +114,7 @@ public class DefaultTaskManager implements TaskManager
                 queryManager.createQuery(statement, Query.HQL).setWiki(context.getWikiId()).bindValue("id", id)
                     .execute();
             if (results.size() > 0) {
-                DocumentReference documentReference = resolver.resolve(results.get(0));
+                DocumentReference documentReference = resolver.resolve(results.get(0), context.getWikiReference());
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null) {
@@ -150,7 +150,7 @@ public class DefaultTaskManager implements TaskManager
 
             List<String> results = query.execute();
             for (String result : results) {
-                DocumentReference taskRef = resolver.resolve(result);
+                DocumentReference taskRef = resolver.resolve(result, context.getWikiReference());
                 XWikiDocument document = context.getWiki().getDocument(taskRef, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null || !resolver.resolve(taskObject.getLargeStringValue(Task.OWNER), taskRef)
@@ -182,6 +182,7 @@ public class DefaultTaskManager implements TaskManager
         task.setDuedate(obj.getDateValue(Task.DUE_DATE));
         task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
         task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
+        task.setDescription(obj.getLargeStringValue(Task.DESCRIPTION));
         return task;
     }
 }

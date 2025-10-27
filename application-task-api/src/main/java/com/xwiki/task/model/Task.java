@@ -110,6 +110,23 @@ public class Task
      */
     public static final String PROGRESS = "progress";
 
+    /**
+     * The name of the PROJECT field.
+     */
+    public static final String PROJECT = "project";
+
+    /**
+     * The name of the SEVERITY field.
+     */
+    public static final String SEVERITY = "severity";
+
+    /**
+     * The name of the DESCRIPTION field.
+     *
+     * @since 3.10.0
+     */
+    public static final String DESCRIPTION = "description";
+
     private String name;
 
     private int number;
@@ -136,6 +153,12 @@ public class Task
     private Date completeDate;
 
     private int progress;
+
+    private String project;
+
+    private String severity;
+
+    private String description;
 
     /**
      * Default constructor.
@@ -361,5 +384,55 @@ public class Task
     public void setProgress(int progress)
     {
         this.progress = progress;
+    }
+
+    /**
+     * @return the severity of the task.
+     */
+    public String getSeverity()
+    {
+        return severity;
+    }
+
+    /**
+     * @param severity the severity of the task (Low,Medium,High).
+     */
+    public void setSeverity(String severity)
+    {
+        this.severity = severity;
+    }
+
+    /**
+     * @return the project the task is a part of.
+     */
+    public String getProject()
+    {
+        return project;
+    }
+
+    /**
+     * @param project the project the task is a part of.
+     */
+    public void setProject(String project)
+    {
+        this.project = project;
+    }
+
+    /**
+     * @return the description of the task that is stored in XWiki 2.1 syntax.
+     * @since 3.10.0
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @param description see {@link #getDescription()}.
+     * @since 3.10.0
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 }

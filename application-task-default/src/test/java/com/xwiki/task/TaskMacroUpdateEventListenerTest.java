@@ -231,6 +231,7 @@ class TaskMacroUpdateEventListenerTest
 
         verify(this.taskObj).set(Task.OWNER, this.pageWithMacro.toString(), this.context);
         verify(this.documentAuthors).setEffectiveMetadataAuthor(this.userRef);
+        verify(this.documentAuthors).setOriginalMetadataAuthor(this.userRef);
         verify(this.taskObj).set(Task.NAME, "Hello there", this.context);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);

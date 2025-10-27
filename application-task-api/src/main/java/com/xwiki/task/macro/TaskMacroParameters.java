@@ -25,9 +25,9 @@ import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.date.DateType;
 import com.xwiki.task.TaskReference;
 import com.xwiki.task.TaskStatus;
-import com.xwiki.date.DateType;
 
 /**
  * @version $Id$
@@ -45,6 +45,28 @@ public class TaskMacroParameters
     private String status;
 
     private String completeDate;
+
+    private IdDisplay idDisplayed;
+
+    private String className;
+
+    /**
+     * We define the values for the isDisplayed property as an enum in order to be able to detect when the property is
+     * not set.
+     *
+     * @since 3.8.0
+     */
+    public enum IdDisplay
+    {
+        /**
+         * Denotes that the id should be displayed.
+         */
+        TRUE,
+        /**
+         * Denotes that the id should not be displayed.
+         */
+        FALSE
+    }
 
     /**
      * @return the id of the task.
@@ -130,5 +152,42 @@ public class TaskMacroParameters
     public void setCompleteDate(String completeDate)
     {
         this.completeDate = completeDate;
+    }
+
+    /**
+     * @return whether the id and the link to the task page should be displayed.
+     * @since 3.8.0
+     */
+    public IdDisplay isIdDisplayed()
+    {
+        return idDisplayed;
+    }
+
+    /**
+     * @param idDisplayed see {@link #isIdDisplayed()}.
+     * @since 3.8.0
+     */
+    public void setIdDisplayed(IdDisplay idDisplayed)
+    {
+        this.idDisplayed = idDisplayed;
+    }
+
+    /**
+     * @return the name of the class that should identify this macro.
+     * @since 3.8.0
+     */
+    public String getClassName()
+    {
+        return className;
+    }
+
+    /**
+     * @param className see {@link #getClassName()}.
+     * @since 3.8.0
+     */
+    @PropertyDisplayHidden
+    public void setClassName(String className)
+    {
+        this.className = className;
     }
 }

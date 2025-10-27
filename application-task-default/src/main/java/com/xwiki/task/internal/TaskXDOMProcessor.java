@@ -204,6 +204,7 @@ public class TaskXDOMProcessor
 
             XDOM macroContent = macroUtils.getMacroContentXDOM(macro, syntax);
             task.setName(macroUtils.renderMacroContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
+            task.setDescription(macro.getContent());
             task.setAssignees(extractAssignedUser(macroContent));
 
             Date deadline = extractDeadlineDate(macroContent);
@@ -231,9 +232,10 @@ public class TaskXDOMProcessor
                 Syntax syntax =
                     (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
-                List<Block> newTaskContentBlocks = taskBlockProcessor.generateTaskContentBlocks(
-                    List.of(taskObject.getLargeStringValue(Task.ASSIGNEE).split(",")),
-                    taskObject.getDateValue(Task.DUE_DATE), taskObject.getStringValue(Task.NAME), storageFormat);
+                List<Block> newTaskContentBlocks =
+                    taskBlockProcessor.generateTaskContentBlocks(List.of(taskObject.getLargeStringValue(Task.ASSIGNEE).split(",")),
+                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
+                        storageFormat);
 
                 String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
 

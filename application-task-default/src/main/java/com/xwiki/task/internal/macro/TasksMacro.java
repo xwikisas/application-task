@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -126,14 +127,10 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                     task.getCreateDate() != null ? storageFormat.format(task.getCreateDate()) : "");
                 taskParams.put(Task.COMPLETE_DATE,
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
-                String taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                        task.getAssignees() != null ? task.getAssignees().stream().map(
-                            user -> serializer.serialize(user)).collect(Collectors.toList())
-                            : null, task.getDueDate(), task.getName(), storageFormat),
-                    context.getSyntax());
 
+                String taskContent = getMacroContent(task, storageFormat, context);
                 blocks.add(new MacroBlock("task", taskParams, taskContent, false));
-            } catch (NumberFormatException | ComponentLookupException | TaskException e) {
+            } catch (NumberFormatException | TaskException | ComponentLookupException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }
@@ -144,5 +141,24 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
         }
         blocks.addAll(errorList);
         return blocks;
+    }
+
+    private String getMacroContent(Task task, SimpleDateFormat storageFormat,
+        MacroTransformationContext context) throws TaskException, ComponentLookupException
+    {
+        String taskContent = task.getDescription();
+
+        // For backwards compatibility. When the macro content was computed using the task name, assignee and
+        // due date.
+        if ((taskContent == null || taskContent.trim().isEmpty()) && (task.getName() != null && !task.getName().trim()
+            .isEmpty()))
+
+        {
+            taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
+                task.getAssignees() != null ? task.getAssignees().stream().map(
+                    user -> serializer.serialize(user)).collect(Collectors.toList()) : null, task.getDueDate(),
+                task.getName(), storageFormat), context.getSyntax());
+        }
+        return taskContent;
     }
 }

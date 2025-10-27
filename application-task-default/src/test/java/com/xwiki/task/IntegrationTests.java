@@ -66,7 +66,9 @@ public class IntegrationTests
     {
         componentManager.registerMockComponent(SkinExtension.class, "ssx");
         componentManager.registerMockComponent(SkinExtension.class, "jsx");
-        componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
+        ConfigurationSource taskCfgSc =
+            componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
+        when(taskCfgSc.getProperty("isIdDisplayed", true)).thenReturn(true);
         componentManager.registerMockComponent(ConfigurationSource.class, "datemacro");
         componentManager.registerMockComponent(ScriptService.class, "taskmanager");
         componentManager.registerMockComponent(ScriptService.class, "datemacro");
@@ -102,6 +104,7 @@ public class IntegrationTests
         Task task = new Task();
         task.setReference(ref1);
         task.setName("Test name");
+        task.setDescription("Test name{{date value=\"2023/01/01 00:00\"/}}");
         task.setDuedate(dateFormat.parse("01/01/2023"));
         task.setNumber(1);
         task.setStatus(Task.STATUS_DONE);
@@ -112,6 +115,7 @@ public class IntegrationTests
         Task task2 = new Task();
         task2.setReference(ref2);
         task2.setName("Test name");
+        task2.setDescription("Test name{{date value=\"2023/01/01 00:00\"/}}");
         task2.setDuedate(dateFormat.parse("01/01/2023"));
         task2.setNumber(2);
         task2.setStatus(Task.STATUS_DONE);
@@ -135,6 +139,7 @@ public class IntegrationTests
 
         ConfigurationSource prefs = componentManager.registerMockComponent(ConfigurationSource.class, "wiki");
         when(prefs.getProperty("dateformat", "yyyy/MM/dd HH:mm")).thenReturn("yyyy/MM/dd HH:mm");
+        when(prefs.getProperty("isIdDisplayed", true)).thenReturn(true);
 
         componentManager.registerComponent(ComponentManager.class, "context", componentManager);
         componentManager.registerMockComponent(DocumentReferenceResolver.TYPE_STRING, "macro");

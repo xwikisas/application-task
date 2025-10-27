@@ -46,8 +46,10 @@ import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
 import org.xwiki.skinx.SkinExtension;
+import org.xwiki.xml.XMLUtils;
 
 import com.xwiki.task.MacroUtils;
+import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
 import com.xwiki.task.internal.TaskBlockProcessor;
@@ -98,6 +100,9 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
     @Inject
     private TaskReferenceUtils taskReferenceUtils;
 
+    @Inject
+    private TaskConfiguration taskConfiguration;
+
     /**
      * Default constructor.
      */
@@ -140,7 +145,10 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         Block ret = new GroupBlock();
         Map<String, String> blockParameters = new HashMap<>();
 
-        blockParameters.put(HTML_CLASS, "task-macro");
+        String className = "task-macro";
+        className = parameters.getClassName() == null || parameters.getClassName().isEmpty() ? className
+            : XMLUtils.escape(String.join(" ", className, parameters.getClassName()));
+        blockParameters.put(HTML_CLASS, className);
         ret.setParameters(blockParameters);
         String checked = "";
         if ((parameters.getStatus() != null && parameters.getStatus().equals(Task.STATUS_DONE))) {
@@ -152,20 +160,25 @@ public class TaskMacro extends AbstractMacro<TaskMacroParameters>
         EntityReference taskRef = taskReferenceUtils.resolve(parameters.getReference(), ownerDocRef);
         String taskId = taskReferenceUtils.serializeAsDocumentReference(taskRef, ownerDocRef);
         String htmlCheckbox =
-            String.format("<input type=\"checkbox\" data-taskId=\"%s\" %s class=\"task-status\">", taskId, checked);
+            String.format("<input type=\"checkbox\" data-taskId=\"%s\" data-rawid=\"%s\" %s class=\"task-status\">",
+                XMLUtils.escape(taskId), XMLUtils.escape(parameters.getReference()), checked);
         Block checkBoxBlock = new RawBlock(htmlCheckbox, Syntax.HTML_5_0);
 
         Block taskInfoBlock = new GroupBlock(Collections.singletonMap(HTML_CLASS, "task-info"));
 
         taskInfoBlock.addChild(new FormatBlock(Collections.singletonList(checkBoxBlock), Format.NONE));
 
-        try {
-            Task task = taskManager.getTask(taskRef);
-            taskInfoBlock.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
-        } catch (TaskException ignored) {
-            // The task page not existing is a valid scenario (when the user just added the task macro in the WYSIWYG).
+        if (TaskMacroParameters.IdDisplay.TRUE.equals(parameters.isIdDisplayed())
+            || (parameters.isIdDisplayed() == null && taskConfiguration.isIdDisplayed()))
+        {
+            try {
+                Task task = taskManager.getTask(taskRef);
+                taskInfoBlock.addChild(taskBlockProcessor.createTaskLinkBlock(taskId, task.getNumber()));
+            } catch (TaskException ignored) {
+                // The task page not existing is a valid scenario (when the user just added the task macro in the
+                // WYSIWYG).
+            }
         }
-
         ret.addChild(taskInfoBlock);
         ret.addChild(new GroupBlock(contentBlocks, Collections.singletonMap(HTML_CLASS, "task-content")));
         return Collections.singletonList(ret);
