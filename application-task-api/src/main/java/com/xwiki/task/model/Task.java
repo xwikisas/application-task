@@ -20,6 +20,7 @@
 package com.xwiki.task.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.stability.Unstable;
@@ -119,6 +120,13 @@ public class Task
      */
     public static final String SEVERITY = "severity";
 
+    /**
+     * The name of the DESCRIPTION field.
+     *
+     * @since 3.10.0
+     */
+    public static final String DESCRIPTION = "description";
+
     private String name;
 
     private int number;
@@ -131,7 +139,10 @@ public class Task
 
     private DocumentReference reporter;
 
+    @Deprecated(since = "3.7.2")
     private DocumentReference assignee;
+
+    private List<DocumentReference> assignees;
 
     private Date createDate;
 
@@ -146,6 +157,8 @@ public class Task
     private String project;
 
     private String severity;
+
+    private String description;
 
     /**
      * Default constructor.
@@ -230,6 +243,7 @@ public class Task
     /**
      * @return a list of references to the users that are assigned to this task.
      */
+    @Deprecated(since = "3.7.2")
     public DocumentReference getAssignee()
     {
         return assignee;
@@ -238,9 +252,26 @@ public class Task
     /**
      * @param assignee a list of references to the users that are assigned to this task.
      */
+    @Deprecated(since = "3.7.2")
     public void setAssignee(DocumentReference assignee)
     {
         this.assignee = assignee;
+    }
+
+    /**
+     * @return a list of references to the users that are assigned to this task.
+     */
+    public List<DocumentReference> getAssignees()
+    {
+        return assignees;
+    }
+
+    /**
+     * @param assignees a list of references to the users that are assigned to this task.
+     */
+    public void setAssignees(List<DocumentReference> assignees)
+    {
+        this.assignees = assignees;
     }
 
     /**
@@ -385,5 +416,23 @@ public class Task
     public void setProject(String project)
     {
         this.project = project;
+    }
+
+    /**
+     * @return the description of the task that is stored in XWiki 2.1 syntax.
+     * @since 3.10.0
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @param description see {@link #getDescription()}.
+     * @since 3.10.0
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 }

@@ -196,6 +196,7 @@ public class TaskXDOMProcessorTest
         when(this.taskObject.getDocumentReference()).thenReturn(this.task1Reference);
         when(this.taskObject.getStringValue(Task.NAME)).thenReturn(TASK1_ID);
         when(this.taskObject.getStringValue(Task.STATUS)).thenReturn(Task.STATUS_DONE);
+        when(this.taskObject.getLargeStringValue(Task.DESCRIPTION)).thenReturn(TASK1_ID);
         when(this.taskObject.getLargeStringValue(Task.ASSIGNEE)).thenReturn(adminReference.toString());
         when(this.taskObject.getLargeStringValue(Task.REPORTER)).thenReturn(adminReference.toString());
         when(this.taskObject.getDateValue(Task.DUE_DATE)).thenReturn(DEFAULT_TASK_DATE);
@@ -203,7 +204,8 @@ public class TaskXDOMProcessorTest
         when(this.taskObject.getDateValue(Task.CREATE_DATE)).thenReturn(DEFAULT_TASK_DATE);
         when(this.taskObject.getIntValue(Task.NUMBER)).thenReturn(1);
 
-        when(this.taskBlockProcessor.generateTaskContentBlocks(eq(adminReference.toString()), eq(DEFAULT_TASK_DATE),
+        when(this.taskBlockProcessor.generateTaskContentBlocks(eq(List.of(adminReference.toString())),
+            eq(DEFAULT_TASK_DATE),
             eq(TASK1_ID), any(SimpleDateFormat.class))).thenReturn(Collections.emptyList());
         when(this.macroUtils.renderMacroContent(Collections.emptyList(), Syntax.XWIKI_2_1)).thenReturn(
             "TaskContent");
@@ -218,7 +220,8 @@ public class TaskXDOMProcessorTest
         verify(this.taskMacro1).setParameter(Task.STATUS, Task.STATUS_DONE);
         verify(this.taskMacro1).setParameter(Task.CREATE_DATE, DEFAULT_TASK_DATE_STRING);
         verify(this.taskMacro1).setParameter(Task.REPORTER, this.adminReference.toString());
-        verify(this.taskBlockProcessor).generateTaskContentBlocks(eq(adminReference.toString()), eq(DEFAULT_TASK_DATE),
+        verify(this.taskBlockProcessor).generateTaskContentBlocks(eq(List.of(adminReference.toString())),
+            eq(DEFAULT_TASK_DATE),
             eq(TASK1_ID), any(SimpleDateFormat.class));
         verify(this.macroUtils).renderMacroContent(Collections.emptyList(), Syntax.XWIKI_2_1);
     }

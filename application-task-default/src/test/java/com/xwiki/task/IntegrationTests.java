@@ -104,6 +104,7 @@ public class IntegrationTests
         Task task = new Task();
         task.setReference(ref1);
         task.setName("Test name");
+        task.setDescription("Test name{{date value=\"2023/01/01 00:00\"/}}");
         task.setDuedate(dateFormat.parse("01/01/2023"));
         task.setNumber(1);
         task.setStatus(Task.STATUS_DONE);
@@ -114,6 +115,7 @@ public class IntegrationTests
         Task task2 = new Task();
         task2.setReference(ref2);
         task2.setName("Test name");
+        task2.setDescription("Test name{{date value=\"2023/01/01 00:00\"/}}");
         task2.setDuedate(dateFormat.parse("01/01/2023"));
         task2.setNumber(2);
         task2.setStatus(Task.STATUS_DONE);

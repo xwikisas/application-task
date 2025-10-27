@@ -22,9 +22,11 @@ package com.xwiki.task.internal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -45,9 +47,9 @@ import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
-import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.task.model.Task;
 
 /**
@@ -202,7 +204,8 @@ public class TaskXDOMProcessor
 
             XDOM macroContent = macroUtils.getMacroContentXDOM(macro, syntax);
             task.setName(macroUtils.renderMacroContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
-            task.setAssignee(extractAssignedUser(macroContent));
+            task.setDescription(macro.getContent());
+            task.setAssignees(extractAssignedUser(macroContent));
 
             Date deadline = extractDeadlineDate(macroContent);
 
@@ -230,8 +233,10 @@ public class TaskXDOMProcessor
                     (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
                 List<Block> newTaskContentBlocks =
-                    taskBlockProcessor.generateTaskContentBlocks(taskObject.getLargeStringValue(Task.ASSIGNEE),
-                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getStringValue(Task.NAME), storageFormat);
+                    taskBlockProcessor.generateTaskContentBlocks(
+                        List.of(taskObject.getLargeStringValue(Task.ASSIGNEE).split(",")),
+                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
+                        storageFormat);
 
                 String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);
 
@@ -304,14 +309,16 @@ public class TaskXDOMProcessor
         }
     }
 
-    private DocumentReference extractAssignedUser(XDOM taskContent)
+    private List<DocumentReference> extractAssignedUser(XDOM taskContent)
     {
-        MacroBlock macro = taskContent.getFirstBlock(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
+        List<MacroBlock> macros = taskContent.getBlocks(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
 
-        if (macro == null) {
-            return null;
+        if (macros == null) {
+            return Collections.emptyList();
         }
-        return resolver.resolve(macro.getParameters().get(Task.REFERENCE));
+
+        return macros.stream().map(macroBlock -> resolver.resolve(macroBlock.getParameters().get(Task.REFERENCE)))
+            .collect(Collectors.toList());
     }
 
     private Date extractDeadlineDate(XDOM taskContent)

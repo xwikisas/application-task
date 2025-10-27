@@ -28,13 +28,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
+import org.xwiki.contrib.application.task.test.po.TaskElement;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.panels.test.po.ApplicationsPanel;
@@ -52,6 +55,7 @@ import org.xwiki.test.ui.po.editor.WikiEditPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -78,6 +82,8 @@ class TaskManagerIT
 
     private final LocalDocumentReference docWithTaskboxes = new LocalDocumentReference("Taskboxes", "WebHome");
 
+    private final LocalDocumentReference pageWithMultiUserTask = new LocalDocumentReference("Main", "MultiUser");
+
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
 
@@ -86,6 +92,11 @@ class TaskManagerIT
             + "completeDate=\"2023/01/01 12:00\"}}"
             + "Do this {{mention reference=\"XWiki.Admin\"/}} as late as {{date value=\"2023/01/01 12:00\"/}}"
             + "{{/task}}";
+
+    private static final String MULTI_USER_TASK = "{{task reference=\"Task_4\" createDate=\"2025/04/28 14:51\" "
+        + "reporter=\"XWiki.afarcasi\"}}\n {{mention reference=\"XWiki.rob\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-afarcasi-v7dmha\"/}} {{mention reference=\"XWiki.tod\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-tcaras-mz6chz\"/}} \n {{/task}}";
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
 
@@ -195,6 +206,29 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
+    void multiUserTask(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithMultiUserTask, wiki);
+
+        setup.createPage(testRef, MULTI_USER_TASK, testRef.getName());
+        ViewPageWithTasks page = new ViewPageWithTasks();
+        page.getTaskMacroLink(0).click();
+        TaskManagerViewPage viewPage = new TaskManagerViewPage();
+        assertEquals("rob,tod", viewPage.getAssignee());
+        viewPage.edit();
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        inlinePage.waitUntilPageIsReady();
+        inlinePage.appendAssignee("bob");
+        inlinePage.clickSaveAndView();
+        setup.gotoPage(testRef);
+        ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
+        assertEquals("@rob @tod\n@bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
+
+    }
+
+    @ParameterizedTest
+    @WikisSource()
     @Order(50)
     void taskMacroAndTaskPageRelation(WikiReference wiki, TestUtils setup)
     {
@@ -209,15 +243,43 @@ class TaskManagerIT
         inlinePage.waitUntilPageIsReady();
         // Changing a property of the page should change the macro call.
         inlinePage.setStatus("ToDo");
+        inlinePage.setAssignee("XWiki.Teo");
+        inlinePage.setDueDate("30/10/2025 14:25:00");
         inlinePage.clickSaveAndView();
         setup.gotoPage(testRef);
         ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
-        assertFalse(viewPageWithTaskMacro.isTaskMacroCheckboxChecked(0));
-        // Changing the property of the macro call should change the page.
-        viewPageWithTaskMacro.clickTaskMacroCheckbox(0);
-        viewPageWithTaskMacro.getTaskMacroLink(0).click();
-        viewPage = new TaskManagerViewPage();
+        TaskElement taskElement = viewPageWithTaskMacro.getTasks().get(0);
+        assertFalse(taskElement.isChecked());
+        assertEquals("@Teo", taskElement.getAssignee());
+        assertEquals("2025/10/30 14:25", taskElement.getDueDate());
+        // Toggling the checkbox should change the status of the task page.
+        taskElement.toggleCheckbox();
+        viewPage = taskElement.goToTaskPage();
         assertEquals("Done", viewPage.getStatus());
+        // Removing the mention and date macro should remove the assignee and due date from the task page.
+        String complexMacroSimplified =
+            "{{task reference=\"Task_3\" reporter=\"XWiki.Admin\" createDate=\"2023/01/01 12:00\" status=\"Done\" "
+                + "completeDate=\"2023/01/01 12:00\"}}"
+                + "Do this"
+                + "{{/task}}";
+        setContentToPage(setup, testRef, complexMacroSimplified);
+        viewPageWithTaskMacro = new ViewPageWithTasks();
+        viewPageWithTaskMacro.getTasks().get(0).goToTaskPage();
+        viewPage = new TaskManagerViewPage();
+        assertEquals("", viewPage.getAssignee());
+        assertEquals("", viewPage.getDueDate());
+        // Reset the macro.
+        setContentToPage(setup, testRef, COMPLEX_TASKS);
+    }
+
+    private void setContentToPage(TestUtils setup, EntityReference testRef, String content)
+    {
+        setup.gotoPage(testRef);
+        ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
+        WikiEditPage editPage = viewPageWithTaskMacro.editWiki();
+        editPage.clearContent();
+        editPage.setContent(content);
+        editPage.clickSaveAndView(true);
     }
 
     @ParameterizedTest
@@ -242,7 +304,7 @@ class TaskManagerIT
         assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
         assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
         row = taskReport.getRow(3);
-        assertEquals("#3\nDo this  as late as @Admin 2023/01/01 12:00",
+        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
             taskReport.getCell(row, taskTileCellIndex).getText());
         assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
         assertEquals("Admin", taskReport.getCell(row, taskAssigneeCellIndex).getText());
