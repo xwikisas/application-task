@@ -76,6 +76,8 @@ class TaskManagerIT
 
     private final LocalDocumentReference docWithTaskboxes = new LocalDocumentReference("Taskboxes", "WebHome");
 
+    private final LocalDocumentReference pageWithMultiUserTask = new LocalDocumentReference("Main", "MultiUser");
+
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
 
@@ -84,6 +86,11 @@ class TaskManagerIT
             + "completeDate=\"2023/01/01 12:00\"}}"
             + "Do this {{mention reference=\"XWiki.Admin\"/}} as late as {{date value=\"2023/01/01 12:00\"/}}"
             + "{{/task}}";
+
+    private static final String MULTI_USER_TASK = "{{task reference=\"Task_4\" createDate=\"2025/04/28 14:51\" "
+        + "reporter=\"XWiki.afarcasi\"}}\n {{mention reference=\"XWiki.rob\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-afarcasi-v7dmha\"/}} {{mention reference=\"XWiki.tod\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-tcaras-mz6chz\"/}} \n {{/task}}";
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
 
@@ -193,6 +200,29 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
+    void multiUserTask(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithMultiUserTask, wiki);
+
+        setup.createPage(testRef, MULTI_USER_TASK, testRef.getName());
+        ViewPageWithTasks page = new ViewPageWithTasks();
+        page.getTaskMacroLink(0).click();
+        TaskManagerViewPage viewPage = new TaskManagerViewPage();
+        assertEquals("rob,tod", viewPage.getAssignee());
+        viewPage.edit();
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        inlinePage.waitUntilPageIsReady();
+        inlinePage.appendAssignee("bob");
+        inlinePage.clickSaveAndView();
+        setup.gotoPage(testRef);
+        ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
+        assertEquals("@rob @tod\n@bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
+
+    }
+
+    @ParameterizedTest
+    @WikisSource()
     @Order(5)
     void taskMacroAndTaskPageRelation(WikiReference wiki, TestUtils setup)
     {
@@ -230,7 +260,7 @@ class TaskManagerIT
         viewPageWithTaskMacro = new ViewPageWithTasks();
         viewPageWithTaskMacro.getTasks().get(0).goToTaskPage();
         viewPage = new TaskManagerViewPage();
-        assertThrows(NoSuchElementException.class, viewPage::getAssignee);
+        assertEquals("", viewPage.getAssignee());
         assertEquals("", viewPage.getDueDate());
         // Reset the macro.
         setContentToPage(setup, testRef, COMPLEX_TASKS);
