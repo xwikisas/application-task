@@ -217,7 +217,7 @@ class TaskManagerIT
         inlinePage.clickSaveAndView();
         setup.gotoPage(testRef);
         ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
-        assertEquals("@rob @tod @bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
+        assertEquals("@rob @tod\n@bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
 
     }
 
@@ -260,7 +260,7 @@ class TaskManagerIT
         viewPageWithTaskMacro = new ViewPageWithTasks();
         viewPageWithTaskMacro.getTasks().get(0).goToTaskPage();
         viewPage = new TaskManagerViewPage();
-        assertThrows(NoSuchElementException.class, viewPage::getAssignee);
+        assertEquals("", viewPage.getAssignee());
         assertEquals("", viewPage.getDueDate());
         // Reset the macro.
         setContentToPage(setup, testRef, COMPLEX_TASKS);

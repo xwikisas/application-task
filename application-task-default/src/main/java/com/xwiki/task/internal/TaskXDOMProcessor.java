@@ -233,7 +233,8 @@ public class TaskXDOMProcessor
                     (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
                 List<Block> newTaskContentBlocks =
-                    taskBlockProcessor.generateTaskContentBlocks(List.of(taskObject.getLargeStringValue(Task.ASSIGNEE).split(",")),
+                    taskBlockProcessor.generateTaskContentBlocks(
+                        List.of(taskObject.getLargeStringValue(Task.ASSIGNEE).split(",")),
                         taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
                         storageFormat);
 
