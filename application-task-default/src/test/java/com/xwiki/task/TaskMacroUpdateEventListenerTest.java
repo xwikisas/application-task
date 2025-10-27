@@ -23,6 +23,7 @@ package com.xwiki.task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Named;
 
@@ -51,7 +52,6 @@ import org.xwiki.user.internal.document.DocumentUserReference;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.ObjectDiff;
@@ -188,7 +188,7 @@ class TaskMacroUpdateEventListenerTest
         task_1.setReference(taskPage_1);
         task_1.setReporter(adminRef);
         task_1.setDuedate(date1);
-        task_1.setAssignee(adminRef);
+        task_1.setAssignees(List.of(adminRef));
         task_1.setName(TASK_NAME);
         task_1.setCompleteDate(date1);
         task_1.setStatus(Task.STATUS_DONE);
@@ -199,7 +199,7 @@ class TaskMacroUpdateEventListenerTest
         task.setReference(taskPage);
         task.setReporter(adminRef);
         task.setDuedate(date1);
-        task.setAssignee(adminRef);
+        task.setAssignees(List.of(adminRef));
         task.setName(TASK_NAME);
         task.setCompleteDate(date1);
         task.setStatus(Task.STATUS_DONE);
@@ -231,6 +231,7 @@ class TaskMacroUpdateEventListenerTest
 
         verify(this.taskObj).set(Task.OWNER, this.pageWithMacro.toString(), this.context);
         verify(this.documentAuthors).setEffectiveMetadataAuthor(this.userRef);
+        verify(this.documentAuthors).setOriginalMetadataAuthor(this.userRef);
         verify(this.taskObj).set(Task.NAME, "Hello there", this.context);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);

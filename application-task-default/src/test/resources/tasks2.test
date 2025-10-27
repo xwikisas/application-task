@@ -13,7 +13,7 @@ beginMacroMarkerStandalone [task] [reference=Sandbox.Task|reporter=XWiki.User1|s
 beginGroup [[class]=[task-macro]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
-onRawText [<input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status">] [html/5.0]
+onRawText [<input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status">] [html/5.0]
 endFormat [NONE]
 beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
 onSpecialSymbol [#]
@@ -40,7 +40,7 @@ beginMacroMarkerStandalone [task] [reference=Sandbox.Task2|reporter=XWiki.User1|
 beginGroup [[class]=[task-macro]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
-onRawText [<input type="checkbox" data-taskId="Sandbox.Task2" checked class="task-status">] [html/5.0]
+onRawText [<input type="checkbox" data-taskId="Sandbox.Task2" data-rawid="Sandbox.Task2" checked class="task-status">] [html/5.0]
 endFormat [NONE]
 beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task2]] [false]
 onSpecialSymbol [#]
@@ -68,4 +68,4 @@ endDocument
 .#-----------------------------------------------------
 .expect|xhtml/1.0
 .#-----------------------------------------------------
-<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div><div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task2" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task2">#2</a></span></div><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div>
+<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div><div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task2" data-rawid="Sandbox.Task2" checked class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task2">#2</a></span></div><div class="task-content"><p>Test name<span class="xwiki-date">2023/01/01 00:00</span></p></div></div>

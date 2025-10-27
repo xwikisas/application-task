@@ -19,8 +19,10 @@
  */
 package com.xwiki.task.internal;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -112,7 +114,7 @@ public class DefaultTaskManager implements TaskManager
                 queryManager.createQuery(statement, Query.HQL).setWiki(context.getWikiId()).bindValue("id", id)
                     .execute();
             if (results.size() > 0) {
-                DocumentReference documentReference = resolver.resolve(results.get(0));
+                DocumentReference documentReference = resolver.resolve(results.get(0), context.getWikiReference());
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null) {
@@ -148,7 +150,7 @@ public class DefaultTaskManager implements TaskManager
 
             List<String> results = query.execute();
             for (String result : results) {
-                DocumentReference taskRef = resolver.resolve(result);
+                DocumentReference taskRef = resolver.resolve(result, context.getWikiReference());
                 XWikiDocument document = context.getWiki().getDocument(taskRef, context);
                 BaseObject taskObject = document.getXObject(TASK_CLASS_REFERENCE);
                 if (taskObject == null || !resolver.resolve(taskObject.getLargeStringValue(Task.OWNER), taskRef)
@@ -171,13 +173,16 @@ public class DefaultTaskManager implements TaskManager
         task.setName(obj.getStringValue(Task.NAME));
         task.setNumber(obj.getIntValue(Task.NUMBER));
         task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), obj.getDocumentReference()));
-        String assignee = obj.getLargeStringValue(Task.ASSIGNEE);
-        task.setAssignee(assignee.isEmpty() ? null : resolver.resolve(assignee));
+        String assignees = obj.getLargeStringValue(Task.ASSIGNEE);
+        task.setAssignees(assignees.isEmpty() ? null
+            : Arrays.stream(assignees.split(",")).map(user -> resolver.resolve(user))
+            .collect(Collectors.toList()));
         task.setStatus(obj.getStringValue(Task.STATUS));
         task.setReporter(resolver.resolve(obj.getLargeStringValue(Task.REPORTER)));
         task.setDuedate(obj.getDateValue(Task.DUE_DATE));
         task.setCreateDate(obj.getDateValue(Task.CREATE_DATE));
         task.setCompleteDate(obj.getDateValue(Task.COMPLETE_DATE));
+        task.setDescription(obj.getLargeStringValue(Task.DESCRIPTION));
         return task;
     }
 }

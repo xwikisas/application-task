@@ -103,22 +103,27 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
+        // The handling of the fold event needs not be wrapped in a recursion check so it will get executed.
         if (maybeHandleFoldEvent(document, context, inFoldEvent)) {
             return;
         }
 
-        if (event instanceof DocumentDeletingEvent) {
-            try {
-                context.put(TASK_UPDATE_FLAG, true);
+        context.put(TASK_UPDATE_FLAG, true);
+        try {
+            if (event instanceof DocumentDeletingEvent) {
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
-            } catch (TaskException e) {
-                logger.error("Failed to delete the tasks that have the current document as owner:", e);
-            } finally {
-                context.put(TASK_UPDATE_FLAG, null);
+                return;
             }
-            return;
+            updateTaskPages(document, context);
+        } catch (TaskException e) {
+            logger.error("Failed to delete the tasks that have the current document as owner:", e);
+        } catch (Exception e) {
+            logger.error(
+                "Something went wrong during the updating of the task pages bound to the task macros present in [{}].",
+                document.getDocumentReference(), e);
+        } finally {
+            context.put(TASK_UPDATE_FLAG, null);
         }
-        updateTaskPages(document, context);
     }
 
     private boolean maybeHandleFoldEvent(XWikiDocument document, XWikiContext context, boolean inFoldEvent)
@@ -165,10 +170,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
             previousDocTasks.removeIf(task -> currentTasksIds.contains(task.getReference()));
         }
         if (!tasks.isEmpty() || !previousDocTasks.isEmpty()) {
-            context.put(TASK_UPDATE_FLAG, true);
             deleteTaskPages(document, context, previousDocTasks);
             createOrUpdateTaskPages(document, context, tasks);
-            context.put(TASK_UPDATE_FLAG, null);
         }
     }
 
@@ -244,7 +247,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     {
         BaseObject clonedObj = taskObj.clone();
         UserReference currentUser = userRefResolver.resolve(context.getUserReference());
-        taskDoc.getAuthors().setEffectiveMetadataAuthor(currentUser);
+        taskDoc.getAuthors().setOriginalMetadataAuthor(currentUser);
         clonedObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference),
             context);
         populateObjectWithMacroParams(context, task, clonedObj);
@@ -255,6 +258,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         if (taskDoc.isNew()) {
             taskDoc.setHidden(true);
             taskDoc.getAuthors().setCreator(currentUser);
+            taskDoc.getAuthors().setEffectiveMetadataAuthor(currentUser);
         }
         return docChanged;
     }
@@ -269,13 +273,18 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     {
         object.set(Task.NAME, task.getName(), context);
 
+        object.set(Task.DESCRIPTION, task.getDescription(), context);
+
         object.set(Task.REPORTER, serializer.serialize(task.getReporter()), context);
 
         object.set(Task.STATUS, task.getStatus(), context);
 
         object.set(Task.CREATE_DATE, task.getCreateDate(), context);
 
-        object.set(Task.ASSIGNEE, serializer.serialize(task.getAssignee()), context);
+        String assignees =
+            task.getAssignees().stream().map(user -> serializer.serialize(user))
+                .collect(Collectors.joining(","));
+        object.set(Task.ASSIGNEE, assignees, context);
 
         object.set(Task.DUE_DATE, task.getDueDate(), context);
 

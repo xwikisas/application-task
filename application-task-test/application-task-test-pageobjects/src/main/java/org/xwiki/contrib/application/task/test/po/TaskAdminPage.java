@@ -20,6 +20,7 @@
 package org.xwiki.contrib.application.task.test.po;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
@@ -37,6 +38,15 @@ public class TaskAdminPage extends AdministrationSectionPage
     @FindBy(id = "TaskManager.TaskManagerClass_0_defaultInlineStatus")
     private WebElement defaultInlineStatusElement;
 
+    @FindBy(id = "project")
+    private WebElement addProjectTextInput;
+
+    @FindBy(id = "severity")
+    private WebElement addSeverityTextInput;
+
+    @FindBy(id = "status")
+    private WebElement addStatusTextInput;
+
     private Select defaultInlineStatusSelect;
 
     public static TaskAdminPage gotoPage()
@@ -45,8 +55,9 @@ public class TaskAdminPage extends AdministrationSectionPage
         return new TaskAdminPage();
     }
 
-    public void forceEdit(){
-        getDriver().findElement(By.cssSelector(".panel-body > a")).click();;
+    public void forceEdit()
+    {
+        getDriver().navigate().to(getDriver().getCurrentUrl() + "&forceEdit=1&force=1");
     }
 
     public TaskAdminPage()
@@ -64,7 +75,53 @@ public class TaskAdminPage extends AdministrationSectionPage
         getDefaultInlineStatusSelect().selectByVisibleText(value);
     }
 
-    private Select getDefaultInlineStatusSelect() {
+    /**
+     * Create a new project for tasks.
+     *
+     * @param projectName Name that will be used for the new project
+     * @since 3.7.2
+     */
+    public void addNewProject(String projectName)
+    {
+        addProjectTextInput.click();
+        addProjectTextInput.clear();
+        addProjectTextInput.sendKeys(projectName);
+        addProjectTextInput.sendKeys(Keys.ENTER);
+        getDriver().waitUntilPageIsReloaded();
+    }
+
+    /**
+     * Create a new severity class for tasks (e.g. High priority).
+     *
+     * @param severityName Name that will be used for the new severity class
+     * @since 3.7.2
+     */
+    public void addNewSeverity(String severityName)
+    {
+        addSeverityTextInput.click();
+        addSeverityTextInput.clear();
+        addSeverityTextInput.sendKeys(severityName);
+        addSeverityTextInput.sendKeys(Keys.ENTER);
+        getDriver().waitUntilPageIsReloaded();
+    }
+
+    /**
+     * Create a new status for tasks (e.g. ToDo, Done).
+     *
+     * @param statusName Name that will be used for the new status
+     * @since 3.7.2
+     */
+    public void addNewStatus(String statusName)
+    {
+        addStatusTextInput.click();
+        addStatusTextInput.clear();
+        addStatusTextInput.sendKeys(statusName);
+        addStatusTextInput.sendKeys(Keys.ENTER);
+        getDriver().waitUntilPageIsReloaded();
+    }
+
+    private Select getDefaultInlineStatusSelect()
+    {
         if (defaultInlineStatusSelect == null) {
             defaultInlineStatusSelect = new Select(defaultInlineStatusElement);
         }

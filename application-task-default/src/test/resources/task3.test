@@ -1,0 +1,55 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.0
+.# Task macro test with multiple users inside
+.#-----------------------------------------------------
+{{task reference="Sandbox.Task" createDate="2025-04-28" reporter="XWiki.superadmin" status="InProgress" completeDate=""}}
+   {{mention reference="XWiki.Admin" anchor="XWiki-Admin-SdPsS" style="FULL_NAME"/}}{{mention reference="XWiki.testest" anchor="XWiki-testest-ZiyFB" style="FULL_NAME"/}}
+{{/task}}
+.#-----------------------------------------------------
+.expect|event/1.0
+.#-----------------------------------------------------
+beginDocument
+beginMacroMarkerStandalone [task] [reference=Sandbox.Task|createDate=2025-04-28|reporter=XWiki.superadmin|status=InProgress|completeDate=] [   {{mention reference="XWiki.Admin" anchor="XWiki-Admin-SdPsS" style="FULL_NAME"/}}{{mention reference="XWiki.testest" anchor="XWiki-testest-ZiyFB" style="FULL_NAME"/}}]
+beginGroup [[class]=[task-macro]]
+beginGroup [[class]=[task-info]]
+beginFormat [NONE]
+onRawText [<input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task"  class="task-status">] [html/5.0]
+endFormat [NONE]
+beginLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
+onSpecialSymbol [#]
+onWord [1]
+endLink [Typed = [true] Type = [doc] Reference = [Sandbox.Task]] [false]
+endGroup [[class]=[task-info]]
+beginGroup [[class]=[task-content]]
+beginMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+beginParagraph
+onSpace
+onSpace
+onSpace
+beginMacroMarkerInline [mention] [reference=XWiki.Admin|anchor=XWiki-Admin-SdPsS|style=FULL_NAME]
+beginFormat [NONE] [[class]=[xwikirenderingerror]]
+onWord [Unknown macro: mention. Click on this message for details.]
+endFormat [NONE] [[class]=[xwikirenderingerror]]
+beginFormat [NONE] [[class]=[xwikirenderingerrordescription hidden]]
+onVerbatim [The [mention] macro is not in the list of registered macros. Verify the spelling or contact your administrator.] [true]
+endFormat [NONE] [[class]=[xwikirenderingerrordescription hidden]]
+endMacroMarkerInline [mention] [reference=XWiki.Admin|anchor=XWiki-Admin-SdPsS|style=FULL_NAME]
+beginMacroMarkerInline [mention] [reference=XWiki.testest|anchor=XWiki-testest-ZiyFB|style=FULL_NAME]
+beginFormat [NONE] [[class]=[xwikirenderingerror]]
+onWord [Unknown macro: mention. Click on this message for details.]
+endFormat [NONE] [[class]=[xwikirenderingerror]]
+beginFormat [NONE] [[class]=[xwikirenderingerrordescription hidden]]
+onVerbatim [The [mention] macro is not in the list of registered macros. Verify the spelling or contact your administrator.] [true]
+endFormat [NONE] [[class]=[xwikirenderingerrordescription hidden]]
+endMacroMarkerInline [mention] [reference=XWiki.testest|anchor=XWiki-testest-ZiyFB|style=FULL_NAME]
+endParagraph
+endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
+endGroup [[class]=[task-content]]
+endGroup [[class]=[task-macro]]
+endMacroMarkerStandalone [task] [reference=Sandbox.Task|createDate=2025-04-28|reporter=XWiki.superadmin|status=InProgress|completeDate=] [   {{mention reference="XWiki.Admin" anchor="XWiki-Admin-SdPsS" style="FULL_NAME"/}}{{mention reference="XWiki.testest" anchor="XWiki-testest-ZiyFB" style="FULL_NAME"/}}]
+endDocument
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task" data-rawid="Sandbox.Task"  class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task">#1</a></span></div><div class="task-content"><p>&nbsp;&nbsp;&nbsp;<span class="xwikirenderingerror">Unknown macro: mention. Click on this message for details.</span><span class="xwikirenderingerrordescription hidden"><tt class="wikimodel-verbatim">The [mention] macro is not in the list of registered macros. Verify the spelling or contact your administrator.</tt></span><span class="xwikirenderingerror">Unknown macro: mention. Click on this message for details.</span><span class="xwikirenderingerrordescription hidden"><tt class="wikimodel-verbatim">The [mention] macro is not in the list of registered macros. Verify the spelling or contact your administrator.</tt></span></p></div></div>
