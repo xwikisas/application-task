@@ -60,6 +60,9 @@ public class TaskManagerViewPage extends ViewPage
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "progress\"]/../../dd/div/div/span")
     private WebElement progressElement;
 
+    @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "owner\"]/../../dd/a")
+    private WebElement ownerElement;
+
     /**
      * Opens the home page.
      */
@@ -95,15 +98,18 @@ public class TaskManagerViewPage extends ViewPage
         return progressElement.getText();
     }
 
-    public String getCreateDate() {
+    public String getCreateDate()
+    {
         return completionDateElement.getText();
     }
 
-    public String getCompletionDate() {
+    public String getCompletionDate()
+    {
         return completionDateElement.getText();
     }
 
-    public String getDueDate() {
+    public String getDueDate()
+    {
         return dueDateElement.getText();
     }
 
@@ -115,5 +121,14 @@ public class TaskManagerViewPage extends ViewPage
     public String getReporter()
     {
         return reporterElement.getText();
+    }
+
+    /**
+     * @return the owner element of the page.
+     * @since 3.10.0
+     */
+    public String getOwner()
+    {
+        return ownerElement.getText();
     }
 }
