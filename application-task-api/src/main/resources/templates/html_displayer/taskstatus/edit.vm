@@ -17,21 +17,13 @@
 ## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
-#set ($st = "select prop1.value from BaseObject as obj, StringProperty as prop1, IntegerProperty as prop2
-where obj.className='TaskManager.StatusClass'
-and obj.id=prop1.id.id
-and prop1.id.name='status'
-and obj.id=prop2.id.id
-and prop2.id.name='order'
-order by prop2.value")
-#set ($results = $services.query.hql($st).execute())
 <select
   #foreach ($parameter in $displayer.parameters.entrySet())
     $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
   #end
 >
   #set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_status_')
-  #foreach ($item in $results)
+  #foreach ($item in $services.task.getSortedStatuses())
     #set ($translationKey = $translationKeyPrefix + $item)
     #if ($services.localization.get($translationKey))
       #set ($label = $services.localization.render($translationKey))
