@@ -306,6 +306,8 @@
 
 .task-info {
   padding-right: 0.5em;
+  display: flex;
+  align-items: center;
 }
 
 .task-status {
