@@ -70,7 +70,13 @@
     #if ("$!row.number" == '')
       #set ($row.name = $services.localization.render('taskmanager.livetable.noRights'))
     #else
-      #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+      #set ($discard = $services.task.configuration)
+      #if ($doc)
+        #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+      ## $doc does not seem to be available in the livedata template executor, so we use the sdoc intead.
+      #elseif ($sdoc)
+        #set ($row.name = $sdoc.getRenderedContent("{{tasks ids='${row.number}'/}}", $sdoc.syntax))
+      #end
     #end
   #end
   #jsonResponse($map)
