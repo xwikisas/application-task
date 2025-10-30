@@ -263,8 +263,8 @@
 #set ($creator = $xcontext.macro.params.reporters)
 #set ($createdAfter = $xcontext.macro.params.createdAfter)
 #set ($status = $xcontext.macro.params.status)
-#set ($sortBy = $wikimacro.parameters.sortBy)
-#set ($displayColumns = $wikimacro.parameters.columns)
+#set ($sortBy = $xcontext.macro.params.sortBy)
+#set ($displayColumns = $xcontext.macro.params.columns)
 #set ($rowCount = $wikimacro.parameters.limit)
 #set ($tableId = $escapetool.xml($wikimacro.parameters.id))
 #set ($spaceFilter = [])
@@ -1062,7 +1062,7 @@ $jsontool.serialize($livedataCfg)
       <name>columns</name>
     </property>
     <property>
-      <type>java.lang.String</type>
+      <type>java.util.SortedSet&lt;com.xwiki.task.TaskReference&gt;</type>
     </property>
   </object>
   <object>
@@ -1141,7 +1141,7 @@ $jsontool.serialize($livedataCfg)
       <name>sortBy</name>
     </property>
     <property>
-      <type>java.lang.String</type>
+      <type>java.util.Comparator&lt;com.xwiki.task.TaskReference&gt;</type>
     </property>
   </object>
   <object>
