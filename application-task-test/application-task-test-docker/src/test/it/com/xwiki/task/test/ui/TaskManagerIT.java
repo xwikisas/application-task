@@ -19,6 +19,8 @@
  */
 package com.xwiki.task.test.ui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
@@ -26,14 +28,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebElement;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskElement;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.LocalDocumentReference;
@@ -44,13 +45,15 @@ import org.xwiki.test.docker.junit5.TestReference;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
-import org.xwiki.test.ui.po.LiveTableElement;
+import org.xwiki.test.ui.po.CopyOrRenameOrDeleteStatusPage;
+import org.xwiki.test.ui.po.CopyPage;
+import org.xwiki.test.ui.po.RenamePage;
 import org.xwiki.test.ui.po.ViewPage;
 import org.xwiki.test.ui.po.editor.WikiEditPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -76,6 +79,8 @@ class TaskManagerIT
 
     private final LocalDocumentReference docWithTaskboxes = new LocalDocumentReference("Taskboxes", "WebHome");
 
+    private final LocalDocumentReference pageWithMultiUserTask = new LocalDocumentReference("Main", "MultiUser");
+
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
 
@@ -84,6 +89,11 @@ class TaskManagerIT
             + "completeDate=\"2023/01/01 12:00\"}}"
             + "Do this {{mention reference=\"XWiki.Admin\"/}} as late as {{date value=\"2023/01/01 12:00\"/}}"
             + "{{/task}}";
+
+    private static final String MULTI_USER_TASK = "{{task reference=\"Task_4\" createDate=\"2025/04/28 14:51\" "
+        + "reporter=\"XWiki.afarcasi\"}}\n {{mention reference=\"XWiki.rob\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-afarcasi-v7dmha\"/}} {{mention reference=\"XWiki.tod\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-tcaras-mz6chz\"/}} \n {{/task}}";
 
     private static final String TASK_REPORT_MACRO = "{{task-report /}}";
 
@@ -106,7 +116,7 @@ class TaskManagerIT
     }
 
     @Test
-    @Order(1)
+    @Order(10)
     void applicationsPanelEntry(TestUtils setup)
     {
         // Navigate to the Task Manager application by clicking in the Application Panel.
@@ -122,7 +132,7 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource(extensions = "com.xwiki.task:application-task-ui")
-    @Order(2)
+    @Order(20)
     void simpleTaskMacros(WikiReference wiki, TestUtils setup)
     {
         setup.setCurrentWiki(wiki.getName());
@@ -151,26 +161,22 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
-    @Order(3)
+    @Order(30)
     void taskManagerHomePage(WikiReference wiki, TestUtils setup)
     {
         setup.setCurrentWiki(wiki.getName());
         TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
-        LiveTableElement liveTableElement = taskManagerHomePage.getTaskLiveTable();
-        int taskTileCellIndex = liveTableElement.getColumnIndex("Task") + 1;
-        int taskStatusCellIndex = liveTableElement.getColumnIndex("Status") + 1;
-        assertEquals(2, liveTableElement.getRowCount());
-        WebElement row = liveTableElement.getRow(1);
-        assertEquals("Do this", liveTableElement.getCell(row, taskTileCellIndex).getText());
-        assertEquals("Done", liveTableElement.getCell(row, taskStatusCellIndex).getText());
-        row = liveTableElement.getRow(2);
-        assertEquals("Do this as well", liveTableElement.getCell(row, taskTileCellIndex).getText());
-        assertEquals("In Progress", liveTableElement.getCell(row, taskStatusCellIndex).getText());
+        TableLayoutElement tableLayout = taskManagerHomePage.getTaskLiveDataTable();
+        assertEquals(2, tableLayout.countRows());
+        assertEquals("Do this", tableLayout.getCell("Task", 1).getText());
+        assertEquals("Done", tableLayout.getCell("Status", 1).getText());
+        assertEquals("Do this as well", tableLayout.getCell("Task", 2).getText());
+        assertEquals("In Progress", tableLayout.getCell("Status", 2).getText());
     }
 
     @ParameterizedTest
     @WikisSource()
-    @Order(4)
+    @Order(40)
     void complexTaskMacros(WikiReference wiki, TestUtils setup)
     {
         setup.setCurrentWiki(wiki.getName());
@@ -193,7 +199,29 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
-    @Order(5)
+    void multiUserTask(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef = new DocumentReference(pageWithMultiUserTask, wiki);
+
+        setup.createPage(testRef, MULTI_USER_TASK, testRef.getName());
+        ViewPageWithTasks page = new ViewPageWithTasks();
+        page.getTaskMacroLink(0).click();
+        TaskManagerViewPage viewPage = new TaskManagerViewPage();
+        assertEquals("rob,tod", viewPage.getAssignee());
+        viewPage.edit();
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        inlinePage.waitUntilPageIsReady();
+        inlinePage.appendAssignee("bob");
+        inlinePage.clickSaveAndView();
+        setup.gotoPage(testRef);
+        ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
+        assertEquals("@rob @tod\n@bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
+    }
+
+    @ParameterizedTest
+    @WikisSource()
+    @Order(50)
     void taskMacroAndTaskPageRelation(WikiReference wiki, TestUtils setup)
     {
         setup.setCurrentWiki(wiki.getName());
@@ -230,7 +258,7 @@ class TaskManagerIT
         viewPageWithTaskMacro = new ViewPageWithTasks();
         viewPageWithTaskMacro.getTasks().get(0).goToTaskPage();
         viewPage = new TaskManagerViewPage();
-        assertThrows(NoSuchElementException.class, viewPage::getAssignee);
+        assertEquals("", viewPage.getAssignee());
         assertEquals("", viewPage.getDueDate());
         // Reset the macro.
         setContentToPage(setup, testRef, COMPLEX_TASKS);
@@ -248,36 +276,104 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
-    @Order(6)
+    @Order(60)
     void taskReport(WikiReference wiki, TestUtils setup)
     {
         setup.setCurrentWiki(wiki.getName());
         DocumentReference testRef = new DocumentReference(pageWithTaskRaport, wiki);
         setup.createPage(testRef, TASK_REPORT_MACRO);
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
-        LiveTableElement taskReport = viewPage.getTaskReportLiveTable();
+        TableLayoutElement taskReport = viewPage.getTaskReportLivedataTable(0);
         taskReport.waitUntilReady();
-        assertEquals(3, taskReport.getRowCount());
-        int taskTileCellIndex = taskReport.getColumnIndex("Task") + 1;
-        int taskDeadlineCellIndex = taskReport.getColumnIndex("Deadline") + 1;
-        int taskAssigneeCellIndex = taskReport.getColumnIndex("Assignee") + 1;
-        int taskLocationCellIndex = taskReport.getColumnIndex("Location") + 1;
-        WebElement row = taskReport.getRow(1);
-        assertEquals("#1\nDo this", taskReport.getCell(row, taskTileCellIndex).getText());
-        assertEquals("-", taskReport.getCell(row, taskDeadlineCellIndex).getText());
-        assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
-        assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
-        row = taskReport.getRow(3);
-        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
-            taskReport.getCell(row, taskTileCellIndex).getText());
-        assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
-        assertEquals("Admin", taskReport.getCell(row, taskAssigneeCellIndex).getText());
-        assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
+        assertEquals(3, taskReport.countRows());
+        assertEquals("#1\nDo this", taskReport.getCell("Task", 1).getText());
+        assertEquals("-", taskReport.getCell("Deadline", 1).getText());
+        assertEquals("", taskReport.getCell("Assignee", 1).getText());
+        assertEquals(pageWithTaskMacros.getName(), taskReport.getCell("Location", 1).getText());
+        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00", taskReport.getCell("Task", 3).getText());
+        assertEquals("01/01/2023 12:00:00", taskReport.getCell("Deadline", 3).getText());
+        assertEquals("Admin", taskReport.getCell("Assignee", 3).getText());
+        assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell("Location", 3).getText());
     }
 
     @ParameterizedTest
     @WikisSource()
-    @Order(7)
+    @Order(63)
+    void copyPage(WikiReference wiki, TestUtils setup) throws Exception
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef = new DocumentReference(new LocalDocumentReference(Arrays.asList("Main",
+            "CopyMovePage"), "WebHome"), wiki);
+        setup.createPage(testRef, "{{task reference=\"/Tasks/Task_1\"}}Hello{{/task}}", "CopyMovePage");
+        // Copying a page containing tasks should update their ids and change their owners.
+        setup.gotoPage(testRef);
+        // Gather all task ids for comparison.
+        ViewPageWithTasks viewPage = new ViewPageWithTasks();
+        List<String> macroids = new ArrayList<>();
+        for (int i = 0; i < viewPage.getTaskMacros().size(); i++) {
+            macroids.add(viewPage.getTaskMacroLink(i).getText());
+        }
+        // Copy page.
+        CopyPage copyPage = viewPage.copy();
+        copyPage.getDocumentPicker().setTitle("Copy");
+
+        CopyOrRenameOrDeleteStatusPage statusPage = copyPage.clickCopyButton();
+        statusPage.waitUntilFinished();
+        statusPage.gotoNewPage();
+        // Gather all task ids for comparison.
+        viewPage = new ViewPageWithTasks();
+        List<String> copiedMacros = new ArrayList<>();
+        for (int i = 0; i < viewPage.getTaskMacros().size(); i++) {
+            copiedMacros.add(viewPage.getTaskMacroLink(i).getText());
+        }
+        // Make sure they are not the same.
+        assertNotEquals(macroids, copiedMacros);
+        assertEquals(macroids.size(), copiedMacros.size());
+        // Make sure the owner was also changed.
+        viewPage.getTaskMacroLink(0).click();
+        TaskManagerViewPage objPage = new TaskManagerViewPage();
+        assertEquals("Copy", objPage.getOwner());
+    }
+
+    @ParameterizedTest
+    @WikisSource()
+    @Order(68)
+    void movePage(WikiReference wiki, TestUtils setup) throws Exception
+    {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference testRef =
+            new DocumentReference(new LocalDocumentReference(Arrays.asList("Main", "Copy"), "WebHome"), wiki);
+        setup.gotoPage(testRef);
+        // Gather all task ids for comparison.
+        ViewPageWithTasks viewPage = new ViewPageWithTasks();
+        List<String> macroids = new ArrayList<>();
+        for (int i = 0; i < viewPage.getTaskMacros().size(); i++) {
+            macroids.add(viewPage.getTaskMacroLink(i).getText());
+        }
+        // Rename page.
+        RenamePage movedPage = viewPage.rename();
+        movedPage.getDocumentPicker().setTitle("Rename");
+        CopyOrRenameOrDeleteStatusPage statusPage = movedPage.clickRenameButton();
+        statusPage.waitUntilFinished().gotoNewPage();
+        // Gather all task ids for comparison.
+        viewPage = new ViewPageWithTasks();
+        List<String> movedIds = new ArrayList<>();
+        for (int i = 0; i < viewPage.getTaskMacros().size(); i++) {
+            movedIds.add(viewPage.getTaskMacroLink(i).getText());
+        }
+        // Make sure they are the same since they were moved altogether.
+        assertEquals(macroids, movedIds);
+        assertEquals(macroids.size(), movedIds.size());
+        // Make sure the owner was changed.
+        viewPage.getTaskMacroLink(0).click();
+        TaskManagerViewPage objPage = new TaskManagerViewPage();
+        assertEquals("Rename", objPage.getOwner());
+    }
+
+    @ParameterizedTest
+    @WikisSource()
+    @Order(70)
     void deleteTaskPage(WikiReference wiki, TestUtils setup) throws Exception
     {
         setup.setCurrentWiki(wiki.getName());
@@ -293,7 +389,7 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
-    @Order(8)
+    @Order(80)
     void deleteTaskMacro(WikiReference wiki, TestUtils setup) throws Exception
     {
         setup.setCurrentWiki(wiki.getName());
@@ -312,7 +408,7 @@ class TaskManagerIT
 
     @ParameterizedTest
     @WikisSource()
-    @Order(9)
+    @Order(90)
     void checkboxMacro(WikiReference wiki, TestUtils setup,
         TestLocalReference testLocalReference, TestReference testReference)
     {
@@ -331,7 +427,7 @@ class TaskManagerIT
     }
 
     @Test
-    @Order(10)
+    @Order(100)
     void deleteAdminDefaults(TestUtils testUtils)
     {
         testUtils.setGlobalRights("", "XWiki." + USER_NAME, "admin", true);

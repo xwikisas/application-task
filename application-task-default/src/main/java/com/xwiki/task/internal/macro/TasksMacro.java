@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -153,7 +154,8 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
 
         {
             taskContent = macroUtils.renderMacroContent(blockProcessor.generateTaskContentBlocks(
-                task.getAssignee() != null ? serializer.serialize(task.getAssignee()) : null, task.getDueDate(),
+                task.getAssignees() != null ? task.getAssignees().stream().map(
+                    user -> serializer.serialize(user)).collect(Collectors.toList()) : null, task.getDueDate(),
                 task.getName(), storageFormat), context.getSyntax());
         }
         return taskContent;

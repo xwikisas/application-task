@@ -263,8 +263,8 @@
 #set ($creator = $xcontext.macro.params.reporters)
 #set ($createdAfter = $xcontext.macro.params.createdAfter)
 #set ($status = $xcontext.macro.params.status)
-#set ($sortBy = $wikimacro.parameters.sortBy)
-#set ($displayColumns = $wikimacro.parameters.columns)
+#set ($sortBy = $xcontext.macro.params.sortBy)
+#set ($displayColumns = $xcontext.macro.params.columns)
 #set ($rowCount = $wikimacro.parameters.limit)
 #set ($tableId = $escapetool.xml($wikimacro.parameters.id))
 #set ($spaceFilter = [])
@@ -277,77 +277,124 @@
     #set ($discard = $spaceFilter.add($services.model.serialize($pageRef.lastSpaceReference)))
   #end
 #end
+## Generate random id if none was specified.
 #if ("$!tableId" == '')
   #set ($tableId = "$mathtool.random")
   #set ($tableId = "task-report-$tableId.substring(2, 7)")
 #end
 #set ($rowCount = $numbertool.toNumber($rowCount).intValue())
-#set ($startDate = '')
-#if ($createdAfter)
-  #set ($dateFormat = $services.datemacro.configuration.storageDateFormat)
-  #set ($dateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($dateFormat))
-  #set ($startDate = $xwiki.jodatime.dateTime.parse($createdAfter, $dateTimeFormatter))
-  #set ($endDate = $startDate.plusYears(1000).millis)
+## Create livedata filters parameter for simple, "equal" constraints.
+#set ($livedataFilters = '')
+#foreach ($statusVal in $status.split('\s*,\s*'))
+  #set ($livedataFilters = "${livedataFilters}&amp;status=${statusVal}")
 #end
-#set ($extraParams = {
-  'space': $spaceFilter,
-  'status': $status.split('\s*,\s*'),
-  'status/join_mode': 'or',
-  'assignee': $assignees.split('\s*,\s*'),
-  'assignee/join_mode': 'or',
-  'reporter': $creator.split('\s*,\s*'),
-  'reporter/join_mode': 'or'
-})
-#if ("$!startDate" != '')
-  #set ($discard = $extraParams.put('createDate', "${startDate.millis}-${endDate}"))
+#foreach ($assigneeVal in $assignees.split('\s*,\s*'))
+  #set ($livedataFilters = "${livedataFilters}&amp;assignee=${assigneeVal}")
 #end
-#if ("$!tags" != '')
-  #set ($discard = $extraParams.put('tasktag', $tags.split('\s*,\s*')))
+#foreach ($creatorVal in $creator.split('\s*,\s*'))
+  #set ($livedataFilters = "${livedataFilters}&amp;reporter=${creatorVal}")
 #end
-#set ($columnsProperties = {
-  'name': {'type': 'text', 'size': 10, 'html': true},
-  'assignee': {'type': 'user', 'size': 10, 'html': true},
-  'duedate': {'type': 'date', 'size': 10},
-  'completeDate': {'type': 'date', 'size': 10},
-  'owner' : {'type': 'page', 'size': 10, 'html': true, 'link': 'view'},
-  'createDate': {'type': 'hidden'},
-  'status': {'type': 'hidden', 'html': true, 'filterable': false},
-  'reporter': {'type': 'hidden', 'html': true},
-  'number': {'type': 'hidden'}
+## Define livedata cfg, setting all the properties to invisible by default and changing it later based on what columns the user chose.
+#set ($livedataCfg = {
+  "query": {
+    "filters": []
+  },
+  "meta": {
+    "propertyDescriptors": [
+      {
+        "id": "name",
+        "displayer": "html",
+        "visible": false
+      },
+      {
+        "id": "number",
+        "visible": false
+      },
+      {
+        "id": "duedate",
+        "visible": false
+      },
+      {
+        "id": "assignee",
+        "visible": false
+      },
+      {
+        "id": "owner",
+        "visible": false
+      },
+      {
+        "id": "completeDate",
+        "visible": false
+      },
+      {
+        "id": "createDate",
+        "visible": false
+      },
+      {
+        "id": "reporter",
+        "visible": false
+      },
+      {
+        "id": "status",
+        "visible": false
+      }
+    ]
+  }
 })
-#set ($colType = {
-  'createDate': 'date',
-  'status': 'text',
-  'reporter': 'user',
-  'number': 'text'
-})
+## Create config filter for date since we can't add it through the filters livedata parameter.
+#if ("$!createdAfter" != '')
+  #set ($createdAfterDate = $datetool.toDate($services.datemacro.configuration.storageDateFormat, $createdAfter))
+  #set ($discard = $livedataCfg.query.filters.add({
+    "property": "createDate",
+    "constraints": [
+      {
+        "operator": "after",
+        "value": $datetool.format("yyyy-MM-dd'T'HH:mm:ssXXX", $createdAfterDate)
+      }
+    ]
+  }))
+#end
+## The selected props will always be the full list of properties and we just hide/show them depending on what the user selected.
+#set ($colVisibility = {})
+## We use an ordered set in order to preserve the order in which the user selected the columns.
+#set ($colSet = $collectiontool.orderedSet)
 #if ("$displayColumns" != '')
-  ## The displayable columns are name,duedate,assignee,owner,completeDate,createDate,reporter,status.
-  ## If the user does not want to display the createDate/status/reporter/number columns, we still need them, so we hide them.
-  ## If the user wants one of the columns to be displayed, we change the type from hidden to whatever is needed.
-  #set ($colSet = $collectiontool.orderedSet)
   #foreach ($col in $displayColumns.split('\s*,\s*'))
+    #set ($discard = $colVisibility.put($col, true))
     #set ($discard = $colSet.add($col))
-    #if ($colType.containsKey($col))
-      #set ($discard = $columnsProperties.get($col).put('type', $colType.get($col)))
-    #end
   #end
-  #set ($discard = $colSet.addAll(['reporter', 'status', 'number', 'createDate']))
-  #set ($displayColumns = $stringtool.join($colSet, ','))
 #else
-  #set ($displayColumns = 'name,number')
+  #set ($discard = $colVisibility.put("name", true))
+  #set ($discard = $colVisibility.put("number", true))
+  #set ($discard = $colSet.add("name"))
+  #set ($discard = $colSet.add("number"))
 #end
-#set ($columns = $displayColumns.split('\s*,\s*'))
-#set ($options = {
-  'resultPage': 'TaskManager.TaskReportResultPage',
-  'className': 'TaskManager.TaskManagerClass',
-  'translationPrefix': 'taskmanager.livetable.',
-  'selectedColumn': $!sortBy,
-  'rowCount': $rowCount,
-  'extraParams': $escapetool.url($extraParams),
-  'queryFilters': 'unique'
+#foreach ($propDescriptor in $livedataCfg.meta.propertyDescriptors)
+  #set ($discard = $propDescriptor.put('visible', $colVisibility.getOrDefault($propDescriptor.id, false)))
+#end
+## We add all the columns. If any column was already added, it will preserve its position. Only the selected ones will be visible.
+#set ($discard = $colSet.addAll(['name', 'number', 'duedate', 'assignee', 'owner', 'completeDate', 'createDate', 'reporter', 'status']))
+#set ($sourceParams = {
+  "className": "TaskManager.TaskManagerClass",
+  "translationPrefix": "taskmanager.livetable.",
+  "resultPage": "TaskManager.TaskReportResultPage",
+  "queryFilters": "unique",
+  "space": $spaceFilter,
+  "tasktag": $tags.split('\s*,\s*')
 })
-#livetable($tableId $columns $columnsProperties $options)
+
+{{liveData
+  id="$services.rendering.escape($tableId, 'xwiki/2.1')"
+  properties="$services.rendering.escape($stringtool.join($colSet, ','), 'xwiki/2.1')"
+  sort="$services.rendering.escape("$!sortBy:asc", 'xwiki/2.1')"
+  limit="$services.rendering.escape($rowCount, 'xwiki/2.1')"
+  source="liveTable"
+  filters="$services.rendering.escape($livedataFilters, 'xwiki/2.1')"
+  sourceParameters="$services.rendering.escape($escapetool.url($sourceParams), 'xwiki/2.1')"
+}}
+$jsontool.serialize($livedataCfg)
+{{/liveData}}
+
 #set ($discard = $xwiki.ssx.use('TaskManager.SkinExtensions'))
 #set ($discard = $xwiki.jsx.use('TaskManager.SkinExtensions'))
 #end
@@ -1015,7 +1062,7 @@
       <name>columns</name>
     </property>
     <property>
-      <type>java.lang.String</type>
+      <type>java.util.SortedSet&lt;com.xwiki.task.TaskReference&gt;</type>
     </property>
   </object>
   <object>
@@ -1094,7 +1141,7 @@
       <name>sortBy</name>
     </property>
     <property>
-      <type>java.lang.String</type>
+      <type>java.util.Comparator&lt;com.xwiki.task.TaskReference&gt;</type>
     </property>
   </object>
   <object>

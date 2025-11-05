@@ -106,14 +106,14 @@ public class TaskBlockProcessor
      * Generate the content of a Task macro as a list of blocks. This list can be rendered in different syntaxes i.e.
      * xwiki/2.1.
      *
-     * @param assignee the string that will be used to generate a mention macro.
+     * @param assignees the list of strings that will be used to generate a mention macros.
      * @param duedate the date that will be formatted and used to generate a date macro.
      * @param text the message of the task that will precede the assignee and due date.
      * @param storageFormat the format desired for the date.
      * @return a list of blocks that represent the content of a macro.
      * @throws TaskException if the text parameter failed to be parsed.
      */
-    public List<Block> generateTaskContentBlocks(String assignee, Date duedate, String text,
+    public List<Block> generateTaskContentBlocks(List<String> assignees, Date duedate, String text,
         SimpleDateFormat storageFormat) throws TaskException
     {
         XDOM newTaskContentXDOM = null;
@@ -129,13 +129,13 @@ public class TaskBlockProcessor
         Block deadline = newTaskContentXDOM.getFirstBlock(new MacroBlockMatcher(DATE), Block.Axes.DESCENDANT_OR_SELF);
 
         boolean changed = false;
-        changed |= handleMentions(mentions, newTaskContentXDOM, assignee);
+        changed |= handleMentions(mentions, newTaskContentXDOM, assignees);
 
         changed |= handleDeadline(deadline, newTaskContentXDOM, duedate, storageFormat);
         return newTaskContentXDOM.getChildren();
     }
 
-    private boolean handleMentions(List<Block> mentions, XDOM newTaskContentXDOM, String assignees)
+    private boolean handleMentions(List<Block> mentions, XDOM newTaskContentXDOM, List<String> assignees)
     {
         if (mentions.isEmpty() && assignees == null) {
             // Nothing changed.
@@ -149,9 +149,8 @@ public class TaskBlockProcessor
             return true;
         }
 
-        String[] splitAssignees = assignees.split(",");
         if (mentions.stream().map(block -> block.getParameter(REFERENCE)).collect(Collectors.toList())
-            .equals(Arrays.asList(splitAssignees)))
+            .equals(assignees))
         {
             // If the mentions and assignees are equal, nothing changed.
             return false;
@@ -160,20 +159,20 @@ public class TaskBlockProcessor
         int i = 0;
         for (Block mention : mentions) {
             // Replace the existing mentions with the updated values coming from the task obj.
-            if (i >= splitAssignees.length) {
+            if (i >= assignees.size()) {
                 // If there are more mentions than assignees coming from the task obj, it means that they were removed.
                 mention.getParent().removeBlock(mention);
                 continue;
             }
-            mention.setParameter(REFERENCE, splitAssignees[i++]);
+            mention.setParameter(REFERENCE, assignees.get(i++));
         }
         // If there are more assignees than mentions, we need to create the said mentions.
-        for (int j = i; j < splitAssignees.length; j++) {
+        for (int j = i; j < assignees.size(); j++) {
             Map<String, String> mentionParams = new HashMap<>();
             mentionParams.put("style", "FULL_NAME");
-            mentionParams.put(REFERENCE, splitAssignees[j]);
+            mentionParams.put(REFERENCE, assignees.get(j));
             mentionParams.put("anchor",
-                splitAssignees[j].replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
+                assignees.get(j).replace('.', '-') + '-' + RandomStringUtils.random(5, true, false));
             MacroBlock mentionBlock = new MacroBlock(MENTION, mentionParams, true);
             newTaskContentXDOM.addChild(mentionBlock);
         }

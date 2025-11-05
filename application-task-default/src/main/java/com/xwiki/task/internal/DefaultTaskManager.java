@@ -19,8 +19,10 @@
  */
 package com.xwiki.task.internal;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -171,8 +173,10 @@ public class DefaultTaskManager implements TaskManager
         task.setName(obj.getStringValue(Task.NAME));
         task.setNumber(obj.getIntValue(Task.NUMBER));
         task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), obj.getDocumentReference()));
-        String assignee = obj.getLargeStringValue(Task.ASSIGNEE);
-        task.setAssignee(assignee.isEmpty() ? null : resolver.resolve(assignee));
+        String assignees = obj.getLargeStringValue(Task.ASSIGNEE);
+        task.setAssignees(assignees.trim().isEmpty() ? null
+            : Arrays.stream(assignees.split(",")).map(user -> resolver.resolve(user))
+            .collect(Collectors.toList()));
         task.setStatus(obj.getStringValue(Task.STATUS));
         task.setReporter(resolver.resolve(obj.getLargeStringValue(Task.REPORTER)));
         task.setDuedate(obj.getDateValue(Task.DUE_DATE));

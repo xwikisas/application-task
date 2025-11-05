@@ -22,9 +22,12 @@ package com.xwiki.task.internal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -203,7 +206,7 @@ public class TaskXDOMProcessor
             XDOM macroContent = macroUtils.getMacroContentXDOM(macro, syntax);
             task.setName(macroUtils.renderMacroContent(macroContent.getChildren(), Syntax.PLAIN_1_0));
             task.setDescription(macro.getContent());
-            task.setAssignee(extractAssignedUser(macroContent));
+            task.setAssignees(extractAssignedUser(macroContent));
 
             Date deadline = extractDeadlineDate(macroContent);
 
@@ -231,7 +234,9 @@ public class TaskXDOMProcessor
                     (Syntax) content.getMetaData().getMetaData().getOrDefault(MetaData.SYNTAX, Syntax.XWIKI_2_1);
 
                 List<Block> newTaskContentBlocks =
-                    taskBlockProcessor.generateTaskContentBlocks(taskObject.getLargeStringValue(Task.ASSIGNEE),
+                    taskBlockProcessor.generateTaskContentBlocks(
+                        Arrays.stream(taskObject.getLargeStringValue(Task.ASSIGNEE).split(","))
+                            .filter(StringUtils::isNotEmpty).collect(Collectors.toList()),
                         taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
                         storageFormat);
 
@@ -306,14 +311,16 @@ public class TaskXDOMProcessor
         }
     }
 
-    private DocumentReference extractAssignedUser(XDOM taskContent)
+    private List<DocumentReference> extractAssignedUser(XDOM taskContent)
     {
-        MacroBlock macro = taskContent.getFirstBlock(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
+        List<MacroBlock> macros = taskContent.getBlocks(new MacroBlockMatcher(MENTION_MACRO_ID), Block.Axes.DESCENDANT);
 
-        if (macro == null) {
-            return null;
+        if (macros == null) {
+            return Collections.emptyList();
         }
-        return resolver.resolve(macro.getParameters().get(Task.REFERENCE));
+
+        return macros.stream().map(macroBlock -> resolver.resolve(macroBlock.getParameters().get(Task.REFERENCE)))
+            .collect(Collectors.toList());
     }
 
     private Date extractDeadlineDate(XDOM taskContent)

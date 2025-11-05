@@ -19,6 +19,9 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.xwiki.test.ui.po.ViewPage;
@@ -34,7 +37,7 @@ public class TaskManagerViewPage extends ViewPage
     private WebElement severityElement;
 
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "assignee\"]/../../dd/ul/li")
-    private WebElement assigneeElement;
+    private List<WebElement> assigneeElement;
 
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "reporter\"]/../../dd/ul/li")
     private WebElement reporterElement;
@@ -57,6 +60,9 @@ public class TaskManagerViewPage extends ViewPage
     @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "progress\"]/../../dd/div/div/span")
     private WebElement progressElement;
 
+    @FindBy(xpath = "//label[@for=\"" + CLASS_PREFIX + "owner\"]/../../dd/a")
+    private WebElement ownerElement;
+
     /**
      * Opens the home page.
      */
@@ -78,7 +84,8 @@ public class TaskManagerViewPage extends ViewPage
 
     public String getAssignee()
     {
-        return assigneeElement.getText();
+        return assigneeElement.stream().map(element -> element.getText())
+            .collect(Collectors.joining(","));
     }
 
     public String getStatus()
@@ -91,15 +98,18 @@ public class TaskManagerViewPage extends ViewPage
         return progressElement.getText();
     }
 
-    public String getCreateDate() {
+    public String getCreateDate()
+    {
         return completionDateElement.getText();
     }
 
-    public String getCompletionDate() {
+    public String getCompletionDate()
+    {
         return completionDateElement.getText();
     }
 
-    public String getDueDate() {
+    public String getDueDate()
+    {
         return dueDateElement.getText();
     }
 
@@ -111,5 +121,14 @@ public class TaskManagerViewPage extends ViewPage
     public String getReporter()
     {
         return reporterElement.getText();
+    }
+
+    /**
+     * @return the owner element of the page.
+     * @since 3.10.0
+     */
+    public String getOwner()
+    {
+        return ownerElement.getText();
     }
 }

@@ -55,7 +55,7 @@
       <freeText/>
       <hint/>
       <largeStorage>0</largeStorage>
-      <multiSelect>0</multiSelect>
+      <multiSelect>1</multiSelect>
       <name>assignee</name>
       <number>9</number>
       <picker>0</picker>
