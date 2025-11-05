@@ -25,6 +25,7 @@ com.xwiki.task.internal.macro.TasksMacro
 com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource
 com.xwiki.task.internal.rest.DefaultTaskboxResource
+com.xwiki.task.internal.ckeditor.CKEditorTaskPluginActivatorListener
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventConverter
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventDescriptor
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener
