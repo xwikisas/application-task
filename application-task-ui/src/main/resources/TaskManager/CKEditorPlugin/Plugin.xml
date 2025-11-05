@@ -1,0 +1,227 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="TaskManager.CKEditorPlugin.Plugin" locale="">
+  <web>TaskManager.CKEditorPlugin</web>
+  <name>Plugin</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>TaskManager.CKEditorPlugin.PluginEnabler</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>Plugin</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content/>
+  <object>
+    <name>TaskManager.CKEditorPlugin.Plugin</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>3e80b802-702d-4384-b48e-4f2800895ac2</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>(function () {
+  'use strict';
+  require.config({
+    paths: {
+      'moment-jdateformatparser': "$services.webjars.url('moment-jdateformatparser', 'moment-jdateformatparser.min')"
+    }
+  });
+  const $ = jQuery;
+  const taskDateFormat = "$!services.datemacro.configuration.storageDateFormat";
+  const taskMacroName = "$!services.localization.render('rendering.macro.task.name')";
+  const taskMacroDescription = "$!services.localization.render('rendering.macro.task.description')";
+  const dateMacroName = "$!services.localization.render('rendering.macro.date.name')";
+  const dateMacroDescription = "$!services.localization.render('rendering.macro.date.description')";
+  const macroContentPlaceholder = "$!services.localization.render('ckeditor.plugin.task-insert.placeholder')";
+  const refGenURL = XWiki.currentDocument.getRestURL() + '/task-reference';
+  CKEDITOR.plugins.add('xwiki-task-insert', {
+    init: function (editor) {
+      require(['xwiki-meta', 'moment', 'moment-jdateformatparser'], function (xm, moment) {
+        editor.addCommand('insert-prefilled-date-macro', {
+          exec: function (editor) {
+            var dateFormat = moment().toMomentFormatString(taskDateFormat);
+            var currentDate = moment(new Date()).format(dateFormat);
+            editor.execCommand('xwiki-macro-insert', {
+              name: 'date',
+              inline: true,
+              parameters: {
+                value: currentDate
+              }
+            });
+          }
+        });
+        editor.addCommand('insert-prefilled-task-macro', {
+          exec: function (editor) {
+            let taskReference = '/Tasks/Task_' + Date.now();
+            let creatorValue = xm.userReference.relativeTo(new XWiki.WikiReference(XWiki.currentWiki)).toString();
+            var dateFormat = moment().toMomentFormatString(taskDateFormat);
+            var createDateParam = moment(new Date()).format(dateFormat);
+            $.ajax({
+              url: refGenURL,
+              method: 'GET',
+              dataType: 'text'
+            })
+              .done(function (ref) {
+                taskReference = ref;
+              })
+              .always(function () {
+                editor.execCommand('xwiki-macro-insert', {
+                  name: 'task',
+                  inline: false,
+                  parameters: {
+                    reference: taskReference,
+                    createDate: createDateParam,
+                    reporter: creatorValue
+                  },
+                  content: macroContentPlaceholder
+                });
+              });
+          }
+        });
+      });
+    },
+    afterInit: function (editor) {
+      if (!editor.quickActions) {
+        return;
+      }
+      editor.quickActions.addAction({
+        group: 'Content',
+        id: 'macro-task',
+        name: taskMacroName,
+        iconClass: 'fa fa-align-left',
+        description: taskMacroDescription,
+        command: {
+          name: 'insert-prefilled-task-macro'
+        }
+      });
+      editor.quickActions.addAction({
+        group: 'Content',
+        id: 'macro-date',
+        name: dateMacroName,
+        iconClass: 'fa fa-align-left',
+        description: dateMacroDescription,
+        command: {
+          name: 'insert-prefilled-date-macro'
+        }
+      });
+    }
+  });
+})();</code>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+</xwikidoc>

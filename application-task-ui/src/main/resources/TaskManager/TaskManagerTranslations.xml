@@ -221,6 +221,8 @@ rendering.macro.task.parameter.status.name=The status of the task.
 rendering.macro.task.parameter.status.description=Specify what is the current status of the task.
 rendering.macro.task.parameter.id.name=ID
 rendering.macro.task.parameter.id.description=An unique identifier for the task, relative to the current page.
+rendering.macro.task.parameter.reference.name=ID
+rendering.macro.task.parameter.reference.description=An unique identifier for the task, relative to the current page.
 rendering.macro.task.parameter.creator.name=Creator
 rendering.macro.task.parameter.creator.description=The user that created the task.
 rendering.macro.task.parameter.createDate.name=Creation date
@@ -311,7 +313,9 @@ TaskManager.TaskManagerClass_project_empty=None
 taskmanager.spacepicker.modal.title=Space Picker
 taskmanager.spacepicker.modal.close=Close
 taskmanager.spacepicker.modal.select=Select space
-  </content>
+
+## CKEditor Plugin
+ckeditor.plugin.task-insert.placeholder=Type your task here.</content>
   <object>
     <name>TaskManager.TaskManagerTranslations</name>
     <number>0</number>
