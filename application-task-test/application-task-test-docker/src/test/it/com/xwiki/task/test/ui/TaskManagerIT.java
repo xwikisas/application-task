@@ -28,14 +28,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebElement;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskElement;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.LocalDocumentReference;
@@ -48,14 +47,12 @@ import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CopyOrRenameOrDeleteStatusPage;
 import org.xwiki.test.ui.po.CopyPage;
-import org.xwiki.test.ui.po.LiveTableElement;
 import org.xwiki.test.ui.po.RenamePage;
 import org.xwiki.test.ui.po.ViewPage;
 import org.xwiki.test.ui.po.editor.WikiEditPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -169,16 +166,12 @@ class TaskManagerIT
     {
         setup.setCurrentWiki(wiki.getName());
         TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
-        LiveTableElement liveTableElement = taskManagerHomePage.getTaskLiveTable();
-        int taskTileCellIndex = liveTableElement.getColumnIndex("Task") + 1;
-        int taskStatusCellIndex = liveTableElement.getColumnIndex("Status") + 1;
-        assertEquals(2, liveTableElement.getRowCount());
-        WebElement row = liveTableElement.getRow(1);
-        assertEquals("Do this", liveTableElement.getCell(row, taskTileCellIndex).getText());
-        assertEquals("Done", liveTableElement.getCell(row, taskStatusCellIndex).getText());
-        row = liveTableElement.getRow(2);
-        assertEquals("Do this as well", liveTableElement.getCell(row, taskTileCellIndex).getText());
-        assertEquals("In Progress", liveTableElement.getCell(row, taskStatusCellIndex).getText());
+        TableLayoutElement tableLayout = taskManagerHomePage.getTaskLiveDataTable();
+        assertEquals(2, tableLayout.countRows());
+        assertEquals("Do this", tableLayout.getCell("Task", 1).getText());
+        assertEquals("Done", tableLayout.getCell("Status", 1).getText());
+        assertEquals("Do this as well", tableLayout.getCell("Task", 2).getText());
+        assertEquals("In Progress", tableLayout.getCell("Status", 2).getText());
     }
 
     @ParameterizedTest
@@ -224,7 +217,6 @@ class TaskManagerIT
         setup.gotoPage(testRef);
         ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
         assertEquals("@rob @tod\n@bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
-
     }
 
     @ParameterizedTest
@@ -291,24 +283,17 @@ class TaskManagerIT
         DocumentReference testRef = new DocumentReference(pageWithTaskRaport, wiki);
         setup.createPage(testRef, TASK_REPORT_MACRO);
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
-        LiveTableElement taskReport = viewPage.getTaskReportLiveTable();
+        TableLayoutElement taskReport = viewPage.getTaskReportLivedataTable(0);
         taskReport.waitUntilReady();
-        assertEquals(3, taskReport.getRowCount());
-        int taskTileCellIndex = taskReport.getColumnIndex("Task") + 1;
-        int taskDeadlineCellIndex = taskReport.getColumnIndex("Deadline") + 1;
-        int taskAssigneeCellIndex = taskReport.getColumnIndex("Assignee") + 1;
-        int taskLocationCellIndex = taskReport.getColumnIndex("Location") + 1;
-        WebElement row = taskReport.getRow(1);
-        assertEquals("#1\nDo this", taskReport.getCell(row, taskTileCellIndex).getText());
-        assertEquals("-", taskReport.getCell(row, taskDeadlineCellIndex).getText());
-        assertEquals("", taskReport.getCell(row, taskAssigneeCellIndex).getText());
-        assertEquals(pageWithTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
-        row = taskReport.getRow(3);
-        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00",
-            taskReport.getCell(row, taskTileCellIndex).getText());
-        assertEquals("01/01/2023 12:00:00", taskReport.getCell(row, taskDeadlineCellIndex).getText());
-        assertEquals("Admin", taskReport.getCell(row, taskAssigneeCellIndex).getText());
-        assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell(row, taskLocationCellIndex).getText());
+        assertEquals(3, taskReport.countRows());
+        assertEquals("#1\nDo this", taskReport.getCell("Task", 1).getText());
+        assertEquals("-", taskReport.getCell("Deadline", 1).getText());
+        assertEquals("", taskReport.getCell("Assignee", 1).getText());
+        assertEquals(pageWithTaskMacros.getName(), taskReport.getCell("Location", 1).getText());
+        assertEquals("#3\nDo this @Admin as late as 2023/01/01 12:00", taskReport.getCell("Task", 3).getText());
+        assertEquals("01/01/2023 12:00:00", taskReport.getCell("Deadline", 3).getText());
+        assertEquals("Admin", taskReport.getCell("Assignee", 3).getText());
+        assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell("Location", 3).getText());
     }
 
     @ParameterizedTest

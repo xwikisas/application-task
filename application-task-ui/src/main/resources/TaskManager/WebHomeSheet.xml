@@ -44,25 +44,26 @@
 
 {{taskgantt readonly="false"/}}
 
-#set ($columnsProperties = {
-  'name': {'type': 'text', 'size': 10, 'link': 'view'},
-  'project': {'type': 'list', 'size': 10, 'html': true},
-  'status': {'type': 'list', 'size': 10, 'html': true},
-  'severity': {'type': 'list', 'size': 10, 'html': true},
-  'reporter': {'size': 10, 'html': true},
-  'assignee': {'size': 10, 'html': true},
-  'duedate': {'type': 'text', 'size': 10},
-  '_actions': {'sortable': false,'filterable': false, 'html': true, 'actions': ['edit','delete']}
-})
-#set ($options = {
-  'className': 'TaskManager.TaskManagerClass',
-  'resultPage': 'TaskManager.TaskManagerLiveTableResults',
-  'translationPrefix': 'taskmanager.livetable.',
-  'tagCloud': true,
-  'selectedColumn': 'name'
-})
-#set ($columns = ['name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
-#livetable('taskmanager' $columns $columnsProperties $options)
+{{liveData
+  id="taskmanager"
+  properties="name,project,status,severity,reporter,assignee,duedate,_actions"
+  source="liveTable"
+  sourceParameters="className=TaskManager.TaskManagerClass&amp;translationPrefix=taskmanager.livetable.&amp;resultPage=TaskManager.TaskManagerLiveTableResults"
+}}
+{
+  "meta": {
+    "propertyDescriptors": [
+      {
+        "id": "name",
+        "displayer": {
+          "id": "link",
+          "propertyHref": "doc.url"
+        }
+      }
+    ]
+  }
+}
+{{/liveData}}
 #end
 {{/velocity}}</content>
   <object>

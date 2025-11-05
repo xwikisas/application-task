@@ -22,6 +22,8 @@ package org.xwiki.contrib.application.task.test.po;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.xwiki.livedata.test.po.LiveDataElement;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.test.ui.po.LiveTableElement;
 import org.xwiki.test.ui.po.ViewPage;
 
@@ -65,7 +67,7 @@ public class TaskManagerHomePage extends ViewPage
 
     /**
      * Set the name of the task to be created in the popup
-     * 
+     *
      * @param taskName Name that will be used to create the task
      */
     public void setEntryName(String taskName)
@@ -78,7 +80,7 @@ public class TaskManagerHomePage extends ViewPage
 
     /**
      * Validate the name in the popup and create the task
-     * 
+     *
      * @return Return the inline page to edit the task
      */
     public TaskManagerInlinePage clickAddEntry()
@@ -91,11 +93,25 @@ public class TaskManagerHomePage extends ViewPage
 
     /**
      * @return the FAQ livetable element
+     * @deprecated since 3.10.0, use {@link #getTaskLiveDataTable()} instead.
      */
+    @Deprecated(since = "3.10.0")
     public LiveTableElement getTaskLiveTable()
     {
         LiveTableElement lt = new LiveTableElement("taskmanager");
         lt.waitUntilReady();
         return lt;
+    }
+
+    /**
+     * @return the table layout of the livedata present on the homepage.
+     * @since 3.10.0
+     */
+    public TableLayoutElement getTaskLiveDataTable()
+    {
+        LiveDataElement liveDataElement = new LiveDataElement("taskmanager");
+        TableLayoutElement tableLayoutElement = liveDataElement.getTableLayout();
+        tableLayoutElement.waitUntilReady();
+        return tableLayoutElement;
     }
 }
