@@ -43,12 +43,12 @@
 #set($propertyClass = $object.getxWikiClass().get($name))
 #set($existingValue = $object.getValue('status'))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_status" id="TaskManager.TaskManagerClass_0_status"&gt;
-#foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.TaskManagerClass_status_$rValue.key")
+#foreach($rValue in $services.task.getSortedStatuses())
+  #set($key = "TaskManager.TaskManagerClass_status_$rValue")
   #set($translation = $services.localization.render($key))
-  &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+  &lt;option value="$escapetool.xml($rValue)" #if($existingValue == $rValue) selected='selected' #end&gt;
     #if ($translation == $key)
-      $escapetool.xml($rValue.key)
+      $escapetool.xml($rValue)
     #else
       $escapetool.xml($translation)
     #end

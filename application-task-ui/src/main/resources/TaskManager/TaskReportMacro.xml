@@ -294,6 +294,17 @@
 #foreach ($creatorVal in $creator.split('\s*,\s*'))
   #set ($livedataFilters = "${livedataFilters}&amp;reporter=${creatorVal}")
 #end
+## Define the filter options for the status that need to be ordered by priority.
+#set ($statusOptions = [{"value": "", "label": $services.localization.render('livedata.filter.list.emptyLabel')}])
+#foreach($rValue in $services.task.getSortedStatuses())
+  #set($key = "TaskManager.TaskManagerClass_status_$rValue")
+  #set($translation = $services.localization.render($key))
+  #if ($translation == $key)
+    #set ($discard = $statusOptions.add({ "value": $rValue, "label": $rValue}))
+  #else
+    #set ($discard = $statusOptions.add({ "value": $rValue, "label": $translation}))
+  #end
+#end
 ## Define livedata cfg, setting all the properties to invisible by default and changing it later based on what columns the user chose.
 #set ($livedataCfg = {
   "query": {
@@ -336,7 +347,11 @@
       },
       {
         "id": "status",
-        "visible": false
+        "visible": true,
+        "filter": {
+          "id": "list",
+          "options": $statusOptions
+        }
       }
     ]
   }
