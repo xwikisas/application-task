@@ -72,10 +72,10 @@
     #else
       #set ($discard = $services.task.configuration)
       #if ($doc)
-        #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax))
+        #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax, 'html/5.0'))
       ## $doc does not seem to be available in the livedata template executor, so we use the sdoc intead.
       #elseif ($sdoc)
-        #set ($row.name = $sdoc.getRenderedContent("{{tasks ids='${row.number}'/}}", $sdoc.syntax))
+        #set ($row.name = $sdoc.getRenderedContent("{{tasks ids='${row.number}'/}}", $sdoc.syntax, 'html/5.0'))
       #end
     #end
   #end
