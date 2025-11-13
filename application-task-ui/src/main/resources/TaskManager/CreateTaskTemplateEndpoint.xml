@@ -67,6 +67,8 @@
             $providerDoc.getDocumentReference(),
             null, true, false
           ))
+          ## Reload the document to update its isNew() status.
+          #set ($providerDoc = $xwiki.getDocument("TaskManager.TaskManagerTemplates.$!{templateName}TemplateProvider"))
         #else
           #set ($discard = $responseJSON.get('providerDocument').put('exists', 'noProvider'))
         #end
