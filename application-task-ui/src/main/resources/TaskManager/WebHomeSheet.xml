@@ -54,25 +54,44 @@
 
 {{taskgantt readonly="false"/}}
 
-#set ($columnsProperties = {
-  'name': {'type': 'text', 'size': 10, 'link': 'view'},
-  'project': {'type': 'list', 'size': 10, 'html': true},
-  'status': {'type': 'list', 'size': 10, 'html': true},
-  'severity': {'type': 'list', 'size': 10, 'html': true},
-  'reporter': {'size': 10, 'html': true},
-  'assignee': {'size': 10, 'html': true},
-  'duedate': {'type': 'text', 'size': 10},
-  '_actions': {'sortable': false,'filterable': false, 'html': true, 'actions': ['edit','delete']}
-})
-#set ($options = {
-  'className': 'TaskManager.TaskManagerClass',
-  'resultPage': 'TaskManager.TaskManagerLiveTableResults',
-  'translationPrefix': 'taskmanager.livetable.',
-  'tagCloud': true,
-  'selectedColumn': 'name'
-})
-#set ($columns = ['name', 'project', 'status', 'severity', 'reporter', 'assignee', 'duedate', '_actions'])
-#livetable('taskmanager' $columns $columnsProperties $options)
+#set ($statusOptions = [{"value": "", "label": $services.localization.render('livedata.filter.list.emptyLabel')}])
+#foreach($rValue in $services.task.getSortedStatuses())
+  #set($key = "TaskManager.TaskManagerClass_status_$rValue")
+  #set($translation = $services.localization.render($key))
+  #if ($translation == $key)
+    #set ($discard = $statusOptions.add({ "value": $rValue, "label": $rValue}))
+  #else
+    #set ($discard = $statusOptions.add({ "value": $rValue, "label": $translation}))
+  #end
+#end
+
+{{liveData
+  id="taskmanager"
+  properties="name,project,status,severity,reporter,assignee,duedate,_actions"
+  source="liveTable"
+  sourceParameters="className=TaskManager.TaskManagerClass&amp;translationPrefix=taskmanager.livetable.&amp;resultPage=TaskManager.TaskManagerLiveTableResults"
+}}
+{
+  "meta": {
+    "propertyDescriptors": [
+      {
+        "id": "name",
+        "displayer": {
+          "id": "link",
+          "propertyHref": "doc.url"
+        }
+      },
+      {
+        "id": "status",
+        "filter": {
+          "id": "list",
+          "options": $jsontool.serialize($statusOptions)
+        }
+      }
+    ]
+  }
+}
+{{/liveData}}
 #end
 {{/velocity}}</content>
   <object>

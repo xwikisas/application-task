@@ -18,22 +18,21 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 #template("pickers_macros.vm")
-#set ($options = [])
-#set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_status_')
-#foreach ($status in $services.task.getSortedStatuses())
-  #set ($translationKey = $translationKeyPrefix + $status)
-  #if ($services.localization.get($translationKey))
-    #set ($label = $services.localization.render($translationKey))
-  #else
-    #set ($label = $status)
-  #end
-  #set ($discard = $options.add({ 'name': $label, 'value': $status}))
-#end
+#set ($options = [
+  { "name": "name", "value": "name"},
+  { "name": "number", "value": "number"},
+  { "name": "duedate", "value": "duedate"},
+  { "name": "assignee", "value": "assignee"},
+  { "name": "owner", "value": "owner"},
+  { "name": "completeDate", "value": "completeDate"},
+  { "name": "createDate", "value": "createDate"},
+  { "name": "reporter", "value": "reporter"},
+  { "name": "status", "value": "status"}
+])
 #set ($parameters = {
   'name': $displayer.parameters.name,
   'value': $displayer.value,
-  'multiple': 'multiple',
-  'prefix': ' ',
-  'options': $options
+  'options': $options,
+  'prefix': 'taskmanager.livetable.'
 })
 #staticSelectPicker($parameters)

@@ -8,7 +8,6 @@ com.xwiki.task.internal.DefaultTaskReferenceGenerator
 com.xwiki.task.internal.MacroBlockFinder
 com.xwiki.task.internal.TaskBlockProcessor
 com.xwiki.task.internal.TaskDatesInitializer
-com.xwiki.task.internal.TaskPageCopiedOrMovedEventListener
 com.xwiki.task.internal.TaskMacroReferenceMigrator
 com.xwiki.task.internal.TaskPageMovingEventListener
 com.xwiki.task.internal.TaskReferenceMigratorListener
@@ -26,8 +25,11 @@ com.xwiki.task.internal.macro.TasksMacro
 com.xwiki.task.internal.rest.DefaultTaskReferenceResource
 com.xwiki.task.internal.rest.DefaultTaskResource
 com.xwiki.task.internal.rest.DefaultTaskboxResource
+com.xwiki.task.internal.ckeditor.CKEditorTaskPluginActivatorListener
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventConverter
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventDescriptor
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventNotificationListener
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventListener
 com.xwiki.task.internal.notifications.taskchanged.TaskChangedEventFactory
+com.xwiki.task.internal.listener.TaskPageMovedListener
+com.xwiki.task.internal.listener.TaskPageCopiedListener

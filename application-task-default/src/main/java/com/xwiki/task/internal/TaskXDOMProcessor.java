@@ -22,6 +22,7 @@ package com.xwiki.task.internal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -234,7 +235,8 @@ public class TaskXDOMProcessor
 
                 List<Block> newTaskContentBlocks =
                     taskBlockProcessor.generateTaskContentBlocks(
-                        List.of(taskObject.getLargeStringValue(Task.ASSIGNEE).split(",")),
+                        Arrays.stream(taskObject.getLargeStringValue(Task.ASSIGNEE).split(","))
+                            .filter(StringUtils::isNotEmpty).collect(Collectors.toList()),
                         taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
                         storageFormat);
 

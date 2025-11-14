@@ -24,8 +24,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.xwiki.livedata.test.po.LiveDataElement;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.test.ui.po.LiveTableElement;
 import org.xwiki.test.ui.po.ViewPage;
 
@@ -72,9 +75,34 @@ public class ViewPageWithTasks extends ViewPage
         this.waitForNotificationSuccessMessage("Task status changed successfully!");
     }
 
+    /**
+     * @deprecated use {@link #getTaskReportLivedataTable(int)} instead.
+     */
+    @Deprecated(since = "3.10.0")
     public LiveTableElement getTaskReportLiveTable()
     {
         WebElement liveTableElement = getDriver().findElement(By.className("xwiki-livetable"));
         return new LiveTableElement(liveTableElement.getAttribute("id"));
+    }
+
+    /**
+     * @param index the index of the livedata element present on this page. Starts at 0.
+     * @return the livedata found at the given index.
+     * @throws NoSuchElementException if the index does not correspond to any livedata.
+     * @since 3.10.0
+     */
+    public TableLayoutElement getTaskReportLivedataTable(int index)
+    {
+
+        List<WebElement> liveData = getDriver().findElements(By.className("liveData"));
+        if (index >= liveData.size()) {
+            throw new NoSuchElementException(
+                String.format("No livedata of index [%d] on the page that has [%d] livedata elements.", index,
+                    liveData.size()));
+        }
+        LiveDataElement liveDataElement = new LiveDataElement(liveData.get(index).getAttribute("id"));
+        TableLayoutElement tableLayoutElement = liveDataElement.getTableLayout();
+        tableLayoutElement.waitUntilReady();
+        return tableLayoutElement;
     }
 }

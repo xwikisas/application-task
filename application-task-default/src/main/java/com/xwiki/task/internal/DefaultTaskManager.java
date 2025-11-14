@@ -174,7 +174,7 @@ public class DefaultTaskManager implements TaskManager
         task.setNumber(obj.getIntValue(Task.NUMBER));
         task.setOwner(resolver.resolve(obj.getLargeStringValue(Task.OWNER), obj.getDocumentReference()));
         String assignees = obj.getLargeStringValue(Task.ASSIGNEE);
-        task.setAssignees(assignees.isEmpty() ? null
+        task.setAssignees(assignees.trim().isEmpty() ? null
             : Arrays.stream(assignees.split(",")).map(user -> resolver.resolve(user))
             .collect(Collectors.toList()));
         task.setStatus(obj.getStringValue(Task.STATUS));
