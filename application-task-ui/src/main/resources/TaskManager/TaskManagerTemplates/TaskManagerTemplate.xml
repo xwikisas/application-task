@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>TaskManager.TaskManagerTemplate</name>
+    <name>TaskManager.TaskManagerTemplates.TaskManagerTemplate</name>
     <number>0</number>
     <className>TaskManager.TaskManagerClass</className>
     <guid>a34dbfdb-9ef6-4adf-b79e-65065e9fead4</guid>
@@ -60,7 +60,7 @@
         <freeText/>
         <hint/>
         <largeStorage>0</largeStorage>
-        <multiSelect>0</multiSelect>
+        <multiSelect>1</multiSelect>
         <name>assignee</name>
         <number>9</number>
         <picker>0</picker>
@@ -111,89 +111,7 @@
       <dependencies>
         <cache>0</cache>
         <classname/>
-        <customDisplay>{{velocity}}
-## The core will make available the following variables:
-## - $name[String] = the name of the displayed field ('dependencies')
-## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
-## - $object[com.xpn.xwiki.api.Object] = the displayed object 
-## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property 
-## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
-## - $value[DBList in this case] = the property value
-##
-#set($discard = $xwiki.jsx.use('TaskManager.TaskManagerClass'))
-#set($discard = $xwiki.ssx.use('TaskManager.TaskManagerClass'))
-#macro(displayTaskAsDependency $taskid)
-  #set($taskpageref = $services.model.resolveDocument($taskid))
-  #if ($services.security.authorization.hasAccess('view', $xcontext.userReference, $taskpageref))
-    #set($taskpage = $xwiki.getDocument($taskpageref))
-    #set($task = $taskpage.getObject('TaskManager.TaskManagerClass'))
-    #if("$!task" == '')
-      #break
-    #end
-    #set($tasktitle = $task.getProperty('name').value)
-    #if ("$tasktitle" == '')
-      #set ($tasktitle = $taskpageref.name)
-    #end
-    #set($tasklink = $services.model.serialize($taskpageref,'compactwiki'))
-    #set($taskstatus = $task.getProperty('status').value)
-    #set($taskduedate = $task.display('duedate', 'view'))
-    #set($taskproject = $task.getProperty('project').value)
-    #if($type == 'view')
-      ## Begin a list in XWiki Syntax
-      * ## Without this space the * is not parsed as XWiki syntax
-    #elseif($type == 'edit')
-      &lt;label class="xwiki-form-listclass" data-project="${taskproject}" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
-        &lt;input
-          id="xwiki-form-dependencies-0-${foreach.index}"
-          value="${escapetool.xml($taskid)}"
-          #foreach($dependency in $value)
-          #if($dependency == $taskid)
-            checked
-          #end
-          #end
-          name='TaskManager.TaskManagerClass_0_dependencies'
-          type='checkbox'
-        /&gt;
-    #end
-    &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
-    &lt;span class="task-manager-status-${taskstatus}"&gt;[${services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}")}]&lt;/span&gt;
-    &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($taskpage.getURL('view'))"&gt;${escapetool.xml($tasktitle)}&lt;/a&gt;&lt;/span&gt;
-    ($services.localization.render('TaskManager.TaskManagerClass_duedate') ${taskduedate})
-    #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
-      &lt;span class="task-manager-status-Late"&gt;
-        ${services.icon.render('bell')}
-        ${services.localization.render('TaskManager.TaskManagerClass_status_Late')}
-      &lt;/span&gt;
-    #end
-    #if($type == 'edit')
-      &lt;/label&gt;
-    #end
-  #end
-#end
-
-{{html clean="false" wiki="true"}}
-#if($type == 'edit')
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' and doc.fullName &lt;&gt; :fullName and task.project &lt;&gt; '' order by task.duedate")
-  #set($results = $services.query.xwql($query).bindValue('fullName', $doc.fullName).execute())
-  #if($results.size() != 0)
-    &lt;div id="TaskManager.TaskManagerClass_dependencies"&gt;
-    ## empty value to submit in case nothing is selected
-    &lt;input type="hidden" name="TaskManager.TaskManagerClass_0_dependencies" value="" /&gt;
-    #foreach($taskid in $results)
-      #displayTaskAsDependency($taskid)
-    #end
-    &lt;/div&gt;
-  #else
-    {{info}}${services.localization.render('TaskManager.TaskManagerClass_dependencies_nodependencies')}{{/info}}
-  #end
-#else
-  #foreach($taskid in $value)
-    #displayTaskAsDependency($taskid)
-  #end
-#end
-{{/html}}
-
-{{/velocity}}</customDisplay>
+        <customDisplay>{{include reference="TaskManager.PropertySheets.Dependencies"/}}</customDisplay>
         <defaultValue/>
         <disabled>0</disabled>
         <displayType>checkbox</displayType>
@@ -219,17 +137,22 @@
         <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
       </dependencies>
       <description>
-        <customDisplay>{{include reference="AppWithinMinutes.Content"/}}</customDisplay>
+        <contenttype>PureText</contenttype>
+        <customDisplay/>
         <disabled>0</disabled>
+        <editor>PureText</editor>
         <hint/>
         <name>description</name>
         <number>4</number>
+        <picker>0</picker>
         <prettyName>Task description</prettyName>
-        <script/>
+        <restricted>1</restricted>
+        <rows>5</rows>
+        <size>40</size>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.ComputedFieldClass</classType>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </description>
       <duedate>
         <customDisplay/>
@@ -257,6 +180,7 @@
         <number>1</number>
         <picker>0</picker>
         <prettyName>Task name</prettyName>
+        <restricted>0</restricted>
         <rows>5</rows>
         <size>40</size>
         <unmodifiable>0</unmodifiable>
@@ -307,31 +231,7 @@
         <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
       </owner>
       <progress>
-        <customDisplay>{{velocity}}
-## The core will make available the following variables:
-## - $name[String] = the name of the displayed field ('dependencies')
-## - $prefix[String] = a prefix for the form field ('TaskCode.TaskClass_0_')
-## - $object[com.xpn.xwiki.api.Object] = the displayed object 
-## - $field[com.xpn.xwiki.api.PropertyClass] = the displayed property 
-## - $type[String] = the intended display mode ('view', 'edit', 'hidden', 'search', etc.)
-## - $value[DBList in this case] = the property value
-##
-{{html}}
-  #if($type=='view')
-      &lt;div class="progress"&gt;
-        &lt;div class="progress-bar progress-bar-striped" role="progressbar" style="width: $!{value}%"&gt;
-          #if($value &amp;&amp; $value != '')
-            &lt;span&gt;$!{value}%&lt;/span&gt;
-          #else
-            &lt;span&gt;0%&lt;/span&gt;
-          #end
-        &lt;/div&gt;
-      &lt;/div&gt;
-  #else
-    &lt;input class="form-control" id="TaskManager.TaskManagerClass_0_progress" name="TaskManager.TaskManagerClass_0_progress" type="number" min="0" max="100" oninput="validity.valid||(value='');" value="${value}" /&gt;
-  #end
-{{/html}}
-{{/velocity}}</customDisplay>
+        <customDisplay>{{include reference="TaskManager.PropertySheets.Progress"/}}</customDisplay>
         <disabled>0</disabled>
         <hint/>
         <name>progress</name>
@@ -347,35 +247,7 @@
       <project>
         <cache>0</cache>
         <classname>TaskManager.ProjectClass</classname>
-        <customDisplay>{{velocity}}
-#if($type=='edit')
-{{html}}
-#set($name = 'project')
-#set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $object.getValue('project'))
-&lt;select size="1" name="TaskManager.TaskManagerClass_0_project" id="TaskManager.TaskManagerClass_0_project"&gt;
-#foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.TaskManagerClass_project_$rValue.key")
-  #set($translation = $services.localization.render($key))
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
-    #if ($translation == $key)
-      $rValue.key
-    #else
-      $translation
-    #end
-  &lt;/option&gt;
-#end
-{{/html}}
-#else
-  #set($key = "TaskManager.TaskManagerClass_project_${object.getValue('project')}")
-  #set($translation = $services.localization.render($key))
-  #if ($translation == $key)
-    $object.getValue('project')
-  #else
-    $translation
-  #end
-#end
-{{/velocity}}</customDisplay>
+        <customDisplay>{{include reference="TaskManager.PropertySheets.Project"/}}</customDisplay>
         <defaultValue/>
         <disabled>0</disabled>
         <displayType>select</displayType>
@@ -428,35 +300,7 @@
       <severity>
         <cache>0</cache>
         <classname>TaskManager.SeverityClass</classname>
-        <customDisplay>{{velocity}}
-#if($type=='edit')
-{{html}}
-#set($name ="severity")
-#set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $object.getValue('severity'))
-&lt;select size="1" name="TaskManager.TaskManagerClass_0_severity" id="TaskManager.TaskManagerClass_0_severity"&gt;
-#foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.TaskManagerClass_severity_$rValue.key")
-  #set($translation = $services.localization.render($key))
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
-    #if ($translation == $key)
-      $rValue.key
-    #else
-      $translation
-    #end
-  &lt;/option&gt;
-#end
-{{/html}}
-#else
-  #set($key = "TaskManager.TaskManagerClass_severity_${object.getValue('severity')}")
-  #set($translation = $services.localization.render($key))
-  #if ($translation == $key)
-    $object.getValue('severity')
-  #else
-    $translation
-  #end
-#end
-{{/velocity}}</customDisplay>
+        <customDisplay>{{include reference="TaskManager.PropertySheets.Severity"/}}</customDisplay>
         <defaultValue/>
         <disabled>0</disabled>
         <displayType>select</displayType>
@@ -500,35 +344,7 @@
       <status>
         <cache>0</cache>
         <classname>TaskManager.StatusClass</classname>
-        <customDisplay>{{velocity}}
-#if($type=='edit')
-{{html}}
-#set($name ="status")
-#set($propertyClass = $object.getxWikiClass().get($name))
-#set($existingValue = $object.getValue('status'))
-&lt;select size="1" name="TaskManager.TaskManagerClass_0_status" id="TaskManager.TaskManagerClass_0_status"&gt;
-#foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.TaskManagerClass_status_$rValue.key")
-  #set($translation = $services.localization.render($key))
-  &lt;option value="$rValue.key" #if($existingValue == $rValue.key) selected='selected' #end&gt;
-    #if ($translation == $key)
-      $rValue.key
-    #else
-      $translation
-    #end
-  &lt;/option&gt;
-#end
-{{/html}}
-#else
-  #set($key = "TaskManager.TaskManagerClass_status_${object.getValue('status')}")
-  #set($translation = $services.localization.render($key))
-  #if ($translation == $key)
-    $object.getValue('status')
-  #else
-    $translation
-  #end
-#end
-{{/velocity}}</customDisplay>
+        <customDisplay>{{include reference="TaskManager.PropertySheets.Status"/}}</customDisplay>
         <defaultValue/>
         <disabled>0</disabled>
         <displayType>select</displayType>
@@ -565,6 +381,9 @@
     </property>
     <property>
       <dependencies/>
+    </property>
+    <property>
+      <description/>
     </property>
     <property>
       <duedate/>

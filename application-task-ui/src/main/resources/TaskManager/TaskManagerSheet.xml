@@ -149,7 +149,7 @@
                   ## we are a non-terminal page: use space name
                   #set($taskName = $doc.documentReference.parent.name)
                 #end
-                #if ($taskName.endsWith('Template'))
+                #if ($doc.space == 'TaskManager.TaskManagerTemplates')
                   ## Don't set the title for templates.
                   #set ($taskName = '')
                 #end
