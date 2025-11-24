@@ -94,12 +94,13 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
-        maybeSetTaskNumber(context, taskObj);
-
         if (document.getDocumentReference().getSpaceReferences().stream().map(SpaceReference::getName)
             .collect(Collectors.toList()).equals(TEMPLATE_SPACE_REFERENCES)) {
             return;
         }
+
+        maybeSetTaskNumber(context, taskObj);
+
         // If the flag is set, the listener was triggered as a result of a save made by TaskMacroUpdateEventListener
         // which updated some task objects. Skip the execution.
         if (context.get(TASK_UPDATE_FLAG) != null) {

@@ -43,7 +43,7 @@
 #else
 
 {{html}}
-&lt;a id="task-manager-view-task-list"
+&lt;a id="task-manager-view-task-template-list"
     href="$escapetool.xml($xwiki.getDocument('TaskManager.TaskTemplateList').getURL())"
     class="buttonwrapper"&gt;
   &lt;button class='btn'&gt;

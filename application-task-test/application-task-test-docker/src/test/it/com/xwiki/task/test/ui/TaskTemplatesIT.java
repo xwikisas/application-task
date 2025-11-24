@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests for the Task Manager Template creation.
  *
  * @version $Id$
- * @since 4.0.0
+ * @since 3.11.0
  */
 @UITest
 public class TaskTemplatesIT
@@ -63,8 +63,8 @@ public class TaskTemplatesIT
     void noEditRights(TestUtils setup)
     {
         setup.login(TEST_USERNAME, TEST_PASSWORD);
-        setup.gotoPage("TaskManager", "WebHome");
-        setup.getDriver().findElement(By.id("task-manager-view-task-list")).click();
+        TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
+        taskManagerHomePage.clickTaskTemplateListButton();
         assertEquals(setup.getDriver().getCurrentUrl(), TaskTemplateListPage.getURL());
         TaskTemplateListPage page = new TaskTemplateListPage();
         page.setTemplateName("TestNoEdit");

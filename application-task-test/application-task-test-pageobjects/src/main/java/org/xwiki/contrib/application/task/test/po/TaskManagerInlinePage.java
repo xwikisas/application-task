@@ -196,6 +196,7 @@ public class TaskManagerInlinePage extends InlinePage
 
     /**
      * @return the name of the Task entry
+     * @since 3.11.0
      */
     public List<String> getDependencies()
     {
