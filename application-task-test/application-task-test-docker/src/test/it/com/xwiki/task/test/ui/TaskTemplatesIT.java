@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests for the Task Manager Template creation.
  *
  * @version $Id$
- * @since 3.11.0
+ * @since 3.10.0
  */
 @UITest
 public class TaskTemplatesIT
