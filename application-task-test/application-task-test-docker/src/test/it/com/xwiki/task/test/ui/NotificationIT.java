@@ -178,7 +178,7 @@ class NotificationIT
             CreatePagePage createPage = taskManagerHomePage.createPage();
 
             createPage.getDocumentPicker().setTitle(TEST_TASK_NAME);
-            createPage.setTemplate("TaskManager.TaskManagerTemplateProvider");
+            createPage.setTemplate("TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
             createPage.clickCreate();
 
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();

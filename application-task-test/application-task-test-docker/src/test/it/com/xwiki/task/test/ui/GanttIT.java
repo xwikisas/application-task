@@ -319,7 +319,7 @@ class GanttIT
         CreatePagePage createPage = taskManagerHomePage.createPage();
 
         createPage.getDocumentPicker().setTitle(title);
-        createPage.setTemplate("TaskManager.TaskManagerTemplateProvider");
+        createPage.setTemplate("TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
         createPage.getDocumentPicker().setParent(space);
         createPage.clickCreate();
 
