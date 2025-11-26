@@ -92,6 +92,16 @@ public class TaskManagerHomePage extends ViewPage
     }
 
     /**
+     * Click the button which leads to the list of task templates, to redirect to the templates page.
+     *
+     * @since 3.10.0
+     */
+    public void clickTaskTemplateListButton()
+    {
+        getUtil().getDriver().findElement(By.id("task-manager-view-task-template-list")).click();
+    }
+
+    /**
      * @return the FAQ livetable element
      * @deprecated since 3.10.0, use {@link #getTaskLiveDataTable()} instead.
      */
