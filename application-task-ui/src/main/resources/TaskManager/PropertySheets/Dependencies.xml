@@ -67,7 +67,7 @@
       ## Begin a list in XWiki Syntax
       * ## Without this space the * is not parsed as XWiki syntax
     #elseif($type == 'edit')
-      &lt;label class="xwiki-form-listclass" data-project="$escapetool.xml(${taskproject})" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
+      &lt;label class="xwiki-form-listclass" data-project="$escapetool.xml($services.rendering.escape($taskproject, 'xwiki/2.1'))" for="xwiki-form-dependencies-0-${foreach.index}"&gt;
         &lt;input
           id="xwiki-form-dependencies-0-${foreach.index}"
           value="${escapetool.xml($services.rendering.escape($taskid, 'xwiki/2.1'))}"
