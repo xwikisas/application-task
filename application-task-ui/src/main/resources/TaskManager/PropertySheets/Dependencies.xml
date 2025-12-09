@@ -81,8 +81,8 @@
         /&gt;
     #end
     &lt;span class="task-manager-dependency-progress"&gt;$taskpage.display('progress', 'view')&lt;/span&gt;
-    &lt;span class="task-manager-status-$escapetool.xml(${taskstatus})"&gt;[${escapetool.xml($services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}"))}]&lt;/span&gt;
-    &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($taskpage.getURL('view'))"&gt;${escapetool.xml($tasktitle)}&lt;/a&gt;&lt;/span&gt;
+    &lt;span class="task-manager-status-$escapetool.xml($services.rendering.escape($taskstatus, 'xwiki/2.1'))"&gt;[${escapetool.xml($services.rendering.escape($services.localization.render("TaskManager.TaskManagerClass_status_${taskstatus}"), 'xwiki/2.1'))}]&lt;/span&gt;
+    &lt;span class="wikilink"&gt;&lt;a href="$escapetool.xml($services.rendering.escape($taskpage.getURL('view'), 'xwiki/2.1'))"&gt;${escapetool.xml($services.rendering.escape($tasktitle, 'xwiki/2.1'))}&lt;/a&gt;&lt;/span&gt;
     ($services.rendering.escape($services.localization.render('TaskManager.TaskManagerClass_duedate'), 'xwiki/2.1') ${taskduedate})
     #if($task.getProperty('duedate').value.before($datetool.date) &amp;&amp; $taskstatus != 'Done')
       &lt;span class="task-manager-status-Late"&gt;
