@@ -574,7 +574,8 @@ Example:
     #if ($xwql.length() &gt; 0)
       #set ($xwql = "$xwql OR")
     #end
-    #set ($xwql = "$xwql obj.assignee = '$escapetool.sql($user)'")
+    ## The task contains at least one of the specified users.
+    #set ($xwql = "$xwql obj.assignee LIKE '%$escapetool.sql($user),%' OR obj.assignee LIKE '%$escapetool.sql($user)'")
   #end
   #set ($xwql = "($xwql)")
 #end
