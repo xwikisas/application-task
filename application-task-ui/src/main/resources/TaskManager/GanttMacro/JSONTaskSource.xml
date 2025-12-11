@@ -63,8 +63,9 @@
 ##
 #if ($xcontext.action == 'get')
   #set ($discard = $response.setContentType('application/json'))
-  #set ($query = "from doc.object(TaskManager.TaskManagerClass) as task where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates'" +
-    'and (task.startDate is not NULL or task.createDate is not NULL)')
+  #set ($query = 'from doc.object(TaskManager.TaskManagerClass) as task' +
+    " where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates'" +
+    ' and (task.startDate is not NULL or task.createDate is not NULL)')
   #if ("$!request.taskId" != '')
     ## Short-circuit if the request is for a specific task.
     #set ($query = $query + ' and doc.fullName = (:taskId)')
@@ -88,7 +89,16 @@
       #set ($assignees = {})
       #csvToArray($request.assignees $assignees)
       #set ($assignees = $assignees['csvReturn'])
-      #set ($query = $query + " and task.assignee in (:assignees)")
+      #set ($assigneeQuery = '')
+      #foreach ($assignee in $assignees)
+        #if ($assigneeQuery.length() &gt; 0)
+          #set ($assigneeQuery = "$assigneeQuery OR")
+        #end
+        ## The task contains at least one of the specified users.
+        #set ($assigneeQuery = "$assigneeQuery task.assignee LIKE '%$escapetool.sql($assignee),%'" +
+          " OR task.assignee LIKE '%$escapetool.sql($assignee)'")
+      #end
+      #set ($query = "$query AND ($assigneeQuery)")
     #end
     #if ("$!request.reporters" != '')
       #set ($reporters = {})
@@ -139,7 +149,6 @@
         #set ($index = $index + 1)
       #end
     #end
-    #if ($assignees) #set ($query = $query.bindValue('assignees', $assignees)) #end
     #if ($projects)  #set ($query = $query.bindValue('projects', $projects))   #end
     #if ($reporters) #set ($query = $query.bindValue('reporters', $reporters)) #end
     #if ($from)      #set ($query = $query.bindValue('from', $from))           #end
