@@ -369,7 +369,7 @@
 #end
 #if (!$creatorFilter.isEmpty())
   #set ($discard = $livedataCfg['query']['filters'].add({
-    'property': 'creator',
+    'property': 'reporter',
     'matchAll': false,
     'constraints': $creatorFilter
 }))
