@@ -94,20 +94,7 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             return;
         }
 
-        if (document.getDocumentReference().getSpaceReferences().stream().map(SpaceReference::getName)
-            .collect(Collectors.toList()).equals(TEMPLATE_SPACE_REFERENCES)) {
-            return;
-        }
-
-        maybeSetTaskNumber(context, taskObj);
-
-        // If the flag is set, the listener was triggered as a result of a save made by TaskMacroUpdateEventListener
-        // which updated some task objects. Skip the execution.
-        if (context.get(TASK_UPDATE_FLAG) != null) {
-            return;
-        }
-
-        if (taskObj.getStringValue(Task.OWNER).isEmpty()) {
+        if (shouldSkip(document, context, inFoldEvent, taskObj)) {
             return;
         }
 
@@ -135,6 +122,34 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
         } finally {
             context.put(TASK_UPDATE_FLAG, null);
         }
+    }
+
+    private boolean shouldSkip(XWikiDocument document, XWikiContext context, boolean inFoldEvent, BaseObject taskObj)
+    {
+
+        if (document.getDocumentReference().getSpaceReferences().stream().map(SpaceReference::getName)
+            .collect(Collectors.toList()).equals(TEMPLATE_SPACE_REFERENCES))
+        {
+            return true;
+        }
+
+        maybeSetTaskNumber(context, taskObj);
+
+        // There's no need to process the task document during a fold events.
+        if (inFoldEvent) {
+            return true;
+        }
+
+        // If the flag is set, the listener was triggered as a result of a save made by TaskMacroUpdateEventListener
+        // which updated some task objects. Skip the execution.
+        if (context.get(TASK_UPDATE_FLAG) != null) {
+            return true;
+        }
+
+        if (taskObj.getStringValue(Task.OWNER).isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     private boolean handleDeleteEvent(XWikiDocument document, XWikiContext context, Event event)
