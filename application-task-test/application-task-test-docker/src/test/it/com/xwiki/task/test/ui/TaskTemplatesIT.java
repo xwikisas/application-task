@@ -28,6 +28,7 @@ import org.openqa.selenium.By;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskTemplateListPage;
+import org.xwiki.test.docker.junit5.ExtensionOverride;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CreatePagePage;
@@ -43,7 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @version $Id$
  * @since 3.10.0
  */
-@UITest
+@UITest(extensionOverrides = { @ExtensionOverride(extensionId = "com.google.code.findbugs:jsr305", overrides = {
+    "features=com.google.code.findbugs:annotations" }) }, resolveExtraJARs = true)
 public class TaskTemplatesIT
 {
     private static final String TEST_USERNAME = "TaskTemplatesTestUser";
