@@ -79,6 +79,24 @@ public class TaskScriptService implements ScriptService
     private Logger logger;
 
     /**
+     * Runs a process that finds all the macros that have an absolute reference (i.e. xwiki:Space.Tasks.Task1 or
+     * Space.Tasks.Task1) and turns them in a relative page reference. (i.e. /Tasks/Task1). This prettifies the
+     * reference parameter of the task macro and allows the copying and moving of xwiki pages run correctly.
+     *
+     * @since 3.10.2
+     */
+    public void relativizeMacroReferences()
+    {
+        if (!authorization.hasAccess(Right.ADMIN)) {
+            return;
+        }
+        try {
+            taskMissingDataManager.relativizeReferences();
+        } catch (TaskException ignored) {
+        }
+    }
+
+    /**
      * @return the configuration of the application.
      */
     public TaskConfiguration getConfiguration()
