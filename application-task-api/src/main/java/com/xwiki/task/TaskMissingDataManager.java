@@ -64,4 +64,13 @@ public interface TaskMissingDataManager
     {
         return getMissingDataTaskOwners();
     }
+
+    /**
+     * Finds any task macros that have the reference parameter as absolute values and makes them relative to the current
+     * page. This makes the reference easier to read and allows the copying and moving of pages run smoother.
+     *
+     * @throws TaskException sad.
+     * @since 3.10.2
+     */
+    void relativizeReferences() throws TaskException;
 }

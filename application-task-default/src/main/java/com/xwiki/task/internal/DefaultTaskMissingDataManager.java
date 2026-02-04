@@ -22,6 +22,7 @@ package com.xwiki.task.internal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.observation.ObservationManager;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -42,6 +44,8 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskMissingDataManager;
+import com.xwiki.task.event.TaskRelativizedEvent;
+import com.xwiki.task.event.TaskRelativizingEvent;
 
 /**
  * Default implementation of {@link TaskMissingDataManager}.
@@ -53,6 +57,10 @@ import com.xwiki.task.TaskMissingDataManager;
 @Singleton
 public class DefaultTaskMissingDataManager implements TaskMissingDataManager
 {
+    private static final String QUERY_TASKS_WITH_OWNER = "SELECT DISTINCT task.owner "
+        + "FROM Document AS doc, doc.object(TaskManager.TaskManagerClass) AS task "
+        + "WHERE task.owner <> ''";
+
     @Inject
     private QueryManager queryManager;
 
@@ -64,6 +72,12 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
 
     @Inject
     private DocumentReferenceResolver<String> resolver;
+
+    @Inject
+    private Provider<TaskMacroReferenceMigrator> referenceMigratorProvider;
+
+    @Inject
+    private ObservationManager observationManager;
 
     @Inject
     private Logger logger;
@@ -80,6 +94,26 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
         List<DocumentReference> missingDataTaskOwners = new ArrayList<>();
         processOwnersWithIncompleteTasks(missingDataTaskOwners::add, offset, limit);
         return missingDataTaskOwners;
+    }
+
+    @Override
+    public void relativizeReferences() throws TaskException
+    {
+        logger.info("Started the process of relativizing the references of task macros.");
+        try {
+            Query query = queryManager.createQuery(QUERY_TASKS_WITH_OWNER, Query.XWQL);
+            List<String> results = query.execute();
+            logger.info("Found [{}] pages that contain task macros.", results.size());
+            List<DocumentReference> docRefs = results.stream()
+                .map(result -> resolver.resolve(result))
+                .collect(Collectors.toList());
+
+            observationManager.notify(new TaskRelativizingEvent(), this, docRefs);
+            referenceMigratorProvider.get().relativizeReference(docRefs);
+            observationManager.notify(new TaskRelativizedEvent(), this, docRefs);
+        } catch (QueryException e) {
+            logger.error("Could not run the relativizing process as the query creation/execution failed.", e);
+        }
     }
 
     @Override
