@@ -55,6 +55,17 @@ public interface TaskMissingDataManager
     List<DocumentReference> getMissingDataTaskOwners() throws TaskException;
 
     /**
+     * @param offset the offset of the returned list.
+     * @param limit the limit of the returned list.
+     * @return the list of pages that contain tasks macros with missing data.
+     * @throws TaskException if the retrieval of the documents failed.
+     */
+    default List<DocumentReference> getMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
+        return getMissingDataTaskOwners();
+    }
+
+    /**
      * Finds any task macros that have the reference parameter as absolute values and makes them relative to the current
      * page. This makes the reference easier to read and allows the copying and moving of pages run smoother.
      *
