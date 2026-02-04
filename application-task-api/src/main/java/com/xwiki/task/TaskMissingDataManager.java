@@ -26,13 +26,13 @@ import org.xwiki.model.reference.DocumentReference;
 
 /**
  * Handles operations on task macros that have missing data.
+ *
  * @version $Id$
  * @since 3.3
  */
 @Role
 public interface TaskMissingDataManager
 {
-
     /**
      * Some task macros, such as the ones resulted from a migration, can have some data missing. This method tries to
      * infer the missing data from the history of the page.
@@ -53,4 +53,15 @@ public interface TaskMissingDataManager
      * @return a list of pages that contain task macros with missing data.
      */
     List<DocumentReference> getMissingDataTaskOwners() throws TaskException;
+
+    /**
+     * @param offset the offset of the returned list.
+     * @param limit the limit of the returned list.
+     * @return the list of pages that contain tasks macros with missing data.
+     * @throws TaskException if the retrieval of the documents failed.
+     */
+    default List<DocumentReference> getMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
+        return getMissingDataTaskOwners();
+    }
 }
