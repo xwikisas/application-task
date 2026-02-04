@@ -155,11 +155,8 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
         throws TaskException
     {
         try {
-            String statement =
-                "SELECT DISTINCT task.owner "
-                    + "FROM Document AS doc, doc.object(TaskManager.TaskManagerClass) AS task "
-                    + "WHERE task.owner <> '' and (task.reporter = '' or (task.status = 'Done' and task.completeDate "
-                    + "is null))";
+            String statement = QUERY_TASKS_WITH_OWNER
+                + " and (task.reporter = '' or (task.status = 'Done' and task.completeDate is null))";
             Query query = queryManager.createQuery(statement, Query.XWQL);
             if (offset > 0) {
                 query.setOffset(offset);
