@@ -39,7 +39,17 @@
   <content>{{velocity}}
 #if ($xcontext.action == 'get')
   #if ("$!request.getPages" != '')
-    #set ($pagesWithIncompleteTasks = $services.task.getPagesWithIncompleteTaskMacros())
+    #set ($offset = "$!request.offset")
+    #if ($offset == '')
+      #set ($offset = '0')
+    #end
+    #set ($offset = $numbertool.toNumber($offset))
+    #set ($limit = "$!request.limit")
+    #if ($limit == '')
+      #set ($limit = '15')
+    #end
+    #set ($limit = $numbertool.toNumber($limit))
+    #set ($pagesWithIncompleteTasks = $services.task.getPagesWithIncompleteTaskMacros($offset, $limit))
     #set ($result = [])
     #foreach ($page in $pagesWithIncompleteTasks)
       #set ($taskDoc = $xwiki.getDocument($page))

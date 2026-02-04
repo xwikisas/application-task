@@ -125,8 +125,18 @@ public class TaskScriptService implements ScriptService
      */
     public List<DocumentReference> getPagesWithIncompleteTaskMacros()
     {
+        return getPagesWithIncompleteTaskMacros(0, 15);
+    }
+
+    /**
+     * @param offset the offset that will be used in returning the subset of pages with incomplete data.
+     * @param limit the limit imposed on the returned list.
+     * @return a list pages that contain task macros with incomplete data.
+     */
+    public List<DocumentReference> getPagesWithIncompleteTaskMacros(int offset, int limit)
+    {
         try {
-            return taskMissingDataManager.getMissingDataTaskOwners();
+            return taskMissingDataManager.getMissingDataTaskOwners(offset, limit);
         } catch (TaskException e) {
             return Collections.emptyList();
         }

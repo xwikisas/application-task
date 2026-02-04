@@ -71,25 +71,21 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
     @Override
     public List<DocumentReference> getMissingDataTaskOwners() throws TaskException
     {
+        return getMissingDataTaskOwners(0, 0);
+    }
+
+    @Override
+    public List<DocumentReference> getMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
         List<DocumentReference> missingDataTaskOwners = new ArrayList<>();
-        processTasksWithOwner(documentReference -> {
-            try {
-                XWikiContext context = contextProvider.get();
-                XWikiDocument document = context.getWiki().getDocument(documentReference, context);
-                if (taskDatesInitializer.doesDocumentContainIncompleteTasks(document.getXDOM())) {
-                    missingDataTaskOwners.add(documentReference);
-                }
-            } catch (XWikiException e) {
-                logger.warn("Some msg");
-            }
-        });
+        processOwnersWithIncompleteTasks(missingDataTaskOwners::add, offset, limit);
         return missingDataTaskOwners;
     }
 
     @Override
     public void inferMissingTaskData() throws TaskException
     {
-        processTasksWithOwner(documentReference -> {
+        processOwnersWithIncompleteTasks(documentReference -> {
             try {
                 inferMissingTaskData(documentReference);
             } catch (TaskException e) {
@@ -116,14 +112,27 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
         }
     }
 
-    private void processTasksWithOwner(Consumer<DocumentReference> consumer) throws TaskException
+    private void processOwnersWithIncompleteTasks(Consumer<DocumentReference> consumer) throws TaskException
+    {
+        processOwnersWithIncompleteTasks(consumer, 0, 0);
+    }
+
+    private void processOwnersWithIncompleteTasks(Consumer<DocumentReference> consumer, int offset, int limit)
+        throws TaskException
     {
         try {
             String statement =
                 "SELECT DISTINCT task.owner "
                     + "FROM Document AS doc, doc.object(TaskManager.TaskManagerClass) AS task "
-                    + "WHERE task.owner <> ''";
+                    + "WHERE task.owner <> '' and (task.reporter = '' or (task.status = 'Done' and task.completeDate "
+                    + "is null))";
             Query query = queryManager.createQuery(statement, Query.XWQL);
+            if (offset > 0) {
+                query.setOffset(offset);
+            }
+            if (limit > 0) {
+                query.setLimit(limit);
+            }
             List<String> results = query.execute();
             for (String result : results) {
                 consumer.accept(resolver.resolve(result));

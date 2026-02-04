@@ -44,6 +44,8 @@
 &lt;div class="incompleteTaskOwnersSection"&gt;
   &lt;button class="fixAllTasks btn btn-primary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.fixAll'))&lt;/button&gt;
   &lt;button class="refreshTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.refresh'))&lt;/button&gt;
+  &lt;button class="nextTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.nextTasks'))&lt;/button&gt;
+  &lt;button class="previousTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.previousTasks'))&lt;/button&gt;
   &lt;div class="incompleteTaskOwners loading"&gt;
     &lt;template id="incompleteTaskOwnerTemplate"&gt;
       &lt;a class="incompleteTaskOwnerLink" href="#"&gt;&lt;/a&gt;
@@ -170,6 +172,22 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
       $('.incompleteTaskOwners').append(element);
     });
   };
+  let sendGetRequest = function(serviceDoc, offset, limit) {
+    var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', getPages: '1', offset: offset, limit: limit }));
+    let notification = new XWiki.widgets.Notification(l10n.get('notification.find.inprogress'), "inprogress");
+    $('.incompleteTaskOwnersSectionMessage').addClass('hidden');
+    $.getJSON(serviceURL)
+      .done(function (pages) {
+        displayIncompleteTasks(pages, serviceDoc);
+        notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.done'), "done"));
+        if (pages.length &lt;= 0) {
+          $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('&lt;div class="box infomessage"&gt;' + l10n.get('find.noTasks') + '&lt;/div&gt;');
+        }
+      })
+      .fail(function (err) {
+        notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.error'), "error"));
+      });
+  };
   $(function () {
     let serviceDocRef = XWiki.Model.resolve('TaskManager.IncompleteTasksService', XWiki.EntityType.DOCUMENT, XWiki.currentDocument.getDocumentReference());
     let serviceDoc = new XWiki.Document(serviceDocRef);
@@ -186,21 +204,19 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
         $('.incompleteTaskOwners').removeClass('loading');
       });
     // Find incomplete task owners and display them when clicking refresh.
+    let offset = 0;
+    let limit = 15;
+    $('.nextTasks').on('click', function () {
+      offset += limit;
+      sendGetRequest(serviceDoc, offset, limit);
+    });
+    $('.previousTasks').on('click', function () {
+      offset = Math.max(0, offset - limit);
+      sendGetRequest(serviceDoc, offset, limit);
+    });
     $('.refreshTasks').on('click', function () {
-      var serviceURL = serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', getPages: '1' }));
-      let notification = new XWiki.widgets.Notification(l10n.get('notification.find.inprogress'), "inprogress");
-      $('.incompleteTaskOwnersSectionMessage').addClass('hidden');
-      $.getJSON(serviceURL)
-        .done(function (pages) {
-          displayIncompleteTasks(pages, serviceDoc);
-          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.done'), "done"));
-          if (pages.length &lt;= 0) {
-            $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('&lt;div class="box infomessage"&gt;' + l10n.get('find.noTasks') + '&lt;/div&gt;');
-          }
-        })
-        .fail(function (err) {
-          notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.error'), "error"));
-        });
+      offset = 0;
+      sendGetRequest(serviceDoc, offset, limit);
     });
     // Start the job and create a jobrunner object to periodically check the status of the job.
     $('.fixAllTasks').on('click', function () {
