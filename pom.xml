@@ -54,6 +54,7 @@
     <module>application-task-api</module>
     <module>application-task-default</module>
     <module>application-task-ui</module>
+    <module>application-task-xip</module>
     <module>macro-date</module>
   </modules>
   <profiles>
