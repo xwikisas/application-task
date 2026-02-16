@@ -19,15 +19,11 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.xwiki.test.ui.po.BaseElement;
 
 public class TaskReportMacro extends BaseElement
@@ -41,25 +37,26 @@ public class TaskReportMacro extends BaseElement
 
     public List<TaskElement> getTasks()
     {
-        WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(30));
-
-        wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(report, By.cssSelector("div.task-macro")));
-
-        List<WebElement> tasks = report.findElements(By.cssSelector("div.task-macro"));
-
-        if (tasks.isEmpty()) {
-            throw new NoSuchElementException("No task-macro found inside report " + report.getAttribute("id"));
-        }
-
-        return tasks.stream().map(TaskElement::new).collect(Collectors.toList());
+        return report.findElements(By.className("task-macro")).stream().map(TaskElement::new)
+            .collect(Collectors.toList());
     }
 
     public TaskElement getTask(int index)
     {
-        List<TaskElement> tasks = getTasks();
-        if (index < 0 || index >= tasks.size()) {
-            throw new IndexOutOfBoundsException("Task index " + index + " out of bounds, total tasks: " + tasks.size());
-        }
-        return tasks.get(index);
+        return getTasks().get(index);
+    }
+
+    public int getColumnCount()
+    {
+        List<WebElement> headers =
+            report.findElements(By.cssSelector("tr.column-header-names th:not([style*='display: none'])"));
+        return headers.size();
+    }
+
+    public List<String> getColumnNames()
+    {
+        return report.findElements(
+                By.cssSelector("tr.column-header-names th:not([style*='display: none']) .property-name")).stream()
+            .map(WebElement::getText).collect(Collectors.toList());
     }
 }

@@ -105,4 +105,9 @@ public class ViewPageWithTasks extends ViewPage
         tableLayoutElement.waitUntilReady();
         return tableLayoutElement;
     }
+
+    public String getTaskId(int index)
+    {
+        return getTaskMacroLink(index).getText();
+    }
 }

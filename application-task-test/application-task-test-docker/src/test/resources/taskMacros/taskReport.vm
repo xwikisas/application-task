@@ -17,15 +17,15 @@
 ## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
-{{task-report id="reportid0"/}}
-
 {{task-report limit="2" columns="name,assignee" id="reportid1"/}}
 
 {{task-report  status="Done" columns="name,duedate,assignee,owner,completeDate" sortBy="name"
-id="reportid3"/}}
+id="reportid2"/}}
 
-{{task-report  reporters="XWiki.Admin" id="reportid4"/}}
 
-{{task-report tags="beta,x" id="reportid5"/}}
+{{task-report  reporters="XWiki.Admin" id="reportid3"/}}
 
-{{task-report pages="XWiki.pageWithTags" id="reportid6"/}}
+
+{{task-report tags="tag1,tag2" id="reportid4"/}}
+
+{{task-report pages="XWiki.pageWithTags" id="reportid5"/}}

@@ -338,6 +338,7 @@ class TaskManagerIT
         viewPage.getTaskMacroLink(0).click();
         TaskManagerViewPage objPage = new TaskManagerViewPage();
         assertEquals("Copy", objPage.getOwner());
+        setup.deletePage(testRef);
     }
 
     @ParameterizedTest
@@ -373,6 +374,10 @@ class TaskManagerIT
         viewPage.getTaskMacroLink(0).click();
         TaskManagerViewPage objPage = new TaskManagerViewPage();
         assertEquals("Rename", objPage.getOwner());
+
+        DocumentReference newRef =
+            new DocumentReference(new LocalDocumentReference(Arrays.asList("Main", "Rename"), "WebHome"), wiki);
+        setup.deletePage(newRef);
     }
 
     @ParameterizedTest
