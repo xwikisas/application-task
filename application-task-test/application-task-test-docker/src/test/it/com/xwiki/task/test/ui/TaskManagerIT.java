@@ -40,6 +40,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.panels.test.po.ApplicationsPanel;
+import org.xwiki.test.docker.junit5.ExtensionOverride;
 import org.xwiki.test.docker.junit5.TestLocalReference;
 import org.xwiki.test.docker.junit5.TestReference;
 import org.xwiki.test.docker.junit5.UITest;
@@ -68,7 +69,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         "org.xwiki.platform:xwiki-platform-eventstream-store-solr:14.10",
         "com.xwiki.date:macro-date-api",
         "com.xwiki.date:macro-date-default"
-    }, resolveExtraJARs = true)
+    },
+    extensionOverrides = { @ExtensionOverride(extensionId = "com.google.code.findbugs:jsr305", overrides = {
+    "features=com.google.code.findbugs:annotations" }) }, resolveExtraJARs = true)
 class TaskManagerIT
 {
     private final LocalDocumentReference pageWithTaskMacros = new LocalDocumentReference("Main", "Test");
@@ -113,6 +116,7 @@ class TaskManagerIT
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
+        setup.deletePage(pageWithMultiUserTask);
     }
 
     @Test
@@ -334,6 +338,7 @@ class TaskManagerIT
         viewPage.getTaskMacroLink(0).click();
         TaskManagerViewPage objPage = new TaskManagerViewPage();
         assertEquals("Copy", objPage.getOwner());
+        setup.deletePage(testRef);
     }
 
     @ParameterizedTest
@@ -369,6 +374,10 @@ class TaskManagerIT
         viewPage.getTaskMacroLink(0).click();
         TaskManagerViewPage objPage = new TaskManagerViewPage();
         assertEquals("Rename", objPage.getOwner());
+
+        DocumentReference newRef =
+            new DocumentReference(new LocalDocumentReference(Arrays.asList("Main", "Rename"), "WebHome"), wiki);
+        setup.deletePage(newRef);
     }
 
     @ParameterizedTest
