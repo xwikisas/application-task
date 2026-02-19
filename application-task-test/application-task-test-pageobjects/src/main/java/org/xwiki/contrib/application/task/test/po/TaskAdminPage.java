@@ -35,6 +35,12 @@ public class TaskAdminPage extends AdministrationSectionPage
 {
     private static final String SECTION_ID = "Task Manager";
 
+    @FindBy(id = "TaskManager.Administration_TaskManager.TaskManagerConfigurationClass_0_notSkippedFoldEvents")
+    private WebElement notSkippedFoldEvents;
+
+    @FindBy(className = "incompleteTaskOwnersSection")
+    private WebElement incompleteTasksSection;
+
     @FindBy(id = "TaskManager.TaskManagerClass_0_defaultInlineStatus")
     private WebElement defaultInlineStatusElement;
 
@@ -131,5 +137,39 @@ public class TaskAdminPage extends AdministrationSectionPage
     public int countSectionElements(String sectionId)
     {
         return getDriver().findElements(By.cssSelector(sectionId + " .actiondelete")).size();
+    }
+
+    /**
+     * @since 3.11.0
+     */
+    public int countIncompleteTasks()
+    {
+        return this.incompleteTasksSection.findElements(By.className("incompleteTaskOwnerLink")).size();
+    }
+
+    /**
+     * @since 3.11.0
+     */
+    public void refreshIncompleteTasks()
+    {
+        this.incompleteTasksSection.findElement(By.className("refreshTasks")).click();
+        waitForNotificationSuccessMessage("Lookup finished");
+    }
+
+    /**
+     * @since 3.11.0
+     */
+    public void inferMissingDataForAllTasks()
+    {
+        this.incompleteTasksSection.findElement(By.className("fixAllTasks")).click();
+        getDriver().waitUntilElementIsVisible(incompleteTasksSection, By.className("successmessage"));
+    }
+
+    /**
+     * @since 3.11.0
+     */
+    public void setNotSkippedFoldEvents(String notSkippedFoldEvents)
+    {
+        this.notSkippedFoldEvents.sendKeys(notSkippedFoldEvents);
     }
 }

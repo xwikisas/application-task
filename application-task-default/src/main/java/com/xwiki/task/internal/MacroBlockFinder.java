@@ -20,6 +20,7 @@
 package com.xwiki.task.internal;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -107,6 +108,55 @@ public class MacroBlockFinder
                 }
             }
         }
+        return content;
+    }
+
+    /**
+     * @param content the content that will be searched iteratively for macro blocks. Any macro content that gets
+     *     parsed will be set as the children of the macro block where it originally came from. This might be useful if
+     *     the dom needs updating.
+     * @param syntax the syntax of the content.
+     * @param saveChildren whether the children resulting of the macro content parsing should be stored in the macro
+     *     children or not.
+     * @param function function the function that is executed when a macro block is found. It receives the found
+     *     {@link MacroBlock} and returns a {@link Lookup} value. BREAK if the lookup should stop; SKIP if the content
+     *     of the current macro should not be parsed; CONTINUE if the content of the current macro should be parsed.
+     * @return the modified content.
+     */
+    public XDOM iterativeFind(XDOM content, Syntax syntax, boolean saveChildren, Function<MacroBlock, Lookup> function)
+        throws MacroExecutionException
+    {
+        Stack<XDOM> stack = new Stack<>();
+        stack.add(content);
+
+        XDOM currentDOM = stack.pop();
+
+        while (currentDOM != null) {
+            List<MacroBlock> macros =
+                currentDOM.getBlocks(new ClassBlockMatcher(MacroBlock.class), Block.Axes.DESCENDANT);
+            for (MacroBlock macro : macros) {
+                Lookup lookup = function.apply(macro);
+                if (lookup.equals(Lookup.BREAK)) {
+                    break;
+                } else if (lookup.equals(Lookup.SKIP)) {
+                    continue;
+                }
+                if (macro.getContent() != null && !macro.getContent().isEmpty()
+                    && this.macroUtils.isMacroContentParsable(macro.getId()))
+                {
+                    XDOM macroXDOM = macroUtils.getMacroContentXDOM(macro, syntax);
+                    stack.push(macroXDOM);
+                    if (saveChildren) {
+                        macro.setChildren(macroXDOM.getChildren());
+                    }
+                }
+            }
+            if (stack.isEmpty()) {
+                break;
+            }
+            currentDOM = stack.pop();
+        }
+
         return content;
     }
 }

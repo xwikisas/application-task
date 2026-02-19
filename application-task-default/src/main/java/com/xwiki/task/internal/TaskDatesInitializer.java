@@ -20,10 +20,14 @@
 package com.xwiki.task.internal;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,16 +44,20 @@ import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
+import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.block.match.MacroBlockMatcher;
+import org.xwiki.rendering.macro.MacroExecutionException;
+import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
-import com.xwiki.task.TaskException;
 import com.xwiki.date.DateMacroConfiguration;
+import com.xwiki.task.MacroUtils;
+import com.xwiki.task.TaskException;
 import com.xwiki.task.model.Task;
 
 /**
@@ -82,6 +90,12 @@ public class TaskDatesInitializer
     @Inject
     private Logger logger;
 
+    @Inject
+    private MacroBlockFinder blockFinder;
+
+    @Inject
+    private MacroUtils macroUtils;
+
     /**
      * @param content the parsed content of the document.
      * @return true if the XDOM contains task macros with incomplete data. False otherwise.
@@ -98,21 +112,27 @@ public class TaskDatesInitializer
      * @param ownerDoc the document that contains tasks which are missing the create date and/or the complete date.
      * @param content the parsed content of the document.
      * @param context the current context.
-     * @throws TaskException if the extraction failed
      * @return true if the xdom has been changed, false otherwise.
+     * @throws TaskException if the extraction failed
      */
     public boolean processDocument(XWikiDocument ownerDoc, XDOM content, XWikiContext context) throws TaskException
     {
         Version[] versions;
+        List<MacroBlock> updatableMacros = new ArrayList<>();
         Map<String, Block> createDateTasks = new HashMap<>();
         Map<String, Block> completeDateTasks = new HashMap<>();
+        XDOM updatedContent = content;
         try {
-            content
-                .getBlocks(new MacroBlockMatcher(Task.MACRO_NAME), Block.Axes.DESCENDANT)
-                .forEach(task -> separateProcessableTasks(task, createDateTasks, completeDateTasks));
+            updatedContent = blockFinder.iterativeFind(content, ownerDoc.getSyntax(), true, macroBlock -> {
+                updatableMacros.add(macroBlock);
+                if (Task.MACRO_NAME.equals(macroBlock.getId())) {
+                    separateProcessableTasks(macroBlock, createDateTasks, completeDateTasks);
+                }
+                return MacroBlockFinder.Lookup.CONTINUE;
+            });
 
             versions = ownerDoc.getRevisions(context);
-        } catch (XWikiException e) {
+        } catch (XWikiException | MacroExecutionException e) {
             throw new TaskException(
                 String.format("Could not extract the tasks from the content of [%s].", ownerDoc.getDocumentReference()),
                 e);
@@ -128,6 +148,17 @@ public class TaskDatesInitializer
 
         compareVersionsAndExtract(context, versions, createDateTasks, completeDateTasks, ownerDoc, storageFormat);
 
+        ListIterator<MacroBlock> li = updatableMacros.listIterator(updatableMacros.size());
+        while (li.hasPrevious()) {
+            MacroBlock macroBlock = li.previous();
+            try {
+                if (macroBlock.getChildren() != null) {
+                    macroUtils.updateMacroContent(macroBlock,
+                        macroUtils.renderMacroContent(macroBlock.getChildren(), Syntax.XWIKI_2_1));
+                }
+            } catch (Exception e) {
+            }
+        }
         // If tasks were found but they are still in the map, that means they weren't initialised properly.
         return foundTasks != createDateTasks.size() + completeDateTasks.size();
     }
@@ -178,6 +209,21 @@ public class TaskDatesInitializer
         SimpleDateFormat storageFormat, Date date, String author, Delta delta)
     {
         Matcher matcher = taskPattern.matcher(delta.getRevised().toString());
+        Matcher originalTasksMatcher = taskPattern.matcher(delta.getOriginal().toString());
+        Set<String> originalTasks = new HashSet<>();
+        while (originalTasksMatcher.find()) {
+            String task = originalTasksMatcher.group();
+            Matcher paramMatcher = paramPattern.matcher(task);
+            String taskReference = "";
+            while (paramMatcher.find()) {
+                if (paramMatcher.group(1).equals(Task.REFERENCE)) {
+                    taskReference = paramMatcher.group(2);
+                }
+            }
+            if (!taskReference.isEmpty()) {
+                originalTasks.add(taskReference);
+            }
+        }
         while (matcher.find()) {
             String task = matcher.group();
             Matcher paramMatcher = paramPattern.matcher(task);
@@ -190,7 +236,7 @@ public class TaskDatesInitializer
                     status = paramMatcher.group(2);
                 }
             }
-            if (delta instanceof AddDelta) {
+            if (delta instanceof AddDelta || !originalTasks.contains(taskReference)) {
                 if (createDateBlocks.containsKey(taskReference)) {
                     createDateBlocks.get(taskReference).setParameter(Task.REPORTER, author);
                 }
