@@ -70,6 +70,7 @@ public interface TaskMissingDataManager
      * @param limit the limit of the returned list.
      * @return the paginated list of pages that contain tasks macros with missing data.
      * @throws TaskException if the retrieval of the documents failed.
+     * @since 3.11.0
      */
     default PaginatedReferences getPaginatedMissingDataTaskOwners(int offset, int limit) throws TaskException
     {
