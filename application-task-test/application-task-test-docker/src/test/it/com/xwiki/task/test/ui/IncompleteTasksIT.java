@@ -21,12 +21,16 @@ package com.xwiki.task.test.ui;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xwiki.administration.test.po.AdministrationPage;
 import org.xwiki.administration.test.po.ImportAdministrationSectionPage;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
+import org.xwiki.contrib.application.task.test.po.TaskElement;
+import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
+import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.test.docker.junit5.TestConfiguration;
 import org.xwiki.test.docker.junit5.TestReference;
@@ -51,6 +55,8 @@ public class IncompleteTasksIT
 
     private static final LocalDocumentReference CONTENT_CHANGED_TO_INCOMPLETE_TASKS =
         new LocalDocumentReference(Arrays.asList(SPACE, "ContentChangedToIncompleteTasks"), "WebHome");
+    private static final LocalDocumentReference PAGE_WITH_INCOMPLETE_TASKS =
+        new LocalDocumentReference(Arrays.asList(SPACE, "OneVersionTwoIncompleteTasks"), "WebHome");
 
     private static final String XAR_INCOMPLETE_TASKS = "IncompleteTasks.xar";
 
@@ -88,6 +94,23 @@ public class IncompleteTasksIT
         taskAdminPage.inferMissingDataForAllTasks();
         taskAdminPage.refreshIncompleteTasks();
         assertEquals(0, taskAdminPage.countIncompleteTasks());
+    }
+
+    @Test
+    public void testAuthorIsTheSameAfterInferringMissingData(TestUtils setup, TestReference testReference,
+        TestConfiguration testConfiguration)
+    {
+        setup.gotoPage(PAGE_WITH_INCOMPLETE_TASKS);
+
+        ViewPageWithTasks viewPageWithTasks = new ViewPageWithTasks();
+        List<TaskElement> taskMacros = viewPageWithTasks.getTasks();
+        assertEquals(2, taskMacros.size());
+
+        assertEquals("Admin", viewPageWithTasks.openHistoryDocExtraPane().getCurrentAuthor());
+
+        TaskManagerViewPage taskManagerViewPage = taskMacros.get(0).goToTaskPage();
+
+        assertEquals("Admin", taskManagerViewPage.openHistoryDocExtraPane().getCurrentAuthor());
     }
 
     private File getFileToUpload(TestConfiguration testConfiguration, String filename)
