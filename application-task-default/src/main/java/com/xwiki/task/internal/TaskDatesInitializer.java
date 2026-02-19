@@ -157,6 +157,10 @@ public class TaskDatesInitializer
                         macroUtils.renderMacroContent(macroBlock.getChildren(), Syntax.XWIKI_2_1));
                 }
             } catch (Exception e) {
+                logger.warn(
+                    "Failed to render the new content of the  macro [{}] from page [{}]. This might lead to incomplete "
+                        + "tasks still being present in the page.", macroBlock.getId(),
+                    ownerDoc.getDocumentReference());
             }
         }
         // If tasks were found but they are still in the map, that means they weren't initialised properly.
