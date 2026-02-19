@@ -170,6 +170,7 @@ public class TaskAdminPage extends AdministrationSectionPage
      */
     public void setNotSkippedFoldEvents(String notSkippedFoldEvents)
     {
+        this.notSkippedFoldEvents.clear();
         this.notSkippedFoldEvents.sendKeys(notSkippedFoldEvents);
     }
 }

@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.xwiki.administration.test.po.AdministrationPage;
 import org.xwiki.administration.test.po.ImportAdministrationSectionPage;
@@ -55,10 +56,16 @@ public class IncompleteTasksIT
 
     private static final LocalDocumentReference CONTENT_CHANGED_TO_INCOMPLETE_TASKS =
         new LocalDocumentReference(Arrays.asList(SPACE, "ContentChangedToIncompleteTasks"), "WebHome");
+
     private static final LocalDocumentReference PAGE_WITH_INCOMPLETE_TASKS =
         new LocalDocumentReference(Arrays.asList(SPACE, "OneVersionTwoIncompleteTasks"), "WebHome");
 
+    private static final LocalDocumentReference PAGE_WITH_UNCREATED_TASKS =
+        new LocalDocumentReference("ExportingPage", "WebHome");
+
     private static final String XAR_INCOMPLETE_TASKS = "IncompleteTasks.xar";
+
+    private static final String XAR_UNCREATED_TASKS = "UncreatedTaskPages.xar";
 
     private AdministrationPage adminPage;
 
@@ -69,22 +76,28 @@ public class IncompleteTasksIT
     {
 
         setup.loginAsSuperAdmin();
+
+        TaskAdminPage taskAdmin = TaskAdminPage.gotoPage();
+        taskAdmin.setNotSkippedFoldEvents("com.xpn.xwiki.internal.event.XARImportingEvent");
+        taskAdmin.clickSave();
+
         adminPage = AdministrationPage.gotoPage();
         sectionPage = adminPage.clickImportSection();
 
         if (sectionPage.isPackagePresent(XAR_INCOMPLETE_TASKS)) {
             sectionPage.deletePackage(XAR_INCOMPLETE_TASKS);
         }
-        File file = getFileToUpload(testConfiguration, XAR_INCOMPLETE_TASKS);
-        this.sectionPage.attachPackage(file);
-        this.sectionPage.selectPackage(XAR_INCOMPLETE_TASKS);
+        if (sectionPage.isPackagePresent(XAR_UNCREATED_TASKS)) {
+            sectionPage.deletePackage(XAR_UNCREATED_TASKS);
+        }
+        importXar(testConfiguration, XAR_INCOMPLETE_TASKS);
 
-        this.sectionPage.selectReplaceHistoryOption();
-        this.sectionPage.clickImportAsBackup();
-        this.sectionPage.importPackage();
-
+        adminPage = AdministrationPage.gotoPage();
+        sectionPage = adminPage.clickImportSection();
+        importXar(testConfiguration, XAR_UNCREATED_TASKS);
     }
 
+    @Order(10)
     @Test
     public void testContentChangedToIncompleteTasks(TestUtils setup, TestReference testReference,
         TestConfiguration testConfiguration)
@@ -96,6 +109,7 @@ public class IncompleteTasksIT
         assertEquals(0, taskAdminPage.countIncompleteTasks());
     }
 
+    @Order(20)
     @Test
     public void testAuthorIsTheSameAfterInferringMissingData(TestUtils setup, TestReference testReference,
         TestConfiguration testConfiguration)
@@ -113,8 +127,38 @@ public class IncompleteTasksIT
         assertEquals("Admin", taskManagerViewPage.openHistoryDocExtraPane().getCurrentAuthor());
     }
 
+    @Order(30)
+    @Test
+    public void testTaskPageAuthorIsTheSameWhenImportingTaskMacros(TestUtils setup, TestReference testReference,
+        TestConfiguration testConfiguration)
+    {
+        setup.gotoPage(PAGE_WITH_UNCREATED_TASKS);
+
+        ViewPageWithTasks viewPageWithTasks = new ViewPageWithTasks();
+        List<TaskElement> taskMacros = viewPageWithTasks.getTasks();
+        assertEquals(1, taskMacros.size());
+
+        assertEquals("TeoCaras", viewPageWithTasks.openHistoryDocExtraPane().getCurrentAuthor());
+        TaskManagerViewPage taskManagerViewPage = taskMacros.get(0).goToTaskPage();
+        assertEquals("TeoCaras", taskManagerViewPage.openHistoryDocExtraPane().getCurrentAuthor());
+    }
+
     private File getFileToUpload(TestConfiguration testConfiguration, String filename)
     {
         return new File(testConfiguration.getBrowser().getTestResourcesPath(), "XARImport/" + filename);
+    }
+
+    private void importXar(TestConfiguration testConfiguration, String fileName)
+    {
+        File file = getFileToUpload(testConfiguration, fileName);
+
+        this.sectionPage.attachPackage(file);
+        this.sectionPage.selectPackage(fileName);
+
+        this.sectionPage.selectReplaceHistoryOption();
+        if (!this.sectionPage.isImportAsBackup()) {
+            this.sectionPage.clickImportAsBackup();
+        }
+        this.sectionPage.importPackage();
     }
 }
