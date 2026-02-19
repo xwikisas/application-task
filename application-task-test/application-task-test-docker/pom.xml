@@ -101,6 +101,19 @@
       <artifactId>xwiki-platform-wiki-template-default</artifactId>
       <version>${platform.version}</version>
     </dependency>
+    <!-- Needed for the incomplete tasks import. -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-administration-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-administration-test-pageobjects</artifactId>
+      <version>${platform.version}</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Needed to trigger the scheduler job -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
