@@ -303,6 +303,7 @@ rendering.macro.kanbanboard.parameter.limit.description=The amount of tasks disp
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks
 taskmanager.incompleteTasks.find=Find incomplete tasks
+taskmanager.incompleteTasks.pagination.label=Displaying pages with incomplete tasks {0} - {1} out of {2} total.
 taskmanager.incompleteTasks.find.noTasks=There are no task macros with incomplete data.
 taskmanager.incompleteTasks.fixAll=Infer missing data for all tasks
 taskmanager.incompleteTasks.refresh=Refresh

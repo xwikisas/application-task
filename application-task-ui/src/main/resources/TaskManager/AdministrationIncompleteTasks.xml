@@ -44,8 +44,8 @@
 &lt;div class="incompleteTaskOwnersSection"&gt;
   &lt;button class="fixAllTasks btn btn-primary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.fixAll'))&lt;/button&gt;
   &lt;button class="refreshTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.refresh'))&lt;/button&gt;
-  &lt;button class="nextTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.nextTasks'))&lt;/button&gt;
   &lt;button class="previousTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.previousTasks'))&lt;/button&gt;
+  &lt;button class="nextTasks btn btn-secondary" &gt;$escapetool.xml($services.localization.render('taskmanager.incompleteTasks.nextTasks'))&lt;/button&gt;
   &lt;div class="incompleteTaskOwners loading"&gt;
     &lt;template id="incompleteTaskOwnerTemplate"&gt;
       &lt;a class="incompleteTaskOwnerLink" href="#"&gt;&lt;/a&gt;
@@ -157,7 +157,8 @@
     'notification.fixAll.done',
     'notification.fixAll.error',
     'find.noTasks',
-    'fix'
+    'fix',
+    'pagination.label'
   ]
 });
 require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-translation-keys'], function ($, xcontext, l10n) {
@@ -178,10 +179,21 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
     $('.incompleteTaskOwnersSectionMessage').addClass('hidden');
     $.getJSON(serviceURL)
       .done(function (pages) {
-        displayIncompleteTasks(pages, serviceDoc);
+        $('.previousTasks').prop("disabled", false);
+        $('.nextTasks').prop("disabled", false);
+        displayIncompleteTasks(pages.entries, serviceDoc);
         notification.replace(new XWiki.widgets.Notification(l10n.get('notification.find.done'), "done"));
-        if (pages.length &lt;= 0) {
+        if (pages.count &lt;= 0) {
           $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('&lt;div class="box infomessage"&gt;' + l10n.get('find.noTasks') + '&lt;/div&gt;');
+        } else {
+          $('.incompleteTaskOwnersSectionMessage').removeClass('hidden')
+            .html('&lt;span class="incomplete-task-owners-hint"&gt;' + l10n.get('pagination.label', pages.offset, pages.offset + pages.count, pages.total) + '&lt;/span&gt;');
+        }
+        if (offset &lt;= 0) {
+          $('.previousTasks').prop("disabled", true);
+        }
+        if (pages.total &lt;= offset + limit) {
+          $('.nextTasks').prop("disabled", true);
         }
       })
       .fail(function (err) {
@@ -191,18 +203,8 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
   $(function () {
     let serviceDocRef = XWiki.Model.resolve('TaskManager.IncompleteTasksService', XWiki.EntityType.DOCUMENT, XWiki.currentDocument.getDocumentReference());
     let serviceDoc = new XWiki.Document(serviceDocRef);
-    $('.incompleteTaskOwnersSectionMessage').addClass('hidden');
-    // Load incomplete task owners on page load.
-    $.getJSON(serviceDoc.getURL('get', $.param({ outputSyntax: 'plain', getPages: '1' })))
-      .done(function (pages) {
-        displayIncompleteTasks(pages, serviceDoc);
-        if (pages.length &lt;= 0) {
-          $('.incompleteTaskOwnersSectionMessage').removeClass('hidden').html('&lt;div class="box infomessage"&gt;' + l10n.get('find.noTasks') + '&lt;/div&gt;');
-        }
-      })
-      .always(function () {
-        $('.incompleteTaskOwners').removeClass('loading');
-      });
+    sendGetRequest(serviceDoc, 0, 15);
+    $('.incompleteTaskOwners').removeClass('loading');
     // Find incomplete task owners and display them when clicking refresh.
     let offset = 0;
     let limit = 15;
@@ -405,10 +407,15 @@ require(['jquery', 'xwiki-meta', 'xwiki-l10n!taskmanager-incomplete-tasks-transl
   align-items: center;
   margin: 1em 0;
   grid-column-gap: 1em;
+}
+
+.incomplete-task-owners-hint {
+  color: @text-muted;
+  font-size: 0.9em;
 }</code>
     </property>
     <property>
-      <contentType>CSS</contentType>
+      <contentType>LESS</contentType>
     </property>
     <property>
       <name/>
