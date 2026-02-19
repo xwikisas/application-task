@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
@@ -38,6 +39,8 @@ import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceSerializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -81,6 +84,10 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
 
     @Inject
     private Logger logger;
+
+    @Inject
+    @Named("document")
+    private UserReferenceSerializer<DocumentReference> documentUserSerializer;
 
     @Override
     public List<DocumentReference> getMissingDataTaskOwners() throws TaskException
@@ -138,8 +145,12 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
             XWikiDocument document = context.getWiki().getDocument(documentReference, context);
             XDOM xdom = document.getXDOM();
             if (taskDatesInitializer.processDocument(document, xdom, context)) {
+                UserReference lastAuthor = document.getAuthors().getContentAuthor();
+                DocumentReference currentContextUser = context.getUserReference();
+                context.setUserReference(documentUserSerializer.serialize(lastAuthor));
                 document.setContent(xdom);
                 context.getWiki().saveDocument(document, "Updated data of tasks.", context);
+                context.setUserReference(currentContextUser);
             }
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the document for [%s].", documentReference), e);
