@@ -49,9 +49,14 @@
       #set ($limit = '15')
     #end
     #set ($limit = $numbertool.toNumber($limit))
-    #set ($pagesWithIncompleteTasks = $services.task.getPagesWithIncompleteTaskMacros($offset, $limit))
-    #set ($result = [])
-    #foreach ($page in $pagesWithIncompleteTasks)
+    #set ($pagesWithIncompleteTasks = $services.task.getPaginatedPagesWithIncompleteTaskMacros($offset, $limit))
+    #set ($result = {
+      'entries': [],
+      'offset': $pagesWithIncompleteTasks.offset,
+      'total': $pagesWithIncompleteTasks.total,
+      'count': $pagesWithIncompleteTasks.count
+      })
+    #foreach ($page in $pagesWithIncompleteTasks.pages)
       #set ($taskDoc = $xwiki.getDocument($page))
       #set ($title = $taskDoc.title)
       #if ("$title.trim()" == '')
@@ -66,7 +71,7 @@
         'ref': $services.rendering.escape($services.model.serialize($page), $xwiki.currentContentSyntaxId),
         'url': $xwiki.getURL($page, 'view')
       })
-      #set ($discard = $result.add($pageInfo))
+      #set ($discard = $result.entries.add($pageInfo))
     #end
     $response.setContentType('application/json')
     $jsontool.serialize($result)

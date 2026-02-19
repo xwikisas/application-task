@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.job.Job;
@@ -43,6 +44,7 @@ import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.task.PaginatedReferences;
 import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskMissingDataManager;
@@ -157,6 +159,23 @@ public class TaskScriptService implements ScriptService
             return taskMissingDataManager.getMissingDataTaskOwners(offset, limit);
         } catch (TaskException e) {
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * @param offset the offset that will be used in returning the subset of pages with incomplete data.
+     * @param limit the limit imposed on the returned list.
+     * @return a paginated list of pages that contain task macros with incomplete data.
+     * @since 3.11.0
+     */
+    public PaginatedReferences getPaginatedPagesWithIncompleteTaskMacros(int offset, int limit)
+    {
+        try {
+            return taskMissingDataManager.getPaginatedMissingDataTaskOwners(offset, limit);
+        } catch (TaskException e) {
+            logger.warn("Failed to retrieve the pages with missing data! Cause: [{}].",
+                ExceptionUtils.getRootCauseMessage(e));
+            return new PaginatedReferences(Collections.emptyList());
         }
     }
 

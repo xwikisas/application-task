@@ -45,6 +45,7 @@ import org.xwiki.user.UserReferenceSerializer;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xwiki.task.PaginatedReferences;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskMissingDataManager;
 import com.xwiki.task.event.TaskRelativizedEvent;
@@ -154,6 +155,30 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
             }
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the document for [%s].", documentReference), e);
+        }
+    }
+
+    @Override
+    public PaginatedReferences getPaginatedMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
+        try {
+            String countStatement = "SELECT count(DISTINCT task.owner) FROM Document AS doc, "
+                + "doc.object(TaskManager.TaskManagerClass) AS task WHERE task.owner <> '' "
+                + "and (task.reporter = '' or (task.status = 'Done' and task.completeDate is null))";
+            Query query = queryManager.createQuery(countStatement, Query.XWQL);
+            int total = ((Long) query.execute().get(0)).intValue();
+
+            List<DocumentReference> documentReferences = getMissingDataTaskOwners(offset, limit);
+
+            PaginatedReferences paginatedReferences = new PaginatedReferences();
+            paginatedReferences.setTotal(total);
+            paginatedReferences.setCount(documentReferences.size());
+            paginatedReferences.setPages(documentReferences);
+            paginatedReferences.setOffset(offset);
+
+            return paginatedReferences;
+        } catch (QueryException e) {
+            throw new TaskException("Failed to retrieve the task pages that contain incomplete macros.");
         }
     }
 

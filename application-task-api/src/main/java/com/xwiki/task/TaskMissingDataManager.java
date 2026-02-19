@@ -66,6 +66,24 @@ public interface TaskMissingDataManager
     }
 
     /**
+     * @param offset the offset of the returned list.
+     * @param limit the limit of the returned list.
+     * @return the paginated list of pages that contain tasks macros with missing data.
+     * @throws TaskException if the retrieval of the documents failed.
+     * @since 3.11.0
+     */
+    default PaginatedReferences getPaginatedMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
+        List<DocumentReference> documentReferences = getMissingDataTaskOwners();
+        PaginatedReferences paginatedReferences = new PaginatedReferences();
+        paginatedReferences.setPages(documentReferences);
+        paginatedReferences.setCount(documentReferences.size());
+        paginatedReferences.setOffset(0);
+        paginatedReferences.setTotal(documentReferences.size());
+        return paginatedReferences;
+    }
+
+    /**
      * Finds any task macros that have the reference parameter as absolute values and makes them relative to the current
      * page. This makes the reference easier to read and allows the copying and moving of pages run smoother.
      *
