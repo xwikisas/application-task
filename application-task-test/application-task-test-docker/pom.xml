@@ -133,6 +133,12 @@
       <version>${platform.version}</version>
       <type>xar</type>
     </dependency>
+    <!-- For some reason required after 15.10 parent upgrade. -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-logging-common</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
     <!-- Used to configure the mail sender. -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>

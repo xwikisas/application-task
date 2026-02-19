@@ -144,13 +144,6 @@
       <version>${rendering.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- TODO: This dependency was added as a temporarily fix for 249: Notifications default status is not 
-    respected in XWiki 16.10. This should removed when the XWiki parent is > 15.5.  -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-notifications-notifiers-default</artifactId>
-      <version>${platform.version}</version>
-    </dependency>
   </dependencies>
   <build>
     <plugins>

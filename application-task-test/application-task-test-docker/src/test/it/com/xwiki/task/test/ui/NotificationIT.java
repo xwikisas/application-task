@@ -85,16 +85,16 @@ import static org.junit.jupiter.api.Assertions.fail;
     }, extraJARs = {
         // It's currently not possible to install a JAR contributing a Hibernate mapping file as an Extension. Thus,
         // we need to provide the JAR inside WEB-INF/lib. See https://jira.xwiki.org/browse/XWIKI-19932
-        "org.xwiki.platform:xwiki-platform-notifications-filters-default:14.10",
+        "org.xwiki.platform:xwiki-platform-notifications-filters-default:15.10",
         // The Solr store is not ready yet to be installed as an extension, so we need to add it to WEB-INF/lib
         // manually. See https://jira.xwiki.org/browse/XWIKI-21594
-        "org.xwiki.platform:xwiki-platform-eventstream-store-solr:14.10",
+        "org.xwiki.platform:xwiki-platform-eventstream-store-solr:15.10",
         // It's currently not possible to install a JAR contributing a Hibernate mapping file as an Extension. Thus
         // we need to provide the JAR inside WEB-INF/lib. See https://jira.xwiki.org/browse/XWIKI-19932
-        "org.xwiki.platform:xwiki-platform-mail-send-storage:14.10",
+        "org.xwiki.platform:xwiki-platform-mail-send-storage:15.10",
         // The Scheduler plugin needs to be in WEB-INF/lib since it's defined in xwiki.properties and plugins are loaded
         // by XWiki at startup, i.e. before extensions are provisioned for the tests
-        "org.xwiki.platform:xwiki-platform-scheduler-api:14.10"
+        "org.xwiki.platform:xwiki-platform-scheduler-api:15.10"
     }, resolveExtraJARs = true
 )
 class NotificationIT

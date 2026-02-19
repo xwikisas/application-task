@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         "xwikiCfgPlugins=com.xpn.xwiki.plugin.packaging.PackagePlugin" },
     // Needed for the dependency to the mentions macro that uses solr.
     extraJARs = {
-        "org.xwiki.platform:xwiki-platform-eventstream-store-solr:14.10",
+        "org.xwiki.platform:xwiki-platform-eventstream-store-solr:15.10",
         "com.xwiki.date:macro-date-api",
         "com.xwiki.date:macro-date-default"
     }, resolveExtraJARs = true)
