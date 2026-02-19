@@ -42,7 +42,6 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.user.UserReference;
-import org.xwiki.user.UserReferenceResolver;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -74,10 +73,6 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 
     @Inject
     private TaskManager taskManager;
-
-    @Inject
-    @Named("document")
-    private UserReferenceResolver<DocumentReference> userRefResolver;
 
     private DocumentReference lastFoldDocumentReference;
 
@@ -246,7 +241,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         XWikiDocument taskDoc, DocumentReference taskReference)
     {
         BaseObject clonedObj = taskObj.clone();
-        UserReference currentUser = userRefResolver.resolve(context.getUserReference());
+        UserReference currentUser = document.getAuthors().getContentAuthor();
         taskDoc.getAuthors().setOriginalMetadataAuthor(currentUser);
         clonedObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference),
             context);
