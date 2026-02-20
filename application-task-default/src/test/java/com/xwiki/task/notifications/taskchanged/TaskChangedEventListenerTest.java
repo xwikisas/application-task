@@ -21,6 +21,7 @@
 
 package com.xwiki.task.notifications.taskchanged;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -30,15 +31,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.xwiki.eventstream.EventFactory;
-import org.xwiki.eventstream.internal.DefaultEvent;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.notifications.NotificationException;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
 import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
-import org.xwiki.notifications.notifiers.internal.UserEventManager;
 import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
 import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
@@ -60,7 +58,6 @@ import com.xwiki.task.model.Task;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,12 +92,6 @@ class TaskChangedEventListenerTest
     @MockComponent
     private DocumentReferenceResolver<String> documentReferenceResolver;
 
-    @MockComponent
-    private UserEventManager userEventManager;
-
-    @MockComponent
-    private EventFactory eventFactory;
-
     private TaskChangedEvent event;
 
     @BeforeEach
@@ -125,8 +116,6 @@ class TaskChangedEventListenerTest
                 return new WatchedLocationReference(i.getArgument(0), null, null, null, null);
             }
         });
-        when(userEventManager.isListening(any(), any(), any())).thenReturn(true);
-        when(eventFactory.createRawEvent()).thenReturn(new DefaultEvent());
     }
 
     @ParameterizedTest
@@ -174,8 +163,12 @@ class TaskChangedEventListenerTest
     {
         this.event.setType(Task.ASSIGNEE);
         // The user is not subscribed to receive task notifications.
-        reset(userEventManager);
-        when(userEventManager.isListening(any(), any(), any())).thenReturn(false);
+        List<NotificationPreference> userPreferences = List.of(
+            new DefaultTargetableNotificationPreferenceBuilder().prepare().setEnabled(true)
+                .setProperties(Map.of(NotificationPreferenceProperty.EVENT_TYPE, "DUMMY"))
+                .build());
+        when(this.notificationPreferenceManager.getAllPreferences(any(DocumentReference.class))).thenReturn(
+            userPreferences);
 
         this.eventListener.onEvent(event, this.taskPage, this.context);
 

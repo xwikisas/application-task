@@ -29,17 +29,15 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.eventstream.EventFactory;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.notifications.NotificationException;
-import org.xwiki.notifications.NotificationFormat;
 import org.xwiki.notifications.filters.watch.WatchedEntitiesManager;
 import org.xwiki.notifications.filters.watch.WatchedEntityFactory;
 import org.xwiki.notifications.filters.watch.WatchedLocationReference;
-import org.xwiki.notifications.notifiers.internal.UserEventManager;
 import org.xwiki.notifications.preferences.NotificationPreference;
 import org.xwiki.notifications.preferences.NotificationPreferenceManager;
+import org.xwiki.notifications.preferences.NotificationPreferenceProperty;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
@@ -71,12 +69,6 @@ public class TaskChangedEventListener extends AbstractEventListener
     @Inject
     private Logger logger;
 
-    @Inject
-    private UserEventManager userEventManager;
-
-    @Inject
-    private EventFactory eventFactory;
-
     /**
      * Initialize the listener.
      */
@@ -105,17 +97,18 @@ public class TaskChangedEventListener extends AbstractEventListener
 
     private boolean hasTaskNotificationPreferenceEnabled(DocumentReference user)
     {
-        org.xwiki.eventstream.Event event = eventFactory.createRawEvent();
-        event.setType(TaskChangedEvent.class.getName());
-        // The default value for notifications was changed in 15.5, and is reflected in the UserEventManager.
-        return userEventManager.isListening(event, user, NotificationFormat.ALERT)
-            || userEventManager.isListening(event, user, NotificationFormat.EMAIL);
-        // TODO: Replace the above return with commented code when the XWiki parent is > 15.5.
-//        List<NotificationPreference> notificationPreferences =
-//            notificationPreferenceManager.getAllPreferences(user);
-//        return notificationPreferences.isEmpty() || notificationPreferences.stream().anyMatch(
-//            preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
-//                .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
+        try {
+            List<NotificationPreference> notificationPreferences =
+                notificationPreferenceManager.getAllPreferences(user);
+            return notificationPreferences.isEmpty() || notificationPreferences.stream().anyMatch(
+                preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
+                    .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
+        } catch (NotificationException e) {
+            logger.warn(
+                "Failed to retrieve the notification preferences for user [{}]. Cause: [{}].",
+                user, ExceptionUtils.getRootCauseMessage(e));
+            return false;
+        }
     }
 
     private void watchTask(WatchedLocationReference docRef, String userFullName)
@@ -127,13 +120,7 @@ public class TaskChangedEventListener extends AbstractEventListener
                 return;
             }
             try {
-                List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.watchEntity(docRef, user);
-                // Workaround for watchEntity unintentionally altering preferences.
-                // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
-                // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
-                // is watched when nothing is watched
-                notificationPreferenceManager.savePreferences(preferences);
             } catch (NotificationException e) {
                 logger.error("Failed to watch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
                     docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
@@ -150,13 +137,7 @@ public class TaskChangedEventListener extends AbstractEventListener
                 return;
             }
             try {
-                List<NotificationPreference> preferences = notificationPreferenceManager.getAllPreferences(user);
                 watchedEntitiesManager.unwatchEntity(docRef, user);
-                // Workaround for watchEntity unintentionally altering preferences.
-                // TODO: Remove after upgrading the XWiki parent to a version >= 15.5, in order to include a fix for
-                // XWIKI-19070: Change the notifications locations inclusion default: don't consider that the whole wiki
-                // is watched when nothing is watched
-                notificationPreferenceManager.savePreferences(preferences);
             } catch (NotificationException e) {
                 logger.error("Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
                     docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
