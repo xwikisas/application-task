@@ -72,4 +72,11 @@ public class TaskCardMacro extends BaseElement
     {
         return taskCard.findElement(By.cssSelector(".task-card-duedate")).getText().replace("Due Date", "").trim();
     }
+
+    public void goToTaskPage()
+    {
+        taskCard.findElement(By.cssSelector(".task-card-title a")).click();
+    }
+
+
 }

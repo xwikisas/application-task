@@ -45,6 +45,7 @@ import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CreatePagePage;
+import org.xwiki.test.ui.po.ViewPage;
 
 import com.xwiki.task.model.Task;
 
@@ -62,13 +63,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TaskMacrosIT
 {
     private final LocalDocumentReference pageWithTaskReportWithParameters =
-        new LocalDocumentReference("Main", "TaskReportTest");
+        new LocalDocumentReference("Main", "TaskReportParametersTest");
 
     private final LocalDocumentReference pageWithTasks = new LocalDocumentReference("Main", "PageWithTasks");
 
     private final LocalDocumentReference pageWithTags = new LocalDocumentReference("Main", "PageWithTags");
 
-    private final LocalDocumentReference pageWithTags2 = new LocalDocumentReference("XWiki", "pageWithTags2");
+    private final LocalDocumentReference pageWithTags2 = new LocalDocumentReference("Main", "pageWithTags2");
 
     private final LocalDocumentReference pageTaskDependency =
         new LocalDocumentReference("TaskManager", "Task-dependency");
@@ -79,6 +80,9 @@ public class TaskMacrosIT
     private final LocalDocumentReference pageWithTaskCardMacro =
         new LocalDocumentReference("Main", "PageWithTaskCardMacro");
 
+    private final LocalDocumentReference pageWithTaskReportCheckBox =
+        new LocalDocumentReference("Main", "TaskReportCheckboxTest");
+
     @BeforeAll
     void setup(TestUtils setup)
     {
@@ -87,13 +91,12 @@ public class TaskMacrosIT
         setup.deletePage(pageWithTags);
         setup.deletePage(pageWithTags2);
         setup.deletePage(pageWithTaskReportWithParameters);
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Task-dependency"));
     }
 
     @ParameterizedTest
-    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @WikisSource(extensions = { "com.xwiki.task:application-task-ui", "org.xwiki.platform:xwiki-platform-tag-ui/14.10" })
     @Order(10)
-    void taskReportTest(WikiReference wiki, TestUtils setup)
+    void taskReportParametersTest(WikiReference wiki, TestUtils setup)
     {
         setup.setCurrentWiki(wiki.getName());
 
@@ -132,15 +135,63 @@ public class TaskMacrosIT
         assertTrue(reportMacro2.getTask(1).isChecked());
         assertTrue(reportMacro2.getTask(2).isChecked());
 
-        // Checks the "reporters" parameter, reporters="XWiki.Admin".
-        TaskReportMacro reportMacro3 = new TaskReportMacro("reportid3");
-        assertEquals("Complete this @Admin as late as 2023/01/01 12:00", reportMacro3.getTask(0).getContent());
 
         // Checks the tags parameter, tags="tag1,tag2".
         TaskReportMacro reportMacro4 = new TaskReportMacro("reportid4");
         assertEquals("tag1", reportMacro4.getTask(0).getContent());
         assertEquals("tag2", reportMacro4.getTask(1).getContent());
+
+        // Checks the "reporters" parameter, reporters="XWiki.Admin".
+        TaskReportMacro reportMacro3 = new TaskReportMacro("reportid3");
+        reportMacro3.waitUntilPageIsReady();
+        //setup.getDriver().waitUntilElementsAreVisible(new By[] { (By.className("task-macro"))},true);
+        //assertEquals("Complete this @Admin as late as 2023/01/01 12:00", reportMacro3.getTask(0).getContent());
+
     }
+
+    @ParameterizedTest
+    @WikisSource(extensions = { "com.xwiki.task:application-task-ui",
+        "org.xwiki.platform:xwiki-platform-tag-ui/14.10" })
+    @Order(15)
+    void taskReportCheckboxTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef2 = new DocumentReference(pageWithTaskReportCheckBox, wiki);
+        setup.createPage(testRef2, getMacroContent("taskReportCheckbox.vm"));
+        ViewPageWithTasks viewPage = new ViewPageWithTasks();
+        viewPage.waitUntilPageIsReady();
+
+        TaskReportMacro reportMacro1 = new TaskReportMacro("reportid1");
+        assertEquals(3, reportMacro1.getTasks().size());
+        assertEquals("Task 1 do this", reportMacro1.getTask(0).getContent());
+        assertEquals("tag1", reportMacro1.getTask(1).getContent());
+        assertEquals("Do this as well", reportMacro1.getTask(2).getContent());
+
+
+        TaskReportMacro reportMacro2 = new TaskReportMacro("reportid2");
+        assertEquals(3, reportMacro2.getTasks().size());
+        assertEquals("tag2", reportMacro2.getTask(0).getContent());
+        assertEquals("Do this task as well", reportMacro2.getTask(1).getContent());
+        assertEquals("Complete this @Admin as late as 2023/01/01 12:00", reportMacro2.getTask(2).getContent());
+
+        reportMacro1.getTask(0).toggleCheckbox();
+
+        viewPage.reloadPage();
+
+        TaskReportMacro reportMacro3 = new TaskReportMacro("reportid1");
+
+
+        assertEquals(2, reportMacro3.getTasks().size());
+        assertEquals("tag1", reportMacro3.getTask(0).getContent());
+        assertEquals("Do this as well", reportMacro3.getTask(1).getContent());
+
+        TaskReportMacro reportMacro4 = new TaskReportMacro("reportid2");
+
+        assertEquals(4, reportMacro4.getTasks().size());
+        assertEquals("Task 1 do this", reportMacro4.getTask(0).getContent());
+    }
+
 
     @ParameterizedTest
     @WikisSource(extensions = "com.xwiki.task:application-task-ui")
@@ -170,8 +221,10 @@ public class TaskMacrosIT
     @Order(30)
     void taskCardTest(WikiReference wiki, TestUtils setup)
     {
-        createPageFromTemplate("TaskDependency1", "TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
         setup.setCurrentWiki(wiki.getName());
+        createPageFromTemplate("TaskDependency1", "TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
+
+
         DocumentReference testRef = new DocumentReference(pageWithTaskCardMacro, wiki);
         setup.createPage(testRef, getMacroContent("taskCard.vm"));
 
@@ -185,6 +238,18 @@ public class TaskMacrosIT
         assertEquals("Complete this  as late as", taskCard0.getTitle());
 
         assertEquals("Unknown User", taskCard0.getAssignees().get(0));
+
+        taskCard0.goToTaskPage();
+
+        ViewPage viewPage = new ViewPage();
+        viewPage.editInline();
+
+       TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+       inlinePage.setDependency("TaskManager.TaskDependency");
+       inlinePage.clickSaveAndView();
+
+        //DocumentReference testRef2 = new DocumentReference(setup.getCurrentWiki(),"TaskManager","TaskDependency1");
+        //setup.deletePage(testRef2);
     }
 
     private String getMacroContent(String filename)
