@@ -26,13 +26,13 @@ import org.xwiki.model.reference.DocumentReference;
 
 /**
  * Handles operations on task macros that have missing data.
+ *
  * @version $Id$
  * @since 3.3
  */
 @Role
 public interface TaskMissingDataManager
 {
-
     /**
      * Some task macros, such as the ones resulted from a migration, can have some data missing. This method tries to
      * infer the missing data from the history of the page.
@@ -53,4 +53,42 @@ public interface TaskMissingDataManager
      * @return a list of pages that contain task macros with missing data.
      */
     List<DocumentReference> getMissingDataTaskOwners() throws TaskException;
+
+    /**
+     * @param offset the offset of the returned list.
+     * @param limit the limit of the returned list.
+     * @return the list of pages that contain tasks macros with missing data.
+     * @throws TaskException if the retrieval of the documents failed.
+     */
+    default List<DocumentReference> getMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
+        return getMissingDataTaskOwners();
+    }
+
+    /**
+     * @param offset the offset of the returned list.
+     * @param limit the limit of the returned list.
+     * @return the paginated list of pages that contain tasks macros with missing data.
+     * @throws TaskException if the retrieval of the documents failed.
+     * @since 3.11.0
+     */
+    default PaginatedReferences getPaginatedMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
+        List<DocumentReference> documentReferences = getMissingDataTaskOwners();
+        PaginatedReferences paginatedReferences = new PaginatedReferences();
+        paginatedReferences.setPages(documentReferences);
+        paginatedReferences.setCount(documentReferences.size());
+        paginatedReferences.setOffset(0);
+        paginatedReferences.setTotal(documentReferences.size());
+        return paginatedReferences;
+    }
+
+    /**
+     * Finds any task macros that have the reference parameter as absolute values and makes them relative to the current
+     * page. This makes the reference easier to read and allows the copying and moving of pages run smoother.
+     *
+     * @throws TaskException sad.
+     * @since 3.10.2
+     */
+    void relativizeReferences() throws TaskException;
 }

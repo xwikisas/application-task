@@ -20,6 +20,7 @@
 package com.xwiki.task.internal;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -78,9 +79,10 @@ public class TaskMacroReferenceMigrator
             // Resolve as a page ref and serialize it.
             String compactRef = serializer.serialize(pageReferenceResolver.resolve(documentReference)) + '/';
             try {
-                logger.info("Searching for tasks inside [{}].", compactRef);
+                logger.debug("Searching for tasks inside [{}].", compactRef);
                 XWikiContext context = contextProvider.get();
                 XWikiDocument document = context.getWiki().getDocument(documentReference, context);
+                AtomicInteger updatedMacros = new AtomicInteger(0);
                 XDOM updatedXDOM =
                     blockFinder.find(document.getXDOM(), document.getSyntax(), (macroBlock) -> {
                         if (Task.MACRO_NAME.equals(macroBlock.getId()) && macroBlock.getParameters().containsKey(
@@ -89,15 +91,15 @@ public class TaskMacroReferenceMigrator
                             String referenceParam = macroBlock.getParameter(Task.REFERENCE);
                             if (referenceParam.startsWith(compactRef)) {
                                 referenceParam = referenceParam.substring(compactRef.length() - 1);
-                                logger.info("Replaced the reference of a task macro from [{}] to [{}].",
-                                    macroBlock.getParameter(Task.REFERENCE), referenceParam);
                                 macroBlock.setParameter(Task.REFERENCE, referenceParam);
+                                updatedMacros.incrementAndGet();
                             }
                             return MacroBlockFinder.Lookup.SKIP;
                         }
                         return MacroBlockFinder.Lookup.CONTINUE;
                     });
                 if (!document.getXDOM().equals(updatedXDOM)) {
+                    logger.debug("Replaced the reference of [{}] task macros.", updatedMacros.get());
                     DocumentReference currentUser = context.getUserReference();
                     context.setUserReference(document.getAuthorReference());
                     document.setContent(updatedXDOM);

@@ -21,13 +21,10 @@ package com.xwiki.task;
 
 import java.util.Arrays;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.internal.reference.DefaultSymbolScheme;
 import org.xwiki.model.internal.reference.SymbolScheme;
@@ -42,10 +39,7 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 import org.xwiki.test.mockito.MockitoComponentManager;
 
-import com.xpn.xwiki.XWikiException;
 import com.xwiki.task.internal.SuperCompactReferenceSerializer;
-
-import liquibase.pro.packaged.D;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -74,12 +68,12 @@ public class SuperCompactReferenceSerializerTest
     }
 
     @BeforeEach
-    void setup() throws Exception
+    void setup()
     {
         when(provider.getDefaultReference(EntityType.WIKI)).thenReturn(new EntityReference("xwiki", EntityType.WIKI));
     }
     @Test
-    void serializePageReference() throws TaskException
+    void serializePageReference()
     {
         String serialized = serializer.serialize(pageReference);
 

@@ -160,6 +160,8 @@ class TaskMacroUpdateEventListenerTest
         when(this.docWithTasks.getOriginalDocument()).thenReturn(this.prevVersionDoc);
         when(this.prevVersionDoc.getXDOM()).thenReturn(this.prevVersionDocXDOM);
         when(this.docWithTasks.clone()).thenReturn(this.docWithTasks);
+        when(this.docWithTasks.getAuthors()).thenReturn(this.documentAuthors);
+        when(this.documentAuthors.getContentAuthor()).thenReturn(userRef);
         when(this.prevVersionDoc.clone()).thenReturn(this.prevVersionDoc);
         when(this.taskDoc.clone()).thenReturn(this.taskDoc);
         when(this.task_1Doc.clone()).thenReturn(this.task_1Doc);

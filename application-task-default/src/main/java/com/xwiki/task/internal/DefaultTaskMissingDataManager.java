@@ -22,8 +22,10 @@ package com.xwiki.task.internal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
@@ -32,16 +34,22 @@ import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.observation.ObservationManager;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceSerializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xwiki.task.PaginatedReferences;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskMissingDataManager;
+import com.xwiki.task.event.TaskRelativizedEvent;
+import com.xwiki.task.event.TaskRelativizingEvent;
 
 /**
  * Default implementation of {@link TaskMissingDataManager}.
@@ -53,6 +61,10 @@ import com.xwiki.task.TaskMissingDataManager;
 @Singleton
 public class DefaultTaskMissingDataManager implements TaskMissingDataManager
 {
+    private static final String QUERY_TASKS_WITH_OWNER = "SELECT DISTINCT task.owner "
+        + "FROM Document AS doc, doc.object(TaskManager.TaskManagerClass) AS task "
+        + "WHERE task.owner <> ''";
+
     @Inject
     private QueryManager queryManager;
 
@@ -66,30 +78,56 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
     private DocumentReferenceResolver<String> resolver;
 
     @Inject
+    private Provider<TaskMacroReferenceMigrator> referenceMigratorProvider;
+
+    @Inject
+    private ObservationManager observationManager;
+
+    @Inject
     private Logger logger;
+
+    @Inject
+    @Named("document")
+    private UserReferenceSerializer<DocumentReference> documentUserSerializer;
 
     @Override
     public List<DocumentReference> getMissingDataTaskOwners() throws TaskException
     {
+        return getMissingDataTaskOwners(0, 0);
+    }
+
+    @Override
+    public List<DocumentReference> getMissingDataTaskOwners(int offset, int limit) throws TaskException
+    {
         List<DocumentReference> missingDataTaskOwners = new ArrayList<>();
-        processTasksWithOwner(documentReference -> {
-            try {
-                XWikiContext context = contextProvider.get();
-                XWikiDocument document = context.getWiki().getDocument(documentReference, context);
-                if (taskDatesInitializer.doesDocumentContainIncompleteTasks(document.getXDOM())) {
-                    missingDataTaskOwners.add(documentReference);
-                }
-            } catch (XWikiException e) {
-                logger.warn("Some msg");
-            }
-        });
+        processOwnersWithIncompleteTasks(missingDataTaskOwners::add, offset, limit);
         return missingDataTaskOwners;
+    }
+
+    @Override
+    public void relativizeReferences() throws TaskException
+    {
+        logger.info("Started the process of relativizing the references of task macros.");
+        try {
+            Query query = queryManager.createQuery(QUERY_TASKS_WITH_OWNER, Query.XWQL);
+            List<String> results = query.execute();
+            logger.info("Found [{}] pages that contain task macros.", results.size());
+            List<DocumentReference> docRefs = results.stream()
+                .map(result -> resolver.resolve(result))
+                .collect(Collectors.toList());
+
+            observationManager.notify(new TaskRelativizingEvent(), this, docRefs);
+            referenceMigratorProvider.get().relativizeReference(docRefs);
+            observationManager.notify(new TaskRelativizedEvent(), this, docRefs);
+        } catch (QueryException e) {
+            logger.error("Could not run the relativizing process as the query creation/execution failed.", e);
+        }
     }
 
     @Override
     public void inferMissingTaskData() throws TaskException
     {
-        processTasksWithOwner(documentReference -> {
+        processOwnersWithIncompleteTasks(documentReference -> {
             try {
                 inferMissingTaskData(documentReference);
             } catch (TaskException e) {
@@ -108,22 +146,60 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
             XWikiDocument document = context.getWiki().getDocument(documentReference, context);
             XDOM xdom = document.getXDOM();
             if (taskDatesInitializer.processDocument(document, xdom, context)) {
+                UserReference lastAuthor = document.getAuthors().getContentAuthor();
+                DocumentReference currentContextUser = context.getUserReference();
+                context.setUserReference(documentUserSerializer.serialize(lastAuthor));
                 document.setContent(xdom);
                 context.getWiki().saveDocument(document, "Updated data of tasks.", context);
+                context.setUserReference(currentContextUser);
             }
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the document for [%s].", documentReference), e);
         }
     }
 
-    private void processTasksWithOwner(Consumer<DocumentReference> consumer) throws TaskException
+    @Override
+    public PaginatedReferences getPaginatedMissingDataTaskOwners(int offset, int limit) throws TaskException
     {
         try {
-            String statement =
-                "SELECT DISTINCT task.owner "
-                    + "FROM Document AS doc, doc.object(TaskManager.TaskManagerClass) AS task "
-                    + "WHERE task.owner <> ''";
+            String countStatement = "SELECT count(DISTINCT task.owner) FROM Document AS doc, "
+                + "doc.object(TaskManager.TaskManagerClass) AS task WHERE task.owner <> '' "
+                + "and (task.reporter = '' or (task.status = 'Done' and task.completeDate is null))";
+            Query query = queryManager.createQuery(countStatement, Query.XWQL);
+            int total = ((Long) query.execute().get(0)).intValue();
+
+            List<DocumentReference> documentReferences = getMissingDataTaskOwners(offset, limit);
+
+            PaginatedReferences paginatedReferences = new PaginatedReferences();
+            paginatedReferences.setTotal(total);
+            paginatedReferences.setCount(documentReferences.size());
+            paginatedReferences.setPages(documentReferences);
+            paginatedReferences.setOffset(offset);
+
+            return paginatedReferences;
+        } catch (QueryException e) {
+            throw new TaskException("Failed to retrieve the task pages that contain incomplete macros.");
+        }
+    }
+
+    private void processOwnersWithIncompleteTasks(Consumer<DocumentReference> consumer) throws TaskException
+    {
+        processOwnersWithIncompleteTasks(consumer, 0, 0);
+    }
+
+    private void processOwnersWithIncompleteTasks(Consumer<DocumentReference> consumer, int offset, int limit)
+        throws TaskException
+    {
+        try {
+            String statement = QUERY_TASKS_WITH_OWNER
+                + " and (task.reporter = '' or (task.status = 'Done' and task.completeDate is null))";
             Query query = queryManager.createQuery(statement, Query.XWQL);
+            if (offset > 0) {
+                query.setOffset(offset);
+            }
+            if (limit > 0) {
+                query.setLimit(limit);
+            }
             List<String> results = query.execute();
             for (String result : results) {
                 consumer.accept(resolver.resolve(result));

@@ -25,7 +25,7 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task-test</artifactId>
-    <version>3.10.1-SNAPSHOT</version>
+    <version>3.11.0-rc-2-SNAPSHOT</version>
   </parent>
   <artifactId>application-task-test-docker</artifactId>
   <name>Task Manager Application - Tests - Functional Docker Tests</name>
@@ -101,6 +101,19 @@
       <artifactId>xwiki-platform-wiki-template-default</artifactId>
       <version>${platform.version}</version>
     </dependency>
+    <!-- Needed for the incomplete tasks import. -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-administration-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-administration-test-pageobjects</artifactId>
+      <version>${platform.version}</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Needed to trigger the scheduler job -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -119,6 +132,12 @@
       <artifactId>xwiki-platform-administration-ui</artifactId>
       <version>${platform.version}</version>
       <type>xar</type>
+    </dependency>
+    <!-- For some reason required after 15.10 parent upgrade. -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-logging-common</artifactId>
+      <version>${commons.version}</version>
     </dependency>
     <!-- Used to configure the mail sender. -->
     <dependency>

@@ -70,7 +70,7 @@
     </property>
   </object>
   <object>
-    <name>TaskManager.InProgress</name>
+    <name>TaskManager.High</name>
     <number>1</number>
     <className>XWiki.XWikiRights</className>
     <guid>077b6e73-bc5c-4136-bd50-a22df12a6857</guid>

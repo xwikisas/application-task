@@ -277,7 +277,7 @@ rendering.macro.task-report.parameter.id.name=Table ID
 rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
 
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
-TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold evebts based on your preferences. The values should be comma separated.
+TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold events based on your preferences. The values should be comma separated.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus.hint=Changing this value will affect the task macros created from this moment onwards. The newly created task macros will have the default status as the one selected here. Additionally, unchecking a task macro will set its status to this value.
 TaskManager.TaskManagerConfigurationClass_isIdDisplayed=Is ID Displayed
@@ -303,9 +303,12 @@ rendering.macro.kanbanboard.parameter.limit.description=The amount of tasks disp
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks
 taskmanager.incompleteTasks.find=Find incomplete tasks
+taskmanager.incompleteTasks.pagination.label=Displaying pages with incomplete tasks {0} - {1} out of {2} total.
 taskmanager.incompleteTasks.find.noTasks=There are no task macros with incomplete data.
 taskmanager.incompleteTasks.fixAll=Infer missing data for all tasks
 taskmanager.incompleteTasks.refresh=Refresh
+taskmanager.incompleteTasks.nextTasks=Next
+taskmanager.incompleteTasks.previousTasks=Previous
 taskmanager.incompleteTasks.fix=Infer missing data
 taskmanager.incompleteTasks.job.finish.error=There was an error while trying to infer the missing data.
 taskmanager.incompleteTasks.job.finish.canceled=The inferring process was canceled.

@@ -42,6 +42,7 @@ import org.xwiki.observation.event.Event;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
+import org.xwiki.user.UserReferenceResolver;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -80,6 +81,10 @@ public class TaskReferenceMigratorListener extends AbstractEventListener impleme
 
     @Inject
     private Provider<ObservationManager> observationManagerProvider;
+
+    @Inject
+    @Named("document")
+    private UserReferenceResolver<DocumentReference> userReferenceResolver;
 
     /**
      * Default constructor.
@@ -133,13 +138,29 @@ public class TaskReferenceMigratorListener extends AbstractEventListener impleme
             observationManager.notify(new TaskRelativizedEvent(), this, docRefs);
             logger.info("Done.");
 
-            XWikiDocument flagDoc = context.getWiki().getDocument(flagDocRef, context);
-            flagDoc.setHidden(true);
-            context.getWiki().saveDocument(flagDoc, context);
-        } catch (XWikiException | QueryException e) {
+            saveFlagDocument(context, flagDocRef);
+        } catch (XWikiException e) {
             logger.warn(
                 "An error was encountered while trying to relitivize the references of the task macros. Cause: [{}].",
                 ExceptionUtils.getRootCauseMessage(e));
+        } catch (QueryException e) {
+            // The query fails if the application is installed for the first time as there is no TaskManagerClass.
+            try {
+                saveFlagDocument(context, flagDocRef);
+            } catch (XWikiException ex) {
+                logger.warn(
+                    "Failed to create the flag document on the first installation of the Task Manager Application."
+                        + " Cause: [{}].",
+                    ExceptionUtils.getRootCauseMessage(e));
+            }
         }
+    }
+
+    private void saveFlagDocument(XWikiContext context, DocumentReference flagDocRef) throws XWikiException
+    {
+        XWikiDocument flagDoc = context.getWiki().getDocument(flagDocRef, context);
+        flagDoc.setHidden(true);
+        flagDoc.getAuthors().setCreator(userReferenceResolver.resolve(context.getUserReference()));
+        context.getWiki().saveDocument(flagDoc, context);
     }
 }

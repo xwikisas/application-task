@@ -26,20 +26,30 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+
+import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.stubbing.Stubber;
+import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 import org.suigeneris.jrcs.diff.delta.AddDelta;
 import org.suigeneris.jrcs.diff.delta.ChangeDelta;
 import org.suigeneris.jrcs.diff.delta.Chunk;
+import org.suigeneris.jrcs.diff.delta.Delta;
 import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.rendering.macro.MacroExecutionException;
+import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
@@ -50,11 +60,14 @@ import com.xpn.xwiki.doc.DocumentRevisionProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
 import com.xwiki.date.DateMacroConfiguration;
+import com.xwiki.task.internal.MacroBlockFinder;
 import com.xwiki.task.internal.TaskDatesInitializer;
 import com.xwiki.task.model.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -77,6 +90,12 @@ class TaskDatesInitializerTest
     @MockComponent
     private EntityReferenceSerializer<String> serializer;
 
+    @MockComponent
+    private MacroBlockFinder blockFinder;
+
+    @MockComponent
+    private MacroUtils macroUtils;
+
     @Mock
     private XWikiContext context;
 
@@ -85,6 +104,9 @@ class TaskDatesInitializerTest
 
     @Mock
     private XDOM xdom;
+
+    @Mock
+    private Chunk emptyChunk;
 
     private final DocumentReference userReference = new DocumentReference("xwiki", "XWiki", "Admin");
 
@@ -102,7 +124,9 @@ class TaskDatesInitializerTest
     @BeforeEach
     void setup()
     {
+        when(this.emptyChunk.toString()).thenReturn("");
         when(this.doc.getXDOM()).thenReturn(this.xdom);
+        when(this.doc.getSyntax()).thenReturn(Syntax.XWIKI_2_1);
         when(this.doc.getAuthorReference()).thenReturn(this.userReference);
         when(this.serializer.serialize(this.userReference)).thenReturn(this.serializedDocRef);
         when(this.configuration.getStorageDateFormat()).thenReturn(DATE_FORMAT);
@@ -110,13 +134,18 @@ class TaskDatesInitializerTest
 
     @Test
     void taskCreatedInVersion2OfTheDocumentWithStatusDone()
-        throws XWikiException, DifferentiationFailedException, TaskException
+        throws XWikiException, DifferentiationFailedException, TaskException, MacroExecutionException
     {
         Map<String, String> macroParams = new HashMap<>();
         macroParams.put("reference", "Task_1");
         macroParams.put("status", "Done");
         MacroBlock task1 = new MacroBlock(Task.MACRO_NAME, macroParams, true);
-        when(this.xdom.getBlocks(any(), any())).thenReturn(Collections.singletonList(task1));
+        doAnswer(invocation -> {
+            Function<MacroBlock, MacroBlockFinder.Lookup> callback = invocation.getArgument(3);
+            callback.apply(task1);
+            return null;
+        }).when(blockFinder).iterativeFind(any(XDOM.class), any(Syntax.class), anyBoolean(), any(Function.class));
+
         when(this.doc.getRevisions(this.context)).thenReturn(new Version[] { new Version(1, 1), new Version(2, 1),
             new Version(3, 1) });
 
@@ -129,6 +158,7 @@ class TaskDatesInitializerTest
         ChangeDelta delta23 = mock(ChangeDelta.class);
         Chunk chunk12 = mock(Chunk.class);
         Chunk chunk23 = mock(Chunk.class);
+        Chunk originalChunk23 = mock(Chunk.class);
 
         when(this.doc.getContentDiff("1.1", "2.1", this.context)).thenReturn(Collections.singletonList(delta12));
         when(this.doc.getContentDiff("2.1", "3.1", this.context)).thenReturn(Collections.singletonList(delta23));
@@ -148,6 +178,11 @@ class TaskDatesInitializerTest
         when(chunk12.toString()).thenReturn("{{task reference=\"Task_1\"}}");
         when(delta23.getRevised()).thenReturn(chunk23);
         when(chunk23.toString()).thenReturn("{{task reference=\"Task_1\" status=\"Done\"}}");
+        when(delta12.getOriginal()).thenReturn(emptyChunk);
+
+        when(delta23.getOriginal()).thenReturn(originalChunk23);
+        when(originalChunk23.toString()).thenReturn("{{task reference=\"Task_1\" status=\"InProgress\"}}");
+
 
         this.taskInit.processDocument(this.doc, this.xdom, this.context);
 
@@ -160,7 +195,7 @@ class TaskDatesInitializerTest
 
     @Test
     void taskCreatedInTheFirstVersionOfTheDocument()
-        throws XWikiException, DifferentiationFailedException, TaskException
+        throws XWikiException, DifferentiationFailedException, TaskException, MacroExecutionException
     {
         Map<String, String> macroParams = new HashMap<>();
         macroParams.put("reference", "Task_1");
@@ -189,6 +224,11 @@ class TaskDatesInitializerTest
         when(delta23.getRevised()).thenReturn(chunk23);
         when(chunk23.toString()).thenReturn("Something unrelated changed.");
 
+        doAnswer(invocation -> {
+            Function<MacroBlock, MacroBlockFinder.Lookup> callback = invocation.getArgument(3);
+            callback.apply(task1);
+            return xdom;
+        }).when(blockFinder).iterativeFind(any(XDOM.class), any(Syntax.class), anyBoolean(), any(Function.class));
         this.taskInit.processDocument(this.doc, this.xdom, this.context);
 
         assertEquals(new SimpleDateFormat(DATE_FORMAT).format(docV1Date),
