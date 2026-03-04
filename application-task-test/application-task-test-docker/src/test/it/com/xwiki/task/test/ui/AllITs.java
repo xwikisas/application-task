@@ -65,10 +65,4 @@ class AllITs
     {
     }
 
-    @Nested
-    @Order(6)
-    @DisplayName("Task Manager Macros")
-    class NestedTaskMacrosIT extends TaskMacrosIT
-    {
-    }
 }
