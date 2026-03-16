@@ -155,7 +155,7 @@ class GanttIT
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask0"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask1"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask2"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager.TestSpace", "TestTask3"));
+        setup.deletePage(new DocumentReference("xwiki", List.of("TaskManager", "TestSpace"), "TestTask3"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoDueDateTest"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoViewRights"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoEditRights"));

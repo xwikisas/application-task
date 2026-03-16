@@ -26,4 +26,4 @@ id="reportid2"/}}
 
 {{task-report tags="tag1,tag2" id="reportid4"/}}
 
-{{task-report pages="XWiki.pageWithTags" id="reportid5"/}}
+{{task-report pages="TaskManager.WebHome" id="reportid5"/}}

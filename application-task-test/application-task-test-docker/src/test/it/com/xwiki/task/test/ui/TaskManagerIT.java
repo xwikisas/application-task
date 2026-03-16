@@ -221,6 +221,7 @@ class TaskManagerIT
         setup.gotoPage(testRef);
         ViewPageWithTasks viewPageWithTaskMacro = new ViewPageWithTasks();
         assertEquals("@rob @tod\n@bob", viewPageWithTaskMacro.getTaskMacroContent(0).strip());
+        setup.deletePage(pageWithMultiUserTask);
     }
 
     @ParameterizedTest

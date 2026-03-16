@@ -83,4 +83,9 @@ public class TaskElement extends BaseElement
     {
         return getContentElement().findElement(By.className("xwiki-date")).getText();
     }
+
+    public String getTaskId()
+    {
+        return getTaskPageLinkAnchor().replace("#", "");
+    }
 }

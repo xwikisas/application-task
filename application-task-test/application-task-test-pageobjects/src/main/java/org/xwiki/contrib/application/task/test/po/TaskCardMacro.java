@@ -42,30 +42,14 @@ public class TaskCardMacro extends BaseElement
         return statusText.replace("[", "").replace("]", "").trim();
     }
 
-    public List<String> getAssignees()
-    {
-        return taskCard.findElements(By.cssSelector(".task-card-assignee img")).stream()
-            .map(e -> e.getAttribute("title").replace("[", "").replace("]", "")).collect(Collectors.toList());
-    }
-
     public boolean isDone()
     {
         return taskCard.getAttribute("class").contains("task-card-status-Done");
     }
 
-    public boolean isLate()
-    {
-        return !taskCard.findElements(By.cssSelector(".task-card-late")).isEmpty();
-    }
-
     public String getTitle()
     {
         return taskCard.findElement(By.cssSelector(".task-card-title a")).getText().trim();
-    }
-
-    public String getTitleLink()
-    {
-        return taskCard.findElement(By.cssSelector(".task-card-title a")).getAttribute("href");
     }
 
     public String getDueDate()
@@ -78,5 +62,62 @@ public class TaskCardMacro extends BaseElement
         taskCard.findElement(By.cssSelector(".task-card-title a")).click();
     }
 
+    public boolean hasDependencies()
+    {
+        return !taskCard.findElements(By.cssSelector(".task-card-dependencies")).isEmpty();
+    }
 
+    public int getDependenciesCount()
+    {
+        List<WebElement> container = taskCard.findElements(By.cssSelector(".task-card-dependencies"));
+
+        if (container.isEmpty()) {
+            return 0;
+        }
+
+        return container.get(0).findElements(By.cssSelector(".task-card")).size();
+    }
+
+    public List<TaskCardMacro> getDependencies()
+    {
+        List<WebElement> container = taskCard.findElements(By.cssSelector(".task-card-dependencies"));
+
+        if (container.isEmpty()) {
+            return List.of();
+        }
+
+        return container.get(0).findElements(By.cssSelector(".task-card")).stream().map(TaskCardMacro::new)
+            .collect(Collectors.toList());
+    }
+
+    public TaskCardMacro getDependency(int index)
+    {
+        return getDependencies().get(index);
+    }
+
+    public String getDependencyTitle()
+    {
+        WebElement link = taskCard.findElement(By.cssSelector(".task-card-title a"));
+        String href = link.getAttribute("href");
+        if (href != null && !href.isEmpty()) {
+            String[] parts = href.split("/");
+            return parts[parts.length - 1];
+        }
+
+        return link.getText().trim();
+    }
+
+    public String getDependencyStatus()
+    {
+        String classes = taskCard.getAttribute("class");
+
+        if (classes.contains("task-card-status-Done")) {
+            return "Done";
+        } else if (classes.contains("task-card-status-InProgress")) {
+            return "InProgress";
+        } else if (classes.contains("task-card-status-Late")) {
+            return "Late";
+        }
+        return "Unknown";
+    }
 }
