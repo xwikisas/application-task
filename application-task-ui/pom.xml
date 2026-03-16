@@ -39,7 +39,8 @@
       buying a license or getting a trial license, but they cannot edit or delete them. -->
     <xwiki.extension.licensing.publicDocuments>
       TaskManager.WebHome,
-      TaskManager.CKEditorPlugin.PluginEnabler
+      TaskManager.CKEditorPlugin.PluginEnabler,
+      TaskManager.CKEditorPlugin.Plugin
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
       TaskManager.Administration,
