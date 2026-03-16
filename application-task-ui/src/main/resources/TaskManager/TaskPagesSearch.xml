@@ -37,15 +37,26 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity output="false"}}
-#if($xcontext.action == 'get' &amp;&amp; "$!{request.outputSyntax}" == 'plain')
+#if ($xcontext.action == 'get' &amp;&amp; "$!{request.outputSyntax}" == 'plain')
   #set ($statement = "FROM doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' AND lower(doc.fullName) LIKE lower(:param)")
   #set ($param = $services.query.parameter().anyChars().literal("$!request.text").anyChars())
   #set ($query = $services.query.xwql($statement).addFilter('unique').addFilter('document').setLimit(10).bindValue('param', $param))
   #set ($array = [])
   #foreach ($taskReference in $query.execute())
     #if ($services.security.authorization.hasAccess("view", $taskReference))
+      #set ($taskDoc = $xwiki.getDocument($taskReference))
+      #set ($taskObj = $taskDoc.getObject('TaskManager.TaskManagerClass'))
+      #set ($taskTitle = '')
+      #if ($taskObj)
+        #set ($taskTitle = "$!taskObj.getProperty('name').value.trim()")
+      #end
+      #if ($taskTitle != '')
+        #set ($label = $taskTitle)
+      #else
+        #set ($label = $taskReference.name)
+      #end
       #set ($discard = $array.add({
-        'label': $taskReference.name,
+        'label': $label,
         'value': $services.model.serialize($taskReference, 'compactwiki'),
         'hint':  $services.model.serialize($taskReference.parent, 'compactwiki')
       }))
