@@ -30,11 +30,6 @@ public class TaskCardMacroPage extends ViewPage
     @FindBy(css = ".task-card")
     private List<WebElement> taskCards;
 
-    public int getTaskCardsCount()
-    {
-        return taskCards.size();
-    }
-
     public TaskCardMacro getTaskCard(int index)
     {
         return new TaskCardMacro(taskCards.get(index));

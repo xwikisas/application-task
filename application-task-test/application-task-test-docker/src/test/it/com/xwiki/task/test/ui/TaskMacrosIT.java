@@ -179,7 +179,7 @@ public class TaskMacrosIT
         ViewPageWithTasks viewPageTask = new ViewPageWithTasks();
         viewPageTask.waitUntilPageIsReady();
 
-        // We take the task ids from the page where they were declared, depending on the previous tests the ids will
+        // We take the task ids from the page where they were created, depending on the previous tests the ids will
         // change.
         String tag1 = viewPageTask.getTasks().get(0).getTaskId();
         String tag2 = viewPageTask.getTasks().get(1).getTaskId();
@@ -211,6 +211,7 @@ public class TaskMacrosIT
         assertEquals(tag3, viewPageListTasks.getTasks().get(2).getTaskId());
         assertEquals(tag4, viewPageListTasks.getTasks().get(3).getTaskId());
 
+        // Clean up.
         setup.deletePage(pageWithTasks);
         setup.deletePage(pageWithTags);
         setup.deletePage(pageWithTags2);
@@ -233,6 +234,7 @@ public class TaskMacrosIT
         assertEquals("TaskFromTemplate", taskCard0.getTitle());
         assertEquals("01/01/2001 01:01:01", taskCard0.getDueDate());
 
+        // Adding a task dependency.
         taskCard0.goToTaskPage();
         ViewPage viewPage = new ViewPage();
         viewPage.editInline();
@@ -245,6 +247,8 @@ public class TaskMacrosIT
         TaskCardMacro taskCard = page2.getTaskCard(0);
         assertTrue(taskCard.hasDependencies());
         assertEquals(1, taskCard.getDependenciesCount());
+
+        // Checks the information about the task added as a dependency.
         assertEquals("TaskDependency2", taskCard.getDependency(0).getDependencyTitle());
         assertEquals("Done", taskCard.getDependency(0).getDependencyStatus());
         assertTrue(taskCard.getDependency(0).isDone());
