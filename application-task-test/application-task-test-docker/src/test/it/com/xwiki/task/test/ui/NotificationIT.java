@@ -182,7 +182,7 @@ class NotificationIT
             createPage.clickCreate();
 
             TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
-            inlinePage.setAssignee("XWiki." + TEST_USERNAME);
+            inlinePage.setAssignee("XWiki." + TEST_USERNAME + ",XWiki.NonExistentUser");
             inlinePage.setDueDate("01/01/2001 01:01:01");
             inlinePage.setStatus(Task.STATUS_DONE);
             inlinePage.setProject("Other");
