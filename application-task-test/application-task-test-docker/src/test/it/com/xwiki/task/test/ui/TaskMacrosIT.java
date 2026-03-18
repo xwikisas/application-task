@@ -60,9 +60,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     extraJARs = { "org.xwiki.platform:xwiki-platform-eventstream-store-solr:15.10", "com.xwiki.date:macro-date-api",
         "com.xwiki.date:macro-date-default" }, extensionOverrides = {
     @ExtensionOverride(extensionId = "com.google.code.findbugs:jsr305", overrides = {
-        "features=com.google.code.findbugs:annotations" }) },
-    properties = { "xwikiCfgPlugins=com.xpn.xwiki.plugin.tag.TagPlugin" },
-    resolveExtraJARs = true)
+        "features=com.google.code.findbugs:annotations" }) }, properties = {
+    "xwikiCfgPlugins=com.xpn.xwiki.plugin.tag.TagPlugin" }, resolveExtraJARs = true)
 public class TaskMacrosIT
 {
     private final LocalDocumentReference pageWithTaskReportWithParameters =
@@ -80,7 +79,6 @@ public class TaskMacrosIT
     private final LocalDocumentReference pageWithTaskCardMacro =
         new LocalDocumentReference("Main", "PageWithTaskCardMacro");
 
-
     @BeforeAll
     void setup(TestUtils setup)
     {
@@ -90,13 +88,13 @@ public class TaskMacrosIT
     @AfterAll
     void cleanup(TestUtils setup)
     {
-        DocumentReference ref1 = new DocumentReference("xwiki","TaskManager","TaskFromTemplate");
+        DocumentReference ref1 = new DocumentReference("xwiki", "TaskManager", "TaskFromTemplate");
         setup.deletePage(ref1);
-        DocumentReference refSubwiki1 = new DocumentReference("wiki1","TaskManager","TaskFromTemplate");
+        DocumentReference refSubwiki1 = new DocumentReference("wiki1", "TaskManager", "TaskFromTemplate");
         setup.deletePage(refSubwiki1);
-        DocumentReference ref2 = new DocumentReference("xwiki","TaskManager","TaskDependency2");
+        DocumentReference ref2 = new DocumentReference("xwiki", "TaskManager", "TaskDependency2");
         setup.deletePage(ref2);
-        DocumentReference refSubwiki2 = new DocumentReference("wiki1","TaskManager","TaskDependency2");
+        DocumentReference refSubwiki2 = new DocumentReference("wiki1", "TaskManager", "TaskDependency2");
         setup.deletePage(refSubwiki2);
     }
 
@@ -143,6 +141,7 @@ public class TaskMacrosIT
         assertTrue(reportMacro2.getTask(0).isChecked());
         assertTrue(reportMacro2.getTask(1).isChecked());
         assertTrue(reportMacro2.getTask(2).isChecked());
+        assertTrue(reportMacro2.getTask(3).isChecked());
 
         // Checks the "tags" parameter, tags="tag1,tag2".
         TaskReportMacro reportMacro4 = new TaskReportMacro("reportid4");
@@ -166,7 +165,6 @@ public class TaskMacrosIT
         TaskReportMacro reportMacro3 = new TaskReportMacro("reportid3");
         assertEquals("Complete this @Admin as late as 2023/01/01 12:00", reportMacro3.getTask(0).getContent());
     }
-
 
     @ParameterizedTest
     @WikisSource(extensions = "com.xwiki.task:application-task-ui")

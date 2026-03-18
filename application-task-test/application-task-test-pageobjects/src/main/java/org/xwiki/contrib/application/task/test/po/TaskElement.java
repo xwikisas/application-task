@@ -84,6 +84,7 @@ public class TaskElement extends BaseElement
         return getContentElement().findElement(By.className("xwiki-date")).getText();
     }
 
+    // This will fail for task macros which have idDisplayed="FALSE".
     public String getTaskId()
     {
         return getTaskPageLinkAnchor().replace("#", "");
