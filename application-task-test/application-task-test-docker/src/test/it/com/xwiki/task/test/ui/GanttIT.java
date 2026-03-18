@@ -33,6 +33,7 @@ import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.test.docker.junit5.ExtensionOverride;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CreatePagePage;
@@ -57,7 +58,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     extraJARs = {
         "org.xwiki.platform:xwiki-platform-notifications-filters-default",
     },
-    resolveExtraJARs = true
+    extensionOverrides = { @ExtensionOverride(extensionId = "com.google.code.findbugs:jsr305", overrides = {
+    "features=com.google.code.findbugs:annotations" }) }, resolveExtraJARs = true
 )
 class GanttIT
 {
@@ -153,7 +155,7 @@ class GanttIT
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask0"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask1"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask2"));
-        setup.deletePage(new DocumentReference("xwiki", "TaskManager.TestSpace", "TestTask3"));
+        setup.deletePage(new DocumentReference("xwiki", List.of("TaskManager", "TestSpace"), "TestTask3"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoDueDateTest"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoViewRights"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "NoEditRights"));

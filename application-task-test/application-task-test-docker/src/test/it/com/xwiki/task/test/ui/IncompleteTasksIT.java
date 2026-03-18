@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,13 @@ public class IncompleteTasksIT
         adminPage = AdministrationPage.gotoPage();
         sectionPage = adminPage.clickImportSection();
         importXar(testConfiguration, XAR_UNCREATED_TASKS);
+    }
+
+    @AfterAll
+    void cleanup(TestUtils setup)
+    {
+        setup.deleteSpace("ExportingPage");
+        setup.deleteSpace("SpaceWithIncompleteTasks");
     }
 
     @Order(10)

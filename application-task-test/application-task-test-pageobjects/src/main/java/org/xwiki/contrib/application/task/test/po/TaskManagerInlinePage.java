@@ -26,6 +26,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.xwiki.test.ui.po.InlinePage;
 import org.xwiki.test.ui.po.SuggestInputElement;
@@ -211,9 +212,11 @@ public class TaskManagerInlinePage extends InlinePage
      */
     public void setDependency(String dependencyPage)
     {
-        List<WebElement> dependency = getUtil().getDriver().findElements(
-                By.cssSelector("input[name='TaskManager.TaskManagerClass_0_dependencies'][value='" + dependencyPage + "']"));
+        By locator =
+            By.cssSelector("input[name='TaskManager.TaskManagerClass_0_dependencies'][value='" + dependencyPage + "']");
+        List<WebElement> dependency = getUtil().getDriver().findElements(locator);
         if (!dependency.isEmpty()) {
+            getDriver().waitUntilCondition(ExpectedConditions.elementToBeClickable(locator));
             dependency.get(0).click();
         }
     }
