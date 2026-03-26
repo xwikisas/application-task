@@ -31,6 +31,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
+import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroPage;
+import org.xwiki.contrib.application.task.test.po.KanbanCard;
+import org.xwiki.contrib.application.task.test.po.KanbanColumn;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacro;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacroPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
@@ -78,6 +82,9 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageWithTaskCardMacro =
         new LocalDocumentReference("Main", "PageWithTaskCardMacro");
+
+    private final LocalDocumentReference pageWithKanbanMacro =
+        new LocalDocumentReference("Main", "PageWithKanbanMacro");
 
     @BeforeAll
     void setup(TestUtils setup)
@@ -256,6 +263,66 @@ public class TaskMacrosIT
         assertFalse(taskCard2.hasDependencies());
     }
 
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @Order(35)
+    void kanbanMacroTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+        createTaskFromTemplateKanban("TaskK1", Task.STATUS_IN_PROGRESS, true, "XWiki.UserTest", "01/01/2002 01:01:01");
+        createTaskFromTemplateKanban("TaskK2", Task.STATUS_IN_PROGRESS, false, "XWiki.UserTest", "01/01/2002 01:01:01");
+        createTaskFromTemplateKanban("TaskK3", Task.STATUS_IN_PROGRESS, true, "XWiki.UserTest2", "01/01/2003 01:01:01");
+
+        DocumentReference testRef = new DocumentReference(pageWithKanbanMacro, wiki);
+        setup.createPage(testRef, "{{kanbanboard/}}");
+
+        KanbanBoardMacroPage kanbanPage = new KanbanBoardMacroPage();
+        KanbanBoardMacro board = kanbanPage.getKanbanMacro();
+
+        KanbanColumn todo = board.getColumn(0);
+        assertEquals("ToDo", todo.getType());
+        List<KanbanCard> cards = todo.getTaskCards();
+        assertEquals(1, cards.size());
+
+        KanbanCard card = cards.get(0);
+        assertEquals("TaskK2", card.getTask());
+        assertTrue(card.getLink().contains("/TaskManager/TaskK2"));
+        assertEquals("UserTest", card.getFieldValue("Assignee"));
+        assertEquals("01/01/2002 01:01:01", card.getFieldValue("Due Date"));
+        assertEquals(0, card.getProgressPercentage());
+
+        KanbanColumn inProgress = board.getColumn(1);
+        assertEquals("InProgress", inProgress.getType());
+        List<KanbanCard> inProgressCards = inProgress.getTaskCards();
+        assertEquals(2, inProgressCards.size());
+
+        KanbanCard inProgressCard0 = inProgressCards.get(0);
+        assertEquals("TaskK1", inProgressCard0.getTask());
+        assertTrue(inProgressCard0.getLink().contains("/TaskManager/TaskK1"));
+        assertEquals("UserTest", inProgressCard0.getFieldValue("Assignee"));
+        assertEquals("01/01/2002 01:01:01", inProgressCard0.getFieldValue("Due Date"));
+        assertEquals(50, inProgressCard0.getProgressPercentage());
+
+        KanbanCard inProgressCard1 = inProgressCards.get(1);
+        assertEquals("TaskK3", inProgressCard1.getTask());
+        assertTrue(inProgressCard1.getLink().contains("/TaskManager/TaskK3"));
+        assertEquals("UserTest2", inProgressCard1.getFieldValue("Assignee"));
+        assertEquals("01/01/2003 01:01:01", inProgressCard1.getFieldValue("Due Date"));
+        assertEquals(50, inProgressCard1.getProgressPercentage());
+
+        KanbanColumn completedTask = board.getColumn(2);
+        assertEquals("Done", completedTask.getType());
+        List<KanbanCard> completedTaskCards = completedTask.getTaskCards();
+        assertEquals(1, completedTaskCards.size());
+
+        KanbanCard completedTaskCard = completedTaskCards.get(0);
+        assertEquals("TaskDependency2", completedTaskCard.getTask());
+        assertTrue(completedTaskCard.getLink().contains("/TaskManager/TaskDependency2"));
+        assertEquals("", completedTaskCard.getFieldValue("Assignee"));
+        assertEquals("01/01/2001 01:01:01", completedTaskCard.getFieldValue("Due Date"));
+        assertEquals(100, completedTaskCard.getProgressPercentage());
+    }
+
     private String getMacroContent(String filename)
     {
         try (InputStream inputStream = getClass().getResourceAsStream("/taskMacros/" + filename)) {
@@ -309,6 +376,26 @@ public class TaskMacrosIT
         inlinePage.setStatus(Task.STATUS_DONE);
         inlinePage.setProject("Other");
         inlinePage.setSeverity("Low");
+        inlinePage.clickSaveAndView();
+    }
+
+    private void createTaskFromTemplateKanban(String title, String status, Boolean setStatus, String assignee,
+        String dueDate)
+    {
+        TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
+        CreatePagePage createPage = taskManagerHomePage.createPage();
+
+        createPage.getDocumentPicker().setTitle(title);
+        createPage.setTemplate("TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
+        createPage.clickCreate();
+
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        inlinePage.setDueDate(dueDate);
+        if (setStatus) {
+            inlinePage.setStatus(status);
+            inlinePage.setProgress("50");
+        }
+        inlinePage.setAssignee(assignee);
         inlinePage.clickSaveAndView();
     }
 }
