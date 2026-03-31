@@ -27,6 +27,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.xwiki.test.ui.po.BaseElement;
 
+/**
+ * Represents a task card from a KanbanBoard macro column and provides access to its attributes.
+ *
+ * @version $Id$
+ * @since 3.11.0
+ */
 public class KanbanCard extends BaseElement
 {
     private final WebElement card;

@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.openqa.selenium.support.Color;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanCard;
@@ -59,6 +60,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * UI Tests for Task Manager application macros.
+ *
+ * @version $Id$
+ * @since 3.11.0
+ */
 @UITest(
     // Needed for the dependency to the mentions macro that uses solr.
     extraJARs = { "org.xwiki.platform:xwiki-platform-eventstream-store-solr:15.10", "com.xwiki.date:macro-date-api",
@@ -86,6 +93,18 @@ public class TaskMacrosIT
     private final LocalDocumentReference pageWithKanbanMacro =
         new LocalDocumentReference("Main", "PageWithKanbanMacro");
 
+    private final LocalDocumentReference pageWithKanbanMacroParameters =
+        new LocalDocumentReference("Main", "PageWithKanbanMacroParameters");
+
+    private final LocalDocumentReference pageWithKanbanMacroOrdered =
+        new LocalDocumentReference("Main", "PageWithKanbanMacroOrdered");
+
+    private final LocalDocumentReference pageWithKanbanMacroSpace =
+        new LocalDocumentReference("Main", "PageWithKanbanMacroSpace");
+
+    private final LocalDocumentReference pageWithKanbanMacroLimit =
+        new LocalDocumentReference("Main", "PageWithKanbanMacroLimit");
+
     @BeforeAll
     void setup(TestUtils setup)
     {
@@ -95,14 +114,11 @@ public class TaskMacrosIT
     @AfterAll
     void cleanup(TestUtils setup)
     {
-        DocumentReference ref1 = new DocumentReference("xwiki", "TaskManager", "TaskFromTemplate");
-        setup.deletePage(ref1);
-        DocumentReference refSubwiki1 = new DocumentReference("wiki1", "TaskManager", "TaskFromTemplate");
-        setup.deletePage(refSubwiki1);
-        DocumentReference ref2 = new DocumentReference("xwiki", "TaskManager", "TaskDependency2");
-        setup.deletePage(ref2);
-        DocumentReference refSubwiki2 = new DocumentReference("wiki1", "TaskManager", "TaskDependency2");
-        setup.deletePage(refSubwiki2);
+        deleteTaskFromWiki("TaskFromTemplate", setup);
+        deleteTaskFromWiki("TaskDependency2", setup);
+        deleteTaskFromWiki("TaskK1", setup);
+        deleteTaskFromWiki("TaskK2", setup);
+        deleteTaskFromWiki("TaskK3", setup);
     }
 
     @ParameterizedTest
@@ -272,6 +288,7 @@ public class TaskMacrosIT
         createTaskFromTemplateKanban("TaskK1", Task.STATUS_IN_PROGRESS, true, "XWiki.UserTest", "01/01/2002 01:01:01");
         createTaskFromTemplateKanban("TaskK2", Task.STATUS_IN_PROGRESS, false, "XWiki.UserTest", "01/01/2002 01:01:01");
         createTaskFromTemplateKanban("TaskK3", Task.STATUS_IN_PROGRESS, true, "XWiki.UserTest2", "01/01/2003 01:01:01");
+        setup.createPage(pageWithTasks, "{{task reference=\"Task_1\"}}Task 1 do this{{/task}}");
 
         DocumentReference testRef = new DocumentReference(pageWithKanbanMacro, wiki);
         setup.createPage(testRef, "{{kanbanboard/}}");
@@ -286,7 +303,7 @@ public class TaskMacrosIT
 
         KanbanCard card = cards.get(0);
         assertEquals("TaskK2", card.getTask());
-        assertTrue(card.getLink().contains("/TaskManager/TaskK2"));
+        assertTrue(card.getLink().contains("view/TaskManager/TaskK2"));
         assertEquals("UserTest", card.getFieldValue("Assignee"));
         assertEquals("01/01/2002 01:01:01", card.getFieldValue("Due Date"));
         assertEquals(0, card.getProgressPercentage());
@@ -294,21 +311,25 @@ public class TaskMacrosIT
         KanbanColumn inProgress = board.getColumn(1);
         assertEquals("InProgress", inProgress.getType());
         List<KanbanCard> inProgressCards = inProgress.getTaskCards();
-        assertEquals(2, inProgressCards.size());
+        assertEquals(3, inProgressCards.size());
 
         KanbanCard inProgressCard0 = inProgressCards.get(0);
         assertEquals("TaskK1", inProgressCard0.getTask());
-        assertTrue(inProgressCard0.getLink().contains("/TaskManager/TaskK1"));
+        assertTrue(inProgressCard0.getLink().contains("view/TaskManager/TaskK1"));
         assertEquals("UserTest", inProgressCard0.getFieldValue("Assignee"));
         assertEquals("01/01/2002 01:01:01", inProgressCard0.getFieldValue("Due Date"));
         assertEquals(50, inProgressCard0.getProgressPercentage());
 
         KanbanCard inProgressCard1 = inProgressCards.get(1);
         assertEquals("TaskK3", inProgressCard1.getTask());
-        assertTrue(inProgressCard1.getLink().contains("/TaskManager/TaskK3"));
+        assertTrue(inProgressCard1.getLink().contains("view/TaskManager/TaskK3"));
         assertEquals("UserTest2", inProgressCard1.getFieldValue("Assignee"));
         assertEquals("01/01/2003 01:01:01", inProgressCard1.getFieldValue("Due Date"));
         assertEquals(50, inProgressCard1.getProgressPercentage());
+
+        KanbanCard inProgressCard2 = inProgressCards.get(2);
+        assertEquals("Task 1 do this", inProgressCard2.getTask());
+        assertTrue(inProgressCard2.getLink().contains("view/Task_1"));
 
         KanbanColumn completedTask = board.getColumn(2);
         assertEquals("Done", completedTask.getType());
@@ -317,10 +338,154 @@ public class TaskMacrosIT
 
         KanbanCard completedTaskCard = completedTaskCards.get(0);
         assertEquals("TaskDependency2", completedTaskCard.getTask());
-        assertTrue(completedTaskCard.getLink().contains("/TaskManager/TaskDependency2"));
+        assertTrue(completedTaskCard.getLink().contains("view/TaskManager/TaskDependency2"));
         assertEquals("", completedTaskCard.getFieldValue("Assignee"));
         assertEquals("01/01/2001 01:01:01", completedTaskCard.getFieldValue("Due Date"));
         assertEquals(100, completedTaskCard.getProgressPercentage());
+    }
+
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @Order(45)
+    void kanbanMacroWithParametersTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef = new DocumentReference(pageWithKanbanMacroParameters, wiki);
+        setup.createPage(testRef, "{{kanbanboard user=\"XWiki.UserTest\" colors=\"yellow,#3e6970,pink\" "
+            + "columns=\"InProgress,Done\" columnWidth=\"20%\"/}}");
+
+        KanbanBoardMacroPage kanbanPage = new KanbanBoardMacroPage();
+        KanbanBoardMacro board = kanbanPage.getKanbanMacro();
+
+        // Checks that the columns parameter works, the column "To Do" isn't present.
+        KanbanColumn kanbanColumn0 = board.getColumn(0);
+        assertEquals("InProgress", kanbanColumn0.getType());
+
+        // Checks that the colors parameter works and that the personalized colors are applied.
+        assertEquals("rgb(255, 204, 51)", kanbanColumn0.getHeaderColor());
+
+        // Checks that the columnWidth parameter works, columnWidth="20%".
+        assertEquals("20%", kanbanColumn0.getWidth());
+        List<KanbanCard> cards = kanbanColumn0.getTaskCards();
+
+        // Checks that only tasks which have UserTest assigned appear.
+        assertEquals(1, cards.size());
+        KanbanCard card = cards.get(0);
+        assertEquals("TaskK1", card.getTask());
+        assertEquals("UserTest", card.getFieldValue("Assignee"));
+        assertEquals(50, card.getProgressPercentage());
+
+        KanbanColumn kanbanColumn1 = board.getColumn(1);
+        assertEquals("Done", kanbanColumn1.getType());
+        assertEquals("#3e6970", Color.fromString(kanbanColumn1.getHeaderColor()).asHex());
+        assertEquals("20%", kanbanColumn1.getWidth());
+        List<KanbanCard> cards1 = kanbanColumn1.getTaskCards();
+
+        // There are no completed tasks which have UserTest assigned.
+        assertEquals(0, cards1.size());
+    }
+
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @Order(55)
+    void kanbanMacroOrderedTasksTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef = new DocumentReference(pageWithKanbanMacroOrdered, wiki);
+        setup.createPage(testRef, "{{kanbanboard columns=\"InProgress\" order=\"assignee desc\"/}}");
+
+        KanbanBoardMacroPage kanbanPage = new KanbanBoardMacroPage();
+        KanbanBoardMacro board = kanbanPage.getKanbanMacro();
+        KanbanColumn kanbanColumn = board.getColumn(0);
+        assertEquals("InProgress", kanbanColumn.getType());
+        List<KanbanCard> cards = kanbanColumn.getTaskCards();
+
+        // Checks that the tasks are ordered by the assignee in reversed order.
+        assertEquals(3, cards.size());
+        KanbanCard cardTask0 = cards.get(0);
+        assertEquals("TaskK3", cardTask0.getTask());
+        assertEquals("UserTest2", cardTask0.getFieldValue("Assignee"));
+        KanbanCard cardTask1 = cards.get(1);
+        assertEquals("TaskK1", cardTask1.getTask());
+        assertEquals("UserTest", cardTask1.getFieldValue("Assignee"));
+        KanbanCard cardTask2 = cards.get(2);
+        assertEquals("Task 1 do this", cardTask2.getTask());
+        assertEquals("", cardTask2.getFieldValue("Assignee"));
+    }
+
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @Order(65)
+    void kanbanMacroSpaceTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef = new DocumentReference(pageWithKanbanMacroSpace, wiki);
+        setup.createPage(testRef, "{{kanbanboard space=\"TaskManager\"/}}");
+
+        // Checks that only tasks created in the TaskManager space appear.
+        KanbanBoardMacroPage kanbanPage = new KanbanBoardMacroPage();
+        KanbanBoardMacro board = kanbanPage.getKanbanMacro();
+
+        KanbanColumn todo = board.getColumn(0);
+        assertEquals("ToDo", todo.getType());
+        List<KanbanCard> cards = todo.getTaskCards();
+        assertEquals(1, cards.size());
+
+        KanbanCard card = cards.get(0);
+        assertEquals("TaskK2", card.getTask());
+        assertTrue(card.getLink().contains("view/TaskManager/TaskK2"));
+
+        KanbanColumn inProgress = board.getColumn(1);
+        assertEquals("InProgress", inProgress.getType());
+        List<KanbanCard> inProgressCards = inProgress.getTaskCards();
+        assertEquals(2, inProgressCards.size());
+
+        KanbanCard inProgressCard0 = inProgressCards.get(0);
+        assertEquals("TaskK1", inProgressCard0.getTask());
+        assertTrue(inProgressCard0.getLink().contains("view/TaskManager/TaskK1"));
+
+        KanbanCard inProgressCard1 = inProgressCards.get(1);
+        assertEquals("TaskK3", inProgressCard1.getTask());
+        assertTrue(inProgressCard1.getLink().contains("view/TaskManager/TaskK3"));
+
+        KanbanColumn completedTask = board.getColumn(2);
+        assertEquals("Done", completedTask.getType());
+        List<KanbanCard> completedTaskCards = completedTask.getTaskCards();
+        assertEquals(1, completedTaskCards.size());
+
+        KanbanCard completedTaskCard = completedTaskCards.get(0);
+        assertEquals("TaskDependency2", completedTaskCard.getTask());
+        assertTrue(completedTaskCard.getLink().contains("view/TaskManager/TaskDependency2"));
+    }
+
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @Order(75)
+    void kanbanMacroLimitTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef = new DocumentReference(pageWithKanbanMacroLimit, wiki);
+        setup.createPage(testRef, "{{kanbanboard columns=\"InProgress\" limit=\"2\"/}}");
+
+        KanbanBoardMacroPage kanbanPage = new KanbanBoardMacroPage();
+        KanbanBoardMacro board = kanbanPage.getKanbanMacro();
+        KanbanColumn kanbanColumn = board.getColumn(0);
+        assertEquals("InProgress", kanbanColumn.getType());
+        List<KanbanCard> cards = kanbanColumn.getTaskCards();
+
+        // Checks that the limit parameter works, there are 3 tasks but only 2 are shown.
+        assertEquals(2, cards.size());
+        KanbanCard cardTask0 = cards.get(0);
+        assertEquals("TaskK1", cardTask0.getTask());
+
+        KanbanCard cardTask1 = cards.get(1);
+        assertEquals("TaskK3", cardTask1.getTask());
+
+        setup.deletePage(pageWithTasks);
     }
 
     private String getMacroContent(String filename)
@@ -397,5 +562,13 @@ public class TaskMacrosIT
         }
         inlinePage.setAssignee(assignee);
         inlinePage.clickSaveAndView();
+    }
+
+    private void deleteTaskFromWiki(String taskName, TestUtils setup)
+    {
+        DocumentReference ref = new DocumentReference("xwiki", "TaskManager", taskName);
+        setup.deletePage(ref);
+        DocumentReference refSubwiki = new DocumentReference("wiki1", "TaskManager", taskName);
+        setup.deletePage(refSubwiki);
     }
 }

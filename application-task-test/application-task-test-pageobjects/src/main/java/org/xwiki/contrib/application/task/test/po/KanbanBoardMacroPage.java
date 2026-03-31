@@ -23,6 +23,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.xwiki.test.ui.po.ViewPage;
 
+/**
+ * Represents a page containing one or more KanbanBoard macros.
+ *
+ * @version $Id$
+ * @since 3.11.0
+ */
 public class KanbanBoardMacroPage extends ViewPage
 {
     @FindBy(css = ".cp-app-kanban")

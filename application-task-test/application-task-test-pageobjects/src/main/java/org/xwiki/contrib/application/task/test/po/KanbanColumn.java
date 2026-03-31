@@ -26,6 +26,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.xwiki.test.ui.po.BaseElement;
 
+/**
+ * Represents a KanbanBoard macro column and provides access to its attributes.
+ *
+ * @version $Id$
+ * @since 3.11.0
+ */
 public class KanbanColumn extends BaseElement
 {
     private final WebElement column;
@@ -44,5 +50,23 @@ public class KanbanColumn extends BaseElement
     {
         return column.findElements(By.cssSelector(".kanban-item")).stream().map(KanbanCard::new)
             .collect(Collectors.toList());
+    }
+
+    public String getHeaderColor()
+    {
+        return column.findElement(By.cssSelector(".kanban-board-header")).getCssValue("background-color");
+    }
+
+    public String getWidth()
+    {
+        String style = column.getAttribute("style");
+
+        for (String part : style.split(";")) {
+            part = part.trim();
+            if (part.startsWith("width")) {
+                return part.split(":")[1].trim();
+            }
+        }
+        return "";
     }
 }

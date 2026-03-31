@@ -26,6 +26,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.xwiki.test.ui.po.BaseElement;
 
+/**
+ * Represents a TaskReport macro and provides access to its attributes.
+ *
+ * @version $Id$
+ * @since 3.11.0
+ */
 public class TaskReportMacro extends BaseElement
 {
     private final WebElement report;

@@ -25,6 +25,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.xwiki.test.ui.po.ViewPage;
 
+/**
+ * Represents a page containing one or more TaskCard macros.
+ *
+ * @version $Id$
+ * @since 3.11.0
+ */
 public class TaskCardMacroPage extends ViewPage
 {
     @FindBy(css = ".task-card")
