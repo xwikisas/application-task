@@ -27,42 +27,28 @@ import org.openqa.selenium.WebElement;
 import org.xwiki.test.ui.po.BaseElement;
 
 /**
- * Represents a TaskReport macro and provides access to its attributes.
+ * Represents a KanbanBoard macro and provides access to its columns.
  *
  * @version $Id$
  * @since 3.11.0
  */
-public class TaskReportMacro extends BaseElement
+public class KanbanBoardMacro extends BaseElement
 {
-    private final WebElement report;
+    private final WebElement kanbanBoard;
 
-    public TaskReportMacro(String id)
+    public KanbanBoardMacro(WebElement kanbanBoard)
     {
-        this.report = getDriver().findElement(By.id(id));
+        this.kanbanBoard = kanbanBoard;
     }
 
-    public List<TaskElement> getTasks()
+    public List<KanbanColumn> getColumns()
     {
-        return report.findElements(By.className("task-macro")).stream().map(TaskElement::new)
+        return kanbanBoard.findElements(By.cssSelector(".kanban-board")).stream().map(KanbanColumn::new)
             .collect(Collectors.toList());
     }
 
-    public TaskElement getTask(int index)
+    public KanbanColumn getColumn(int index)
     {
-        return getTasks().get(index);
-    }
-
-    public int getColumnCount()
-    {
-        List<WebElement> headers =
-            report.findElements(By.cssSelector("tr.column-header-names th:not([style*='display: none'])"));
-        return headers.size();
-    }
-
-    public List<String> getColumnNames()
-    {
-        return report.findElements(
-                By.cssSelector("tr.column-header-names th:not([style*='display: none']) .property-name")).stream()
-            .map(WebElement::getText).collect(Collectors.toList());
+        return getColumns().get(index);
     }
 }

@@ -19,25 +19,23 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
-import java.util.List;
-
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.xwiki.test.ui.po.ViewPage;
 
 /**
- * Represents a page containing one or more TaskCard macros.
+ * Represents a page containing one or more KanbanBoard macros.
  *
  * @version $Id$
  * @since 3.11.0
  */
-public class TaskCardMacroPage extends ViewPage
+public class KanbanBoardMacroPage extends ViewPage
 {
-    @FindBy(css = ".task-card")
-    private List<WebElement> taskCards;
+    @FindBy(css = ".cp-app-kanban")
+    private WebElement kanbanMacro;
 
-    public TaskCardMacro getTaskCard(int index)
+    public KanbanBoardMacro getKanbanMacro()
     {
-        return new TaskCardMacro(taskCards.get(index));
+        return new KanbanBoardMacro(kanbanMacro);
     }
 }

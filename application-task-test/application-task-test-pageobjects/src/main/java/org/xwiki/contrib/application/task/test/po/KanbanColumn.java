@@ -27,42 +27,46 @@ import org.openqa.selenium.WebElement;
 import org.xwiki.test.ui.po.BaseElement;
 
 /**
- * Represents a TaskReport macro and provides access to its attributes.
+ * Represents a KanbanBoard macro column and provides access to its attributes.
  *
  * @version $Id$
  * @since 3.11.0
  */
-public class TaskReportMacro extends BaseElement
+public class KanbanColumn extends BaseElement
 {
-    private final WebElement report;
+    private final WebElement column;
 
-    public TaskReportMacro(String id)
+    public KanbanColumn(WebElement column)
     {
-        this.report = getDriver().findElement(By.id(id));
+        this.column = column;
     }
 
-    public List<TaskElement> getTasks()
+    public String getType()
     {
-        return report.findElements(By.className("task-macro")).stream().map(TaskElement::new)
+        return column.getAttribute("data-id");
+    }
+
+    public List<KanbanCard> getTaskCards()
+    {
+        return column.findElements(By.cssSelector(".kanban-item")).stream().map(KanbanCard::new)
             .collect(Collectors.toList());
     }
 
-    public TaskElement getTask(int index)
+    public String getHeaderColor()
     {
-        return getTasks().get(index);
+        return column.findElement(By.cssSelector(".kanban-board-header")).getCssValue("background-color");
     }
 
-    public int getColumnCount()
+    public String getWidth()
     {
-        List<WebElement> headers =
-            report.findElements(By.cssSelector("tr.column-header-names th:not([style*='display: none'])"));
-        return headers.size();
-    }
+        String style = column.getAttribute("style");
 
-    public List<String> getColumnNames()
-    {
-        return report.findElements(
-                By.cssSelector("tr.column-header-names th:not([style*='display: none']) .property-name")).stream()
-            .map(WebElement::getText).collect(Collectors.toList());
+        for (String part : style.split(";")) {
+            part = part.trim();
+            if (part.startsWith("width")) {
+                return part.split(":")[1].trim();
+            }
+        }
+        return "";
     }
 }
