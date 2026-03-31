@@ -257,6 +257,8 @@
 }
 .task-card .task-card-assignees {
   height: 5ex;
+  display: flex;
+  gap: 1ex;
 }
 .task-card .task-card-assignees .task-card-assignee {
   height: 5ex;
