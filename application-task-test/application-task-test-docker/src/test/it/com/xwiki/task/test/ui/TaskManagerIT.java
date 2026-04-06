@@ -474,5 +474,7 @@ class TaskManagerIT
 
         assertEquals("TTe$t with #special + ch@rs - test. It's ^a test! Test 1 = and (2) & {3}, [4]. 100% a test 1; "
             + "2` 3; 5", viewPage.getTaskMacroContent(0));
+
+        setup.deletePage(pageWithSpecialCharactersTask);
     }
 }
