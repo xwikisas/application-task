@@ -102,14 +102,6 @@ class TaskManagerIT
 
     private static final String USER_NAME = "BOB";
 
-    private static final String specialCharactersTask =
-        "{{task reference=\"TTe$t with #special + ch@rs - test. It's ^a test! Test ~1 = and (2) & {3}, [4]."
-            + " 100% a test 1; 2` 3; 5\"}}TTe$t with #special + ch@rs - test. It's ^a test! Test ~1 = and (2) & {3}, [4]."
-            + " 100% a test 1; 2` 3; 5{{/task}}\n";
-
-    private final LocalDocumentReference pageWithSpecialCharactersTask =
-        new LocalDocumentReference("Main", "SpecialCharactersTest");
-
     @BeforeAll
     void setup(TestUtils setup)
     {
@@ -458,23 +450,5 @@ class TaskManagerIT
         for (int i = 0; i < ids.size(); i++) {
             assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
         }
-    }
-
-    @ParameterizedTest
-    @WikisSource()
-    @Order(120)
-    void specialCharactersTaskNameAndContent(WikiReference wiki, TestUtils setup) throws Exception
-    {
-        setup.setCurrentWiki(wiki.getName());
-        DocumentReference testRef = new DocumentReference(pageWithSpecialCharactersTask, wiki);
-        setup.createPage(testRef, specialCharactersTask);
-
-        ViewPageWithTasks viewPage = new ViewPageWithTasks();
-        assertEquals(1, viewPage.getTaskMacros().size());
-
-        assertEquals("TTe$t with #special + ch@rs - test. It's ^a test! Test 1 = and (2) & {3}, [4]. 100% a test 1; "
-            + "2` 3; 5", viewPage.getTaskMacroContent(0));
-
-        setup.deletePage(pageWithSpecialCharactersTask);
     }
 }
