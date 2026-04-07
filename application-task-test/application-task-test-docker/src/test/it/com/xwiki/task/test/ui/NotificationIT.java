@@ -119,6 +119,11 @@ class NotificationIT
 
     private final String TEST_PROJECT_NAME = "Test Project";
 
+    private static final String MULTI_USER_TASK = "{{task reference=\"Task_4\" createDate=\"2025/04/28 14:51\" "
+        + "reporter=\"XWiki.afarcasi\"}}\n {{mention reference=\"XWiki.rob\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-afarcasi-v7dmha\"/}} {{mention reference=\"XWiki.tod\" style=\"FULL_NAME\" "
+        + "anchor=\"XWiki-tcaras-mz6chz\"/}} \n {{/task}}";
+
     @BeforeAll
     void setup(TestUtils setup, TestConfiguration config) throws Exception
     {
@@ -333,6 +338,140 @@ class NotificationIT
                 () -> NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + TEST_USERNAME, "xwiki", 1));
         });
         checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.OFF);
+    }
+
+    @Test
+    @Order(6)
+    void assigneeChangeNotification(TestUtils setup)
+    {
+        final String NEW_ASSIGNEE = "NotificationNewAssignee";
+
+        setup.loginAsSuperAdmin();
+        setup.createUser(NEW_ASSIGNEE, PASSWORD, "", "email", "newassignee@xwiki.org");
+        logout(setup);
+
+        // Configure preferences.
+        doAsUser(setup, NEW_ASSIGNEE, () -> {
+            NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(NEW_ASSIGNEE);
+            prefs.disableAllParameters();
+
+            ApplicationPreferences taskPrefs =
+                null;
+            try {
+                taskPrefs = prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
+                setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
+            } catch (Exception e) {
+                fail(e);
+            }
+        });
+
+        checkPreferences(setup, NEW_ASSIGNEE, BootstrapSwitch.State.ON);
+
+        // Clear notifications for new assignee.
+        doAsUser(setup, NEW_ASSIGNEE, () -> {
+            TaskManagerHomePage.gotoPage();
+            new NotificationsTrayPage().clearAllNotifications();
+        });
+
+        // Change assignee.
+        doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
+            setup.gotoPage("TaskManager", TEST_TASK_NAME, "edit");
+            TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+            inlinePage.setAssignee("XWiki." + NEW_ASSIGNEE);
+            inlinePage.clickSaveAndView();
+        });
+
+        // Verify new assignee notified.
+        doAsUser(setup, NEW_ASSIGNEE, () -> {
+            TaskManagerHomePage.gotoPage();
+            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + NEW_ASSIGNEE, "xwiki", 1);
+
+            NotificationsTrayPage tray = new NotificationsTrayPage();
+            tray.showNotificationTray();
+
+            assertEquals(1, tray.getNotificationsCount());
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+
+            List<String> details = getNotificationDetails(setup, 0);
+            assertEquals(1, details.size(), details.toString());
+        });
+
+        checkPreferences(setup, NEW_ASSIGNEE, BootstrapSwitch.State.ON);
+    }
+
+    @Test
+    @Order(7)
+    void multiUserTaskNotification(TestUtils setup)
+    {
+        final String USER1 = "rob";
+        final String USER2 = "tod";
+
+        // Enable notifications for both users.
+        for (String user : List.of(USER1, USER2)) {
+            doAsUser(setup, user, () -> {
+                NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(user);
+                prefs.disableAllParameters();
+
+                try {
+                    ApplicationPreferences taskPrefs =
+                        prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
+                    setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
+                    setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
+                } catch (Exception e) {
+                    fail(e);
+                }
+            });
+
+            checkPreferences(setup, user, BootstrapSwitch.State.ON);
+
+            // Clear notifications before test.
+            doAsUser(setup, user, () -> {
+                TaskManagerHomePage.gotoPage();
+                new NotificationsTrayPage().clearAllNotifications();
+            });
+        }
+
+        // Create page with multi-user task.
+        DocumentReference multiUserPage =
+            new DocumentReference("xwiki", "Main", "MultiUserTaskPage");
+
+        doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
+            setup.createPage(multiUserPage, MULTI_USER_TASK, "Multi user task");
+        });
+
+        // Verify USER1 gets notification.
+        doAsUser(setup, USER1, () -> {
+            TaskManagerHomePage.gotoPage();
+            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + USER1, "xwiki", 1);
+
+            NotificationsTrayPage tray = new NotificationsTrayPage();
+            tray.showNotificationTray();
+
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+
+            List<String> details = getNotificationDetails(setup, 0);
+            assertEquals(1, details.size(), details.toString());
+        });
+
+        // Verify USER2 gets notification.
+        doAsUser(setup, USER2, () -> {
+            TaskManagerHomePage.gotoPage();
+            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + USER2, "xwiki", 1);
+
+            NotificationsTrayPage tray = new NotificationsTrayPage();
+            tray.showNotificationTray();
+
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+
+            List<String> details = getNotificationDetails(setup, 0);
+            assertEquals(1, details.size(), details.toString());
+        });
+
     }
 
     private void setEmailState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
