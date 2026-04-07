@@ -39,11 +39,11 @@
   <content># Application Panel title
 TaskManager.home.title=Gestionnaire de tâches
 TaskManager.panels.name=Gestionnaire de tâches
-### Missing: TaskManager.administration.noRights=You need to be an Administrator
+TaskManager.administration.noRights=Vous devez être un Administrateur
 ### Missing: TaskManager.administration.livetable.doc.date=Date
-### Missing: TaskManager.administration.livetable.doc.author=Last Author
+TaskManager.administration.livetable.doc.author=Dernier auteur
 ### Missing: TaskManager.administration.livetable._actions=Actions
-### Missing: TaskManager.administration.livetable.order=Order
+TaskManager.administration.livetable.order=Classement
 TaskManager.administration.addProject.label=Projet
 TaskManager.administration.addProject.submit=Ajouter un projet
 TaskManager.administration.addStatus.label=Statut
@@ -55,6 +55,7 @@ TaskManager.administration.addSeverity.submit=Ajouter un niveau d'importance
 TaskManager.adminitration.addProject=Ajouter un projet
 TaskManager.adminitration.addStatus=Ajouter un statut
 TaskManager.adminitration.addSeverity=Ajouter un niveau d'importance
+TaskManager.adminitration.templateList=Ajouter un modèle de tâche
 
 # Class fields
 TaskManager.TaskManagerClass_name=Nom de la tâche
@@ -75,11 +76,11 @@ TaskManager.TaskManagerClass_reporter=Créateur de la tâche
 TaskManager.TaskManagerClass_assignee=Personne assignée
 TaskManager.TaskManagerClass_duedate=Échéance
 ### Missing: TaskManager.TaskManagerClass_createDate=Creation Date
-### Missing: TaskManager.TaskManagerClass_completeDate=Completion Date
+TaskManager.TaskManagerClass_completeDate=Date de réalisation
 TaskManager.TaskManagerClass_dependencies=Dépendances
 TaskManager.TaskManagerClass_dependencies_nodependencies=Créez d'autres tâches avant d'ajouter des dépendances.
 TaskManager.TaskManagerClass_progress=Progrès
-### Missing: TaskManager.TaskManagerClass_owner=Task Location
+TaskManager.TaskManagerClass_owner=Emplacement de la tâche
 
 # Live table generic keys
 taskmanager.livetable.doc.title=Titre de la page
@@ -98,6 +99,18 @@ taskmanager.livetable._actions.edit=Modifier
 taskmanager.livetable._actions.delete=Supprimer
 taskmanager.livetable.emptyvalue=-
 
+# Template list specific keys
+taskmanager.templateList.label=Nom
+taskmanager.templateList.hint=Le nom du nouveau modèle
+taskmanager.templateList.button=Créer un nouveau modèle
+taskmanager.templateList.livetable.taskName=Page du modèle de tâche
+taskmanager.templateList.livetable.providerName=Nom du fournisseur de modèle
+taskmanager.templateList.notification.inprogress=Création du modèle
+taskmanager.templateList.notification.done=Modèle créé
+taskmanager.templateList.notification.fail=Impossible de créer le modèle
+taskmanager.templateList.notification.fail.conflict=Le modèle existe déjà
+taskmanager.templateList.notification.fail.unauthorized=Non autorisé
+
 # Live table specific keys
 taskmanager.livetable.name=Nom de la tâche
 taskmanager.livetable.number=Numéro de la tâche
@@ -111,16 +124,16 @@ taskmanager.livetable.duedate=Échéance
 ### Missing: taskmanager.livetable.creationDate=Creation Date
 
 # Notifications for changed tasks
-### Missing: taskmanager.events.taskChangedEvent.description=A task which you are assigned to or you are watching was modified
-### Missing: taskmanager.events.taskChangedEvent.title=Task was modified
-### Missing: taskmanager.events.taskChangedEvent.details.status=Status changed from {1} to {0}
-### Missing: taskmanager.events.taskChangedEvent.details.duedate=Deadline set to {0}
-### Missing: taskmanager.events.taskChangedEvent.details.duedate.none=Deadline removed
-### Missing: taskmanager.events.taskChangedEvent.details.duedate.later=Deadline extended from {1} to {0}
-### Missing: taskmanager.events.taskChangedEvent.details.duedate.earlier=Deadline reduced from {1} to {0}
-### Missing: taskmanager.events.taskChangedEvent.details.assignee.you.assigned=You were assigned
-### Missing: taskmanager.events.taskChangedEvent.details.assignee.you.unassigned=You were unassigned
-### Missing: taskmanager.events.taskChangedEvent.details.assignee.none=Nobody is assigned
+taskmanager.events.taskChangedEvent.description=Une tâche à laquelle vous êtes assigné ou que vous suivez a été modifiée
+taskmanager.events.taskChangedEvent.title=La tâche a été modifiée
+taskmanager.events.taskChangedEvent.details.status=Statut changé de {1} à {0}
+taskmanager.events.taskChangedEvent.details.duedate=Échéance définie au {0}
+taskmanager.events.taskChangedEvent.details.duedate.none=Échéance supprimée
+taskmanager.events.taskChangedEvent.details.duedate.later=Échéance reportée du {1} au {0}
+taskmanager.events.taskChangedEvent.details.duedate.earlier=Échéance avancée du {1} au {0}
+taskmanager.events.taskChangedEvent.details.assignee.you.assigned=Vous avez été assigné
+taskmanager.events.taskChangedEvent.details.assignee.you.unassigned=Vous n'êtes plus assigné
+taskmanager.events.taskChangedEvent.details.assignee.none=Personne n'est assigné
 ### Missing: taskmanager.events.taskChangedEvent.details.assignee=Assignee changed from {1} to {0}
 ### Missing: taskmanager.events.taskChangedEvent.details.severity=Priority changed from {1} to {0}
 ### Missing: taskmanager.events.taskChangedEvent.details.project=This task was assigned to project {0}
@@ -140,9 +153,9 @@ taskmanager.livetable.duedate=Échéance
 ### Missing: taskmanager.gantt.macro.wait=Please wait...
 ### Missing: taskmanager.gantt.macro.date.from=From:
 ### Missing: taskmanager.gantt.macro.date.to=To:
-### Missing: taskmanager.gantt.macro.projects=Projects:
-### Missing: taskmanager.gantt.macro.spaces=Spaces:
-### Missing: taskmanager.gantt.macro.assignees=Assignees:
+taskmanager.gantt.macro.projects=Projets :
+taskmanager.gantt.macro.spaces=Espaces :
+taskmanager.gantt.macro.assignees=Assignés :
 ### Missing: taskmanager.gantt.macro.hideNoDueDate_0=Tasks without a due date are hidden
 ### Missing: taskmanager.gantt.macro.hideNoDueDate_1=Tasks without a due date are shown
 ### Missing: taskmanager.gantt.macro.noTasks=No tasks correspond to the given filter.
@@ -208,6 +221,8 @@ TaskManager.SeverityClass_severity_High=Haute
 ### Missing: rendering.macro.task.parameter.status.description=Specify what is the current status of the task.
 ### Missing: rendering.macro.task.parameter.id.name=ID
 ### Missing: rendering.macro.task.parameter.id.description=An unique identifier for the task, relative to the current page.
+rendering.macro.task.parameter.reference.name=ID
+rendering.macro.task.parameter.reference.description=Un identifiant unique de la tâche, relatif à la page courante.
 ### Missing: rendering.macro.task.parameter.creator.name=Creator
 ### Missing: rendering.macro.task.parameter.creator.description=The user that created the task.
 ### Missing: rendering.macro.task.parameter.createDate.name=Creation date
@@ -258,19 +273,26 @@ TaskManager.SeverityClass_severity_High=Haute
 ### Missing: rendering.macro.kanbanboard.parameter.colors.description=Define the colors that you want to use for the columns. The list must be comma separated, e.g., red,#00d126,yellow.
 ### Missing: rendering.macro.kanbanboard.parameter.columns.description=Define the columns that you want to display separated by a comma.
 ### Missing: rendering.macro.kanbanboard.name=Kanban board - Task Manager
-rendering.macro.kanbanboard.parameter.project.name=Project
-rendering.macro.kanbanboard.parameter.project.description=Show only the task that are assigned to this project.
+rendering.macro.kanbanboard.parameter.project.name=Projets
+rendering.macro.kanbanboard.parameter.project.description=Montrer uniquement les tâches assignées à ces projets.
 ### Missing: rendering.macro.kanbanboard.parameter.space.name=Space
 ### Missing: rendering.macro.kanbanboard.parameter.space.description=Show only the task that are stored in this space.
-rendering.macro.kanbanboard.parameter.user.name=User
-rendering.macro.kanbanboard.parameter.user.description=Show only the task that are assigned to this user.
+rendering.macro.kanbanboard.parameter.user.name=Utilisateurs
+rendering.macro.kanbanboard.parameter.user.description=Afficher uniquement les tâches assignées à ces utilisateurs.
+rendering.macro.kanbanboard.parameter.order.name=Classement
+rendering.macro.kanbanboard.parameter.order.description=Champ utilisé pour trier les tâches. Par exemple : 'name asc', 'doc.date desc', 'reporter asc, Assignee desc'.
+rendering.macro.kanbanboard.parameter.limit.name=Limite
+rendering.macro.kanbanboard.parameter.limit.description=Le nombre de tâches affichées pour chaque statut.
 
 ## Incomplete tasks
 ### Missing: TaskManager.adminitration.incompleteTasks=Incomplete tasks
 ### Missing: taskmanager.incompleteTasks.find=Find incomplete tasks
+taskmanager.incompleteTasks.pagination.label=Affichage des pages avec des tâches incomplètes {0} - {1} sur {2} au total.
 ### Missing: taskmanager.incompleteTasks.find.noTasks=There are no task macros with incomplete data.
 ### Missing: taskmanager.incompleteTasks.fixAll=Infer missing data for all tasks
 ### Missing: taskmanager.incompleteTasks.refresh=Refresh
+taskmanager.incompleteTasks.nextTasks=Suivant
+taskmanager.incompleteTasks.previousTasks=Précédent
 ### Missing: taskmanager.incompleteTasks.fix=Infer missing data
 ### Missing: taskmanager.incompleteTasks.job.finish.error=There was an error while trying to infer the missing data.
 ### Missing: taskmanager.incompleteTasks.job.finish.canceled=The inferring process was canceled.
@@ -291,5 +313,8 @@ rendering.macro.kanbanboard.parameter.user.description=Show only the task that a
 ### Missing: taskmanager.spacepicker.modal.title=Space Picker
 ### Missing: taskmanager.spacepicker.modal.close=Close
 ### Missing: taskmanager.spacepicker.modal.select=Select space
+
+## CKEditor Plugin
+ckeditor.plugin.task-insert.placeholder=Décrivez votre tâche ici.
 </content>
 </xwikidoc>
