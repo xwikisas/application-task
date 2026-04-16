@@ -31,6 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.xwiki.contrib.application.task.test.po.NotificationButton;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
@@ -39,6 +40,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.platform.notifications.test.po.NotificationsTrayPage;
 import org.xwiki.platform.notifications.test.po.NotificationsUserProfilePage;
 import org.xwiki.platform.notifications.test.po.preferences.ApplicationPreferences;
+import org.xwiki.platform.notifications.test.po.preferences.filters.SystemNotificationFilterPreference;
 import org.xwiki.scheduler.test.po.SchedulerHomePage;
 import org.xwiki.test.docker.junit5.ExtensionOverride;
 import org.xwiki.test.docker.junit5.TestConfiguration;
@@ -55,6 +57,7 @@ import com.xwiki.task.model.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -124,6 +127,9 @@ class NotificationIT
         + "anchor=\"XWiki-afarcasi-v7dmha\"/}} {{mention reference=\"XWiki.tod\" style=\"FULL_NAME\" "
         + "anchor=\"XWiki-tcaras-mz6chz\"/}} \n {{/task}}";
 
+    private final DocumentReference MULTI_USER_TASK_PAGE =
+        new DocumentReference("xwiki", "Main", "MultiUserTaskPage");
+
     @BeforeAll
     void setup(TestUtils setup, TestConfiguration config) throws Exception
     {
@@ -166,6 +172,8 @@ class NotificationIT
         setup.loginAsSuperAdmin();
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", TEST_TASK_NAME));
         setup.deletePage(TASK_MACRO_PAGE);
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", MULTI_USER_TASK));
+        setup.deletePage(MULTI_USER_TASK_PAGE);
         logout(setup);
     }
 
@@ -340,6 +348,9 @@ class NotificationIT
         checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.OFF);
     }
 
+    /**
+     * Test that changing a task assignee triggers a notification to the new assignee.
+     */
     @Test
     @Order(6)
     void assigneeChangeNotification(TestUtils setup)
@@ -355,14 +366,9 @@ class NotificationIT
             NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(NEW_ASSIGNEE);
             prefs.disableAllParameters();
 
-            ApplicationPreferences taskPrefs =
-                null;
             try {
-                taskPrefs = prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            try {
+                ApplicationPreferences taskPrefs =
+                    prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
                 setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
                 setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
             } catch (Exception e) {
@@ -386,7 +392,7 @@ class NotificationIT
             inlinePage.clickSaveAndView();
         });
 
-        // Verify new assignee notified.
+        // Verify new assignee is notified.
         doAsUser(setup, NEW_ASSIGNEE, () -> {
             TaskManagerHomePage.gotoPage();
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + NEW_ASSIGNEE, "xwiki", 1);
@@ -404,12 +410,18 @@ class NotificationIT
         checkPreferences(setup, NEW_ASSIGNEE, BootstrapSwitch.State.ON);
     }
 
+    /**
+     * Test that all users assigned to a task receive a notification.
+     */
     @Test
     @Order(7)
-    void multiUserTaskNotification(TestUtils setup)
+    void multipleAssigneesNotification(TestUtils setup)
     {
         final String USER1 = "rob";
         final String USER2 = "tod";
+
+        setup.createUser("rob", PASSWORD, "", "email", "rob@xwiki.org");
+        setup.createUser("tod", PASSWORD, "", "email", "tod@xwiki.org");
 
         // Enable notifications for both users.
         for (String user : List.of(USER1, USER2)) {
@@ -436,12 +448,8 @@ class NotificationIT
             });
         }
 
-        // Create page with multi-user task.
-        DocumentReference multiUserPage =
-            new DocumentReference("xwiki", "Main", "MultiUserTaskPage");
-
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
-            setup.createPage(multiUserPage, MULTI_USER_TASK, "Multi user task");
+            setup.createPage(MULTI_USER_TASK_PAGE, MULTI_USER_TASK, "Multi user task");
         });
 
         // Verify USER1 gets notification.
@@ -472,6 +480,79 @@ class NotificationIT
             assertEquals(1, details.size(), details.toString());
         });
 
+    }
+
+    /**
+     * Test that a watcher receives notifications for task updates when page-level watching is enabled.
+     */
+    @Test
+    @Order(8)
+    void watcherReceivesNotification(TestUtils setup) throws Exception
+    {
+        final String WATCHER = "TaskWatcher";
+
+        setup.loginAsSuperAdmin();
+        setup.createUser(WATCHER, PASSWORD, "", "email", "watcher@xwiki.org");
+        logout(setup);
+
+        // Enable task notifications.
+        doAsUser(setup, WATCHER, () -> {
+            NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(WATCHER);
+            prefs.disableAllParameters();
+
+            try {
+                ApplicationPreferences taskPrefs =
+                    prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
+                setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
+                setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
+            } catch (Exception e) {
+                fail(e);
+            }
+
+            // Disable system filters.
+            for (SystemNotificationFilterPreference filter :
+                prefs.getSystemNotificationFilterPreferences()) {
+                try {
+                    filter.setEnabled(false);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            // Go to the task page and enable the notifications for it.
+            setup.gotoPage("TaskManager", TEST_TASK_NAME);
+            NotificationButton bell = new NotificationButton();
+            bell.open();
+            bell.setPageOnly(true);
+            assertTrue(bell.isPageOnlyEnabled());
+        });
+        checkPreferences(setup, WATCHER, BootstrapSwitch.State.ON);
+
+        // Trigger the notification.
+        doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
+            setup.gotoPage("TaskManager", TEST_TASK_NAME, "edit");
+
+            TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+            inlinePage.setStatus(Task.STATUS_IN_PROGRESS);
+            inlinePage.clickSaveAndView();
+        });
+
+        // Verify the user gets the notification.
+        doAsUser(setup, WATCHER, () -> {
+            TaskManagerHomePage.gotoPage();
+
+            NotificationsTrayPage.waitOnNotificationCount(
+                "xwiki:XWiki." + WATCHER,
+                "xwiki",
+                1
+            );
+
+            NotificationsTrayPage tray = new NotificationsTrayPage();
+            tray.showNotificationTray();
+
+            assertEquals(1, tray.getNotificationsCount());
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+        });
     }
 
     private void setEmailState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
