@@ -361,28 +361,8 @@ class NotificationIT
         setup.createUser(NEW_ASSIGNEE, PASSWORD, "", "email", "newassignee@xwiki.org");
         logout(setup);
 
-        // Configure preferences.
-        doAsUser(setup, NEW_ASSIGNEE, () -> {
-            NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(NEW_ASSIGNEE);
-            prefs.disableAllParameters();
-
-            try {
-                ApplicationPreferences taskPrefs =
-                    prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-                setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
-                setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
-            } catch (Exception e) {
-                fail(e);
-            }
-        });
-
-        checkPreferences(setup, NEW_ASSIGNEE, BootstrapSwitch.State.ON);
-
-        // Clear notifications for new assignee.
-        doAsUser(setup, NEW_ASSIGNEE, () -> {
-            TaskManagerHomePage.gotoPage();
-            new NotificationsTrayPage().clearAllNotifications();
-        });
+        enableTaskNotifications(setup, NEW_ASSIGNEE);
+        clearNotifications(setup, NEW_ASSIGNEE);
 
         // Change assignee.
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
@@ -393,21 +373,7 @@ class NotificationIT
         });
 
         // Verify new assignee is notified.
-        doAsUser(setup, NEW_ASSIGNEE, () -> {
-            TaskManagerHomePage.gotoPage();
-            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + NEW_ASSIGNEE, "xwiki", 1);
-
-            NotificationsTrayPage tray = new NotificationsTrayPage();
-            tray.showNotificationTray();
-
-            assertEquals(1, tray.getNotificationsCount());
-            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
-
-            List<String> details = getNotificationDetails(setup, 0);
-            assertEquals(1, details.size(), details.toString());
-        });
-
-        checkPreferences(setup, NEW_ASSIGNEE, BootstrapSwitch.State.ON);
+        checkTaskNotification(setup, NEW_ASSIGNEE);
     }
 
     /**
@@ -420,66 +386,22 @@ class NotificationIT
         final String USER1 = "rob";
         final String USER2 = "tod";
 
-        setup.createUser("rob", PASSWORD, "", "email", "rob@xwiki.org");
-        setup.createUser("tod", PASSWORD, "", "email", "tod@xwiki.org");
+        setup.createUser(USER1, PASSWORD, "", "email", "rob@xwiki.org");
+        setup.createUser(USER2, PASSWORD, "", "email", "tod@xwiki.org");
 
         // Enable notifications for both users.
         for (String user : List.of(USER1, USER2)) {
-            doAsUser(setup, user, () -> {
-                NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(user);
-                prefs.disableAllParameters();
-
-                try {
-                    ApplicationPreferences taskPrefs =
-                        prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-                    setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
-                    setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
-                } catch (Exception e) {
-                    fail(e);
-                }
-            });
-
-            checkPreferences(setup, user, BootstrapSwitch.State.ON);
-
-            // Clear notifications before test.
-            doAsUser(setup, user, () -> {
-                TaskManagerHomePage.gotoPage();
-                new NotificationsTrayPage().clearAllNotifications();
-            });
+            enableTaskNotifications(setup, user);
+            clearNotifications(setup, user);
         }
 
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
             setup.createPage(MULTI_USER_TASK_PAGE, MULTI_USER_TASK, "Multi user task");
         });
 
-        // Verify USER1 gets notification.
-        doAsUser(setup, USER1, () -> {
-            TaskManagerHomePage.gotoPage();
-            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + USER1, "xwiki", 1);
-
-            NotificationsTrayPage tray = new NotificationsTrayPage();
-            tray.showNotificationTray();
-
-            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
-
-            List<String> details = getNotificationDetails(setup, 0);
-            assertEquals(1, details.size(), details.toString());
-        });
-
-        // Verify USER2 gets notification.
-        doAsUser(setup, USER2, () -> {
-            TaskManagerHomePage.gotoPage();
-            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + USER2, "xwiki", 1);
-
-            NotificationsTrayPage tray = new NotificationsTrayPage();
-            tray.showNotificationTray();
-
-            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
-
-            List<String> details = getNotificationDetails(setup, 0);
-            assertEquals(1, details.size(), details.toString());
-        });
-
+        // Verify both users get notifications.
+        checkTaskNotification(setup, USER1);
+        checkTaskNotification(setup, USER2);
     }
 
     /**
@@ -496,18 +418,10 @@ class NotificationIT
         logout(setup);
 
         // Enable task notifications.
+        enableTaskNotifications(setup, WATCHER);
+
         doAsUser(setup, WATCHER, () -> {
             NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(WATCHER);
-            prefs.disableAllParameters();
-
-            try {
-                ApplicationPreferences taskPrefs =
-                    prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-                setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
-                setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
-            } catch (Exception e) {
-                fail(e);
-            }
 
             // Disable system filters.
             for (SystemNotificationFilterPreference filter :
@@ -526,7 +440,6 @@ class NotificationIT
             bell.setPageOnly(true);
             assertTrue(bell.isPageOnlyEnabled());
         });
-        checkPreferences(setup, WATCHER, BootstrapSwitch.State.ON);
 
         // Trigger the notification.
         doAsUser(setup, TEST_EDITOR_USERNAME, () -> {
@@ -538,21 +451,7 @@ class NotificationIT
         });
 
         // Verify the user gets the notification.
-        doAsUser(setup, WATCHER, () -> {
-            TaskManagerHomePage.gotoPage();
-
-            NotificationsTrayPage.waitOnNotificationCount(
-                "xwiki:XWiki." + WATCHER,
-                "xwiki",
-                1
-            );
-
-            NotificationsTrayPage tray = new NotificationsTrayPage();
-            tray.showNotificationTray();
-
-            assertEquals(1, tray.getNotificationsCount());
-            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
-        });
+        checkTaskNotification(setup, WATCHER);
     }
 
     private void setEmailState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
@@ -631,5 +530,49 @@ class NotificationIT
         setup.login(username, PASSWORD);
         action.run();
         logout(setup);
+    }
+
+    private void enableTaskNotifications(TestUtils setup, String user)
+    {
+        doAsUser(setup, user, () -> {
+            NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(user);
+            prefs.disableAllParameters();
+
+            try {
+                ApplicationPreferences taskPrefs =
+                    prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
+                setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
+                setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
+            } catch (Exception e) {
+                fail(e);
+            }
+        });
+
+        checkPreferences(setup, user, BootstrapSwitch.State.ON);
+    }
+
+    private void clearNotifications(TestUtils setup, String user)
+    {
+        doAsUser(setup, user, () -> {
+            TaskManagerHomePage.gotoPage();
+            new NotificationsTrayPage().clearAllNotifications();
+        });
+    }
+
+    private void checkTaskNotification(TestUtils setup, String user)
+    {
+        doAsUser(setup, user, () -> {
+            TaskManagerHomePage.gotoPage();
+            NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + user, "xwiki", 1);
+
+            NotificationsTrayPage tray = new NotificationsTrayPage();
+            tray.showNotificationTray();
+
+            assertEquals(1, tray.getNotificationsCount());
+            assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
+
+            List<String> details = getNotificationDetails(setup, 0);
+            assertEquals(1, details.size(), details.toString());
+        });
     }
 }
