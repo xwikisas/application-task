@@ -94,23 +94,65 @@
 #end
 
 #macro (getAssigneeDescription $customEventInfo $eventText)
-  #if ("$!customEventInfo['currentValue']" == '')
-    #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
-      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
-    #else
-      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
-    #end
-  #elseif ($customEventInfo['currentValue'] == $xwiki.getUser().getUser().getFullName())
-    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #set ($oldUserSet = $collectiontool.getSet())
+  ## This for is necessary because .split() returns an array, but we need a list.
+  #foreach ($username in $customEventInfo['previousValue'].split(','))
+    #set ($discard = $oldUserSet.add($username))
   #end
-  #set ($localizationParams = [
-    '__currentUser__',
-    '__previousUser__'
-  ])
-  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
-  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
-  #set ($eventText = $eventText.replace('__currentUser__', $!xwiki.getUserName($customEventInfo['currentValue'])))
-  #set ($eventText = $eventText.replace('__previousUser__', $!xwiki.getUserName($customEventInfo['previousValue'])))
+  #set ($newUserSet = $collectiontool.getSet())
+  #foreach ($username in $customEventInfo['currentValue'].split(','))
+    #set ($discard = $newUserSet.add($username))
+  #end
+  #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
+  #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
+  #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
+  #set ($assignedUsers = $collectiontool.disjunction($newUserSet, $intersectionUsers))
+  ##
+  #set ($localizationParams = [])
+  #if ($newUserSet.size() == 0)
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+  #elseif ($unassignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
+  #elseif ($assignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #else
+    ## This branch has more complex logic, so it handles its own output.
+    #if ($assignedUsers.size() &gt; 0)
+      #set ($localizationParams = ['__assignedUsers__'])
+      #set ($assignedUsersString = '')
+      #foreach ($username in $assignedUsers)
+        #if ($assignedUsersString != '')
+          #set ($assignedUsersString = "$assignedUsersString,")
+        #end
+        #set ($assignedUsersString = "$assignedUsersString#displayNotificationEventUser($username, false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.assigned" )
+      #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+      #set ($eventText = $eventText.replace('__assignedUsers__', $!assignedUsersString))
+    #end
+    #if ($unassignedUsers.size() &gt; 0)
+      #if ($assignedUsers.size() &gt; 0)
+        ## Newline if users were both assigned and unassigned.
+        #set ($eventText = "$eventText&lt;br&gt;")
+      #end
+      #set ($localizationParams = ['__unassignedUsers__'])
+      #set ($unassignedUsersString = '')
+      #foreach ($username in $unassignedUsers)
+        #if ($unassignedUsersString != '')
+          #set ($unassignedUsersString = "$unassignedUsersString,")
+        #end
+        #set ($unassignedUsersString = "$unassignedUsersString#displayNotificationEventUser($username, false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.unassigned" )
+      #set ($eventText = "$eventText$services.localization.render($localizationId, 'xhtml/1.0', $localizationParams)" )
+      #set ($eventText = $eventText.replace('__unassignedUsers__', $!unassignedUsersString))
+    #end
+  #end
+  #if ($localizationParams.size() == 0)
+    ## Default branch output.
+    #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+    #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+  #end
 #end
 
 #macro (getDueDateDescription $customEventInfo $eventText)
@@ -126,14 +168,14 @@
     #else
       #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
     #end
-    #set ($customEventInfo['previousValue'] = 
+    #set ($customEventInfo['previousValue'] =
       $!escapetool.xml($displayDateFormatter.print(
         $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
       ))
     )
   #end
   #if ($customEventInfo['currentValue'])
-    #set ($customEventInfo['currentValue'] = 
+    #set ($customEventInfo['currentValue'] =
       $!escapetool.xml($displayDateFormatter.print(
         $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
       ))
@@ -279,23 +321,65 @@
 #end
 
 #macro (getAssigneeDescription $customEventInfo $eventText)
-  #if ("$!customEventInfo['currentValue']" == '')
-    #if ($customEventInfo['previousValue'] == $xwiki.getUser().getUser().getFullName())
-      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
-    #else
-      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
-    #end
-  #elseif ($customEventInfo['currentValue'] == $xwiki.getUser().getUser().getFullName())
-    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #set ($oldUserSet = $collectiontool.getSet())
+  ## This for is necessary because .split() returns an array, but we need a list.
+  #foreach ($username in $customEventInfo['previousValue'].split(','))
+    #set ($discard = $oldUserSet.add($username))
   #end
-  #set ($localizationParams = [
-    '__currentUser__',
-    '__previousUser__'
-  ])
-  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
-  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
-  #set ($eventText = $eventText.replace('__currentUser__', $!xwiki.getUserName($customEventInfo['currentValue'])))
-  #set ($eventText = $eventText.replace('__previousUser__', $!xwiki.getUserName($customEventInfo['previousValue'])))
+  #set ($newUserSet = $collectiontool.getSet())
+  #foreach ($username in $customEventInfo['currentValue'].split(','))
+    #set ($discard = $newUserSet.add($username))
+  #end
+  #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
+  #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
+  #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
+  #set ($assignedUsers = $collectiontool.disjunction($newUserSet, $intersectionUsers))
+  ##
+  #set ($localizationParams = [])
+  #if ($newUserSet.size() == 0)
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+  #elseif ($unassignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
+  #elseif ($assignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #else
+    ## This branch has more complex logic, so it handles its own output.
+    #if ($assignedUsers.size() &gt; 0)
+      #set ($localizationParams = ['__assignedUsers__'])
+      #set ($assignedUsersString = '')
+      #foreach ($username in $assignedUsers)
+        #if ($assignedUsersString != '')
+          #set ($assignedUsersString = "$assignedUsersString,")
+        #end
+        #set ($assignedUsersString = "$assignedUsersString#displayEmailNotificationEventUser($xwiki.getUser($username).getUser().getUserReference(), false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.assigned" )
+      #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+      #set ($eventText = $eventText.replace('__assignedUsers__', $!assignedUsersString))
+    #end
+    #if ($unassignedUsers.size() &gt; 0)
+      #if ($assignedUsers.size() &gt; 0)
+        ## Newline if users were both assigned and unassigned.
+        #set ($eventText = "$eventText&lt;br&gt;")
+      #end
+      #set ($localizationParams = ['__unassignedUsers__'])
+      #set ($unassignedUsersString = '')
+      #foreach ($username in $unassignedUsers)
+        #if ($unassignedUsersString != '')
+          #set ($unassignedUsersString = "$unassignedUsersString,")
+        #end
+        #set ($unassignedUsersString = "$unassignedUsersString#displayEmailNotificationEventUser($xwiki.getUser($username).getUser().getUserReference(), false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.unassigned" )
+      #set ($eventText = "$eventText$services.localization.render($localizationId, 'xhtml/1.0', $localizationParams)" )
+      #set ($eventText = $eventText.replace('__unassignedUsers__', $!unassignedUsersString))
+    #end
+  #end
+  #if ($localizationParams.size() == 0)
+    ## Default branch output.
+    #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+    #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+  #end
 #end
 
 #macro (getDueDateDescription $customEventInfo $eventText)
@@ -311,14 +395,14 @@
     #else
       #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
     #end
-    #set ($customEventInfo['previousValue'] = 
+    #set ($customEventInfo['previousValue'] =
       $!escapetool.xml($displayDateFormatter.print(
         $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
       ))
     )
   #end
   #if ($customEventInfo['currentValue'])
-    #set ($customEventInfo['currentValue'] = 
+    #set ($customEventInfo['currentValue'] =
       $!escapetool.xml($displayDateFormatter.print(
         $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
       ))
