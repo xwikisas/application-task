@@ -78,4 +78,11 @@ class AllIT
     class NestedTaskMacrosIT extends TaskMacrosIT
     {
     }
+
+    @Nested
+    @Order(7)
+    @DisplayName("Task Name Strategy")
+    class NestedTaskNameStrategyIT extends TaskNameStrategyIT
+    {
+    }
 }
