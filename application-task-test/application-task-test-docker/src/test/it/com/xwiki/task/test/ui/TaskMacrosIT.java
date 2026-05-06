@@ -32,6 +32,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.openqa.selenium.support.Color;
+import org.xwiki.contrib.application.task.test.po.DateMacroAdminPage;
+import org.xwiki.contrib.application.task.test.po.DateMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanCard;
@@ -104,6 +106,8 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageWithKanbanMacroLimit =
         new LocalDocumentReference("Main", "PageWithKanbanMacroLimit");
+
+    private final LocalDocumentReference pageWithDateMacro = new LocalDocumentReference("Main", "PageWithDateMacro");
 
     @BeforeAll
     void setup(TestUtils setup)
@@ -486,6 +490,39 @@ public class TaskMacrosIT
         assertEquals("TaskK3", cardTask1.getTask());
 
         setup.deletePage(pageWithTasks);
+    }
+
+    @ParameterizedTest
+    @WikisSource(extensions = "com.xwiki.task:application-task-ui")
+    @Order(85)
+    void dateMacroTest(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+
+        DocumentReference testRef = new DocumentReference(pageWithDateMacro, wiki);
+        setup.createPage(testRef, "{{date value=\"2026/01/05 11:36\"/}}");
+
+        DateMacroPage page = new DateMacroPage();
+        assertTrue(page.isDateDisplayed());
+        assertEquals("2026/01/05 11:36", page.getDisplayedDate());
+
+        // Change the date macro display format in the admin section.
+        DateMacroAdminPage adminPage = DateMacroAdminPage.gotoPage();
+        adminPage.setDisplayDateFormat("MMM YYYY");
+        adminPage.clickSave();
+        assertEquals("MMM YYYY", adminPage.getDisplayDateFormat());
+
+        // Checks that the date display format has been applied.
+        setup.gotoPage(pageWithDateMacro);
+        DateMacroPage page2 = new DateMacroPage();
+        assertTrue(page2.isDateDisplayed());
+        assertEquals("Jan 2026", page2.getDisplayedDate());
+
+        // Change back the macro display format to default.
+        DateMacroAdminPage adminPage2 = DateMacroAdminPage.gotoPage();
+        adminPage2.clearDisplayDateFormat();
+        adminPage2.clickSave();
+        assertEquals("", adminPage2.getDisplayDateFormat());
     }
 
     private String getMacroContent(String filename)
