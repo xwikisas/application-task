@@ -93,10 +93,10 @@ public class TaskChangedEventListener extends AbstractEventListener
         }
         WatchedLocationReference docRef =
             watchedEntityFactory.createWatchedLocationReference(taskChangedEvent.getDocument().getDocumentReference());
-        Set<String> oldUsers = null == taskChangedEvent.getPreviousValue() ? Set.of() :
-            Set.of(((String) taskChangedEvent.getPreviousValue()).split(USER_SEPARATOR));
-        Set<String> newUsers = null == taskChangedEvent.getCurrentValue() ? Set.of() :
-            Set.of(((String) taskChangedEvent.getCurrentValue()).split(USER_SEPARATOR));
+        Set<String> oldUsers = null == taskChangedEvent.getPreviousValue() ? Set.of()
+            : Set.of(((String) taskChangedEvent.getPreviousValue()).split(USER_SEPARATOR));
+        Set<String> newUsers = null == taskChangedEvent.getCurrentValue() ? Set.of()
+            : Set.of(((String) taskChangedEvent.getCurrentValue()).split(USER_SEPARATOR));
         // In order to receive notifications, watch the task page for the newly assigned users.
         Set<String> tempSet = new HashSet<>(newUsers);
         tempSet.removeAll(oldUsers);
