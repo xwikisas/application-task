@@ -98,7 +98,6 @@
   #set ($newUserSet = $collectiontool.getSet())
   #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
   #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
-  #end
   #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
   #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
   #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
