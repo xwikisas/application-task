@@ -95,13 +95,9 @@
 
 #macro (getAssigneeDescription $customEventInfo $eventText)
   #set ($oldUserSet = $collectiontool.getSet())
-  ## This for is necessary because .split() returns an array, but we need a list.
-  #foreach ($username in $customEventInfo['previousValue'].split(','))
-    #set ($discard = $oldUserSet.add($username))
-  #end
   #set ($newUserSet = $collectiontool.getSet())
-  #foreach ($username in $customEventInfo['currentValue'].split(','))
-    #set ($discard = $newUserSet.add($username))
+  #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
+  #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
   #end
   #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
   #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
@@ -109,7 +105,7 @@
   #set ($assignedUsers = $collectiontool.disjunction($newUserSet, $intersectionUsers))
   ##
   #set ($localizationParams = [])
-  #if ($newUserSet.size() == 0)
+  #if ($newUserSet.isEmpty())
     #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
   #elseif ($unassignedUsers.contains($currentUserName))
     #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
@@ -117,7 +113,7 @@
     #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
   #else
     ## This branch has more complex logic, so it handles its own output.
-    #if ($assignedUsers.size() &gt; 0)
+    #if (!$assignedUsers.isEmpty())
       #set ($localizationParams = ['__assignedUsers__'])
       #set ($assignedUsersString = '')
       #foreach ($username in $assignedUsers)
@@ -130,8 +126,8 @@
       #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
       #set ($eventText = $eventText.replace('__assignedUsers__', $!assignedUsersString))
     #end
-    #if ($unassignedUsers.size() &gt; 0)
-      #if ($assignedUsers.size() &gt; 0)
+    #if (!$unassignedUsers.isEmpty())
+      #if (!$assignedUsers.isEmpty())
         ## Newline if users were both assigned and unassigned.
         #set ($eventText = "$eventText&lt;br&gt;")
       #end
@@ -148,7 +144,7 @@
       #set ($eventText = $eventText.replace('__unassignedUsers__', $!unassignedUsersString))
     #end
   #end
-  #if ($localizationParams.size() == 0)
+  #if ($localizationParams.isEmpty())
     ## Default branch output.
     #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
     #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
@@ -322,21 +318,16 @@
 
 #macro (getAssigneeDescription $customEventInfo $eventText)
   #set ($oldUserSet = $collectiontool.getSet())
-  ## This for is necessary because .split() returns an array, but we need a list.
-  #foreach ($username in $customEventInfo['previousValue'].split(','))
-    #set ($discard = $oldUserSet.add($username))
-  #end
   #set ($newUserSet = $collectiontool.getSet())
-  #foreach ($username in $customEventInfo['currentValue'].split(','))
-    #set ($discard = $newUserSet.add($username))
-  #end
+  #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
+  #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
   #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
   #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
   #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
   #set ($assignedUsers = $collectiontool.disjunction($newUserSet, $intersectionUsers))
   ##
   #set ($localizationParams = [])
-  #if ($newUserSet.size() == 0)
+  #if ($newUserSet.isEmpty())
     #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
   #elseif ($unassignedUsers.contains($currentUserName))
     #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
@@ -344,7 +335,7 @@
     #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
   #else
     ## This branch has more complex logic, so it handles its own output.
-    #if ($assignedUsers.size() &gt; 0)
+    #if (!$assignedUsers.isEmpty())
       #set ($localizationParams = ['__assignedUsers__'])
       #set ($assignedUsersString = '')
       #foreach ($username in $assignedUsers)
@@ -357,8 +348,8 @@
       #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
       #set ($eventText = $eventText.replace('__assignedUsers__', $!assignedUsersString))
     #end
-    #if ($unassignedUsers.size() &gt; 0)
-      #if ($assignedUsers.size() &gt; 0)
+    #if (!$unassignedUsers.isEmpty())
+      #if (!$assignedUsers.isEmpty())
         ## Newline if users were both assigned and unassigned.
         #set ($eventText = "$eventText&lt;br&gt;")
       #end
@@ -375,7 +366,7 @@
       #set ($eventText = $eventText.replace('__unassignedUsers__', $!unassignedUsersString))
     #end
   #end
-  #if ($localizationParams.size() == 0)
+  #if ($localizationParams.isEmpty())
     ## Default branch output.
     #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
     #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
