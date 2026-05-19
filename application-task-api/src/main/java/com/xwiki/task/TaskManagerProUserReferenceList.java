@@ -32,6 +32,6 @@ import org.xwiki.user.UserReference;
  * @since 3.0
  */
 @Unstable
-public class UserReferenceList extends ArrayList<UserReference>
+public class TaskManagerProUserReferenceList extends ArrayList<UserReference>
 {
 }

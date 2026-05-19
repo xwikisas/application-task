@@ -738,7 +738,7 @@ Example:
       <name>user</name>
     </property>
     <property>
-      <type>com.xwiki.task.UserReferenceList</type>
+      <type>com.xwiki.task.TaskManagerProUserReferenceList</type>
     </property>
   </object>
   <object>
