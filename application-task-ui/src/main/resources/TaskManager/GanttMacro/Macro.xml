@@ -1133,7 +1133,10 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
 
     return gantt;
   };
-  Promise.all($.map($('.taskgantt'), spawnGantt));
+  // Listener so the tasks are displayed when stepping out of WYSIWYG. Otherwise the tasks would be removed.
+  document.on('xwiki:dom:updated', () =&gt; {
+    Promise.all($.map($('.taskgantt'), spawnGantt));
+  });
 });</code>
     </property>
     <property>
