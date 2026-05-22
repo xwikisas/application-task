@@ -559,9 +559,9 @@
 ##
 ## Display the status of the task
 #macro(displayCardStatus $taskstatus)
-  #if(!$taskstatus.trim().isEmpty())
-    #set($key = "TaskManager.TaskManagerClass_status_$taskstatus")
-    #set($translation = $services.localization.render($key))
+  #if (!$taskstatus.trim().isEmpty())
+    #set ($key = "TaskManager.TaskManagerClass_status_$taskstatus")
+    #set ($translation = $services.localization.render($key))
     #if ($translation == $key)
       #set ($renderedStatus = $services.rendering.escape($taskstatus, 'xwiki/2.1'))
     #else
