@@ -1131,6 +1131,14 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
       gantt.change_view_mode(e.currentTarget.value);
     });
 
+    // Scroll to today (if available)
+    const scrolledGanttDiv = ganttDiv.querySelector('svg.gantt').parentNode;
+    const todayMarker = scrolledGanttDiv?.querySelector('.today-highlight');
+    if (todayMarker) {
+      const markerX = Number.parseFloat(todayMarker.getAttribute('x'));
+      scrolledGanttDiv.scrollLeft = markerX - scrolledGanttDiv.getBoundingClientRect().width / 2;
+    }
+
     return gantt;
   };
   Promise.all($.map($('.taskgantt'), spawnGantt));
