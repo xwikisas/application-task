@@ -1141,6 +1141,7 @@ define('taskgantt-frappe', ['taskgantt-frappe-methods', 'frappe-gantt'], functio
   document.on('xwiki:dom:updated', () =&gt; {
     Promise.all($.map($('.taskgantt'), spawnGantt));
   });
+  Promise.all($.map($('.taskgantt'), spawnGantt));
 });</code>
     </property>
     <property>
