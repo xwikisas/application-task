@@ -79,14 +79,112 @@
     </property>
     <property>
       <notificationTemplate>#template('notification/macros.vm')
-#template('taskManagerProNotificationRendererCommons.vm')
+
+#set ($mainIcon = 'list')
+#set ($smallIcon = '')
+
+#macro (getGenericFieldDescription $customEventInfo $eventText)
+  ## The notification text will be available in `$eventText` after calling this macro.
+  #set ($localizationParams = [
+    $customEventInfo['currentValue'],
+    $customEventInfo['previousValue']
+  ])
+  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams))
+#end
+
+#macro (getAssigneeDescription $customEventInfo $eventText)
+  #set ($oldUserSet = $collectiontool.getSet())
+  #set ($newUserSet = $collectiontool.getSet())
+  #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
+  #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
+  #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
+  #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
+  #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
+  #set ($assignedUsers = $collectiontool.disjunction($newUserSet, $intersectionUsers))
+  ##
+  #set ($localizationParams = [])
+  #if ($newUserSet.isEmpty())
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+  #elseif ($unassignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
+  #elseif ($assignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #else
+    ## This branch has more complex logic, so it handles its own output.
+    #if (!$assignedUsers.isEmpty())
+      #set ($localizationParams = ['__assignedUsers__'])
+      #set ($assignedUsersString = '')
+      #foreach ($username in $assignedUsers)
+        #if ($assignedUsersString != '')
+          #set ($assignedUsersString = "$assignedUsersString,")
+        #end
+        #set ($assignedUsersString = "$assignedUsersString#displayNotificationEventUser($username, false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.assigned" )
+      #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+      #set ($eventText = $eventText.replace('__assignedUsers__', $!assignedUsersString))
+    #end
+    #if (!$unassignedUsers.isEmpty())
+      #if (!$assignedUsers.isEmpty())
+        ## Newline if users were both assigned and unassigned.
+        #set ($eventText = "$eventText&lt;br&gt;")
+      #end
+      #set ($localizationParams = ['__unassignedUsers__'])
+      #set ($unassignedUsersString = '')
+      #foreach ($username in $unassignedUsers)
+        #if ($unassignedUsersString != '')
+          #set ($unassignedUsersString = "$unassignedUsersString,")
+        #end
+        #set ($unassignedUsersString = "$unassignedUsersString#displayNotificationEventUser($username, false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.unassigned" )
+      #set ($eventText = "$eventText$services.localization.render($localizationId, 'xhtml/1.0', $localizationParams)" )
+      #set ($eventText = $eventText.replace('__unassignedUsers__', $!unassignedUsersString))
+    #end
+  #end
+  #if ($localizationParams.isEmpty())
+    ## Default branch output.
+    #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+    #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+  #end
+#end
+
+#macro (getDueDateDescription $customEventInfo $eventText)
+  ## Send different messages if the due date was extended or reduced.
+  ## The date is displayed using the format configured in datemacro.
+  #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+  #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+  #if ($customEventInfo['previousValue'])
+    #if (!$customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+    #elseif ($customEventInfo['previousValue'] &lt; $customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.later')
+    #else
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
+    #end
+    #set ($customEventInfo['previousValue'] =
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
+      ))
+    )
+  #end
+  #if ($customEventInfo['currentValue'])
+    #set ($customEventInfo['currentValue'] =
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
+      ))
+    )
+  #end
+  #getGenericFieldDescription($customEventInfo $eventText)
+#end
 
 #macro (displayEventDetails $event)
   #set ($customEventInfo = $jsontool.fromString($event.getBody()))
   #set ($diffUrl = $xwiki.getURL($event.document, 'view', "viewer=changes&amp;rev2=${event.documentVersion}"))
   #set ($eventText = '')
   #if ($customEventInfo['type'] == 'assignee')
-    #getAssigneeDescription($customEventInfo $eventText '')
+    #getAssigneeDescription($customEventInfo $eventText)
   #elseif ($customEventInfo['type'] == 'duedate')
     #getDueDateDescription($customEventInfo $eventText)
   #else
@@ -203,14 +301,112 @@
     </property>
     <property>
       <htmlTemplate>#template('notification/email/macros.vm')
-#template('taskManagerProNotificationRendererCommons.vm')
+
+#set ($mainIcon = 'list')
+#set ($smallIcon = '')
+
+#macro (getGenericFieldDescription $customEventInfo $eventText)
+  ## The notification text will be available in `$eventText` after calling this macro.
+  #set ($localizationParams = [
+    $customEventInfo['currentValue'],
+    $customEventInfo['previousValue']
+  ])
+  #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+  #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams))
+#end
+
+#macro (getAssigneeDescription $customEventInfo $eventText)
+  #set ($oldUserSet = $collectiontool.getSet())
+  #set ($newUserSet = $collectiontool.getSet())
+  #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
+  #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
+  #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
+  #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
+  #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
+  #set ($assignedUsers = $collectiontool.disjunction($newUserSet, $intersectionUsers))
+  ##
+  #set ($localizationParams = [])
+  #if ($newUserSet.isEmpty())
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+  #elseif ($unassignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.unassigned')
+  #elseif ($assignedUsers.contains($currentUserName))
+    #set ($customEventInfo['type'] = $customEventInfo['type'] + '.you.assigned')
+  #else
+    ## This branch has more complex logic, so it handles its own output.
+    #if (!$assignedUsers.isEmpty())
+      #set ($localizationParams = ['__assignedUsers__'])
+      #set ($assignedUsersString = '')
+      #foreach ($username in $assignedUsers)
+        #if ($assignedUsersString != '')
+          #set ($assignedUsersString = "$assignedUsersString,")
+        #end
+        #set ($assignedUsersString = "$assignedUsersString#displayEmailNotificationEventUser($xwiki.getUser($username).getUser().getUserReference(), false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.assigned" )
+      #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+      #set ($eventText = $eventText.replace('__assignedUsers__', $!assignedUsersString))
+    #end
+    #if (!$unassignedUsers.isEmpty())
+      #if (!$assignedUsers.isEmpty())
+        ## Newline if users were both assigned and unassigned.
+        #set ($eventText = "$eventText&lt;br&gt;")
+      #end
+      #set ($localizationParams = ['__unassignedUsers__'])
+      #set ($unassignedUsersString = '')
+      #foreach ($username in $unassignedUsers)
+        #if ($unassignedUsersString != '')
+          #set ($unassignedUsersString = "$unassignedUsersString,")
+        #end
+        #set ($unassignedUsersString = "$unassignedUsersString#displayEmailNotificationEventUser($xwiki.getUser($username).getUser().getUserReference(), false)")
+      #end
+      #set ($localizationId = "taskmanager.events.taskChangedEvent.details.assignee.unassigned" )
+      #set ($eventText = "$eventText$services.localization.render($localizationId, 'xhtml/1.0', $localizationParams)" )
+      #set ($eventText = $eventText.replace('__unassignedUsers__', $!unassignedUsersString))
+    #end
+  #end
+  #if ($localizationParams.isEmpty())
+    ## Default branch output.
+    #set ($localizationId = "taskmanager.events.taskChangedEvent.details.${customEventInfo['type']}" )
+    #set ($eventText = $services.localization.render($localizationId, 'xhtml/1.0', $localizationParams) )
+  #end
+#end
+
+#macro (getDueDateDescription $customEventInfo $eventText)
+  ## Send different messages if the due date was extended or reduced.
+  ## The date is displayed using the format configured in datemacro.
+  #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
+  #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
+  #if ($customEventInfo['previousValue'])
+    #if (!$customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.none')
+    #elseif ($customEventInfo['previousValue'] &lt; $customEventInfo['currentValue'])
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.later')
+    #else
+      #set ($customEventInfo['type'] = $customEventInfo['type'] + '.earlier')
+    #end
+    #set ($customEventInfo['previousValue'] =
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['previousValue'])
+      ))
+    )
+  #end
+  #if ($customEventInfo['currentValue'])
+    #set ($customEventInfo['currentValue'] =
+      $!escapetool.xml($displayDateFormatter.print(
+        $xwiki.jodatime.getDateTime($customEventInfo['currentValue'])
+      ))
+    )
+  #end
+  #getGenericFieldDescription($customEventInfo $eventText)
+#end
 
 #macro (displayTaskChangedEventDetails $event)
   #set ($customEventInfo = $jsontool.fromString($event.getBody()))
   #set ($diffUrl = $xwiki.getURL($event.document, 'view', "viewer=changes&amp;rev2=${event.documentVersion}"))
   #set ($eventText = '')
   #if ($customEventInfo['type'] == 'assignee')
-    #getAssigneeDescription($customEventInfo $eventText 'email')
+    #getAssigneeDescription($customEventInfo $eventText)
   #elseif ($customEventInfo['type'] == 'duedate')
     #getDueDateDescription($customEventInfo $eventText)
   #else
