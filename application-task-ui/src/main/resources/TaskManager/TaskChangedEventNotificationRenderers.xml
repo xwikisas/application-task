@@ -95,9 +95,13 @@
 
 #macro (getAssigneeDescription $customEventInfo $eventText)
   #set ($oldUserSet = $collectiontool.getSet())
+  #foreach ($user in $customEventInfo['previousValue'].split(','))
+    #set ($discard = $oldUserSet.add($user))
+  #end
   #set ($newUserSet = $collectiontool.getSet())
-  #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
-  #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
+  #foreach ($user in $customEventInfo['currentValue'].split(','))
+    #set ($discard = $newUserSet.add($user))
+  #end
   #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
   #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
   #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
@@ -317,9 +321,13 @@
 
 #macro (getAssigneeDescription $customEventInfo $eventText)
   #set ($oldUserSet = $collectiontool.getSet())
+  #foreach ($user in $customEventInfo['previousValue'].split(','))
+    #set ($discard = $oldUserSet.add($user))
+  #end
   #set ($newUserSet = $collectiontool.getSet())
-  #set ($discard = $oldUserSet.addAll($customEventInfo['previousValue'].split(',')))
-  #set ($discard = $newUserSet.addAll($customEventInfo['currentValue'].split(',')))
+  #foreach ($user in $customEventInfo['currentValue'].split(','))
+    #set ($discard = $newUserSet.add($user))
+  #end
   #set ($currentUserName = $xwiki.getUser().getUser().getFullName())
   #set ($intersectionUsers = $collectiontool.intersection($newUserSet, $oldUserSet))
   #set ($unassignedUsers = $collectiontool.disjunction($oldUserSet, $intersectionUsers))
