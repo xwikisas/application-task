@@ -79,7 +79,8 @@
     </property>
     <property>
       <notificationTemplate>#template('notification/macros.vm')
-
+## TODO: Pull these macros in a separate .vm file, once the following issue is fixed in the platform parent:
+## XWIKI-24450: Email Renderer XObject is missing .vm template when updating extension
 #set ($mainIcon = 'list')
 #set ($smallIcon = '')
 
@@ -305,7 +306,8 @@
     </property>
     <property>
       <htmlTemplate>#template('notification/email/macros.vm')
-
+## TODO: Pull these macros in a separate .vm file, once the following issue is fixed in the platform parent:
+## XWIKI-24450: Email Renderer XObject is missing .vm template when updating extension
 #set ($mainIcon = 'list')
 #set ($smallIcon = '')
 
