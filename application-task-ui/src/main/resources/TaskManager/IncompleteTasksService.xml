@@ -68,7 +68,7 @@
       #end
       #set ($pageInfo = {
         'title': $title,
-        'ref': $services.rendering.escape($services.model.serialize($page), $xwiki.currentContentSyntaxId),
+        'ref': $services.model.serialize($page),
         'url': $xwiki.getURL($page, 'view')
       })
       #set ($discard = $result.entries.add($pageInfo))

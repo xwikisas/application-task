@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
@@ -267,7 +268,9 @@ public class TaskDatesInitializer
         Map<String, Block> noCompleteDateTasks)
     {
         String reference = macroBlock.getParameter(Task.REFERENCE);
-        if (macroBlock.getParameter(Task.CREATE_DATE) == null) {
+        if (macroBlock.getParameter(Task.CREATE_DATE) == null || StringUtils.isEmpty(
+            macroBlock.getParameter(Task.REPORTER)))
+        {
             noCreateDateTasks.put(reference, macroBlock);
         }
         if (macroBlock.getParameter(Task.COMPLETE_DATE) == null
