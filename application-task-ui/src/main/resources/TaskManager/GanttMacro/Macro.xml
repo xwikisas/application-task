@@ -146,7 +146,15 @@ define('taskgantt-localization', ['xwiki-l10n!taskgantt-translation-keys', 'xwik
 });
 
 define('taskgantt-config-templates', ['jquery'], function ($) {
-  const config = JSON.parse($('#taskgantt-config-templates').text())
+  let config;
+  try {
+    config = JSON.parse($('#taskgantt-config-templates').text());
+  } catch (e) {
+    // While WYSIWYG is loading, no `#taskgantt-config-templates` element is found, so the parsing fails and
+    // locks the entire editor.
+    console.warn('Error while parsing taskgantt templates. Continuing with empty templates...');
+    config = {'svgCustomDefs': '', 'noTasksMessage': ''};
+  }
   return config;
 });
 
