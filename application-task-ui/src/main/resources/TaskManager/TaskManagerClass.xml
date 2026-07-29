@@ -586,7 +586,7 @@
     </property>
     <property>
       <code>require(['jquery'], function($) {
-  $("#TaskManager\\.TaskManagerClass_0_project").change(function() {
+  $("#TaskManager\\.TaskManagerClass_0_project").on('change', function() {
     var projectclass =  $(this).val();
     var $tasks = $("#TaskManager\\.TaskManagerClass_dependencies")
     $tasks.children().show();
