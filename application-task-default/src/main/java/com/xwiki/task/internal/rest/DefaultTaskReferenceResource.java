@@ -29,6 +29,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.PageReference;
 import org.xwiki.model.reference.PageReferenceResolver;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.rest.XWikiResource;
@@ -36,6 +37,7 @@ import org.xwiki.rest.XWikiRestException;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
+import com.xpn.xwiki.XWikiException;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskReferenceGenerator;
 import com.xwiki.task.rest.TaskReferenceResource;
@@ -64,6 +66,9 @@ public class DefaultTaskReferenceResource extends XWikiResource implements TaskR
     @Inject
     private PageReferenceResolver<EntityReference> pageReferenceResolver;
 
+    @Inject
+    private PageReferenceResolver<String> stringPageReferenceResolver;
+
     @Override
     public String generateId(String wikiName, String spaces, String pageName) throws XWikiRestException
     {
@@ -78,6 +83,26 @@ public class DefaultTaskReferenceResource extends XWikiResource implements TaskR
                 ownerRef);
         } catch (TaskException e) {
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public Response validateId(String wikiName, String spaces, String pageName, String id) throws XWikiRestException
+    {
+        DocumentReference ownerRef = new DocumentReference(pageName, getSpaceReference(spaces, wikiName));
+        if (!contextualAuthorizationManager.hasAccess(Right.VIEW, ownerRef)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        try {
+
+            PageReference pageReference = stringPageReferenceResolver.resolve(id, ownerRef);
+            if (getXWikiContext().getWiki().exists(pageReference, getXWikiContext())) {
+                return Response.status(Response.Status.CONFLICT).build();
+            }
+            return Response.ok().build();
+        } catch (XWikiException e) {
+            throw new XWikiRestException(
+                String.format("Failed to validate the task id [%s] for the page [%s].", id, ownerRef), e);
         }
     }
 }
