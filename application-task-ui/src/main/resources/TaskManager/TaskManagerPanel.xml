@@ -177,14 +177,21 @@
       <content>{{velocity}}
   #panelheader($services.localization.render('taskmanager.panel.paneltitle'))
   #if(!$isGuest)
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as document where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' and document.assignee=:currentUser and document.status &lt;&gt; 'Done' order by document.duedate asc")
-  #set($results = $services.query.xwql("$query").bindValue("currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
+  #set($query = "from doc.object(TaskManager.TaskManagerClass) as taskObj"
+    + " where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' and ("
+    + "taskObj.assignee LIKE CONCAT('%', CONCAT(:currentUser, ',%')) OR taskObj.assignee LIKE CONCAT('%', :currentUser)"
+    + ") and taskObj.status &lt;&gt; 'Done' order by taskObj.duedate asc")
+  #set($results = $services.query.xwql("$query").bindValue(
+    "currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
   #foreach($result in $results)
     #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))
-    * $services.icon.render('accept') **[[$services.rendering.escape($object.getProperty('name').value, 'xwiki/2.1')&gt;&gt;$services.rendering.escape($result, 'xwiki/2.1')]]**
+    * $services.icon.render('accept') **[[$services.rendering.escape($services.rendering.escape(
+      $object.getProperty('name').value, 'xwiki/2.1'), 'xwiki/2.1')&gt;&gt;$services.rendering.escape(
+      $result, 'xwiki/2.1')]]**
     (% class="text-muted small" %)##
     #if ($object.getProperty('duedate').value)
-      $services.localization.render('taskmanager.panel.untildate') $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
+      $services.localization.render('taskmanager.panel.untildate') ##
+        $datetool.format('HH:mm dd/MMM/yyyy',$object.getProperty('duedate').value)
     #else
       $services.localization.render('taskmanager.panel.untildate.nodate')
     #end
