@@ -72,6 +72,14 @@
       <version>${platform.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- Provide an implementation for the HTMLDisplayer (needed by MacroDescriptorUIFactory to get the edit template for
+      macro parameters). -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-display-html</artifactId>
+      <version>${platform.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>com.xwiki.task</groupId>
       <artifactId>application-task-test-pageobjects</artifactId>
@@ -145,6 +153,13 @@
       <artifactId>xwiki-platform-mail-ui</artifactId>
       <version>${platform.version}</version>
       <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-ckeditor-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.icegreen</groupId>

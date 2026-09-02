@@ -18,11 +18,20 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 
-#set ($discard = $xwiki.jsx.use('TaskManager.TaskMacroInit', {'minify': $services.debug.isMinify()}))
-
-<input
-  data-dateformat="$!escapetool.xml($services.datemacro.configuration.storageDateFormat)" type="text" class="task-reference"
-  #foreach ($parameter in $displayer.parameters.entrySet())
-    $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
-  #end
-/>
+#set ($discard = $xwiki.jsx.use('TaskManager.TaskMacroInit', {'minify': true}))
+## The input-group seems to be coming from CKEditor.EditSheet. Since this edit vm is always used in the edit mode, i
+##  reckon it should be safe to not require anything. Leaving the comment here for the future.
+<div class="input-group task-reference-group">
+  <input
+    data-dateformat="$!escapetool.xml($services.datemacro.configuration.storageDateFormat)" type="text" class="task-reference"
+    #foreach ($parameter in $displayer.parameters.entrySet())
+      $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
+    #end
+  />
+  <div class="input-group-btn">
+    <button type="button" class="btn btn-default"
+      title="$escapetool.xml($services.localization.render('taskmanager.macro.task.referenceGeneration.title'))">
+      $services.icon.renderHTML('key')
+    </button>
+  </div>
+</div>

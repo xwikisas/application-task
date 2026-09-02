@@ -37,6 +37,37 @@
       <artifactId>xwiki-platform-test-ui</artifactId>
       <version>${platform.version}</version>
     </dependency>
+    <!--  TODO: Change this to ${platform.version} when upgrading the parent to something greater or equal to 16.10.
+            We use this dependency in order to be able to test the macro modal pickers. i.e. reference parameter of
+            the task macro. -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-ckeditor-test-pageobjects</artifactId>
+      <version>16.10.0</version>
+      <type>jar</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-platform-test-docker</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-platform-search-test-utils</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-platform-administration-test-pageobjects</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-platform-test-ui</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-platform-index-tree-test-pageobjects</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-administration-test-pageobjects</artifactId>

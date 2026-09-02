@@ -23,7 +23,9 @@ import javax.ws.rs.Encoded;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.xwiki.rest.XWikiRestException;
 import org.xwiki.stability.Unstable;
 
@@ -53,4 +55,27 @@ public interface TaskReferenceResource
         @PathParam("spaceName") @Encoded String spaces,
         @PathParam("pageName") String pageName
     ) throws XWikiRestException;
+
+    /**
+     * Generate an id for a task macro residing in a given page.
+     *
+     * @param wikiName the name of the wiki in which the page resides
+     * @param spaces the spaces of the page
+     * @param pageName the name of the page
+     * @param id the generated id for the page.
+     * @return 200 if the id if valid or 409 if the id has been used meanwhile.
+     * @throws XWikiRestException if any other error was thrown.
+     * @since 3.12.0
+     */
+    @GET
+    @Path("/{id}")
+    default Response validateId(
+        @PathParam("wikiName") String wikiName,
+        @PathParam("spaceName") @Encoded String spaces,
+        @PathParam("pageName") String pageName,
+        @PathParam("id") String id
+    ) throws XWikiRestException
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -31,7 +31,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.support.Color;
+import org.xwiki.ckeditor.test.po.CKEditor;
+import org.xwiki.ckeditor.test.po.RichTextAreaElement;
 import org.xwiki.contrib.application.task.test.po.DateMacroAdminPage;
 import org.xwiki.contrib.application.task.test.po.DateMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
@@ -40,6 +43,7 @@ import org.xwiki.contrib.application.task.test.po.KanbanCard;
 import org.xwiki.contrib.application.task.test.po.KanbanColumn;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacro;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacroPage;
+import org.xwiki.contrib.application.task.test.po.TaskMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskReportMacro;
@@ -55,6 +59,7 @@ import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CreatePagePage;
 import org.xwiki.test.ui.po.ViewPage;
+import org.xwiki.test.ui.po.editor.WYSIWYGEditPage;
 
 import com.xwiki.task.model.Task;
 
@@ -109,6 +114,8 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageWithDateMacro = new LocalDocumentReference("Main", "PageWithDateMacro");
 
+    private final LocalDocumentReference pageTaskModal = new LocalDocumentReference("Main", "PageWithTaskModal");
+
     @BeforeAll
     void setup(TestUtils setup)
     {
@@ -126,7 +133,8 @@ public class TaskMacrosIT
     }
 
     @ParameterizedTest
-    @WikisSource(extensions = { "com.xwiki.task:application-task-ui", "org.xwiki.platform:xwiki-platform-tag-ui/15.10" })
+    @WikisSource(extensions = { "com.xwiki.task:application-task-ui",
+        "org.xwiki.platform:xwiki-platform-tag-ui/15.10" })
     @Order(10)
     void taskReportParametersTest(WikiReference wiki, TestUtils setup)
     {
@@ -492,6 +500,43 @@ public class TaskMacrosIT
         setup.deletePage(pageWithTasks);
     }
 
+    @Test
+    @Order(77)
+    void taskMacroReferenceParameter(TestUtils setup)
+    {
+        WYSIWYGEditPage editPage = setup.createPage(pageTaskModal, "{{task}}{{/task}}\n\n ").editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+        // 1. Opening a task macro through the wyiwyg editor will have the reference hidden (which also means
+        // autofilled).
+        TaskMacroModal macroEditModal = openMacroModal(editor);
+        assertFalse(macroEditModal.isVisible(TaskMacroModal.PARAMETER_REFERENCE));
+        // 2. Editing a task macro will show the reference and have a button that will generate a new reference.
+        macroEditModal.clickSubmit();
+        macroEditModal = openMacroModal(editor);
+        String ref = macroEditModal.getMacroParameter(TaskMacroModal.PARAMETER_REFERENCE).trim();
+        assertTrue(macroEditModal.isVisible(TaskMacroModal.PARAMETER_REFERENCE));
+        assertTrue(ref.contains("/Tasks/Task_"));
+        macroEditModal.clickCancel();
+        editPage.clickSaveAndView(true);
+        editPage = new ViewPage().editWYSIWYG();
+        editor = new CKEditor("content").waitToLoad();
+
+        macroEditModal = openMacroModal(editor);
+        assertTrue(macroEditModal.isVisible(TaskMacroModal.PARAMETER_REFERENCE));
+        String newReference = macroEditModal.generateNewReference();
+        // The new reference should be greater (alphabetical order) than the old one. i.e. Task_1 > Task_0.
+        assertTrue(newReference.compareTo(ref) > 0);
+        // 3. Entering a reference to an existing page and submitting the modal will fail.
+        // The reference is checked only when the input was changed. If we open the modal and some value already
+        // exists, the value is not validated. If we generated a new reference and then it back to the old one, the
+        // value will be validated.
+        macroEditModal.getMacroParameterInput(TaskMacroModal.PARAMETER_REFERENCE).clear();
+        macroEditModal.getMacroParameterInput(TaskMacroModal.PARAMETER_REFERENCE).sendKeys(ref);
+        macroEditModal.clickSubmit();
+        editPage.waitForNotificationErrorMessage(
+            "The task reference already exists! You need to generate another one.");
+    }
+
     @ParameterizedTest
     @WikisSource(extensions = "com.xwiki.task:application-task-ui")
     @Order(85)
@@ -607,5 +652,16 @@ public class TaskMacrosIT
         setup.deletePage(ref);
         DocumentReference refSubwiki = new DocumentReference("wiki1", "TaskManager", taskName);
         setup.deletePage(refSubwiki);
+    }
+
+    private TaskMacroModal openMacroModal(CKEditor editor)
+    {
+        RichTextAreaElement textArea = editor.getRichTextArea(true);
+        textArea.sendKeys(Keys.HOME, Keys.LEFT);
+        textArea.waitUntilWidgetSelected();
+        textArea.sendKeys(Keys.ENTER);
+        TaskMacroModal macroEditModal = new TaskMacroModal();
+        macroEditModal.waitUntilReady();
+        return macroEditModal;
     }
 }

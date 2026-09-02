@@ -32,7 +32,7 @@
   <artifactId>application-task-default</artifactId>
 
   <properties>
-    <xwiki.jacoco.instructionRatio>0.46</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.50</xwiki.jacoco.instructionRatio>
     <xwiki.extension.namespaces>{root}</xwiki.extension.namespaces>
   </properties>
 
