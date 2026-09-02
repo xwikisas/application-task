@@ -26,7 +26,7 @@ import org.xwiki.ckeditor.test.po.MacroDialogEditModal;
  * Represents the macro editing modal for the Task macro.
  *
  * @version $Id$
- * @since 3.11.10
+ * @since 3.11.4
  */
 public class TaskMacroModal extends MacroDialogEditModal
 {
