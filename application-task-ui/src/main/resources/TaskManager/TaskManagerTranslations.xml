@@ -244,6 +244,7 @@ rendering.macro.checkbox.parameter.id.name=Id
 rendering.macro.checkbox.parameter.id.description=Uniquely identifies the checkbox on the current page. It is recommended to use the autofilled value.
 rendering.macro.checkbox.parameter.checked.name=Checked?
 rendering.macro.checkbox.parameter.checked.description=Denotes whether the checkbox is ticked or not.
+rendering.macro.tasks.name=Task List
 rendering.macro.task-report.name=Task report macro
 rendering.macro.task-report.description=Create a custom report of the tasks within the wiki.
 rendering.macro.task-report.parameter.pages.name=Pages filter
