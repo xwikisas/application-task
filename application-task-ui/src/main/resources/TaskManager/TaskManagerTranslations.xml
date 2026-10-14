@@ -178,6 +178,8 @@ taskmanager.gantt.documentation.examples.assignees=filter by assigned users (com
 taskmanager.gantt.documentation.examples.spaces=filter by parent spaces (comma separated)
 taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not have a due date set (default is true)
 taskmanager.gantt.documentation.examples.maxTasks=limit the amount of displayed tasks to this number (default is 50)
+rendering.macro.taskgantt.parameter.hideNoDueDate.name=Hide no due date
+rendering.macro.taskgantt.parameter.maxTasks.name=Max tasks
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
@@ -245,6 +247,7 @@ rendering.macro.checkbox.parameter.id.description=Uniquely identifies the checkb
 rendering.macro.checkbox.parameter.checked.name=Checked?
 rendering.macro.checkbox.parameter.checked.description=Denotes whether the checkbox is ticked or not.
 rendering.macro.tasks.parameter.ids.description=A comma-separated list of task IDs for tasks you want to display.
+rendering.macro.tasks.name=Task List
 rendering.macro.task-report.name=Task report macro
 rendering.macro.task-report.description=Create a custom report of the tasks within the wiki.
 rendering.macro.task-report.parameter.pages.name=Pages filter
@@ -290,6 +293,7 @@ rendering.macro.kanbanboard.parameter.order.name=Order
 rendering.macro.kanbanboard.parameter.order.description=Field to order the tasks by. Example: 'name asc', 'doc.date desc', 'reporter asc,assignee desc'.
 rendering.macro.kanbanboard.parameter.limit.name=Limit
 rendering.macro.kanbanboard.parameter.limit.description=The amount of tasks displayed for each status.
+rendering.macro.kanbanboard.parameter.columnWidth.name=Column width
 
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks

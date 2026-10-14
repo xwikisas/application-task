@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.support.Color;
+import org.xwiki.ckeditor.test.po.AutocompleteDropdown;
 import org.xwiki.ckeditor.test.po.CKEditor;
 import org.xwiki.ckeditor.test.po.RichTextAreaElement;
 import org.xwiki.contrib.application.task.test.po.DateMacroAdminPage;
@@ -47,6 +48,7 @@ import org.xwiki.contrib.application.task.test.po.TaskMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskReportMacro;
+import org.xwiki.contrib.application.task.test.po.TaskboxMacroModal;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
@@ -65,6 +67,7 @@ import com.xwiki.task.model.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -115,6 +118,9 @@ public class TaskMacrosIT
     private final LocalDocumentReference pageWithDateMacro = new LocalDocumentReference("Main", "PageWithDateMacro");
 
     private final LocalDocumentReference pageTaskModal = new LocalDocumentReference("Main", "PageWithTaskModal");
+
+    private final LocalDocumentReference pageTaskboxModal =
+        new LocalDocumentReference("Main", "PageWithTaskboxModal");
 
     @BeforeAll
     void setup(TestUtils setup)
@@ -537,6 +543,28 @@ public class TaskMacrosIT
             "The task reference already exists! You need to generate another one.");
     }
 
+    @Test
+    @Order(80)
+    void taskboxMacroIdParameter(TestUtils setup)
+    {
+        WYSIWYGEditPage editPage = setup.createPage(pageTaskboxModal, "").editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+
+        // Inserting a taskbox macro through the wysiwyg editor generates its id.
+        TaskboxMacroModal macroEditModal = insertTaskboxMacro(editor);
+        String firstId = macroEditModal.getId();
+        macroEditModal.clickCancel();
+        editor.getRichTextArea().clear();
+
+        // Inserting another taskbox macro generates a different id.
+        macroEditModal = insertTaskboxMacro(editor);
+        String secondId = macroEditModal.getId();
+        macroEditModal.clickCancel();
+        assertNotEquals(firstId, secondId);
+
+        editPage.clickCancel();
+    }
+
     @ParameterizedTest
     @WikisSource(extensions = "com.xwiki.task:application-task-ui")
     @Order(85)
@@ -663,5 +691,16 @@ public class TaskMacrosIT
         TaskMacroModal macroEditModal = new TaskMacroModal();
         macroEditModal.waitUntilReady();
         return macroEditModal;
+    }
+
+    private TaskboxMacroModal insertTaskboxMacro(CKEditor editor)
+    {
+        RichTextAreaElement textArea = editor.getRichTextArea();
+        textArea.sendKeys("/checkbox");
+        AutocompleteDropdown quickActions = new AutocompleteDropdown();
+        quickActions.waitForItemSelected("/checkbox", "Checkbox");
+        textArea.sendKeys(Keys.ENTER);
+        quickActions.waitForItemSubmitted();
+        return new TaskboxMacroModal().waitUntilReady();
     }
 }

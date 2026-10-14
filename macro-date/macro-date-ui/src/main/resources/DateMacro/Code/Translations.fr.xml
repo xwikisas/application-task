@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content>DateMacro.home.title=Macro Date
 rendering.macro.date.name=Date
-rendering.macro.date.description=Utilisez la macro Date pour configurer et formater les dates échéances dans les macros tâches, et plus encore !
+rendering.macro.date.description=Utilisez la macro date pour configurer et formater les dates échéances dans les macros tâches, ou utilisez-la pour insérer simplement une macro date dans une page.
 rendering.macro.date.parameter.value.name=Valeur de la date
 rendering.macro.date.parameter.value.description=La valeur de la date. Elle doit être écrite au format spécifié comme paramètre, ou dans le format généré par le sélectionneur de date.
 ### Missing: rendering.macro.date.parameter.format.name=Date input format
