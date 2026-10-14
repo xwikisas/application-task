@@ -126,11 +126,14 @@
     </property>
     <property>
       <code>require(['jquery'], function ($) {
+  // Generate the id on the client side because the macro editor caches the HTML of the parameter displayers, so an
+  // id generated on the server side would be the same for every new taskbox macro.
   let init = function () {
-    let taskboxIdElem = $('.taskbox-id');
-    if (taskboxIdElem.length &lt;= 0) return;
-    if (taskboxIdElem.val()) return;
-    taskboxIdElem.val(taskboxIdElem.data('randomid'));
+    $('.taskbox-id').each(function () {
+      if (!this.value) {
+        this.value = String(Math.random()).slice(-5);
+      }
+    });
   };
   init();
   $(document).on('shown.bs.modal', '.modal', init);
