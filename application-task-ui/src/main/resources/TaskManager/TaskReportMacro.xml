@@ -252,7 +252,9 @@
       <async_enabled>0</async_enabled>
     </property>
     <property>
-      <code>{{velocity}}
+      <code>{{include reference="TaskManager.TaskQueryMacros" /}}
+
+{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
@@ -415,11 +417,12 @@
 #end
 ## We add all the columns. If any column was already added, it will preserve its position. Only the selected ones will be visible.
 #set ($discard = $colSet.addAll(['name', 'number', 'duedate', 'assignee', 'owner', 'completeDate', 'createDate', 'reporter', 'status']))
+## Pass the query filters explicitly, otherwise the liveTable source applies the 'hidden' filter, excluding inline tasks.
 #set ($sourceParams = {
   "className": "TaskManager.TaskManagerClass",
   "translationPrefix": "taskmanager.livetable.",
   "resultPage": "TaskManager.TaskReportResultPage",
-  "queryFilters": "unique",
+  "queryFilters": $stringtool.join($taskQueryFilters, ','),
   "space": $spaceFilter,
   "tasktag": $tags.split('\s*,\s*')
 })

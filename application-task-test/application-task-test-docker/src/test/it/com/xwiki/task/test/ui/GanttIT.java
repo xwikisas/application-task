@@ -151,6 +151,7 @@ class GanttIT
     {
         setup.loginAsSuperAdmin();
         setup.deletePage(TASK_MACROS_PAGE);
+        setup.deletePage(new DocumentReference("xwiki", List.of("TestSpace", "Task_0"), "WebHome"));
         setup.deletePage(GANTT_MACROS_PAGE);
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask0"));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "TestTask1"));
@@ -247,11 +248,12 @@ class GanttIT
         List<TaskManagerGanttMacro> gantts = TaskManagerGanttMacro.getGanttMacrosOnCurrentPage();
         List<String> ids;
 
-        // Assignee filter and hide no due date
+        // Assignee filter and hide no due date. Inline tasks (stored in hidden pages) should be displayed too.
         ids = gantts.get(2).getTaskIds();
-        assertEquals(2, ids.size(), ids.toString());
+        assertEquals(3, ids.size(), ids.toString());
         assertTrue(ids.contains("xwiki:TaskManager.TestTask0"), ids.toString());
         assertTrue(ids.contains("xwiki:TaskManager.NoDueDateTest"), ids.toString());
+        assertTrue(ids.contains("xwiki:TestSpace.Task_0.WebHome"), ids.toString());
 
         // Project filter
         ids = gantts.get(3).getTaskIds();

@@ -36,7 +36,9 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity output="false"}}
+  <content>{{include reference="TaskManager.TaskQueryMacros" /}}
+
+{{velocity output="false"}}
 #macro (putOrDefault $map $propertyName $value $default1)
   #if ($value)
     #set ($discard = $map.put($propertyName, $value))
@@ -63,13 +65,12 @@
 ##
 #if ($xcontext.action == 'get')
   #set ($discard = $response.setContentType('application/json'))
-  #set ($query = 'from doc.object(TaskManager.TaskManagerClass) as task' +
-    " where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates'" +
-    ' and (task.startDate is not NULL or task.createDate is not NULL)')
+  #set ($query = ' and (task.startDate is not NULL or task.createDate is not NULL)')
   #if ("$!request.taskId" != '')
     ## Short-circuit if the request is for a specific task.
     #set ($query = $query + ' and doc.fullName = (:taskId)')
-    #set ($query = $services.query.xwql($query).setLimit(1))
+    #createTaskQuery($query 'query')
+    #set ($query = $query.setLimit(1))
     #set ($query = $query.bindValue('taskId', $request.taskId))
   #else
     #if ("$!request.spaces" != '')
@@ -139,7 +140,8 @@
     #end
     ## Sort the tasks by project and name to ensure a stable order.
     #set ($query = $query + ' order by UPPER(task.project), task.project, UPPER(task.name), task.name')
-    #set ($query = $services.query.xwql($query).setLimit($maxTasks))
+    #createTaskQuery($query 'query')
+    #set ($query = $query.setLimit($maxTasks))
     #if ($spaces)
       #set ($query = $query.bindValue("spaces", $spaces))
       #set ($index = 0)
@@ -154,7 +156,7 @@
     #if ($from)      #set ($query = $query.bindValue('from', $from))           #end
     #if ($to)        #set ($query = $query.bindValue('to', $to))               #end
   #end
-  #set ($queryResult = $query.addFilter('currentlanguage').execute())
+  #set ($queryResult = $query.execute())
 
   #set ($tasks = [])
   #foreach ($taskDocument in $queryResult)

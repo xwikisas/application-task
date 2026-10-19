@@ -174,14 +174,15 @@
       <category>Information</category>
     </property>
     <property>
-      <content>{{velocity}}
+      <content>{{include reference="TaskManager.TaskQueryMacros" /}}
+
+{{velocity}}
   #panelheader($services.localization.render('taskmanager.panel.paneltitle'))
   #if(!$isGuest)
-  #set($query = "from doc.object(TaskManager.TaskManagerClass) as taskObj"
-    + " where doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' and ("
-    + "taskObj.assignee LIKE CONCAT('%', CONCAT(:currentUser, ',%')) OR taskObj.assignee LIKE CONCAT('%', :currentUser)"
-    + ") and taskObj.status &lt;&gt; 'Done' order by taskObj.duedate asc")
-  #set($results = $services.query.xwql("$query").bindValue(
+  #set($constraints = " and (task.assignee LIKE CONCAT('%', CONCAT(:currentUser, ',%'))"
+    + " OR task.assignee LIKE CONCAT('%', :currentUser)) and task.status &lt;&gt; 'Done' order by task.duedate asc")
+  #createTaskQuery($constraints 'query')
+  #set($results = $query.bindValue(
     "currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())
   #foreach($result in $results)
     #set($object = $xwiki.getDocument($result).getObject('TaskManager.TaskManagerClass'))

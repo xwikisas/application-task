@@ -150,10 +150,7 @@ class NotificationIT
         // Task Manager Application.
         NotificationsUserProfilePage userNotificationPreferences = NotificationsUserProfilePage.gotoPage(TEST_USERNAME);
         userNotificationPreferences.disableAllParameters();
-        ApplicationPreferences taskApplicationPreferences =
-            userNotificationPreferences.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-        setAlertState(setup, taskApplicationPreferences, BootstrapSwitch.State.ON);
-        setEmailState(setup, taskApplicationPreferences, BootstrapSwitch.State.ON);
+        setTaskNotificationsState(userNotificationPreferences, BootstrapSwitch.State.ON);
         logout(setup);
     }
 
@@ -320,11 +317,7 @@ class NotificationIT
             try {
                 NotificationsUserProfilePage userNotificationPreferences =
                     NotificationsUserProfilePage.gotoPage(TEST_USERNAME);
-
-                ApplicationPreferences taskApplicationPreferences =
-                    userNotificationPreferences.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-                setAlertState(setup, taskApplicationPreferences, BootstrapSwitch.State.OFF);
-                setEmailState(setup, taskApplicationPreferences, BootstrapSwitch.State.OFF);
+                setTaskNotificationsState(userNotificationPreferences, BootstrapSwitch.State.OFF);
             } catch (Exception e) {
                 fail("Exception while setting application notification preferences: " + e);
             }
@@ -454,18 +447,16 @@ class NotificationIT
         checkTaskNotification(setup, WATCHER);
     }
 
-    private void setEmailState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
+    /**
+     * Sets both the alert and the email state of the Task Manager application, waiting for each change to be saved
+     * before making the next one. Saving them concurrently can make one of the changes get lost.
+     */
+    private void setTaskNotificationsState(NotificationsUserProfilePage preferences, BootstrapSwitch.State state)
         throws Exception
     {
-        appPref.setEmailState(alertState);
-        setup.getDriver().findElement(By.className("xnotification-done")).click();
-    }
-
-    private void setAlertState(TestUtils setup, ApplicationPreferences appPref, BootstrapSwitch.State alertState)
-        throws Exception
-    {
-        appPref.setAlertState(alertState);
-        setup.getDriver().findElement(By.className("xnotification-done")).click();
+        String taskAppName = new TaskChangedEventDescriptor().getApplicationName();
+        preferences.setApplicationState(taskAppName, "alert", state);
+        preferences.setApplicationState(taskAppName, "email", state);
     }
 
     /**
@@ -539,10 +530,7 @@ class NotificationIT
             prefs.disableAllParameters();
 
             try {
-                ApplicationPreferences taskPrefs =
-                    prefs.getApplication(new TaskChangedEventDescriptor().getApplicationName());
-                setAlertState(setup, taskPrefs, BootstrapSwitch.State.ON);
-                setEmailState(setup, taskPrefs, BootstrapSwitch.State.ON);
+                setTaskNotificationsState(prefs, BootstrapSwitch.State.ON);
             } catch (Exception e) {
                 fail(e);
             }

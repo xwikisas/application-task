@@ -36,7 +36,9 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
+  <content>{{include reference="TaskManager.TaskQueryMacros" /}}
+
+{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
@@ -64,12 +66,19 @@
     #set ($discard = $statusOptions.add({ "value": $rValue, "label": $translation}))
   #end
 #end
+## Pass the query filters explicitly, otherwise the liveTable source applies the 'hidden' filter, excluding inline tasks.
+#set ($sourceParams = {
+  "className": "TaskManager.TaskManagerClass",
+  "translationPrefix": "taskmanager.livetable.",
+  "resultPage": "TaskManager.TaskManagerLiveTableResults",
+  "queryFilters": $stringtool.join($taskQueryFilters, ',')
+})
 
 {{liveData
   id="taskmanager"
   properties="name,project,status,severity,reporter,assignee,duedate,_actions"
   source="liveTable"
-  sourceParameters="className=TaskManager.TaskManagerClass&amp;translationPrefix=taskmanager.livetable.&amp;resultPage=TaskManager.TaskManagerLiveTableResults"
+  sourceParameters="$services.rendering.escape($escapetool.url($sourceParams), 'xwiki/2.1')"
 }}
 {
   "meta": {

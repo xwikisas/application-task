@@ -1,0 +1,71 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="TaskManager.TaskQueryMacros" locale="">
+  <web>TaskManager</web>
+  <name>TaskQueryMacros</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>TaskQueryMacros</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{velocity output="false"}}
+## Single definition of which pages are retrieved as tasks by the macros and pages that list tasks (task report, gantt,
+## kanban board, task manager home page, task panel). Include this page instead of writing a dedicated query.
+##
+## Inline tasks (created with the task macro, having the 'owner' property set) are hidden pages, so the 'hidden' query
+## filter must NOT be used when retrieving tasks. Note that the 'liveTable' Live Data source applies it by default, so
+## the $taskQueryFilters have to be passed explicitly to it through the 'queryFilters' source parameter.
+
+## Constraint that every task query must contain. It excludes the task templates.
+#set ($taskQueryBaseConstraint = "doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates'")
+## Query filters that every task query must use.
+#set ($taskQueryFilters = ['currentlanguage', 'unique'])
+
+#**
+ * Creates the XWQL query retrieving the task pages.
+ *
+ * @param $constraints XWQL fragment appended after the base constraint, so it must start with 'and' or 'order by'; the
+ *   task object is aliased as 'task'
+ * @param $return the name of the variable that will hold the query
+ *#
+#macro (createTaskQuery $constraints $return)
+  #set ($taskQueryStatement = "from doc.object(TaskManager.TaskManagerClass) as task where $taskQueryBaseConstraint")
+  #if ("$!constraints" != '')
+    #set ($taskQueryStatement = "$taskQueryStatement $constraints")
+  #end
+  #set ($taskQuery = $services.query.xwql($taskQueryStatement))
+  #foreach ($taskQueryFilter in $taskQueryFilters)
+    #set ($taskQuery = $taskQuery.addFilter($taskQueryFilter))
+  #end
+  #setVariable("$return" $taskQuery)
+#end
+{{/velocity}}</content>
+</xwikidoc>

@@ -28,6 +28,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
+import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroPage;
+import org.xwiki.contrib.application.task.test.po.KanbanColumn;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskElement;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
@@ -84,6 +87,8 @@ class TaskManagerIT
 
     private final LocalDocumentReference pageWithMultiUserTask = new LocalDocumentReference("Main", "MultiUser");
 
+    private final LocalDocumentReference pageWithKanbanBoard = new LocalDocumentReference("Main", "KanbanBoard");
+
     private static final String SIMPLE_TASKS = "{{task reference=\"Task_1\"}}Do this{{/task}}\n\n"
         + "{{task reference=\"Task_2\" status=\"Done\"}}Do this as well{{/task}}";
 
@@ -102,6 +107,10 @@ class TaskManagerIT
 
     private static final String USER_NAME = "BOB";
 
+    private static final String SIMPLE_USER_NAME = "InlineTasksViewer";
+
+    private static final String SIMPLE_USER_PASSWORD = "password";
+
     private static final String specialCharactersTask =
         "{{task reference=\"TTe$t with #special + ch@rs - test. It's ^a test! Test ~1 = and (2) & {3}, [4]."
             + " 100% a test 1; 2` 3; 5\"}}TTe$t with #special + ch@rs - test. It's ^a test! Test ~1 = and (2) & {3}, [4]."
@@ -116,6 +125,8 @@ class TaskManagerIT
         setup.loginAsSuperAdmin();
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
+        // Simple users don't see hidden pages, unlike superadmin.
+        setup.createUser(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD, "");
     }
 
     @AfterAll
@@ -125,6 +136,8 @@ class TaskManagerIT
         setup.deletePage(pageWithTaskMacros);
         setup.deletePage(pageWithComplexTaskMacros);
         setup.deletePage(pageWithMultiUserTask);
+        setup.deletePage(pageWithKanbanBoard);
+        setup.deletePage(new DocumentReference("xwiki", "XWiki", SIMPLE_USER_NAME));
     }
 
     @Test
@@ -307,6 +320,44 @@ class TaskManagerIT
         assertEquals("01/01/2023 12:00:00", taskReport.getCell("Deadline", 3).getText());
         assertEquals("Admin", taskReport.getCell("Assignee", 3).getText());
         assertEquals(pageWithComplexTaskMacros.getName(), taskReport.getCell("Location", 3).getText());
+    }
+
+    @ParameterizedTest
+    @WikisSource()
+    @Order(62)
+    void inlineTasksDisplayedToSimpleUsers(WikiReference wiki, TestUtils setup)
+    {
+        setup.setCurrentWiki(wiki.getName());
+        DocumentReference kanbanRef = new DocumentReference(pageWithKanbanBoard, wiki);
+        setup.createPage(kanbanRef, "{{kanbanboard/}}");
+        int kanbanCards = countKanbanCards();
+
+        // The inline tasks are hidden pages, but all the macros listing tasks should display them, even to users that
+        // don't display hidden pages.
+        setup.login(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD);
+        try {
+            assertEquals(3, TaskManagerHomePage.gotoPage().getTaskLiveDataTable().countRows());
+
+            setup.gotoPage(new DocumentReference(pageWithTaskRaport, wiki));
+            TableLayoutElement taskReport = new ViewPageWithTasks().getTaskReportLivedataTable(0);
+            taskReport.waitUntilReady();
+            assertEquals(3, taskReport.countRows());
+
+            setup.gotoPage(kanbanRef);
+            assertEquals(kanbanCards, countKanbanCards());
+        } finally {
+            setup.loginAsSuperAdmin();
+        }
+    }
+
+    private int countKanbanCards()
+    {
+        KanbanBoardMacro board = new KanbanBoardMacroPage().getKanbanMacro();
+        int count = 0;
+        for (KanbanColumn column : board.getColumns()) {
+            count += column.getTaskCards().size();
+        }
+        return count;
     }
 
     @ParameterizedTest

@@ -561,30 +561,31 @@ Example:
       <async_enabled/>
     </property>
     <property>
-      <code>{{velocity}}
+      <code>{{include reference="TaskManager.TaskQueryMacros" /}}
+
+{{velocity}}
 #set($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
-## The xwql variable is used by the awmkanban macro called from this one.
-#set ($xwql = '')
+## The xwql variable is used by the awmkanban macro called from this one. It starts with the constraint shared by all
+## the task queries. Note that awmkanban doesn't apply the 'hidden' query filter, so inline tasks are displayed.
+#set ($xwql = $taskQueryBaseConstraint)
 #set($user = "$!{xcontext.macro.params.user}")
 #set ($columnWidth = "$!{xcontext.macro.params.columnWidth}")
 #set ($colors = "$!{xcontext.macro.params.colors}")
 #if($user != '')
+  #set ($xwqlUsers = '')
   #set ($users = $user.split(','))
   #foreach ($user in $users)
-    #if ($xwql.length() &gt; 0)
-      #set ($xwql = "$xwql OR")
+    #if ($xwqlUsers.length() &gt; 0)
+      #set ($xwqlUsers = "$xwqlUsers OR")
     #end
     ## The task contains at least one of the specified users.
-    #set ($xwql = "$xwql obj.assignee LIKE '%$escapetool.sql($user),%' OR obj.assignee LIKE '%$escapetool.sql($user)'")
+    #set ($xwqlUsers = "$xwqlUsers obj.assignee LIKE '%$escapetool.sql($user),%' OR obj.assignee LIKE '%$escapetool.sql($user)'")
   #end
-  #set ($xwql = "($xwql)")
+  #set ($xwql = "$xwql and ($xwqlUsers)")
 #end
 #set($space = "$!{xcontext.macro.params.space}")
 #if($space != '')
-  #if ($xwql.length() &gt; 0)
-    #set ($xwql = "$xwql and")
-  #end
-  #set($xwql = "${xwql} (doc.space like '$escapetool.sql($space).%' or doc.space = '$escapetool.sql($space)')")
+  #set($xwql = "${xwql} and (doc.space like '$escapetool.sql($space).%' or doc.space = '$escapetool.sql($space)')")
 #end
 #set($project = "$!{xcontext.macro.params.project}")
 #if($project != '')
@@ -596,10 +597,7 @@ Example:
     #end
     #set ($xwqlProjects = "$xwqlProjects obj.project = '$escapetool.sql($project)'")
   #end
-  #if ($xwql.length() &gt; 0)
-    #set ($xwql = "$xwql and")
-  #end
-  #set ($xwql = "$xwql ($xwqlProjects)")
+  #set ($xwql = "$xwql and ($xwqlProjects)")
 #end
 #set ($columns = "$!{xcontext.macro.params.columns}")
 #set ($order = "$!{xcontext.macro.params.order}")
