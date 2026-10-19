@@ -30,6 +30,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
+import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
@@ -44,6 +45,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
  * Listener responsible with enabling the "xwiki-task-init" CKEditor plugin by adding it to the CKEditor Config wiki
@@ -84,25 +86,41 @@ public class CKEditorTaskPluginActivatorListener extends AbstractEventListener i
      */
     public CKEditorTaskPluginActivatorListener()
     {
-        super("CKEditorTaskPluginActivatorListener", Collections.emptyList());
+        super("CKEditorTaskPluginActivatorListener", Collections.singletonList(new DocumentCreatedEvent()));
     }
 
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        // Do nothing.
+        // The plugin couldn't be enabled if the CKEditor configuration class was installed after this extension.
+        XWikiDocument document = (XWikiDocument) source;
+        if (CKEDITOR_CONFIG_CLASS.equals(document.getDocumentReference().getLocalDocumentReference())) {
+            enablePlugin();
+        }
     }
 
     @Override
     public void initialize() throws InitializationException
+    {
+        enablePlugin();
+    }
+
+    private void enablePlugin()
     {
         XWikiContext context = contextProvider.get();
 
         if (context == null) {
             return;
         }
-        // Get CKEditor.Config file
         try {
+            // The configuration can't be updated before the CKEditor configuration class is installed, because the
+            // object properties are set only if the class defines them.
+            BaseClass configClass = context.getWiki()
+                .getXClass(new DocumentReference(CKEDITOR_CONFIG_CLASS, context.getWikiReference()), context);
+            if (configClass.get(PARAM_ADVANCED) == null) {
+                return;
+            }
+            // Get CKEditor.Config file
             XWikiDocument document = context.getWiki().getDocument(CKEDITOR_CONFIG_REF, context);
             BaseObject ckeditorCfg = document.getXObject(CKEDITOR_CONFIG_CLASS, true, context);
             UserReference currentUser = userRefResolver.resolve(context.getUserReference());

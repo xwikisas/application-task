@@ -25,10 +25,12 @@ import javax.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.model.document.DocumentAuthors;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryException;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
@@ -40,11 +42,14 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
+import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xwiki.task.internal.ckeditor.CKEditorTaskPluginActivatorListener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -53,6 +58,9 @@ import static org.mockito.Mockito.when;
 @ComponentTest
 public class CKEditorTaskPluginActivatorListenerTest
 {
+    private static final DocumentReference CONFIG_CLASS_REFERENCE =
+        new DocumentReference("xwiki", "CKEditor", "ConfigClass");
+
     @InjectMockComponents
     private CKEditorTaskPluginActivatorListener activatorListener;
 
@@ -78,12 +86,18 @@ public class CKEditorTaskPluginActivatorListenerTest
     @Mock
     private BaseObject baseObject;
 
+    @Mock
+    private BaseClass configClass;
+
     @BeforeEach
     void setup() throws QueryException, XWikiException
     {
 
         when(contextProvider.get()).thenReturn(context);
         when(context.getWiki()).thenReturn(xWiki);
+        when(context.getWikiReference()).thenReturn(new WikiReference("xwiki"));
+        when(xWiki.getXClass(CONFIG_CLASS_REFERENCE, context)).thenReturn(configClass);
+        when(configClass.get("advanced")).thenReturn(mock(PropertyClass.class));
         when(xWiki.getDocument(any(LocalDocumentReference.class), eq(context))).thenReturn(xWikiDocument);
         when(xWikiDocument.getXObject(any(LocalDocumentReference.class), eq(true), eq(context))).thenReturn(baseObject);
         when(xWikiDocument.isNew()).thenReturn(false);
@@ -96,6 +110,35 @@ public class CKEditorTaskPluginActivatorListenerTest
         when(contextProvider.get()).thenReturn(null);
         activatorListener.initialize();
         verifyNoInteractions(context);
+    }
+
+    @Test
+    void configurationClassNotInstalledTest() throws InitializationException, XWikiException
+    {
+        when(configClass.get("advanced")).thenReturn(null);
+        activatorListener.initialize();
+        verify(xWiki, never()).getDocument(any(LocalDocumentReference.class), any());
+        verify(xWiki, never()).saveDocument(any(), any(), any());
+    }
+
+    @Test
+    void configurationClassCreatedTest() throws XWikiException
+    {
+        when(baseObject.getLargeStringValue("advanced")).thenReturn("");
+        XWikiDocument configClassDocument = mock(XWikiDocument.class);
+        when(configClassDocument.getDocumentReference()).thenReturn(CONFIG_CLASS_REFERENCE);
+        activatorListener.onEvent(new DocumentCreatedEvent(), configClassDocument, context);
+        verify(baseObject).set(eq("advanced"), contains("config.extraPlugins = 'xwiki-task-insert';"), eq(context));
+        verify(xWiki).saveDocument(eq(xWikiDocument), any(), eq(context));
+    }
+
+    @Test
+    void otherDocumentCreatedTest() throws XWikiException
+    {
+        XWikiDocument otherDocument = mock(XWikiDocument.class);
+        when(otherDocument.getDocumentReference()).thenReturn(new DocumentReference("xwiki", "Main", "WebHome"));
+        activatorListener.onEvent(new DocumentCreatedEvent(), otherDocument, context);
+        verify(xWiki, never()).saveDocument(any(), any(), any());
     }
 
     @Test

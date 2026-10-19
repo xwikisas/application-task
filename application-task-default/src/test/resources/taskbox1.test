@@ -11,7 +11,6 @@ Important task with the following deadline
 .#-----------------------------------------------------
 beginDocument
 beginMacroMarkerStandalone [checkbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
-beginMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
 beginGroup [[class]=[task-macro taskbox]]
 beginGroup [[class]=[task-info]]
 beginFormat [NONE]
@@ -36,7 +35,6 @@ endParagraph
 endMetaData [[non-generated-content]=[java.util.List<org.xwiki.rendering.block.Block>]]
 endGroup [[class]=[task-content]]
 endGroup [[class]=[task-macro taskbox]]
-endMacroMarkerStandalone [task] [reference=Sandbox.Task|idDisplayed=FALSE|className=taskbox|status=Done] [Important task with the following deadline]
 endMacroMarkerStandalone [checkbox] [id=Sandbox.Task|checked=true] [Important task with the following deadline]
 endDocument
 .#-----------------------------------------------------

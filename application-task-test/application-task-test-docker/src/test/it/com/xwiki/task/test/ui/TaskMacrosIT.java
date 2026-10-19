@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.Year;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,7 @@ import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.rest.model.jaxb.Page;
 import org.xwiki.tag.test.po.AddTagsPane;
 import org.xwiki.tag.test.po.TaggablePage;
 import org.xwiki.test.docker.junit5.ExtensionOverride;
@@ -122,6 +124,9 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageTaskboxModal =
         new LocalDocumentReference("Main", "PageWithTaskboxModal");
+
+    private final LocalDocumentReference pageWithQuickActions =
+        new LocalDocumentReference("Main", "PageWithQuickActions");
 
     private final LocalDocumentReference pageWithCheckboxes =
         new LocalDocumentReference("Main", "PageWithCheckboxes");
@@ -551,22 +556,50 @@ public class TaskMacrosIT
     @Order(80)
     void taskboxMacroIdParameter(TestUtils setup)
     {
-        WYSIWYGEditPage editPage = setup.createPage(pageTaskboxModal, "").editWYSIWYG();
+        WYSIWYGEditPage editPage =
+            setup.createPage(pageTaskboxModal, "{{checkbox}}Checkbox without id{{/checkbox}}\n\n ").editWYSIWYG();
         CKEditor editor = new CKEditor("content").waitToLoad();
 
-        // Inserting a taskbox macro through the wysiwyg editor generates its id.
-        TaskboxMacroModal macroEditModal = insertTaskboxMacro(editor);
+        // Editing a taskbox macro that has no id generates it.
+        TaskboxMacroModal macroEditModal = openTaskboxMacroModal(editor);
         String firstId = macroEditModal.getId();
         macroEditModal.clickCancel();
-        editor.getRichTextArea().clear();
 
-        // Inserting another taskbox macro generates a different id.
-        macroEditModal = insertTaskboxMacro(editor);
+        // The id is generated again, and differently, the next time the macro editor is opened.
+        macroEditModal = openTaskboxMacroModal(editor);
         String secondId = macroEditModal.getId();
         macroEditModal.clickCancel();
         assertNotEquals(firstId, secondId);
 
         editPage.clickCancel();
+    }
+
+    @Test
+    @Order(81)
+    void quickActions(TestUtils setup) throws Exception
+    {
+        // The task quick action inserts a task with a generated reference and the current user as reporter.
+        String content = insertWithQuickAction(setup, "/task", "Task", "Type your task here.");
+        assertTrue(content.startsWith("{{task "), content);
+        assertTrue(content.contains(" reference=\""), content);
+        assertTrue(content.contains("reporter=\"XWiki.superadmin\""), content);
+        assertTrue(content.contains("createDate=\""), content);
+        assertTrue(content.matches("(?s).*}}\\s*Type your task here\\.\\s*\\{\\{/task}}"), content);
+        assertEquals(1, new ViewPageWithTasks().getTasks().size());
+
+        // The date quick action inserts the current date.
+        String year = String.valueOf(Year.now().getValue());
+        content = insertWithQuickAction(setup, "/date", "Date", year);
+        assertTrue(content.matches("\\{\\{date value=\".*" + year + ".*\"/}}"), content);
+
+        // The checkbox quick action inserts a checkbox with a generated id.
+        content = insertWithQuickAction(setup, "/checkbox", "Checkbox", "Type your task here.");
+        assertTrue(
+            content.matches("(?s)\\{\\{checkbox id=\"\\d{5}\"}}\\s*Type your task here\\.\\s*\\{\\{/checkbox}}"),
+            content);
+        assertEquals(1, new ViewPageWithTasks().getTasks().size());
+
+        setup.deletePage(pageWithQuickActions);
     }
 
     @Test
@@ -582,11 +615,16 @@ public class TaskMacrosIT
         // Toggling the checkboxes in the editor updates the macros, so the change is saved with the page.
         checkboxEditor.toggleTaskCheckbox(0);
         checkboxEditor.toggleTaskCheckbox(1);
+        // The content of both macros is editable in place.
+        checkboxEditor.appendToTaskContent(0, ", edited");
+        checkboxEditor.appendToTaskContent(1, ", edited");
         editPage.clickSaveAndView();
 
         ViewPageWithTasks viewPage = new ViewPageWithTasks();
         assertTrue(viewPage.isTaskMacroCheckboxChecked(0));
         assertTrue(viewPage.isTaskMacroCheckboxChecked(1));
+        assertEquals("Task toggled in the editor, edited", viewPage.getTaskMacroContent(0));
+        assertEquals("Checkbox toggled in the editor, edited", viewPage.getTaskMacroContent(1));
         assertEquals(Task.STATUS_DONE, viewPage.getTasks().get(0).goToTaskPage().getStatus());
 
         setup.deletePage(pageWithCheckboxes);
@@ -720,14 +758,34 @@ public class TaskMacrosIT
         return macroEditModal;
     }
 
-    private TaskboxMacroModal insertTaskboxMacro(CKEditor editor)
+    private TaskboxMacroModal openTaskboxMacroModal(CKEditor editor)
     {
+        RichTextAreaElement textArea = editor.getRichTextArea(true);
+        textArea.sendKeys(Keys.HOME, Keys.LEFT);
+        textArea.waitUntilWidgetSelected();
+        textArea.sendKeys(Keys.ENTER);
+        return new TaskboxMacroModal().waitUntilReady();
+    }
+
+    /**
+     * Create an empty page, insert content using a quick action in the WYSIWYG editor and save the page.
+     *
+     * @return the source of the saved page
+     */
+    private String insertWithQuickAction(TestUtils setup, String command, String actionName, String expectedText)
+        throws Exception
+    {
+        setup.createPage(pageWithQuickActions, "").editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
         RichTextAreaElement textArea = editor.getRichTextArea();
-        textArea.sendKeys("/checkbox");
+        textArea.sendKeys(command);
         AutocompleteDropdown quickActions = new AutocompleteDropdown();
-        quickActions.waitForItemSelected("/checkbox", "Checkbox");
+        quickActions.waitForItemSelected(command, actionName);
         textArea.sendKeys(Keys.ENTER);
         quickActions.waitForItemSubmitted();
-        return new TaskboxMacroModal().waitUntilReady();
+        // Wait for the inserted macro to be rendered.
+        textArea.waitUntilTextContains(expectedText);
+        new WYSIWYGEditPage().clickSaveAndView();
+        return setup.rest().<Page>get(pageWithQuickActions).getContent().trim();
     }
 }

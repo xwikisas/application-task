@@ -22,10 +22,11 @@ package org.xwiki.contrib.application.task.test.po;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.xwiki.ckeditor.test.po.CKEditor;
+import org.xwiki.ckeditor.test.po.RichTextAreaElement;
 import org.xwiki.test.ui.po.BaseElement;
 
 /**
- * Represents the task checkboxes displayed by the task and checkbox macros inside the WYSIWYG editor.
+ * Represents the tasks displayed by the task and checkbox macros inside the WYSIWYG editor.
  *
  * @version $Id$
  * @since 3.11.8
@@ -68,6 +69,37 @@ public class TaskCheckboxEditor extends BaseElement
         this.editor.executeOnEditedContent(
             () -> checked[0] = getDriver().findElement(getCheckboxSelector(index)).isSelected());
         return checked[0];
+    }
+
+    /**
+     * Type text at the end of the content of the task at the given index.
+     *
+     * @param index the index of the task in the edited content, starting from 0
+     * @param text the text to type
+     */
+    public void appendToTaskContent(int index, String text)
+    {
+        // Move the caret at the end of the nested editable that holds the content of the task macro.
+        Object found = getDriver().executeScript(String.join("\n",
+            "const editor = CKEDITOR.instances[arguments[0]];",
+            "const editables = Object.values(editor.widgets.instances)",
+            "  .filter(widget => widget.name === 'xwiki-macro' && ['task', 'checkbox'].includes(widget.data.name))",
+            "  .map(widget => widget.editables.$content).filter(editable => editable);",
+            "const editable = editables[arguments[1]];",
+            "if (!editable) {",
+            "  return false;",
+            "}",
+            "editable.focus();",
+            "const range = editor.createRange();",
+            "range.moveToElementEditEnd(editable);",
+            "editor.getSelection().selectRanges([range]);",
+            "return true;"), this.editor.getName(), index);
+        if (!Boolean.TRUE.equals(found)) {
+            throw new IllegalStateException(String.format("The content of the task [%d] is not editable.", index));
+        }
+        RichTextAreaElement richTextArea = this.editor.getRichTextArea();
+        richTextArea.sendKeys(text);
+        richTextArea.waitUntilTextContains(text);
     }
 
     private By getCheckboxSelector(int index)
