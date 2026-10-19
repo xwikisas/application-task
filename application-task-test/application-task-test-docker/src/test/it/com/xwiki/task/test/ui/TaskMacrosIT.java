@@ -44,6 +44,7 @@ import org.xwiki.contrib.application.task.test.po.KanbanCard;
 import org.xwiki.contrib.application.task.test.po.KanbanColumn;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacro;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacroPage;
+import org.xwiki.contrib.application.task.test.po.TaskCheckboxEditor;
 import org.xwiki.contrib.application.task.test.po.TaskMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
@@ -121,6 +122,9 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageTaskboxModal =
         new LocalDocumentReference("Main", "PageWithTaskboxModal");
+
+    private final LocalDocumentReference pageWithCheckboxes =
+        new LocalDocumentReference("Main", "PageWithCheckboxes");
 
     @BeforeAll
     void setup(TestUtils setup)
@@ -563,6 +567,29 @@ public class TaskMacrosIT
         assertNotEquals(firstId, secondId);
 
         editPage.clickCancel();
+    }
+
+    @Test
+    @Order(82)
+    void toggleCheckboxesInWYSIWYG(TestUtils setup)
+    {
+        setup.createPage(pageWithCheckboxes,
+            "{{task reference=\"TaskToggledInEditor\"}}Task toggled in the editor{{/task}}\n\n"
+                + "{{checkbox id=\"CheckboxToggledInEditor\"}}Checkbox toggled in the editor{{/checkbox}}");
+        WYSIWYGEditPage editPage = new ViewPage().editWYSIWYG();
+        TaskCheckboxEditor checkboxEditor = new TaskCheckboxEditor(new CKEditor("content").waitToLoad());
+
+        // Toggling the checkboxes in the editor updates the macros, so the change is saved with the page.
+        checkboxEditor.toggleTaskCheckbox(0);
+        checkboxEditor.toggleTaskCheckbox(1);
+        editPage.clickSaveAndView();
+
+        ViewPageWithTasks viewPage = new ViewPageWithTasks();
+        assertTrue(viewPage.isTaskMacroCheckboxChecked(0));
+        assertTrue(viewPage.isTaskMacroCheckboxChecked(1));
+        assertEquals(Task.STATUS_DONE, viewPage.getTasks().get(0).goToTaskPage().getStatus());
+
+        setup.deletePage(pageWithCheckboxes);
     }
 
     @ParameterizedTest

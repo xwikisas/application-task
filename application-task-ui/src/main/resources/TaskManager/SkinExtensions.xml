@@ -128,6 +128,11 @@
       <code>require(['jquery'], function ($) {
   $(document).on('change', '.task-status', function () {
     let checkbox = $(this);
+    // In the WYSIWYG editor the checkbox updates the macro parameters instead (see
+    // TaskManager.CKEditorPlugin.PluginEnabler).
+    if (checkbox.closest('.cke_editable').length &gt; 0) {
+      return;
+    }
     let taskId = checkbox.data('taskid');
     let previousVal = !checkbox.prop('checked');
     if (!taskId) {
