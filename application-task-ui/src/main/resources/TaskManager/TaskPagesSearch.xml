@@ -38,28 +38,74 @@
   <hidden>true</hidden>
   <content>{{velocity output="false"}}
 #if ($xcontext.action == 'get' &amp;&amp; "$!{request.outputSyntax}" == 'plain')
-  #set ($statement = "FROM doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates' AND lower(doc.fullName) LIKE lower(:param)")
-  #set ($param = $services.query.parameter().anyChars().literal("$!request.text").anyChars())
-  #set ($query = $services.query.xwql($statement).addFilter('unique').addFilter('document').setLimit(10).bindValue('param', $param))
+  ## The value type can be 'reference' (default), in which case the values are the task page references, or 'number',
+  ## in which case the values are the task numbers.
+  #set ($useNumbers = "$!request.valueType" == 'number')
+  #set ($statement = "FROM doc.object(TaskManager.TaskManagerClass) AS taskObject WHERE doc.space &lt;&gt; 'TaskManager.TaskManagerTemplates'")
+  #set ($text = "$!request.text")
+  #set ($taskNumber = $NULL)
+  #if ($stringtool.isNumeric($text) &amp;&amp; $text.length() &lt; 10)
+    #set ($taskNumber = $numbertool.toNumber($text).intValue())
+  #end
+  #if ($useNumbers &amp;&amp; "$!request.exactMatch" == 'true')
+    ## Match only the task having that exact number. Task numbers are positive so -1 matches nothing.
+    #if (!$taskNumber)
+      #set ($taskNumber = -1)
+    #end
+    #set ($statement = "$statement AND taskObject.number = :number")
+    #set ($query = $services.query.xwql($statement).bindValue('number', $taskNumber))
+  #elseif ($useNumbers)
+    #set ($statement = "$statement AND (lower(doc.fullName) LIKE lower(:param)")
+    #set ($statement = "$statement OR lower(taskObject.name) LIKE lower(:param)")
+    #if ($taskNumber)
+      #set ($statement = "$statement OR taskObject.number = :number")
+    #end
+    #set ($statement = "$statement)")
+    #set ($query = $services.query.xwql($statement))
+    #if ($taskNumber)
+      #set ($query = $query.bindValue('number', $taskNumber))
+    #end
+  #else
+    #set ($statement = "$statement AND lower(doc.fullName) LIKE lower(:param)")
+    #set ($query = $services.query.xwql($statement))
+  #end
+  #if ($statement.contains(':param'))
+    #set ($param = $services.query.parameter().anyChars().literal("$!request.text").anyChars())
+    #set ($query = $query.bindValue('param', $param))
+  #end
+  #set ($query = $query.addFilter('unique').addFilter('document').setLimit(10))
   #set ($array = [])
   #foreach ($taskReference in $query.execute())
     #if ($services.security.authorization.hasAccess("view", $taskReference))
       #set ($taskDoc = $xwiki.getDocument($taskReference))
       #set ($taskObj = $taskDoc.getObject('TaskManager.TaskManagerClass'))
       #set ($taskTitle = '')
+      #set ($number = '')
       #if ($taskObj)
         #set ($taskTitle = "$!taskObj.getProperty('name').value.trim()")
+        #set ($number = "$!taskObj.getProperty('number').value")
       #end
       #if ($taskTitle != '')
         #set ($label = $taskTitle)
       #else
         #set ($label = $taskReference.name)
       #end
-      #set ($discard = $array.add({
-        'label': $label,
-        'value': $services.model.serialize($taskReference, 'compactwiki'),
-        'hint':  $services.model.serialize($taskReference.parent, 'compactwiki')
-      }))
+      #set ($hint = $services.model.serialize($taskReference.parent, 'compactwiki'))
+      #if ($useNumbers)
+        #if ($number != '')
+          #set ($discard = $array.add({
+            'label': "${escapetool.h}$number $label",
+            'value': $number,
+            'hint':  $hint
+          }))
+        #end
+      #else
+        #set ($discard = $array.add({
+          'label': $label,
+          'value': $services.model.serialize($taskReference, 'compactwiki'),
+          'hint':  $hint
+        }))
+      #end
     #end
   #end
   #jsonResponse($array)
@@ -168,27 +214,36 @@ require(['jquery', 'xwiki-selectize'], function($) {
     console.log('Failed to get the JSON from [' + searchServiceURL + ']. Reason: ' + response.status + ' ' + response.statusText);
     callback([]);
   };
-  var settings = {
-    load: function(typedText, callback) {
-      $.getJSON(searchServiceURL, {
-        text: typedText
-      }).done(callback).fail(function (response) {
-        errorHandler(response, callback);
-      });
-    },
-    loadSelected: function(selectedValue, callback) {
-      $.getJSON(searchServiceURL, {
-        text: selectedValue,
-        exactMatch: true
-      }).done(callback).fail(function (response) {
-        errorHandler(response, callback);
-      });
-    }
+  var getSettings = function(picker) {
+    var valueType = picker.attr('data-value-type') || 'reference';
+    return {
+      load: function(typedText, callback) {
+        $.getJSON(searchServiceURL, {
+          text: typedText,
+          valueType: valueType
+        }).done(callback).fail(function (response) {
+          errorHandler(response, callback);
+        });
+      },
+      loadSelected: function(selectedValue, callback) {
+        $.getJSON(searchServiceURL, {
+          text: selectedValue,
+          valueType: valueType,
+          exactMatch: true
+        }).done(callback).fail(function (response) {
+          errorHandler(response, callback);
+        });
+      }
+    };
   };
-  $('.suggest-task-pages').xwikiSelectize(settings);
-  $(document).on('shown.bs.modal', '.modal', function () {
-    $('.suggest-task-pages').xwikiSelectize(settings);
-  });
+  var init = function() {
+    $('.suggest-task-pages').each(function() {
+      var picker = $(this);
+      picker.xwikiSelectize(getSettings(picker));
+    });
+  };
+  init();
+  $(document).on('shown.bs.modal', '.modal', init);
 });</code>
     </property>
     <property>

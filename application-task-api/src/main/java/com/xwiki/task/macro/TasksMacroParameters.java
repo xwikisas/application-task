@@ -19,8 +19,11 @@
  */
 package com.xwiki.task.macro;
 
+import org.xwiki.properties.annotation.PropertyDisplayType;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.stability.Unstable;
+
+import com.xwiki.task.TaskNumberList;
 
 /**
  * @version $Id$
@@ -43,6 +46,7 @@ public class TasksMacroParameters
      * @param ids see {@link #getIds()}.
      */
     @PropertyMandatory
+    @PropertyDisplayType(TaskNumberList.class)
     public void setIds(String ids)
     {
         this.ids = ids;

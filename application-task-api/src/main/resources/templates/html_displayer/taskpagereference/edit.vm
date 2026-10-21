@@ -17,14 +17,8 @@
 ## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
-#set ($discard = $xwiki.linkx.use($services.webjars.url('selectize.js', 'css/selectize.bootstrap3.css'),
-  {'type': 'text/css', 'rel': 'stylesheet'}))
-#set ($discard = $xwiki.ssfx.use('uicomponents/suggest/xwiki.selectize.css', true))
-#set ($discard = $xwiki.jsx.use('TaskManager.TaskPagesSearch'))
-<select class="suggest-task-pages"
-  #foreach ($parameter in $displayer.parameters.entrySet())
-    $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
-  #end
->
-  <option value="">$escapetool.xml($services.localization.render('taskmanager.picker.taskpage.noValue'))</option>
-</select>
+#template('taskPicker_macros.vm')
+#set ($parameters = {})
+#set ($discard = $parameters.putAll($displayer.parameters))
+#set ($parameters.value = $displayer.value)
+#_taskPicker($parameters)

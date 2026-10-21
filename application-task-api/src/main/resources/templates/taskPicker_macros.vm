@@ -1,0 +1,72 @@
+## ---------------------------------------------------------------------------
+## See the NOTICE file distributed with this work for additional
+## information regarding copyright ownership.
+##
+## This is free software; you can redistribute it and/or modify it
+## under the terms of the GNU Lesser General Public License as
+## published by the Free Software Foundation; either version 2.1 of
+## the License, or (at your option) any later version.
+##
+## This software is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public
+## License along with this software; if not, write to the Free
+## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+## ---------------------------------------------------------------------------
+## Displays a picker for task pages.
+##
+## Supported parameters (any other parameter is added as an attribute of the select element):
+## * value: the current value. When the picker accepts multiple values, it can be a collection or a comma separated
+##   list of values.
+## * multiple: when set (and different than 'false'), the picker accepts multiple values
+## * valueType: 'reference' (default) to use the task page references as values or 'number' to use the task numbers
+#macro (_taskPicker $parameters)
+  #set ($discard = $xwiki.linkx.use($services.webjars.url('selectize.js', 'css/selectize.bootstrap3.css'),
+    {'type': 'text/css', 'rel': 'stylesheet'}))
+  #set ($discard = $xwiki.ssfx.use('uicomponents/suggest/xwiki.selectize.css', true))
+  #set ($discard = $xwiki.jsx.use('TaskManager.TaskPagesSearch'))
+  #set ($taskPickerAttributes = {})
+  #set ($discard = $taskPickerAttributes.putAll($parameters))
+  #set ($taskPickerValue = $taskPickerAttributes.remove('value'))
+  #set ($taskPickerValueType = "$!taskPickerAttributes.remove('valueType')")
+  #if ($taskPickerValueType == '')
+    #set ($taskPickerValueType = 'reference')
+  #end
+  #set ($taskPickerMultiple = "$!taskPickerAttributes.multiple" != '' && "$!taskPickerAttributes.multiple" != 'false')
+  #if ($taskPickerMultiple)
+    #set ($taskPickerAttributes.multiple = 'multiple')
+    #set ($taskPickerNoValueKey = 'taskmanager.picker.taskpage.multiple.noValue')
+  #else
+    #set ($discard = $taskPickerAttributes.remove('multiple'))
+    #set ($taskPickerNoValueKey = 'taskmanager.picker.taskpage.noValue')
+  #end
+  ## Collect the selected values so that the picker can display them initially.
+  #set ($taskPickerValues = [])
+  #if ($taskPickerValue.iterator())
+    #set ($discard = $taskPickerValues.addAll($taskPickerValue))
+  #elseif ("$!taskPickerValue" != '')
+    #if ($taskPickerMultiple)
+      #foreach ($taskPickerItem in $stringtool.split("$taskPickerValue", ','))
+        #set ($discard = $taskPickerValues.add($taskPickerItem.trim()))
+      #end
+    #else
+      #set ($discard = $taskPickerValues.add("$taskPickerValue"))
+    #end
+  #end
+  <select class="suggest-task-pages" data-value-type="$escapetool.xml($taskPickerValueType)"
+    #foreach ($attribute in $taskPickerAttributes.entrySet())
+      $escapetool.xml($attribute.key)="$!escapetool.xml($attribute.value)"
+    #end
+  >
+    <option value="">$escapetool.xml($services.localization.render($taskPickerNoValueKey))</option>
+    #foreach ($selectedValue in $taskPickerValues)
+      #if ("$!selectedValue.toString().trim()" != '')
+        <option value="$escapetool.xml($selectedValue)" selected="selected">$escapetool.xml($selectedValue)</option>
+      #end
+    #end
+  </select>
+#end

@@ -44,13 +44,17 @@ import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanCard;
 import org.xwiki.contrib.application.task.test.po.KanbanColumn;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacro;
+import org.xwiki.contrib.application.task.test.po.TaskCardMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskCardMacroPage;
 import org.xwiki.contrib.application.task.test.po.TaskCheckboxEditor;
+import org.xwiki.contrib.application.task.test.po.TaskElement;
 import org.xwiki.contrib.application.task.test.po.TaskMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
+import org.xwiki.contrib.application.task.test.po.TaskPickerElement;
 import org.xwiki.contrib.application.task.test.po.TaskReportMacro;
 import org.xwiki.contrib.application.task.test.po.TaskboxMacroModal;
+import org.xwiki.contrib.application.task.test.po.TasksMacroModal;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
@@ -130,6 +134,19 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageWithCheckboxes =
         new LocalDocumentReference("Main", "PageWithCheckboxes");
+
+    private final LocalDocumentReference pageWithPickerTasks =
+        new LocalDocumentReference("Main", "PageWithPickerTasks");
+
+    private final LocalDocumentReference pageWithTasksPicker =
+        new LocalDocumentReference("Main", "PageWithTasksPicker");
+
+    private final LocalDocumentReference pageWithTaskCardPicker =
+        new LocalDocumentReference("Main", "PageWithTaskCardPicker");
+
+    private final LocalDocumentReference pickerCardTask1 = new LocalDocumentReference("Main", "PickerCardTask1");
+
+    private final LocalDocumentReference pickerCardTask2 = new LocalDocumentReference("Main", "PickerCardTask2");
 
     @BeforeAll
     void setup(TestUtils setup)
@@ -630,6 +647,83 @@ public class TaskMacrosIT
         setup.deletePage(pageWithCheckboxes);
     }
 
+    @Test
+    @Order(83)
+    void tasksMacroIdsPicker(TestUtils setup)
+    {
+        setup.createPage(pageWithPickerTasks,
+            "{{task reference=\"PickerTask1\"}}Picker task one{{/task}}\n\n"
+                + "{{task reference=\"PickerTask2\"}}Picker task two{{/task}}\n\n"
+                + "{{task reference=\"PickerTask3\"}}Picker task three{{/task}}");
+        List<TaskElement> tasks = new ViewPageWithTasks().getTasks();
+        String firstTask = tasks.get(0).getTaskId();
+        String secondTask = tasks.get(1).getTaskId();
+        String thirdTask = tasks.get(2).getTaskId();
+
+        WYSIWYGEditPage editPage =
+            setup.createPage(pageWithTasksPicker, String.format("{{tasks ids=\"%s\" /}}\n\n ", firstTask))
+                .editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+
+        // The tasks picker displays the task that is already selected.
+        TasksMacroModal macroEditModal = openTasksMacroModal(editor);
+        TaskPickerElement taskPicker = macroEditModal.getTaskPicker();
+        assertEquals(List.of(firstTask), taskPicker.getSelectedTasks());
+        assertEquals(List.of("#" + firstTask + " Picker task one"), taskPicker.getSelectedTaskLabels());
+
+        // More tasks can be selected, searching them either by title or by number.
+        taskPicker.selectTask("Picker task two", secondTask);
+        taskPicker.selectTask(thirdTask, thirdTask);
+        assertEquals(List.of(firstTask, secondTask, thirdTask), taskPicker.getSelectedTasks());
+        macroEditModal.clickSubmit();
+        editPage.clickSaveAndView();
+
+        ViewPageWithTasks viewPage = new ViewPageWithTasks();
+        assertEquals(3, viewPage.getTasks().size());
+        assertEquals("Picker task one", viewPage.getTaskMacroContent(0));
+        assertEquals("Picker task two", viewPage.getTaskMacroContent(1));
+        assertEquals("Picker task three", viewPage.getTaskMacroContent(2));
+
+        // The selected tasks are displayed again when editing the macro.
+        editPage = viewPage.editWYSIWYG();
+        macroEditModal = openTasksMacroModal(new CKEditor("content").waitToLoad());
+        taskPicker = macroEditModal.getTaskPicker();
+        assertEquals(List.of(firstTask, secondTask, thirdTask), taskPicker.getSelectedTasks());
+        assertEquals(List.of("#" + firstTask + " Picker task one", "#" + secondTask + " Picker task two",
+            "#" + thirdTask + " Picker task three"), taskPicker.getSelectedTaskLabels());
+        macroEditModal.clickCancel();
+        editPage.clickCancel();
+    }
+
+    @Test
+    @Order(84)
+    void taskCardMacroTaskidPicker(TestUtils setup)
+    {
+        createTaskPage(setup, pickerCardTask1, "Picker card one");
+        createTaskPage(setup, pickerCardTask2, "Picker card two");
+        String firstTask = setup.serializeReference(pickerCardTask1);
+        String secondTask = setup.serializeReference(pickerCardTask2);
+
+        WYSIWYGEditPage editPage =
+            setup.createPage(pageWithTaskCardPicker, String.format("{{taskcard taskid=\"%s\" /}}\n\n ", firstTask))
+                .editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+
+        // The task picker displays the task that is already selected.
+        TaskCardMacroModal macroEditModal = openTaskCardMacroModal(editor);
+        TaskPickerElement taskPicker = macroEditModal.getTaskPicker();
+        assertEquals(List.of(firstTask), taskPicker.getSelectedTasks());
+        assertEquals(List.of("Picker card one"), taskPicker.getSelectedTaskLabels());
+
+        // Selecting another task replaces the selected one.
+        taskPicker.selectTask(pickerCardTask2.getName(), secondTask);
+        assertEquals(List.of(secondTask), taskPicker.getSelectedTasks());
+        macroEditModal.clickSubmit();
+        editPage.clickSaveAndView();
+
+        assertEquals("Picker card two", new TaskCardMacroPage().getTaskCard(0).getTitle());
+    }
+
     @ParameterizedTest
     @WikisSource(extensions = "com.xwiki.task:application-task-ui")
     @Order(85)
@@ -756,6 +850,30 @@ public class TaskMacrosIT
         TaskMacroModal macroEditModal = new TaskMacroModal();
         macroEditModal.waitUntilReady();
         return macroEditModal;
+    }
+
+    private TasksMacroModal openTasksMacroModal(CKEditor editor)
+    {
+        RichTextAreaElement textArea = editor.getRichTextArea(true);
+        textArea.sendKeys(Keys.HOME, Keys.LEFT);
+        textArea.waitUntilWidgetSelected();
+        textArea.sendKeys(Keys.ENTER);
+        return new TasksMacroModal().waitUntilReady();
+    }
+
+    private TaskCardMacroModal openTaskCardMacroModal(CKEditor editor)
+    {
+        RichTextAreaElement textArea = editor.getRichTextArea(true);
+        textArea.sendKeys(Keys.HOME, Keys.LEFT);
+        textArea.waitUntilWidgetSelected();
+        textArea.sendKeys(Keys.ENTER);
+        return new TaskCardMacroModal().waitUntilReady();
+    }
+
+    private void createTaskPage(TestUtils setup, LocalDocumentReference reference, String name)
+    {
+        setup.createPage(reference, "", name);
+        setup.addObject(reference, "TaskManager.TaskManagerClass", "name", name);
     }
 
     private TaskboxMacroModal openTaskboxMacroModal(CKEditor editor)
