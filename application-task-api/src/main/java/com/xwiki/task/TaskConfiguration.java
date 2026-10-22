@@ -64,4 +64,14 @@ public interface TaskConfiguration
      * @since 3.8.0
      */
     boolean isIdDisplayed();
+
+    /**
+     * @return the type of tasks displayed by the task listings that don't specify one explicitly.
+     * @since 3.12.0
+     */
+    @Unstable
+    default TaskType getDisplayedTaskType()
+    {
+        return TaskType.ALL;
+    }
 }

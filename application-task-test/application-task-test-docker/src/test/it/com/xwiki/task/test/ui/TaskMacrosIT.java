@@ -92,6 +92,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     "xwikiCfgPlugins=com.xpn.xwiki.plugin.tag.TagPlugin" }, resolveExtraJARs = true)
 public class TaskMacrosIT
 {
+    private static final String TASK_CLASS = "TaskManager.TaskManagerClass";
+
+    private static final String TASK_CONFIGURATION_CLASS = "TaskManager.TaskManagerConfigurationClass";
+
+    private static final LocalDocumentReference TASK_ADMINISTRATION =
+        new LocalDocumentReference("TaskManager", "Administration");
+
+    private static final String DISPLAYED_TASK_TYPE = "displayedTaskType";
+
+    private static final String STANDALONE_TASK = "StandaloneTaskWithoutOwner";
+
+    private final LocalDocumentReference standaloneTaskWithoutOwner =
+        new LocalDocumentReference("Main", STANDALONE_TASK);
+
+    private final LocalDocumentReference pageWithTaskTypeParameter =
+        new LocalDocumentReference("Main", "PageWithTaskTypeParameter");
+
     private final LocalDocumentReference pageWithTaskReportWithParameters =
         new LocalDocumentReference("Main", "TaskReportParametersTest");
 
@@ -231,6 +248,61 @@ public class TaskMacrosIT
         // Checks the "reporters" parameter, reporters="XWiki.Admin".
         TaskReportMacro reportMacro3 = new TaskReportMacro("reportid3");
         assertEquals("Complete this @Admin as late as 2023/01/01 12:00", reportMacro3.getTask(0).getContent());
+    }
+
+    @Test
+    @Order(16)
+    void taskTypeFilter(TestUtils setup)
+    {
+        // Older standalone task objects lack the owner property, so create one without it.
+        setup.createPage(standaloneTaskWithoutOwner, "", STANDALONE_TASK);
+        setup.addObject(standaloneTaskWithoutOwner, TASK_CLASS, "name", STANDALONE_TASK, "status",
+            Task.STATUS_IN_PROGRESS);
+        try {
+            // The task report goes through the live table results (HQL) and the kanban board through XWQL.
+            setup.createPage(pageWithTaskTypeParameter,
+                "{{task-report taskType=\"standalone\" columns=\"name\" limit=\"50\" id=\"standaloneReport\"/}}\n\n"
+                    + "{{task-report taskType=\"inline\" columns=\"name\" limit=\"50\" id=\"inlineReport\"/}}\n\n"
+                    + "{{task-report columns=\"name\" limit=\"50\" id=\"allReport\"/}}\n\n"
+                    + "{{kanbanboard taskType=\"inline\"/}}");
+            new ViewPageWithTasks().waitUntilPageIsReady();
+
+            List<String> standaloneTasks = getReportedTasks("standaloneReport");
+            assertTrue(standaloneTasks.contains(STANDALONE_TASK));
+            assertTrue(standaloneTasks.stream().anyMatch(task -> task.startsWith("TaskFromTemplate")));
+            assertFalse(standaloneTasks.contains("tag1"));
+
+            List<String> inlineTasks = getReportedTasks("inlineReport");
+            assertTrue(inlineTasks.contains("tag1"));
+            assertFalse(inlineTasks.contains(STANDALONE_TASK));
+            assertFalse(inlineTasks.stream().anyMatch(task -> task.startsWith("TaskFromTemplate")));
+
+            List<String> allTasks = getReportedTasks("allReport");
+            assertTrue(allTasks.contains(STANDALONE_TASK));
+            assertTrue(allTasks.contains("tag1"));
+
+            List<String> inlineCards = getKanbanCards();
+            assertTrue(inlineCards.contains("tag1"));
+            assertFalse(inlineCards.contains(STANDALONE_TASK));
+
+            // Without the parameter, the macros fall back on the type set in the administration.
+            setup.updateObject(TASK_ADMINISTRATION, TASK_CONFIGURATION_CLASS, 0, DISPLAYED_TASK_TYPE, "standalone");
+            setup.createPage(pageWithTaskTypeParameter,
+                "{{task-report columns=\"name\" limit=\"50\" id=\"configuredReport\"/}}\n\n{{kanbanboard/}}");
+            new ViewPageWithTasks().waitUntilPageIsReady();
+
+            List<String> configuredTasks = getReportedTasks("configuredReport");
+            assertTrue(configuredTasks.contains(STANDALONE_TASK));
+            assertFalse(configuredTasks.contains("tag1"));
+
+            List<String> configuredCards = getKanbanCards();
+            assertTrue(configuredCards.contains(STANDALONE_TASK));
+            assertFalse(configuredCards.contains("tag1"));
+        } finally {
+            setup.updateObject(TASK_ADMINISTRATION, TASK_CONFIGURATION_CLASS, 0, DISPLAYED_TASK_TYPE, "all");
+            setup.deletePage(pageWithTaskTypeParameter);
+            setup.deletePage(standaloneTaskWithoutOwner);
+        }
     }
 
     @ParameterizedTest
@@ -868,6 +940,18 @@ public class TaskMacrosIT
         textArea.waitUntilWidgetSelected();
         textArea.sendKeys(Keys.ENTER);
         return new TaskCardMacroModal().waitUntilReady();
+    }
+
+    private List<String> getReportedTasks(String reportId)
+    {
+        return new TaskReportMacro(reportId).getTasks().stream().map(TaskElement::getContent)
+            .collect(Collectors.toList());
+    }
+
+    private List<String> getKanbanCards()
+    {
+        return new KanbanBoardMacroPage().getKanbanMacro().getColumns().stream()
+            .flatMap(column -> column.getTaskCards().stream()).map(KanbanCard::getTask).collect(Collectors.toList());
     }
 
     private void createTaskPage(TestUtils setup, LocalDocumentReference reference, String name)

@@ -138,6 +138,8 @@
     #else
       #set ($maxTasks = 50)
     #end
+    #getTaskTypeConstraint($request.taskType 'task.owner' 'typeConstraint')
+    #set ($query = "$query $typeConstraint")
     ## Sort the tasks by project and name to ensure a stable order.
     #set ($query = $query + ' order by UPPER(task.project), task.project, UPPER(task.name), task.name')
     #createTaskQuery($query 'query')
