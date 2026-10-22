@@ -123,6 +123,31 @@
         <valueField/>
         <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
       </defaultInlineStatus>
+      <displayedTaskType>
+        <cache>0</cache>
+        <customDisplay/>
+        <defaultValue>all</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <hint/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>displayedTaskType</name>
+        <number>4</number>
+        <picker>0</picker>
+        <prettyName>displayedTaskType</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <sort>none</sort>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <values>all|standalone|inline</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </displayedTaskType>
       <isIdDisplayed>
         <customDisplay/>
         <defaultValue>1</defaultValue>
@@ -159,6 +184,9 @@
     </class>
     <property>
       <defaultInlineStatus>InProgress</defaultInlineStatus>
+    </property>
+    <property>
+      <displayedTaskType>all</displayedTaskType>
     </property>
     <property>
       <isIdDisplayed/>

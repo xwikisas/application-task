@@ -67,5 +67,34 @@
   #end
   #setVariable("$return" $taskQuery)
 #end
+
+## HQL fragments joining the 'owner' property of the task object, aliased as 'obj' by the live table results. Append
+## them to the query only when the task type constraint is not empty, with 'taskTypeOwner.value' as owner value.
+#set ($taskOwnerHqlFrom = ', StringProperty as taskTypeOwner')
+#set ($taskOwnerHqlWhere = "and taskTypeOwner.id.id = obj.id and taskTypeOwner.id.name = 'owner'")
+
+#**
+ * Creates the constraint restricting the retrieved tasks to a type: standalone tasks, inline tasks or both.
+ *
+ * @param $taskType the type of the tasks to retrieve: 'all', 'standalone' or 'inline', case-insensitive; when empty,
+ *   the type configured in the administration is used
+ * @param $ownerValue the query expression holding the value of the task 'owner' property, e.g. 'task.owner' in XWQL
+ * @param $return the name of the variable that will hold the constraint, empty or starting with 'and'
+ *#
+#macro (getTaskTypeConstraint $taskType $ownerValue $return)
+  #set ($taskTypeValue = "$!taskType")
+  #if ($taskTypeValue == '')
+    #set ($taskTypeValue = "$services.task.configuration.displayedTaskType")
+  #end
+  ## Oracle stores empty strings as null, hence the null check and the "like '_%'" check of non-empty owners.
+  #if ($taskTypeValue.equalsIgnoreCase('standalone'))
+    #set ($taskTypeConstraint = "and ($ownerValue is null or $ownerValue = '')")
+  #elseif ($taskTypeValue.equalsIgnoreCase('inline'))
+    #set ($taskTypeConstraint = "and $ownerValue like '_%'")
+  #else
+    #set ($taskTypeConstraint = '')
+  #end
+  #setVariable("$return" $taskTypeConstraint)
+#end
 {{/velocity}}</content>
 </xwikidoc>
