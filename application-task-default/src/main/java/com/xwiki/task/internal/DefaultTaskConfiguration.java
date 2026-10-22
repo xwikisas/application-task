@@ -27,11 +27,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
 import com.xwiki.task.TaskConfiguration;
+import com.xwiki.task.TaskType;
 
 /**
  * The default implementation of {@link TaskConfiguration}.
@@ -90,5 +92,12 @@ public class DefaultTaskConfiguration implements TaskConfiguration
             defaultStatus = "InProgress";
         }
         return defaultStatus;
+    }
+
+    @Override
+    public TaskType getDisplayedTaskType()
+    {
+        String displayedTaskType = configurationSource.getProperty("displayedTaskType");
+        return EnumUtils.getEnumIgnoreCase(TaskType.class, displayedTaskType, TaskType.ALL);
     }
 }

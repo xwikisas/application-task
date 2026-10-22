@@ -44,7 +44,13 @@
 ## filtering on the LiveTable data even when the user has not performed any column filtering yet.
 ## When users start using column filtering, the generated DB query will combine both the default filtering and what the
 ## user has entered in the column filters.
-#set ($extra = "and $taskQueryBaseConstraint")
+#getTaskTypeConstraint($request.taskType 'taskTypeOwner.value' 'typeConstraint')
+#set ($extraFrom = '')
+#if ($typeConstraint != '')
+  #set ($extraFrom = $taskOwnerHqlFrom)
+  #set ($typeConstraint = "$taskOwnerHqlWhere $typeConstraint")
+#end
+#set ($extra = "and $taskQueryBaseConstraint $typeConstraint")
 #set ($params = {})
 #if ("$!request.space" != '')
   #set ($extra = "${extra} AND doc.space = :doc_space")
@@ -65,6 +71,6 @@
   #set ($extra = "${extra} and (doc.parent = '' or doc.parent is null) and doc.fullName &lt;&gt; :homepageFullName")
   #set ($discard = $params.put('homepageFullName', $homepageFullName))
 #end
-#gridresultwithfilter("$!request.classname" $request.collist.split(',') '' "${extra}" $params)
+#gridresultwithfilter("$!request.classname" $request.collist.split(',') "${extraFrom}" "${extra}" $params)
 {{/velocity}}</content>
 </xwikidoc>
