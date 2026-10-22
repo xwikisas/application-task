@@ -61,9 +61,10 @@ import com.xwiki.task.event.TaskRelativizingEvent;
 @Singleton
 public class DefaultTaskMissingDataManager implements TaskMissingDataManager
 {
+    // Oracle stores empty strings as null, so "<> ''" would never match there.
     private static final String QUERY_TASKS_WITH_OWNER = "SELECT DISTINCT task.owner "
         + "FROM Document AS doc, doc.object(TaskManager.TaskManagerClass) AS task "
-        + "WHERE task.owner <> ''";
+        + "WHERE task.owner like '_%'";
 
     @Inject
     private QueryManager queryManager;
@@ -166,8 +167,9 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
     {
         try {
             String countStatement = "SELECT count(DISTINCT task.owner) FROM Document AS doc, "
-                + "doc.object(TaskManager.TaskManagerClass) AS task WHERE task.owner <> '' "
-                + "and (task.reporter = '' or (task.status = 'Done' and task.completeDate is null))";
+                + "doc.object(TaskManager.TaskManagerClass) AS task WHERE task.owner like '_%' "
+                + "and (task.reporter is null or task.reporter = '' "
+                + "or (task.status = 'Done' and task.completeDate is null))";
             Query query = queryManager.createQuery(countStatement, Query.XWQL);
             int total = ((Long) query.execute().get(0)).intValue();
 
@@ -195,7 +197,8 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
     {
         try {
             String statement = QUERY_TASKS_WITH_OWNER
-                + " and (task.reporter = '' or (task.status = 'Done' and task.completeDate is null))";
+                + " and (task.reporter is null or task.reporter = ''"
+                + " or (task.status = 'Done' and task.completeDate is null))";
             Query query = queryManager.createQuery(statement, Query.XWQL);
             if (offset > 0) {
                 query.setOffset(offset);

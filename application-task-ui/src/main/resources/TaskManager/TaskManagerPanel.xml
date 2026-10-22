@@ -179,8 +179,10 @@
 {{velocity}}
   #panelheader($services.localization.render('taskmanager.panel.paneltitle'))
   #if(!$isGuest)
+  #getTaskTypeConstraint('' 'task.owner' 'typeConstraint')
   #set($constraints = " and (task.assignee LIKE CONCAT('%', CONCAT(:currentUser, ',%'))"
-    + " OR task.assignee LIKE CONCAT('%', :currentUser)) and task.status &lt;&gt; 'Done' order by task.duedate asc")
+    + " OR task.assignee LIKE CONCAT('%', :currentUser)) and task.status &lt;&gt; 'Done' $typeConstraint"
+    + " order by task.duedate asc")
   #createTaskQuery($constraints 'query')
   #set($results = $query.bindValue(
     "currentUser", $services.model.serialize($xcontext.userReference,'compactwiki')).setLimit(5).execute())

@@ -100,6 +100,9 @@ define('taskgantt-service-urls', ['jquery'], function ($) {
     if (undefined !== ganttDiv.data('max-tasks')) {
       params['maxTasks'] = ganttDiv.data('max-tasks');
     }
+    if (undefined !== ganttDiv.data('task-type')) {
+      params['taskType'] = ganttDiv.data('task-type');
+    }
     const query = $.param(params);
     return jsonSourceBaseURL + query;
   };

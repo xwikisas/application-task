@@ -40,7 +40,12 @@
 {{include reference="TaskManager.TaskQueryMacros" /}}
 {{velocity wiki="false"}}
 #set ($extraFrom = '')
-#set ($extraWhere = " and $taskQueryBaseConstraint")
+#getTaskTypeConstraint($request.taskType 'taskTypeOwner.value' 'typeConstraint')
+#if ($typeConstraint != '')
+  #set ($extraFrom = $taskOwnerHqlFrom)
+  #set ($typeConstraint = "$taskOwnerHqlWhere $typeConstraint")
+#end
+#set ($extraWhere = " and $taskQueryBaseConstraint $typeConstraint")
 #set ($params = {})
 #set ($spaceWhere = '')
 #if ("$!request.tasktag" != '')

@@ -51,7 +51,8 @@ public class TaskPickerElement extends BaseElement
     }
 
     /**
-     * Searches for a task and selects it. When the picker accepts a single task, the selected task is replaced.
+     * Searches for a task and selects it. When the picker accepts a single task, the selected task is replaced. The
+     * suggestions are hidden afterwards, since the picker of multiple tasks keeps them open over the modal footer.
      *
      * @param searchText the text to type in the picker
      * @param value the value of the task to select among the suggestions
