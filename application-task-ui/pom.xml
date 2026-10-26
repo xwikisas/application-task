@@ -37,10 +37,13 @@
     <xwiki.revapi.skip>true</xwiki.revapi.skip>
     <!-- The list of documents that have an implicit unlimited free license. The users can view these documents without
       buying a license or getting a trial license, but they cannot edit or delete them. -->
+    <!-- TaskManager.TaskQueryMacros is included by the macros and pages that list tasks, including the ones that are
+      free (e.g. the Kanban board macro), so the inclusion must not fail without a license. -->
     <xwiki.extension.licensing.publicDocuments>
       TaskManager.WebHome,
       TaskManager.CKEditorPlugin.PluginEnabler,
-      TaskManager.CKEditorPlugin.Plugin
+      TaskManager.CKEditorPlugin.Plugin,
+      TaskManager.TaskQueryMacros
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
       TaskManager.Administration,

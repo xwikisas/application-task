@@ -18,6 +18,8 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 #template("pickers_macros.vm")
+## Restores the order of the selected statuses from the macro call, which the picker would otherwise lose.
+#set ($discard = $xwiki.jsx.use('TaskManager.TaskStatusPicker'))
 #set ($options = [])
 #set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_status_')
 #foreach ($status in $services.task.getSortedStatuses())
@@ -33,6 +35,7 @@
   'name': $displayer.parameters.name,
   'value': $displayer.value,
   'multiple': 'multiple',
+  'class': 'task-status-picker',
   'prefix': ' ',
   'options': $options
 })

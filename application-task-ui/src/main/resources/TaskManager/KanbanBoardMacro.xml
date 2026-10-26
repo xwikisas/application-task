@@ -185,6 +185,127 @@ Example:
     $('.kanbanSpacePicker').modal('hide');
     $('.modal.macro-editor-modal.in').show();
   })
+
+  // The named colors supported by the Kanban macro, with the values it displays for them.
+  const kanbanColors = {green: '#88cc44', blue: '#00aacc', orange: '#ff9911', yellow: '#ffcc33', red: '#ee4433'};
+  // The color used by the Kanban macro for the columns that don't have one.
+  const missingColor = 'blue';
+
+  /**
+   * Converts a color, as specified in the colors parameter, to the #rrggbb format required by the color inputs.
+   */
+  const toHexColor = function (color) {
+    const kanbanColor = kanbanColors[color.toLowerCase()];
+    if (kanbanColor) {
+      return kanbanColor;
+    }
+    // Let the browser parse the CSS color. Invalid colors are ignored, and colors with transparency are returned in the
+    // rgba() format, so we fall back on black for both.
+    const context = document.createElement('canvas').getContext('2d');
+    context.fillStyle = '#000000';
+    context.fillStyle = color;
+    return context.fillStyle.startsWith('#') ? context.fillStyle : '#000000';
+  };
+
+  /**
+   * Replaces the colors parameter in the macro editor with a color picker displayed in each item of the columns
+   * parameter. The colors parameter value is computed from the selected columns, in their order.
+   */
+  const initColumnColors = function (colorsInput) {
+    const columnsSelect = colorsInput.closest('.macro-parameters').find('select[name="columns"]');
+    if (!columnsSelect.length) {
+      // Keep the colors text input when there are no columns to pick the colors for.
+      return;
+    }
+    // The colors are paired with the columns by position, so wait for the columns picker to restore the order of the
+    // columns from the macro call (see TaskManager.TaskStatusPicker).
+    if (columnsSelect.data('taskStatusPickerReady')) {
+      initColumnColorPickers(colorsInput, columnsSelect);
+    } else {
+      columnsSelect.one('taskStatusPicker:ready', function () {
+        initColumnColorPickers(colorsInput, columnsSelect);
+      });
+    }
+  };
+
+  const initColumnColorPickers = function (colorsInput, columnsSelect) {
+    colorsInput.closest('.macro-parameter').hide();
+    const columnsParameter = columnsSelect.closest('.macro-parameter');
+    const colorPickerTitle = colorsInput.attr('data-color-picker-title');
+    const getColumns = function () {
+      return columnsSelect.val() || [];
+    };
+    // The color of each column, including the removed ones, so that they get their color back when added again.
+    const columnColors = {};
+    const colors = colorsInput.val().split(',');
+    getColumns().forEach(function (column, index) {
+      columnColors[column] = (colors[index] || '').trim() || missingColor;
+    });
+    const getColor = function (column) {
+      if (!columnColors[column]) {
+        // Give the added columns the first Kanban color that is not used yet.
+        const usedColors = getColumns().map(function (column) {
+          return (columnColors[column] || '').toLowerCase();
+        });
+        columnColors[column] = Object.keys(kanbanColors).find(function (color) {
+          return !usedColors.includes(color);
+        }) || missingColor;
+      }
+      return columnColors[column];
+    };
+    const updateColors = function () {
+      colorsInput.val(getColumns().map(getColor).join(','));
+    };
+    const createColorPicker = function () {
+      return $(document.createElement('input')).attr({
+        type: 'color',
+        'class': 'kanban-column-color',
+        title: colorPickerTitle,
+        'aria-label': colorPickerTitle
+      }).on('mousedown click', function (event) {
+        // Prevent the selectize widget from selecting the column item or opening the column suggestions.
+        event.stopPropagation();
+      }).on('input change', function () {
+        columnColors[$(this).closest('[data-value]').attr('data-value')] = $(this).val();
+        updateColors();
+      });
+    };
+    // Add a color picker to the column items that don't have one. The selectize widget re-renders the items when they
+    // are added, so we need to do this whenever its content changes.
+    const addColorPickers = function () {
+      columnsParameter.find('.selectize-input > [data-value]').each(function () {
+        const item = $(this).addClass('kanban-column-item');
+        let colorPicker = item.children('.kanban-column-color');
+        if (!colorPicker.length) {
+          colorPicker = createColorPicker().prependTo(item);
+        }
+        const color = toHexColor(getColor(item.attr('data-value')));
+        if (colorPicker.val() !== color) {
+          colorPicker.val(color);
+        }
+      });
+    };
+    columnsSelect.on('change', updateColors);
+    new MutationObserver(addColorPickers).observe(columnsParameter[0], {childList: true, subtree: true});
+    updateColors();
+    addColorPickers();
+  };
+
+  const initAllColumnColors = function (container) {
+    $(container).find('input.kanban-column-colors').each(function () {
+      const colorsInput = $(this);
+      if (!colorsInput.data('kanbanColumnColorsInitialized')) {
+        colorsInput.data('kanbanColumnColorsInitialized', true);
+        initColumnColors(colorsInput);
+      }
+    });
+  };
+
+  $(document).on('xwiki:dom:updated', function (event, data) {
+    initAllColumnColors(data ? data.elements : document.body);
+  });
+  // The macro editor might have been displayed before this code was loaded.
+  initAllColumnColors(document.body);
 });
 </code>
     </property>
@@ -330,6 +451,42 @@ Example:
 }
 .kanban-board .task-card-status-${sdone} .panel .panel-title {
   color: ${sdonecolor};
+}
+/* The color pickers displayed next to the selected columns in the macro editor. The column items have a 1px 5px
+   padding (see selectize.bootstrap3.css), so with a 20px line height a 12px color box gets 5px of space on each side,
+   the same as between it and the column name. The form styles of the macro editor (e.g. full width, padding, rounded
+   corners) apply to all its inputs, so we need to override them. */
+.selectize-control.multi .selectize-input > .kanban-column-item {
+  display: inline-flex;
+  align-items: center;
+  line-height: 20px;
+}
+.selectize-input input.kanban-column-color {
+  flex: none;
+  box-sizing: border-box;
+  width: 12px !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 12px !important;
+  min-height: 0 !important;
+  margin: 0 5px 0 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(0, 0, 0, .3) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  background: none;
+  cursor: pointer;
+}
+input.kanban-column-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input.kanban-column-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 0;
+}
+input.kanban-column-color::-moz-color-swatch {
+  border: none;
+  border-radius: 0;
 }
 </code>
     </property>
@@ -1096,7 +1253,7 @@ Example:
       <name>colors</name>
     </property>
     <property>
-      <type/>
+      <type>com.xwiki.task.KanbanColumnColors</type>
     </property>
   </object>
   <object>
