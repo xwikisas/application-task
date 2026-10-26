@@ -54,6 +54,8 @@ import com.xwiki.task.MacroUtils;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.model.Task;
 
+import static com.xwiki.task.internal.logging.LoggingUtils.sanitize;
+
 /**
  * Class that will handle the management of tasks from different mediums.
  *
@@ -295,7 +297,7 @@ public class TaskXDOMProcessor
         } catch (ParseException e) {
             if (!strCreateDate.isEmpty()) {
                 logger.warn("Failed to parse the createDate macro parameter [{}]. Expected format is [{}]",
-                    strCreateDate, configuration.get().getStorageDateFormat());
+                    sanitize(strCreateDate), configuration.get().getStorageDateFormat());
             }
         }
 
@@ -306,7 +308,7 @@ public class TaskXDOMProcessor
             } catch (ParseException e) {
                 if (!strCompletedDate.isEmpty()) {
                     logger.warn("Failed to parse the completeDate macro parameter [{}]. Expected format is [{}]",
-                        strCreateDate, configuration.get().getStorageDateFormat());
+                        sanitize(strCompletedDate), configuration.get().getStorageDateFormat());
                 }
             }
         }
@@ -340,8 +342,8 @@ public class TaskXDOMProcessor
             deadline = new SimpleDateFormat(formatParam != null && !formatParam.isEmpty() ? formatParam
                 : configuration.get().getStorageDateFormat()).parse(dateValue);
         } catch (ParseException e) {
-            logger.warn("Failed to parse the deadline date [{}] of the Task macro! Expected format is [{}]", dateValue,
-                configuration.get().getStorageDateFormat());
+            logger.warn("Failed to parse the deadline date [{}] of the Task macro! Expected format is [{}]",
+                sanitize(dateValue), configuration.get().getStorageDateFormat());
         }
         return deadline;
     }

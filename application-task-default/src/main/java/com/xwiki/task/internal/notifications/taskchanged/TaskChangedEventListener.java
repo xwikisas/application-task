@@ -45,6 +45,8 @@ import org.xwiki.observation.event.Event;
 
 import com.xwiki.task.model.Task;
 
+import static com.xwiki.task.internal.logging.LoggingUtils.sanitize;
+
 /**
  * Class which handles auto-watching tasks for users who are assigned to it.
  *
@@ -116,8 +118,8 @@ public class TaskChangedEventListener extends AbstractEventListener
                 preference -> preference.isNotificationEnabled() && TaskChangedEvent.class.getCanonicalName()
                     .equals(preference.getProperties().get(NotificationPreferenceProperty.EVENT_TYPE)));
         } catch (NotificationException e) {
-            logger.warn("Failed to retrieve the notification preferences for user [{}]. Cause: [{}].", user,
-                ExceptionUtils.getRootCauseMessage(e));
+            logger.warn("Failed to retrieve the notification preferences for user [{}]. Cause: [{}].",
+                sanitize(user.toString()), ExceptionUtils.getRootCauseMessage(e));
             return false;
         }
     }
@@ -134,7 +136,7 @@ public class TaskChangedEventListener extends AbstractEventListener
                 watchedEntitiesManager.watchEntity(docRef, user);
             } catch (NotificationException e) {
                 logger.error("Failed to watch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
-                    docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
+                    docRef, sanitize(userFullName), ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }
@@ -151,7 +153,7 @@ public class TaskChangedEventListener extends AbstractEventListener
                 watchedEntitiesManager.unwatchEntity(docRef, user);
             } catch (NotificationException e) {
                 logger.error("Failed to unwatch task page [{}] for user [{}] after assignee changes. Root cause: [{}]",
-                    docRef, userFullName, ExceptionUtils.getRootCauseMessage(e));
+                    docRef, sanitize(userFullName), ExceptionUtils.getRootCauseMessage(e));
             }
         }
     }
