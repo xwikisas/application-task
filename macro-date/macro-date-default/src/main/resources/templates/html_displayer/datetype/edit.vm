@@ -17,9 +17,15 @@
 ## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
+## The input gets the 'datetime' class, that initializes the date time picker, only after its value is converted from
+## the storage format it was written in to the current one. The macro editor sets the value on the client side.
+#set ($discard = $xwiki.jsx.use('DateMacro.Code.StoredDatePicker'))
 #set ($dateTimePickerParams = {
   'value': $displayer.value,
-  'data-format': $services.datemacro.configuration.storageDateFormat
+  'data-format': $services.datemacro.configuration.storageDateFormat,
+  'data-storage-formats': $jsontool.serialize($services.datemacro.storageDateFormats)
 })
 #set ($discard = $dateTimePickerParams.putAll($displayer.parameters))
+#set ($inputClass = "$!dateTimePickerParams.get('class') stored-date")
+#set ($discard = $dateTimePickerParams.put('class', $inputClass.trim()))
 #dateTimePicker($dateTimePickerParams)

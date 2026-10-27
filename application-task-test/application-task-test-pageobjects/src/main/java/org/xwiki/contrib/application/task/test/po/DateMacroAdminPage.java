@@ -34,6 +34,9 @@ public class DateMacroAdminPage extends ViewPage
     @FindBy(id = "DateMacro.Code.Configuration_DateMacro.Code.ConfigurationClass_0_displayDateFormat")
     private WebElement displayDateFormatInput;
 
+    @FindBy(id = "DateMacro.Code.Configuration_DateMacro.Code.ConfigurationClass_0_storageDateFormat")
+    private WebElement storageDateFormatInput;
+
     @FindBy(css = ".bottombuttons input[type='submit']")
     private WebElement saveButton;
 
@@ -57,6 +60,35 @@ public class DateMacroAdminPage extends ViewPage
     public void clearDisplayDateFormat()
     {
         displayDateFormatInput.clear();
+    }
+
+    /**
+     * @return the format used to store the dates in the macro parameters
+     * @since 3.12.0
+     */
+    public String getStorageDateFormat()
+    {
+        return storageDateFormatInput.getAttribute("value");
+    }
+
+    /**
+     * @param format the format used to store the dates in the macro parameters
+     * @since 3.12.0
+     */
+    public void setStorageDateFormat(String format)
+    {
+        storageDateFormatInput.clear();
+        storageDateFormatInput.sendKeys(format);
+    }
+
+    /**
+     * Clears the storage format, so that the default one is used.
+     *
+     * @since 3.12.0
+     */
+    public void clearStorageDateFormat()
+    {
+        storageDateFormatInput.clear();
     }
 
     public void clickSave()

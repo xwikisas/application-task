@@ -386,7 +386,7 @@
 #end
 ## Create config filter for date since we can't add it through the filters livedata parameter.
 #if ("$!createdAfter" != '')
-  #set ($createdAfterDate = $datetool.toDate($services.datemacro.configuration.storageDateFormat, $createdAfter))
+  #set ($createdAfterDate = $services.datemacro.parse($createdAfter))
   #set ($discard = $livedataCfg.query.filters.add({
     "property": "createDate",
     "constraints": [

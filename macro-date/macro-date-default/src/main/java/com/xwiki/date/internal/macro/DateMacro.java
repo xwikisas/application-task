@@ -43,6 +43,7 @@ import org.xwiki.skinx.SkinExtension;
 
 import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.date.DateType;
+import com.xwiki.date.StoredDateParser;
 import com.xwiki.date.macro.DateMacroParameters;
 
 /**
@@ -70,6 +71,9 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     private DateMacroConfiguration configuration;
 
     @Inject
+    private StoredDateParser parser;
+
+    @Inject
     @Named("ssx")
     private SkinExtension ssx;
 
@@ -94,15 +98,11 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     {
         this.ssx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
         Date paramDate;
-        String format = configuration.getStorageDateFormat();
         try {
-            if (!StringUtils.isEmpty(parameters.getFormat())) {
-                format = parameters.getFormat();
-            }
-            paramDate = new SimpleDateFormat(format).parse(parameters.getValue());
+            paramDate = parser.parse(parameters.getValue(), parameters.getFormat());
         } catch (ParseException e) {
-            throw new MacroExecutionException(
-                String.format("Failed to parse the given date, expected format [%s]!", format));
+            throw new MacroExecutionException(String.format("Failed to parse the given date, expected format [%s]!",
+                StringUtils.defaultIfEmpty(parameters.getFormat(), configuration.getStorageDateFormat())));
         }
 
         String displayFormat =

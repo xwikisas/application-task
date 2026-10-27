@@ -40,11 +40,11 @@ import com.xwiki.date.DateMacroConfiguration;
 @Unstable
 public class DefaultDateConfiguration implements DateMacroConfiguration
 {
+    static final String DEFAULT_DATE_FORMAT = "yyyy/MM/dd HH:mm";
+
     private static final String STORAGE_FORMAT_KEY = "storageDateFormat";
 
     private static final String DISPLAY_FORMAT_KEY = "displayDateFormat";
-
-    private static final String DEFAULT_DATE_FORMAT = "yyyy/MM/dd HH:mm";
 
     private static final String PROPERTIES_PREFIX = "datemacro.";
 

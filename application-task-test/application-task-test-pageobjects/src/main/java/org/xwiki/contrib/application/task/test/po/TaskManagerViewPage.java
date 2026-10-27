@@ -100,7 +100,7 @@ public class TaskManagerViewPage extends ViewPage
 
     public String getCreateDate()
     {
-        return completionDateElement.getText();
+        return createDateElement.getText();
     }
 
     public String getCompletionDate()

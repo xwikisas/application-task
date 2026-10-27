@@ -1,3 +1,6 @@
 com.xwiki.date.internal.macro.DateMacro
 com.xwiki.date.internal.DefaultDateConfiguration
 com.xwiki.date.internal.DateMacroConfigurationSource
+com.xwiki.date.internal.DefaultStoredDateParser
+com.xwiki.date.internal.StorageDateFormatHistory
+com.xwiki.date.internal.StorageDateFormatHistoryListener

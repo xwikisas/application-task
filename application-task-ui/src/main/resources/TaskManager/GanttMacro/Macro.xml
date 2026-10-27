@@ -1896,8 +1896,8 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   ##))
   #set ($discard = $xwiki.ssx.use('TaskManager.GanttMacro.Macro'))
   #set ($discard = $xwiki.jsx.use('TaskManager.GanttMacro.Macro'))
-  #set ($storageDateFormat = $services.datemacro.configuration.storageDateFormat)
-  #set ($storageDateTimeFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($storageDateFormat))
+  #set ($fromMillis = $services.datemacro.parse($xcontext.macro.params.from).time)
+  #set ($toMillis = $services.datemacro.parse($xcontext.macro.params.to).time)
   #set ($displayDateFormat = $services.datemacro.configuration.displayDateFormat)
   #set ($displayDateFormatter = $xwiki.jodatime.getDateTimeFormatterForPattern($displayDateFormat))
   #set ($diagramIsReadonly = !("$!xcontext.macro.params.readonly" == 'false'))
@@ -1917,12 +1917,10 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.maxTasks" != '')
     data-max-tasks="${escapetool.html($xcontext.macro.params.maxTasks)}"
   #end
-  #if ("$!xcontext.macro.params.from" != '')
-    #set ($fromMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.from, $storageDateTimeFormatter).getMillis())
+  #if ("$!fromMillis" != '')
     data-date-from="${escapetool.html($fromMillis)}"
   #end
-  #if ("$!xcontext.macro.params.to" != '')
-    #set ($toMillis = $xwiki.jodatime.dateTime.parse($xcontext.macro.params.to, $storageDateTimeFormatter).getMillis())
+  #if ("$!toMillis" != '')
     data-date-to="${escapetool.html($toMillis)}"
   #end
   #if ("$!xcontext.macro.params.hideNoDueDate" != '')
@@ -1951,13 +1949,13 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
     $escapetool.html($services.localization.render('taskmanager.gantt.macro.hideNoDueDate_0'))
   #end
   &lt;/p&gt;&lt;/span&gt;
-  #if ("$!xcontext.macro.params.from" != '')
+  #if ("$!fromMillis" != '')
     &lt;span&gt;
       &lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.date.from'))&lt;/b&gt;
       $escapetool.html($displayDateFormatter.print($fromMillis))
     &lt;/span&gt;
   #end
-  #if ("$!xcontext.macro.params.to" != '')
+  #if ("$!toMillis" != '')
     &lt;span&gt;
       &lt;b&gt;$escapetool.html($services.localization.render('taskmanager.gantt.macro.date.to'))&lt;/b&gt;
       $escapetool.html($displayDateFormatter.print($toMillis))
