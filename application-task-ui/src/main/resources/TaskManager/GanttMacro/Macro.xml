@@ -208,6 +208,9 @@ define('taskgantt-service-urls', ['jquery'], function ($) {
     if (undefined !== ganttDiv.data('max-tasks')) {
       params['maxTasks'] = ganttDiv.data('max-tasks');
     }
+    if (undefined !== ganttDiv.data('task-type')) {
+      params['taskType'] = ganttDiv.data('task-type');
+    }
     const query = $.param(params);
     return jsonSourceBaseURL + query;
   };
@@ -1938,6 +1941,9 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
   #if ("$!xcontext.macro.params.spaces" != '')
     data-spaces="${escapetool.html($xcontext.macro.params.spaces)}"
   #end
+  #if ("$!xcontext.macro.params.taskType" != '')
+    data-task-type="${escapetool.html($xcontext.macro.params.taskType)}"
+  #end
 &gt;
 ## TODO: Change the way in which the parameters below are displayed in the UI so it is prettier and takes up less space.
 &lt;div class='taskgantt-description'&gt;
@@ -2764,6 +2770,96 @@ path=$services.webjars.url('org.webjars.npm:frappe-gantt', "dist/frappe-gantt.mi
     </property>
     <property>
       <type>java.lang.Integer</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.GanttMacro.Macro</name>
+    <number>8</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>300e8bf3-d7ed-4a8a-a7f4-a6ffdf5d27ed</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Show only the tasks of this type: standalone tasks, inline tasks (created with the task macro) or both. When empty, the type set in the Task Manager administration is used.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>taskType</name>
+    </property>
+    <property>
+      <type>com.xwiki.task.TaskType</type>
     </property>
   </object>
 </xwikidoc>

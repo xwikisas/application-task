@@ -49,7 +49,8 @@ public class TaskPickerElement extends BaseElement
     }
 
     /**
-     * Searches for a task and selects it. When the picker accepts a single task, the selected task is replaced.
+     * Searches for a task and selects it. When the picker accepts a single task, the selected task is replaced. The
+     * suggestions are hidden afterwards, since the picker of multiple tasks keeps them open over the modal footer.
      *
      * @param searchText the text to type in the picker
      * @param value the value of the task to select among the suggestions
@@ -58,6 +59,10 @@ public class TaskPickerElement extends BaseElement
     public TaskPickerElement selectTask(String searchText, String value)
     {
         getSuggestInput().sendKeys(searchText).waitForSuggestions().selectByValue(value);
+        // Move the focus out of the picker to hide the suggestions: SuggestInputElement#hideSuggestions presses
+        // Escape, which also closes the modal.
+        getDriver().findElementWithoutWaiting(By.cssSelector("[class*=-editor-modal] .modal-title")).click();
+        getSuggestInput().waitForSuggestionsClearance();
         return this;
     }
 

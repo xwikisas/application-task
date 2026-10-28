@@ -567,7 +567,8 @@ Example:
 #set($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
 ## The xwql variable is used by the awmkanban macro called from this one. It starts with the constraint shared by all
 ## the task queries. Note that awmkanban doesn't apply the 'hidden' query filter, so inline tasks are displayed.
-#set ($xwql = $taskQueryBaseConstraint)
+#getTaskTypeConstraint($xcontext.macro.params.taskType 'obj.owner' 'typeConstraint')
+#set ($xwql = "$taskQueryBaseConstraint $typeConstraint")
 #set($user = "$!{xcontext.macro.params.user}")
 #set ($columnWidth = "$!{xcontext.macro.params.columnWidth}")
 #set ($colors = "$!{xcontext.macro.params.colors}")
@@ -1367,6 +1368,96 @@ Example:
     </property>
     <property>
       <type>com.xpn.xwiki.objects.classes.NumberClass</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.KanbanBoardMacro</name>
+    <number>10</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>4da2505d-d500-49dc-93c4-fd4b8c3a4e87</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Show only the tasks of this type: standalone tasks, inline tasks (created with the task macro) or both. When empty, the type set in the Task Manager administration is used.</description>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>taskType</name>
+    </property>
+    <property>
+      <type>com.xwiki.task.TaskType</type>
     </property>
   </object>
 </xwikidoc>

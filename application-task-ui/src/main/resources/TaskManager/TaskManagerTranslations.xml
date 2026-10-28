@@ -180,6 +180,8 @@ taskmanager.gantt.documentation.examples.hideNoDueDate=hide tasks which do not h
 taskmanager.gantt.documentation.examples.maxTasks=limit the amount of displayed tasks to this number (default is 50)
 rendering.macro.taskgantt.parameter.hideNoDueDate.name=Hide no due date
 rendering.macro.taskgantt.parameter.maxTasks.name=Max tasks
+rendering.macro.taskgantt.parameter.taskType.name=Task type
+rendering.macro.taskgantt.parameter.taskType.description=Show only the tasks of this type: standalone tasks, inline tasks (created with the task macro) or both. When empty, the type set in the Task Manager administration is used.
 
 # Panel
 taskmanager.panel.paneltitle=My Due Tasks
@@ -222,6 +224,10 @@ taskmanager.livetable.noRights=You don't have view rights for the document that 
 taskmanager.macro.tasks.noRights=Some tasks have not been displayed because you don't have the rights to view them.
 taskmanager.picker.taskpage.noValue=Choose a task.
 taskmanager.picker.taskpage.multiple.noValue=Choose one or more tasks.
+taskmanager.taskType.default=Use the administration setting
+taskmanager.taskType.all=All tasks
+taskmanager.taskType.standalone=Standalone tasks
+taskmanager.taskType.inline=Inline tasks (created with the task macro)
 rendering.macro.task.name=Task
 rendering.macro.task.description=Create a task that you can assign a user to using the mention macro and use the date macro to set a deadline.
 rendering.macro.task.parameter.status.name=The status of the task.
@@ -271,12 +277,19 @@ rendering.macro.task-report.parameter.sortBy.name=Sort By
 rendering.macro.task-report.parameter.sortBy.description=The column that will be used to order the table.
 rendering.macro.task-report.parameter.id.name=Table ID
 rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
+rendering.macro.task-report.parameter.taskType.name=Task type filter
+rendering.macro.task-report.parameter.taskType.description=Show only the tasks of this type: standalone tasks, inline tasks (created with the task macro) or both. When empty, the type set in the Task Manager administration is used.
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold events based on your preferences. The values should be comma separated.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus.hint=Changing this value will affect the task macros created from this moment onwards. The newly created task macros will have the default status as the one selected here. Additionally, unchecking a task macro will set its status to this value.
 TaskManager.TaskManagerConfigurationClass_isIdDisplayed=Is ID Displayed
 TaskManager.TaskManagerConfigurationClass_isIdDisplayed.hint=Denotes whether the task macro should also display the ID and link to the task page or not.
+TaskManager.TaskManagerConfigurationClass_displayedTaskType=Displayed tasks
+TaskManager.TaskManagerConfigurationClass_displayedTaskType.hint=The type of tasks displayed by the task report, Gantt diagram and Kanban board macros that don't specify one, by the task panel and by the Task Manager home page. Inline tasks are the tasks created with the task macro, standalone tasks are the others.
+TaskManager.TaskManagerConfigurationClass_displayedTaskType_all=All tasks
+TaskManager.TaskManagerConfigurationClass_displayedTaskType_standalone=Standalone tasks
+TaskManager.TaskManagerConfigurationClass_displayedTaskType_inline=Inline tasks
 
 ## Kanban Board
 rendering.macro.kanbanboard.parameter.columns.name=Columns
@@ -295,6 +308,8 @@ rendering.macro.kanbanboard.parameter.order.description=Field to order the tasks
 rendering.macro.kanbanboard.parameter.limit.name=Limit
 rendering.macro.kanbanboard.parameter.limit.description=The amount of tasks displayed for each status.
 rendering.macro.kanbanboard.parameter.columnWidth.name=Column width
+rendering.macro.kanbanboard.parameter.taskType.name=Task type
+rendering.macro.kanbanboard.parameter.taskType.description=Show only the tasks of this type: standalone tasks, inline tasks (created with the task macro) or both. When empty, the type set in the Task Manager administration is used.
 
 ## Incomplete tasks
 TaskManager.adminitration.incompleteTasks=Incomplete tasks
