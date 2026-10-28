@@ -40,13 +40,18 @@
 #if($hasAdmin)
   #set($severity = $request.severity)
   #if(!$stringtool.isBlank($severity) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
-    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Severity_$severity"))
-    #set($document = $xwiki.getDocument($documentRef))
-    #set($discard = $document.setTitle("$severity"))
-    #set($discard = $document.setHidden(true))
-    #set($object = $document.getObject('TaskManager.SeverityClass', true))
-    $object.set('severity', "$severity")
-    $document.save()    
+    #set($existingCount = $services.query.xwql("from doc.object(TaskManager.SeverityClass) as obj where lower(obj.severity) = :value").bindValue('value', $severity.trim().toLowerCase()).count())
+    #if($existingCount &gt; 0)
+      {{error}}$services.localization.render('TaskManager.administration.addSeverity.duplicate', [$services.rendering.escape($severity, 'xwiki/2.1')]){{/error}}
+    #else
+      #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Severity_$severity"))
+      #set($document = $xwiki.getDocument($documentRef))
+      #set($discard = $document.setTitle("$severity"))
+      #set($discard = $document.setHidden(true))
+      #set($object = $document.getObject('TaskManager.SeverityClass', true))
+      $object.set('severity', "$severity")
+      $document.save()    
+    #end
   #end
 
   {{html}}
