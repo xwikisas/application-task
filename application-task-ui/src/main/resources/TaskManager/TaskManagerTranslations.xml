@@ -56,6 +56,7 @@ TaskManager.adminitration.addProject=Add Project
 TaskManager.adminitration.addStatus=Add Status
 TaskManager.adminitration.addSeverity=Add Priority
 TaskManager.adminitration.templateList=Add Task Template
+TaskManager.administration.dateFormats.info=The formats used to display and store the task dates (date macros, deadlines, creation and completion dates) are configured in the {0} administration section. The storage format can be changed at any time: the dates stored in a previous format are still read correctly.
 
 # Class fields
 TaskManager.TaskManagerClass_name=Task
