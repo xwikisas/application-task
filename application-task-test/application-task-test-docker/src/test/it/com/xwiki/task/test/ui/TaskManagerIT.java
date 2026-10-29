@@ -51,7 +51,6 @@ import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CopyOrRenameOrDeleteStatusPage;
 import org.xwiki.test.ui.po.CopyPage;
-import org.xwiki.test.ui.po.CreatePagePage;
 import org.xwiki.test.ui.po.RenamePage;
 import org.xwiki.test.ui.po.ViewPage;
 import org.xwiki.test.ui.po.editor.WikiEditPage;
@@ -532,32 +531,37 @@ class TaskManagerIT
     void projectRestrictions(TestUtils setup)
     {
         setup.loginAsSuperAdmin();
-        // The task template allows creating tasks only inside the TaskManager space.
-        String allowedSpace = "TaskManager.ProjectRestrictionAllowed";
-        String otherSpace = "TaskManager.ProjectRestrictionOther";
+        DocumentReference allowedTask =
+            new DocumentReference("xwiki", Arrays.asList("TaskManager", "ProjectRestrictionAllowed"), "Task");
+        DocumentReference otherTask =
+            new DocumentReference("xwiki", Arrays.asList("TaskManager", "ProjectRestrictionOther"), "Task");
         String spaceProject = "SpaceProject";
         String userProject = "UserProject";
-        createProject(setup, spaceProject, "spaces", allowedSpace + ".WebHome");
-        createProject(setup, userProject, "spaces", allowedSpace + ".WebHome", "users",
+        createProject(setup, spaceProject, "spaces", "TaskManager.ProjectRestrictionAllowed.WebHome");
+        createProject(setup, userProject, "spaces", "TaskManager.ProjectRestrictionAllowed.WebHome", "users",
             "XWiki." + SIMPLE_USER_NAME);
+        createTask(setup, allowedTask);
+        createTask(setup, otherTask);
 
         // Superadmin is not a user of any project, so only the location of the task matters.
-        List<String> projects = getAssignableProjects(otherSpace);
+        List<String> projects = getAssignableProjects(setup, otherTask);
         assertTrue(projects.contains("Other"));
         assertFalse(projects.contains(spaceProject));
         assertFalse(projects.contains(userProject));
 
-        projects = getAssignableProjects(allowedSpace);
+        projects = getAssignableProjects(setup, allowedTask);
         assertTrue(projects.contains(spaceProject));
         assertTrue(projects.contains(userProject));
 
         // The users of a project can assign it wherever the task is located.
         setup.login(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD);
-        projects = getAssignableProjects(otherSpace);
+        projects = getAssignableProjects(setup, otherTask);
         assertFalse(projects.contains(spaceProject));
         assertTrue(projects.contains(userProject));
 
         setup.loginAsSuperAdmin();
+        setup.deletePage(allowedTask);
+        setup.deletePage(otherTask);
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_" + spaceProject));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_" + userProject));
     }
@@ -573,13 +577,17 @@ class TaskManagerIT
         setup.addObject(projectReference, "TaskManager.ProjectClass", objectProperties);
     }
 
-    private List<String> getAssignableProjects(String space)
+    private void createTask(TestUtils setup, DocumentReference taskReference)
     {
-        CreatePagePage createPage = TaskManagerHomePage.gotoPage().createPage();
-        createPage.getDocumentPicker().setTitle("ProjectRestrictionTask");
-        createPage.setTemplate("TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
-        createPage.getDocumentPicker().setParent(space);
-        createPage.clickCreate();
+        setup.createPage(taskReference, "", "ProjectRestrictionTask");
+        setup.addObject(taskReference, "TaskManager.TaskManagerClass", "name", "ProjectRestrictionTask");
+    }
+
+    private List<String> getAssignableProjects(TestUtils setup, DocumentReference taskReference)
+    {
+        // The task is edited instead of being created because simple users can't change the location of a new page
+        // from the create page.
+        setup.gotoPage(taskReference, "edit");
         TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
         List<String> projects = inlinePage.getProjects();
         inlinePage.clickCancel();
