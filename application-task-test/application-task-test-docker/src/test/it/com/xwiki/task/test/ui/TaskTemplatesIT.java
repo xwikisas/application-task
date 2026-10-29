@@ -91,7 +91,7 @@ public class TaskTemplatesIT
         page.setTemplateName(testTemplate);
         setup.getDriver().addPageNotYetReloadedMarker();
         page.submit();
-        assertNotNull(setup.getDriver().findElement(By.className("xnotification-done")));
+        // Don't check the success message, it's displayed only until the redirect and can be missed.
         setup.getDriver().waitUntilPageIsReloaded();
         // See that the user is redirected to the template page, ignoring the query string, which contains some tokens.
         assertEquals(getTemplateSpaceUrl("edit", testTemplate + "Template", setup), setup.getDriver().getCurrentUrl());

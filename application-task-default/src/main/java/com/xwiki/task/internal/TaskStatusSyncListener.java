@@ -40,7 +40,8 @@ import com.xwiki.task.model.Task;
  * Keeps the properties of a task that depend on its status consistent when only one side is changed, whatever made
  * the change (Kanban board, Live Data, REST, scripts):
  * <ul>
- * <li>a status change updates the progress: 100 when moved to {@code Done}, 0 when moved out of {@code Done};</li>
+ * <li>a status change updates the progress: 100 when moved to {@code Done}, 0 when moved to {@code ToDo} or out of
+ * {@code Done};</li>
  * <li>a progress change updates the status: 100 means {@code Done}, less than 100 moves a {@code Done} task back to
  * {@code InProgress} and more than 0 moves a {@code ToDo} task to {@code InProgress};</li>
  * <li>the completion date is set when the task becomes {@code Done} and cleared when it stops being {@code Done};</li>
@@ -112,9 +113,10 @@ public class TaskStatusSyncListener extends AbstractTaskEventListener
 
     private void syncProgressWithStatus(BaseObject taskObj, String originalStatus)
     {
-        if (Task.STATUS_DONE.equals(taskObj.getStringValue(Task.STATUS))) {
+        String status = taskObj.getStringValue(Task.STATUS);
+        if (Task.STATUS_DONE.equals(status)) {
             taskObj.setIntValue(Task.PROGRESS, DONE_PROGRESS);
-        } else if (Task.STATUS_DONE.equals(originalStatus)) {
+        } else if (Task.STATUS_DONE.equals(originalStatus) || STATUS_TODO.equals(status)) {
             taskObj.setIntValue(Task.PROGRESS, 0);
         }
     }

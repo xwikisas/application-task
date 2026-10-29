@@ -601,11 +601,12 @@ public class TaskMacrosIT
     @Order(81)
     void quickActions(TestUtils setup) throws Exception
     {
-        // The task quick action inserts a task with a generated reference and the current user as reporter.
+        // The task quick action inserts a task with a generated reference and the current user as reporter (the
+        // current user depends on the tests that ran before).
         String content = insertWithQuickAction(setup, "/task", "Task", "Type your task here.");
         assertTrue(content.startsWith("{{task "), content);
         assertTrue(content.contains(" reference=\""), content);
-        assertTrue(content.contains("reporter=\"XWiki.Admin\""), content);
+        assertTrue(content.contains("reporter=\"XWiki." + setup.getLoggedInUserName() + "\""), content);
         assertTrue(content.contains("createDate=\""), content);
         assertTrue(content.matches("(?s).*}}\\s*Type your task here\\.\\s*\\{\\{/task}}"), content);
         assertEquals(1, new ViewPageWithTasks().getTasks().size());

@@ -123,6 +123,32 @@ class TaskStatusSyncListenerTest
     }
 
     @Test
+    void movedBackToToDoResetsProgress()
+    {
+        setTask(this.originalTaskObj, Task.STATUS_IN_PROGRESS, 40);
+        this.originalTaskObj.setDateValue(Task.START_DATE, OLD_DATE);
+        setTask(this.taskObj, STATUS_TODO, 40);
+        this.taskObj.setDateValue(Task.START_DATE, OLD_DATE);
+
+        update();
+
+        assertEquals(0, this.taskObj.getIntValue(Task.PROGRESS));
+        assertEquals(OLD_DATE, this.taskObj.getDateValue(Task.START_DATE));
+    }
+
+    @Test
+    void movedToToDoWithExplicitProgressKeepsProgress()
+    {
+        setTask(this.originalTaskObj, Task.STATUS_IN_PROGRESS, 40);
+        setTask(this.taskObj, STATUS_TODO, 20);
+
+        update();
+
+        assertEquals(20, this.taskObj.getIntValue(Task.PROGRESS));
+        assertEquals(STATUS_TODO, this.taskObj.getStringValue(Task.STATUS));
+    }
+
+    @Test
     void movedToInProgressSetsMissingStartDate()
     {
         setTask(this.originalTaskObj, STATUS_TODO, 30);

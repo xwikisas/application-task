@@ -108,6 +108,9 @@ class NotificationIT
 
     private static final String PASSWORD = "password";
 
+    private static final List<String> REOPENED_TASK_DETAILS =
+        List.of("Progress changed from 100 to 0", "Status changed from Done to InProgress");
+
     @RegisterExtension
     static GreenMailExtension mail = new GreenMailExtension(ServerSetupTest.SMTP);
 
@@ -300,8 +303,8 @@ class NotificationIT
             assertEquals(1, tray.getNotificationsCount());
             assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
 
-            List<String> notificationDescriptions = getNotificationDetails(setup, 0);
-            assertEquals(1, notificationDescriptions.size(), notificationDescriptions.toString());
+            // Unchecking the task moves it out of Done, which also resets its progress.
+            assertEquals(REOPENED_TASK_DETAILS, getNotificationDetails(setup, 0));
         });
         checkPreferences(setup, TEST_USERNAME, BootstrapSwitch.State.ON);
     }
@@ -443,8 +446,9 @@ class NotificationIT
             inlinePage.clickSaveAndView();
         });
 
-        // Verify the user gets the notification.
-        checkTaskNotification(setup, WATCHER);
+        // Verify the user gets the notification. The task was done, so moving it to In Progress also resets its
+        // progress.
+        checkTaskNotification(setup, WATCHER, REOPENED_TASK_DETAILS);
     }
 
     /**
@@ -549,6 +553,15 @@ class NotificationIT
 
     private void checkTaskNotification(TestUtils setup, String user)
     {
+        checkTaskNotification(setup, user, null);
+    }
+
+    /**
+     * @param expectedDetails the expected notification details, or {@code null} to only check that there's a single
+     *     one
+     */
+    private void checkTaskNotification(TestUtils setup, String user, List<String> expectedDetails)
+    {
         doAsUser(setup, user, () -> {
             TaskManagerHomePage.gotoPage();
             NotificationsTrayPage.waitOnNotificationCount("xwiki:XWiki." + user, "xwiki", 1);
@@ -560,7 +573,11 @@ class NotificationIT
             assertEquals(TaskChangedEvent.class.getName(), tray.getNotificationType(0));
 
             List<String> details = getNotificationDetails(setup, 0);
-            assertEquals(1, details.size(), details.toString());
+            if (expectedDetails != null) {
+                assertEquals(expectedDetails, details);
+            } else {
+                assertEquals(1, details.size(), details.toString());
+            }
         });
     }
 }
