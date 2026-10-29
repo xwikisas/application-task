@@ -21,9 +21,7 @@ package com.xwiki.task.internal;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -31,7 +29,6 @@ import javax.inject.Singleton;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.XWikiContext;
@@ -64,8 +61,6 @@ public class TaskStatusSyncListener extends AbstractTaskEventListener
      * The name of the listener.
      */
     public static final String NAME = "com.xwiki.task.internal.TaskStatusSyncListener";
-
-    private static final List<String> TEMPLATE_SPACE_REFERENCES = List.of(TASK_MANAGER_SPACE, "TaskManagerTemplates");
 
     private static final String STATUS_TODO = "ToDo";
 
@@ -181,11 +176,5 @@ public class TaskStatusSyncListener extends AbstractTaskEventListener
     private Long getTime(Date date)
     {
         return date != null ? date.getTime() : null;
-    }
-
-    private boolean isTemplate(XWikiDocument document)
-    {
-        return document.getDocumentReference().getSpaceReferences().stream().map(SpaceReference::getName)
-            .collect(Collectors.toList()).equals(TEMPLATE_SPACE_REFERENCES);
     }
 }

@@ -92,6 +92,16 @@ public class TaskManagerInlinePage extends InlinePage
     }
 
     /**
+     * @return the values of the projects that can be selected for the task entry
+     * @since 3.12.0
+     */
+    public List<String> getProjects()
+    {
+        return new Select(this.projectElement).getOptions().stream().map(option -> option.getAttribute("value"))
+            .collect(Collectors.toList());
+    }
+
+    /**
      * @return The creation date of the task (automatically set)
      */
     public String getCreationDate()

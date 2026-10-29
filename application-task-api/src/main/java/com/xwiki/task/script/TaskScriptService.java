@@ -22,6 +22,7 @@ package com.xwiki.task.script;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -31,6 +32,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.job.Job;
 import org.xwiki.job.JobException;
 import org.xwiki.job.JobExecutor;
@@ -45,6 +47,7 @@ import org.xwiki.security.authorization.Right;
 import org.xwiki.stability.Unstable;
 
 import com.xwiki.task.PaginatedReferences;
+import com.xwiki.task.ProjectManager;
 import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskMissingDataManager;
@@ -76,6 +79,12 @@ public class TaskScriptService implements ScriptService
 
     @Inject
     private QueryManager queryManager;
+
+    @Inject
+    private ProjectManager projectManager;
+
+    @Inject
+    private DocumentAccessBridge documentAccessBridge;
 
     @Inject
     private Logger logger;
@@ -195,6 +204,22 @@ public class TaskScriptService implements ScriptService
         } catch (QueryException e) {
             logger.error("Failed to retrieve the statuses.", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * @param taskReference the reference of the task document
+     * @return the names of the projects that the current user can assign to the given task
+     * @since 3.12.0
+     */
+    public Set<String> getAllowedProjects(DocumentReference taskReference)
+    {
+        try {
+            return projectManager.getAllowedProjects(taskReference, documentAccessBridge.getCurrentUserReference());
+        } catch (TaskException e) {
+            logger.warn("Failed to retrieve the projects allowed for the task [{}]. Cause: [{}].", taskReference,
+                ExceptionUtils.getRootCauseMessage(e));
+            return Collections.emptySet();
         }
     }
 }

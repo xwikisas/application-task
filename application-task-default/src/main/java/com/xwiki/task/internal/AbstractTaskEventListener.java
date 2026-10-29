@@ -21,6 +21,7 @@ package com.xwiki.task.internal;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.xwiki.job.JobExecutor;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.LocalDocumentReference;
+import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.ObservationContext;
 import org.xwiki.observation.event.BeginFoldEvent;
@@ -57,6 +59,8 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
         new LocalDocumentReference(Collections.singletonList(TASK_MANAGER_SPACE), "TaskManagerClass");
 
     protected static final String TASK_UPDATE_FLAG = "taskUpdating";
+
+    private static final List<String> TEMPLATE_SPACE_REFERENCES = List.of(TASK_MANAGER_SPACE, "TaskManagerTemplates");
 
     @Inject
     protected DocumentReferenceResolver<String> resolver;
@@ -100,6 +104,16 @@ public abstract class AbstractTaskEventListener extends AbstractEventListener
             return;
         }
         processEvent(document, context, event, false);
+    }
+
+    /**
+     * @param document the document to check
+     * @return {@code true} if the document is located in the space of the Task Manager templates
+     */
+    protected boolean isTemplate(XWikiDocument document)
+    {
+        return document.getDocumentReference().getSpaceReferences().stream().map(SpaceReference::getName)
+            .collect(Collectors.toList()).equals(TEMPLATE_SPACE_REFERENCES);
     }
 
     protected abstract void processEvent(XWikiDocument document, XWikiContext context, Event event,

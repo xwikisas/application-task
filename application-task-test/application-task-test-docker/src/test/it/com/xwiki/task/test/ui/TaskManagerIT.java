@@ -51,6 +51,7 @@ import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CopyOrRenameOrDeleteStatusPage;
 import org.xwiki.test.ui.po.CopyPage;
+import org.xwiki.test.ui.po.CreatePagePage;
 import org.xwiki.test.ui.po.RenamePage;
 import org.xwiki.test.ui.po.ViewPage;
 import org.xwiki.test.ui.po.editor.WikiEditPage;
@@ -509,6 +510,65 @@ class TaskManagerIT
         for (int i = 0; i < ids.size(); i++) {
             assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
         }
+    }
+
+    @Test
+    @Order(110)
+    void projectRestrictions(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+        // The task template allows creating tasks only inside the TaskManager space.
+        String allowedSpace = "TaskManager.ProjectRestrictionAllowed";
+        String otherSpace = "TaskManager.ProjectRestrictionOther";
+        String spaceProject = "SpaceProject";
+        String userProject = "UserProject";
+        createProject(setup, spaceProject, "spaces", allowedSpace + ".WebHome");
+        createProject(setup, userProject, "spaces", allowedSpace + ".WebHome", "users",
+            "XWiki." + SIMPLE_USER_NAME);
+
+        // Superadmin is not a user of any project, so only the location of the task matters.
+        List<String> projects = getAssignableProjects(otherSpace);
+        assertTrue(projects.contains("Other"));
+        assertFalse(projects.contains(spaceProject));
+        assertFalse(projects.contains(userProject));
+
+        projects = getAssignableProjects(allowedSpace);
+        assertTrue(projects.contains(spaceProject));
+        assertTrue(projects.contains(userProject));
+
+        // The users of a project can assign it wherever the task is located.
+        setup.login(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD);
+        projects = getAssignableProjects(otherSpace);
+        assertFalse(projects.contains(spaceProject));
+        assertTrue(projects.contains(userProject));
+
+        setup.loginAsSuperAdmin();
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_" + spaceProject));
+        setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_" + userProject));
+    }
+
+    private void createProject(TestUtils setup, String name, Object... properties)
+    {
+        DocumentReference projectReference = new DocumentReference("xwiki", "TaskManager", "Project_" + name);
+        setup.createPage(projectReference, "", name);
+        Object[] objectProperties = new Object[properties.length + 2];
+        objectProperties[0] = "project";
+        objectProperties[1] = name;
+        System.arraycopy(properties, 0, objectProperties, 2, properties.length);
+        setup.addObject(projectReference, "TaskManager.ProjectClass", objectProperties);
+    }
+
+    private List<String> getAssignableProjects(String space)
+    {
+        CreatePagePage createPage = TaskManagerHomePage.gotoPage().createPage();
+        createPage.getDocumentPicker().setTitle("ProjectRestrictionTask");
+        createPage.setTemplate("TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
+        createPage.getDocumentPicker().setParent(space);
+        createPage.clickCreate();
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        List<String> projects = inlinePage.getProjects();
+        inlinePage.clickCancel();
+        return projects;
     }
 
     @ParameterizedTest
