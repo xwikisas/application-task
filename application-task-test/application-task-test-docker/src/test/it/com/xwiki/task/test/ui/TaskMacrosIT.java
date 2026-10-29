@@ -42,6 +42,7 @@ import org.xwiki.contrib.application.task.test.po.DateMacroAdminPage;
 import org.xwiki.contrib.application.task.test.po.DateMacroModal;
 import org.xwiki.contrib.application.task.test.po.DateMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
+import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroModal;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanCard;
 import org.xwiki.contrib.application.task.test.po.KanbanColumn;
@@ -124,6 +125,9 @@ public class TaskMacrosIT
 
     private final LocalDocumentReference pageWithKanbanMacroLimit =
         new LocalDocumentReference("Main", "PageWithKanbanMacroLimit");
+
+    private final LocalDocumentReference pageWithKanbanColumnColors =
+        new LocalDocumentReference("Main", "PageWithKanbanColumnColors");
 
     private final LocalDocumentReference pageWithDateMacro = new LocalDocumentReference("Main", "PageWithDateMacro");
 
@@ -539,6 +543,44 @@ public class TaskMacrosIT
     }
 
     @Test
+    @Order(76)
+    void kanbanMacroColumnColorsPicker(TestUtils setup)
+    {
+        WYSIWYGEditPage editPage = setup.createPage(pageWithKanbanColumnColors,
+            "{{kanbanboard columns=\"Done,ToDo\" colors=\"#3e6970,red\"/}}\n\n ").editWYSIWYG();
+        KanbanBoardMacroModal macroEditModal = openKanbanBoardMacroModal(new CKEditor("content").waitToLoad());
+
+        // The colors are picked next to the columns, which keep the order from the macro call.
+        assertFalse(macroEditModal.isColorsParameterDisplayed());
+        assertEquals(List.of("Done", "ToDo"), macroEditModal.getColumns());
+        assertEquals("#3e6970", macroEditModal.getColumnColor("Done"));
+        // The named colors are displayed with the values used by the Kanban board.
+        assertEquals("#ee4433", macroEditModal.getColumnColor("ToDo"));
+
+        // An added column gets the first Kanban color that is not used yet.
+        macroEditModal.addColumn("InProgress");
+        assertEquals(List.of("Done", "ToDo", "InProgress"), macroEditModal.getColumns());
+        assertEquals("#88cc44", macroEditModal.getColumnColor("InProgress"));
+
+        macroEditModal.setColumnColor("Done", "#123456");
+        macroEditModal.clickSubmit();
+        editPage.clickSaveAndView();
+
+        KanbanBoardMacro board = new KanbanBoardMacroPage().getKanbanMacro();
+        KanbanColumn done = board.getColumn(0);
+        assertEquals("Done", done.getType());
+        assertEquals("#123456", Color.fromString(done.getHeaderColor()).asHex());
+        KanbanColumn todo = board.getColumn(1);
+        assertEquals("ToDo", todo.getType());
+        assertEquals("#ee4433", Color.fromString(todo.getHeaderColor()).asHex());
+        KanbanColumn inProgress = board.getColumn(2);
+        assertEquals("InProgress", inProgress.getType());
+        assertEquals("#88cc44", Color.fromString(inProgress.getHeaderColor()).asHex());
+
+        setup.deletePage(pageWithKanbanColumnColors);
+    }
+
+    @Test
     @Order(77)
     void taskMacroReferenceParameter(TestUtils setup)
     {
@@ -922,6 +964,15 @@ public class TaskMacrosIT
         textArea.waitUntilWidgetSelected();
         textArea.sendKeys(Keys.ENTER);
         return new TasksMacroModal().waitUntilReady();
+    }
+
+    private KanbanBoardMacroModal openKanbanBoardMacroModal(CKEditor editor)
+    {
+        RichTextAreaElement textArea = editor.getRichTextArea(true);
+        textArea.sendKeys(Keys.HOME, Keys.LEFT);
+        textArea.waitUntilWidgetSelected();
+        textArea.sendKeys(Keys.ENTER);
+        return new KanbanBoardMacroModal().waitUntilReady();
     }
 
     private TaskCardMacroModal openTaskCardMacroModal(CKEditor editor)
