@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
 import org.xwiki.test.junit5.mockito.ComponentTest;
@@ -51,7 +53,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -102,6 +107,10 @@ class DefaultProjectManagerTest
     @Named("current")
     private DocumentReferenceResolver<String> resolver;
 
+    @MockComponent
+    @Named("local")
+    private EntityReferenceSerializer<String> localSerializer;
+
     @Mock
     private XWikiContext context;
 
@@ -111,6 +120,9 @@ class DefaultProjectManagerTest
     @Mock
     private Query query;
 
+    @Mock
+    private Query countQuery;
+
     private final List<String> projectDocuments = new ArrayList<>();
 
     @BeforeEach
@@ -118,10 +130,15 @@ class DefaultProjectManagerTest
     {
         when(this.contextProvider.get()).thenReturn(this.context);
         when(this.context.getWiki()).thenReturn(this.wiki);
+        when(this.context.getWikiId()).thenReturn(WIKI);
         when(this.queryManager.createQuery(anyString(), eq(Query.XWQL))).thenReturn(this.query);
         when(this.query.<String>execute()).thenReturn(this.projectDocuments);
         when(this.resolver.resolve(anyString(), any(Object[].class)))
             .thenAnswer(invocation -> resolve(invocation.getArgument(0)));
+        when(this.localSerializer.serialize(any(EntityReference.class)))
+            .thenAnswer(invocation -> invocation.<EntityReference>getArgument(0).getName());
+        when(this.queryManager.createQuery(startsWith("select count"), eq(Query.XWQL))).thenReturn(this.countQuery);
+        when(this.countQuery.bindValue(anyString(), any())).thenReturn(this.countQuery);
 
         addProject(PROJECT_2, Collections.emptyList(), Collections.emptyList());
         addProject(PROJECT_3, List.of(SPACE_2), List.of(USER_1));
@@ -183,6 +200,43 @@ class DefaultProjectManagerTest
         assertTrue(this.projectManager.isProjectAllowed(PROJECT_3, TASK_IN_SPACE_3, user(1)));
         assertFalse(this.projectManager.isProjectAllowed(PROJECT_3, TASK_IN_SPACE_1, user(2)));
         assertFalse(this.projectManager.isProjectAllowed("Unknown", TASK_IN_SPACE_3, user(1)));
+    }
+
+    @Test
+    void countTasksOutsideSpacesWithoutSpaces() throws Exception
+    {
+        assertEquals(0, this.projectManager.countTasksOutsideSpaces(PROJECT_2));
+        assertEquals(0, this.projectManager.countTasksOutsideSpaces("Unknown"));
+        verify(this.queryManager, never()).createQuery(startsWith("select count"), eq(Query.XWQL));
+    }
+
+    @Test
+    void countTasksOutsideSpaces() throws Exception
+    {
+        addProject("Project_4", List.of("Space_4%!.WebHome"), Collections.emptyList());
+        when(this.countQuery.<Long>execute()).thenReturn(List.of(7L));
+
+        assertEquals(7, this.projectManager.countTasksOutsideSpaces("Project_4"));
+        verify(this.queryManager).createQuery("select count(doc.fullName) from Document doc, "
+            + "doc.object(TaskManager.TaskManagerClass) as task where task.project = :project "
+            + "and doc.space <> :templateSpace and doc.space <> :space0 and doc.space not like :spacePrefix0 "
+            + "escape '!'", Query.XWQL);
+        verify(this.countQuery).bindValue("project", "Project_4");
+        verify(this.countQuery).bindValue("templateSpace", "TaskManager.TaskManagerTemplates");
+        verify(this.countQuery).bindValue("space0", "Space_4%!");
+        verify(this.countQuery).bindValue("spacePrefix0", "Space!_4!%!!.%");
+    }
+
+    @Test
+    void countTasksOutsideSpacesWithSeveralSpaces() throws Exception
+    {
+        when(this.countQuery.<Long>execute()).thenReturn(List.of(3L));
+
+        assertEquals(3, this.projectManager.countTasksOutsideSpaces(PROJECT_1));
+        verify(this.countQuery).bindValue("space0", "Space1");
+        verify(this.countQuery).bindValue("spacePrefix0", "Space1.%");
+        verify(this.countQuery).bindValue("space1", "Space2");
+        verify(this.countQuery).bindValue("spacePrefix1", "Space2.%");
     }
 
     private DocumentReference user(int number)

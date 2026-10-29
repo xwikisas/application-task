@@ -31,7 +31,7 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>Project Sheet</title>
+  <title>#if ($doc.documentReference.name == 'ProjectSheet')Project Sheet#elseif ("$!request.title" != '')$request.title#elseif ("$!doc.title" != '')$doc.title#else$doc.documentReference.name#end</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
@@ -40,17 +40,207 @@
 #set ($discard = $doc.use('TaskManager.ProjectClass'))
 {{html wiki="true" clean="false"}}
 #if ($xcontext.action == 'edit')
-  &lt;p class="xHint"&gt;$escapetool.xml($services.localization.render('taskmanager.project.restrictions.hint'))&lt;/p&gt;
+  &lt;p class="xHint"&gt;$escapetool.xml($services.localization.render('taskmanager.project.restrictions.hint'))
+    $escapetool.xml($services.localization.render('taskmanager.project.restrictions.existingTasks.hint'))&lt;/p&gt;
+#else
+  #set ($tasksOutsideSpaces = $services.task.countTasksOutsideSpaces($doc.getValue('project')))
+  #if ($tasksOutsideSpaces &gt; 0)
+    &lt;div class="box warningmessage"&gt;$escapetool.xml($services.localization.render(
+      'taskmanager.project.tasksOutsideSpaces', [$tasksOutsideSpaces]))&lt;/div&gt;
+  #end
 #end
 (% class="xform" %)
 (((
 ; &lt;label&gt;$escapetool.xml($services.localization.render('TaskManager.ProjectClass_project'))&lt;/label&gt;
 : $doc.display('project', 'view')
 ; &lt;label for="TaskManager.ProjectClass_0_spaces"&gt;$escapetool.xml($services.localization.render('TaskManager.ProjectClass_spaces'))&lt;/label&gt;&lt;span class="xHint"&gt;$escapetool.xml($services.localization.render('taskmanager.project.spaces.hint'))&lt;/span&gt;
+#if ($xcontext.action == 'edit')
+  #set ($discard = $xwiki.jsx.use('TaskManager.ProjectSheet'))
+  #set ($projectObject = $doc.getObject('TaskManager.ProjectClass'))
+  #set ($spaces = $!projectObject.getProperty('spaces').value)
+  #if ("$!spaces" == '')
+    #set ($spaces = [])
+  #end
+  #set ($pickerParameters = {
+    'id': 'TaskManager.ProjectClass_0_spaces',
+    'name': "TaskManager.ProjectClass_$!{projectObject.number}_spaces",
+    'class': 'suggest-spaces',
+    'multiple': 'multiple',
+    'value': $spaces
+  })
+  #define ($spacesPicker)#suggestInput($pickerParameters)#end
+: {{html clean="false" wiki="false"}}$spacesPicker.toString().replaceAll('[\r\n]+', ' '){{/html}}
+#else
 : $doc.display('spaces')
+#end
 ; &lt;label for="TaskManager.ProjectClass_0_users"&gt;$escapetool.xml($services.localization.render('TaskManager.ProjectClass_users'))&lt;/label&gt;&lt;span class="xHint"&gt;$escapetool.xml($services.localization.render('taskmanager.project.users.hint'))&lt;/span&gt;
 : $doc.display('users')
 )))
 {{/html}}
 {{/velocity}}</content>
+  <object>
+    <name>TaskManager.ProjectSheet</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>9bc7e2db-0cb1-478b-8fd4-d0e82f951fbf</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>require(['jquery', 'xwiki-selectize'], function($) {
+  'use strict';
+  var webHome = 'WebHome';
+
+  /**
+   * The values are stored as references to the home page of the selected spaces (e.g. "Sandbox.WebHome"), so that
+   * they remain compatible with the page property type.
+   */
+  var getSpaceOption = function(spaceReference, documentReference) {
+    var homeReference = new XWiki.EntityReference(webHome, XWiki.EntityType.DOCUMENT, spaceReference);
+    var value = XWiki.Model.serialize(homeReference.relativeTo(documentReference.getRoot()));
+    var spaces = spaceReference.getReversedReferenceChain().filter(function(component) {
+      return component.type === XWiki.EntityType.SPACE;
+    }).map(function(component) {
+      return component.name;
+    });
+    return {
+      value: value,
+      searchValue: XWiki.Model.serialize(spaceReference.relativeTo(documentReference.getRoot())),
+      label: spaces.pop(),
+      hint: spaces.join(' / '),
+      url: new XWiki.Document(homeReference).getURL()
+    };
+  };
+
+  var loadSpaces = function(text, documentReference) {
+    var wiki = documentReference.extractReferenceValue(XWiki.EntityType.WIKI);
+    return $.getJSON(XWiki.Document.getRestSearchURL('', [], wiki), $.param({
+      q: text,
+      scope: 'spaces',
+      number: 10
+    })).then(function(response) {
+      return (response.searchResults || []).filter(function(result) {
+        return result.type === 'space';
+      }).map(function(result) {
+        return getSpaceOption(XWiki.Model.resolve(result.id, XWiki.EntityType.SPACE), documentReference);
+      });
+    });
+  };
+
+  $.fn.suggestSpaces = function() {
+    return this.each(function() {
+      var documentReference = XWiki.currentDocument.documentReference;
+      $(this).xwikiSelectize({
+        create: false,
+        searchField: ['searchValue', 'label', 'hint'],
+        load: function(text, callback) {
+          loadSpaces(text, documentReference).then(callback, function() {
+            callback([]);
+          });
+        },
+        loadSelected: function(value, callback) {
+          var homeReference = XWiki.Model.resolve(value, XWiki.EntityType.DOCUMENT, documentReference);
+          callback([getSpaceOption(homeReference.parent, documentReference)]);
+        }
+      });
+    });
+  };
+
+  var init = function(event, data) {
+    var container = $((data &amp;&amp; data.elements) || document);
+    container.find('.suggest-spaces').suggestSpaces();
+  };
+  $(document).on('xwiki:dom:updated', init);
+  $(init);
+});</code>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
 </xwikidoc>

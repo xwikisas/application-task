@@ -222,4 +222,21 @@ public class TaskScriptService implements ScriptService
             return Collections.emptySet();
         }
     }
+
+    /**
+     * @param project the name of the project
+     * @return the number of tasks that have the given project but are located outside its spaces
+     * @see ProjectManager#countTasksOutsideSpaces(String)
+     * @since 3.12.0
+     */
+    public long countTasksOutsideSpaces(String project)
+    {
+        try {
+            return projectManager.countTasksOutsideSpaces(project);
+        } catch (TaskException e) {
+            logger.warn("Failed to count the tasks of the project [{}] located outside its spaces. Cause: [{}].",
+                project, ExceptionUtils.getRootCauseMessage(e));
+            return 0;
+        }
+    }
 }

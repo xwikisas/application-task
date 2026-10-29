@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.query.Query;
@@ -86,6 +87,10 @@ public class DefaultProjectManager implements ProjectManager
 
     private static final String LIST_SEPARATORS = "|,";
 
+    private static final String TEMPLATE_SPACE = AbstractTaskEventListener.TASK_MANAGER_SPACE + ".TaskManagerTemplates";
+
+    private static final String SPACE_PARAMETER = "space";
+
     @Inject
     private QueryManager queryManager;
 
@@ -95,6 +100,10 @@ public class DefaultProjectManager implements ProjectManager
     @Inject
     @Named("current")
     private DocumentReferenceResolver<String> resolver;
+
+    @Inject
+    @Named("local")
+    private EntityReferenceSerializer<String> localSerializer;
 
     @Override
     public Set<String> getAllowedProjects(DocumentReference taskReference, DocumentReference userReference)
@@ -138,8 +147,57 @@ public class DefaultProjectManager implements ProjectManager
         {
             return true;
         }
-        return spaces.stream().map(space -> this.resolver.resolve(space, projectReference))
-            .map(DocumentReference::getLastSpaceReference).anyMatch(space -> isInSpace(taskReference, space));
+        return getSpaceReferences(projectObj).stream().anyMatch(space -> isInSpace(taskReference, space));
+    }
+
+    @Override
+    public long countTasksOutsideSpaces(String project) throws TaskException
+    {
+        String wiki = this.contextProvider.get().getWikiId();
+        List<String> spaces = new ArrayList<>();
+        for (BaseObject projectObj : getProjectObjects()) {
+            if (Objects.equals(project, projectObj.getStringValue(PROJECT))) {
+                getSpaceReferences(projectObj).stream().filter(space -> wiki.equals(space.getWikiReference().getName()))
+                    .map(this.localSerializer::serialize).forEach(spaces::add);
+            }
+        }
+        if (spaces.isEmpty()) {
+            return 0;
+        }
+        // The tasks are filtered and counted by the database since a project can have a lot of tasks.
+        StringBuilder statement = new StringBuilder("select count(doc.fullName) from Document doc, "
+            + "doc.object(TaskManager.TaskManagerClass) as task where task.project = :project "
+            + "and doc.space <> :templateSpace");
+        for (int i = 0; i < spaces.size(); i++) {
+            statement.append(String.format(" and doc.space <> :space%1$d and doc.space not like :spacePrefix%1$d "
+                + "escape '!'", i));
+        }
+        try {
+            Query query = this.queryManager.createQuery(statement.toString(), Query.XWQL)
+                .bindValue(PROJECT, project).bindValue("templateSpace", TEMPLATE_SPACE);
+            for (int i = 0; i < spaces.size(); i++) {
+                String space = spaces.get(i);
+                query.bindValue(SPACE_PARAMETER + i, space);
+                query.bindValue("spacePrefix" + i, escapeLike(space) + ".%");
+            }
+            List<Long> results = query.execute();
+            return results.isEmpty() ? 0 : results.get(0);
+        } catch (QueryException e) {
+            throw new TaskException(
+                String.format("Failed to count the tasks of the project [%s] located outside its spaces.", project), e);
+        }
+    }
+
+    private List<SpaceReference> getSpaceReferences(BaseObject projectObj)
+    {
+        DocumentReference projectReference = projectObj.getDocumentReference();
+        return getList(projectObj, SPACES).stream().map(space -> this.resolver.resolve(space, projectReference))
+            .map(DocumentReference::getLastSpaceReference).collect(Collectors.toList());
+    }
+
+    private String escapeLike(String value)
+    {
+        return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
     }
 
     private boolean isInSpace(DocumentReference taskReference, SpaceReference spaceReference)

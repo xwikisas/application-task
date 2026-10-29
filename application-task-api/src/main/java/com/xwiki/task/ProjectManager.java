@@ -60,4 +60,16 @@ public interface ProjectManager
      */
     boolean isProjectAllowed(String project, DocumentReference taskReference, DocumentReference userReference)
         throws TaskException;
+
+    /**
+     * Counts the tasks that keep a project although they are located outside its spaces, e.g. because the spaces of
+     * the project were changed after the project was assigned to them. The users of the project are not taken into
+     * account, since the user that assigned the project to a task is not stored.
+     *
+     * @param project the name of the project
+     * @return the number of tasks of the current wiki that have the given project but are located outside its
+     *     spaces, or {@code 0} if the project has no spaces
+     * @throws TaskException if the tasks could not be counted
+     */
+    long countTasksOutsideSpaces(String project) throws TaskException;
 }
