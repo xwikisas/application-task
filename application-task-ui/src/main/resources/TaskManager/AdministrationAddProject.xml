@@ -40,15 +40,20 @@
 #if($hasAdmin)
   #set($project = $request.project)
   #if(!$stringtool.isBlank($project) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
-    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Project_$project"))
-    #set($document = $xwiki.getDocument($documentRef))
-    #set($discard = $document.setTitle("$project"))
-    #set($discard = $document.setHidden(true))
-    #set($object = $document.getObject('TaskManager.ProjectClass', true))
-    $object.set('project', "$project")
-    $document.save()
-    ## Let the administrator configure the spaces and the users of the new project.
-    $response.sendRedirect($document.getURL('edit'))
+    #set($existingCount = $services.query.xwql("from doc.object(TaskManager.ProjectClass) as obj where lower(obj.project) = :value").bindValue('value', $project.trim().toLowerCase()).count())
+    #if($existingCount &gt; 0)
+      {{error}}$services.localization.render('TaskManager.administration.addProject.duplicate', [$services.rendering.escape($project, 'xwiki/2.1')]){{/error}}
+    #else
+      #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Project_$project"))
+      #set($document = $xwiki.getDocument($documentRef))
+      #set($discard = $document.setTitle("$project"))
+      #set($discard = $document.setHidden(true))
+      #set($object = $document.getObject('TaskManager.ProjectClass', true))
+      $object.set('project', "$project")
+      $document.save()
+      ## Let the administrator configure the spaces and the users of the new project.
+      $response.sendRedirect($document.getURL('edit'))
+    #end
   #end
 
   {{html}}
