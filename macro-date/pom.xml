@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task</artifactId>
-    <version>3.11.5-issue354-SNAPSHOT</version>
+    <version>3.12.0-rc-issue353-1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.xwiki.date</groupId>
