@@ -24,20 +24,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
+import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
+import org.xwiki.filter.job.FilterConversionFinished;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.document.DocumentAuthors;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceProvider;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.observation.ObservationContext;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
@@ -60,7 +67,9 @@ import com.xwiki.task.internal.TaskMacroUpdateEventListener;
 import com.xwiki.task.internal.TaskXDOMProcessor;
 import com.xwiki.task.model.Task;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,6 +103,15 @@ class TaskMacroUpdateEventListenerTest
     @MockComponent
     @Named("document")
     private UserReferenceResolver<DocumentReference> userReferenceResolver;
+
+    @MockComponent
+    private Execution execution;
+
+    @MockComponent
+    private ObservationContext observationContext;
+
+    @MockComponent
+    private Provider<XWikiContext> contextProvider;
 
     @Mock
     private XWikiContext context;
@@ -237,5 +255,61 @@ class TaskMacroUpdateEventListenerTest
         verify(this.taskObj).set(Task.NAME, "Hello there", this.context);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);
+    }
+
+    @Test
+    void onFoldEventsInConcurrentJobs() throws Exception
+    {
+        // Each job is executed by its own thread, with its own execution context.
+        ThreadLocal<ExecutionContext> executionContext = ThreadLocal.withInitial(ExecutionContext::new);
+        when(this.execution.getContext()).thenAnswer(invocation -> executionContext.get());
+        when(this.observationContext.isIn(any())).thenReturn(true);
+        when(this.contextProvider.get()).thenReturn(this.context);
+
+        XWikiDocument docX = mockFoldDocument("X");
+        XWikiDocument docY = mockFoldDocument("Y");
+        XWikiDocument docZ = mockFoldDocument("Z");
+
+        ExecutorService jobA = Executors.newSingleThreadExecutor();
+        ExecutorService jobB = Executors.newSingleThreadExecutor();
+        try {
+            // Two revisions of X are saved by job A and one revision of Y by job B.
+            jobA.submit(() -> this.eventListener.onEvent(new DocumentUpdatingEvent(), docX, this.context)).get();
+            jobA.submit(() -> this.eventListener.onEvent(new DocumentUpdatingEvent(), docX, this.context)).get();
+            jobB.submit(() -> this.eventListener.onEvent(new DocumentUpdatingEvent(), docY, this.context)).get();
+            verify(this.wiki, never()).getDocument(any(DocumentReference.class), any(XWikiContext.class));
+
+            // Job B moves to Z: only Y, the previous document of job B, is processed.
+            jobB.submit(() -> this.eventListener.onEvent(new DocumentUpdatingEvent(), docZ, this.context)).get();
+            verify(this.wiki).getDocument(docY.getDocumentReference(), this.context);
+            verify(this.wiki, never()).getDocument(docX.getDocumentReference(), this.context);
+
+            // The last document of each job is processed when the job finishes.
+            jobA.submit(() -> this.eventListener.onEvent(new FilterConversionFinished(null, null, null), null, null))
+                .get();
+            verify(this.wiki).getDocument(docX.getDocumentReference(), this.context);
+            verify(this.wiki, never()).getDocument(docZ.getDocumentReference(), this.context);
+
+            jobB.submit(() -> this.eventListener.onEvent(new FilterConversionFinished(null, null, null), null, null))
+                .get();
+            verify(this.wiki).getDocument(docZ.getDocumentReference(), this.context);
+            verify(this.wiki).getDocument(docY.getDocumentReference(), this.context);
+            verify(this.wiki).getDocument(docX.getDocumentReference(), this.context);
+            verify(this.taskXDOMProcessor).extract(null, docX.getDocumentReference());
+            verify(this.taskXDOMProcessor).extract(null, docY.getDocumentReference());
+            verify(this.taskXDOMProcessor).extract(null, docZ.getDocumentReference());
+        } finally {
+            jobA.shutdownNow();
+            jobB.shutdownNow();
+        }
+    }
+
+    private XWikiDocument mockFoldDocument(String name) throws XWikiException
+    {
+        DocumentReference reference = new DocumentReference("xwiki", "Migrated", name);
+        XWikiDocument document = mock(XWikiDocument.class);
+        when(document.getDocumentReference()).thenReturn(reference);
+        when(this.wiki.getDocument(reference, this.context)).thenReturn(document);
+        return document;
     }
 }
