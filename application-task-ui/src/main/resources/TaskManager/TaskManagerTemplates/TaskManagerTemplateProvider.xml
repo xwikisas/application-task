@@ -246,7 +246,7 @@
       </creationRestrictions>
     </property>
     <property>
-      <creationRestrictionsAreSuggestions>0</creationRestrictionsAreSuggestions>
+      <creationRestrictionsAreSuggestions>1</creationRestrictionsAreSuggestions>
     </property>
     <property>
       <description/>
