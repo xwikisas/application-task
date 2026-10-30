@@ -82,7 +82,7 @@
           #set ($discard = $providerObj.set('terminal', 1))
           #set ($discard = $providerObj.set('icon', 'application_view_list'))
           #set ($discard = $providerObj.set('creationRestrictions', 'TaskManager'))
-          #set ($discard = $providerObj.set('creationRestrictionsAsSuggestions', 0))
+          #set ($discard = $providerObj.set('creationRestrictionsAreSuggestions', 1))
         #end
         #set ($discard = $providerObj.set('name', $templateName))
         #set ($discard = $providerObj.set('template', $templateDoc.getFullName()))

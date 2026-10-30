@@ -64,9 +64,68 @@
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </project>
+      <spaces>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText/>
+        <hint/>
+        <idField/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>spaces</name>
+        <number>2</number>
+        <picker>1</picker>
+        <prettyName>Spaces</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator>,</separator>
+        <separators>|,</separators>
+        <size>1</size>
+        <sort/>
+        <sql/>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
+      </spaces>
+      <users>
+        <cache>0</cache>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText/>
+        <hint/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>users</name>
+        <number>3</number>
+        <picker>1</picker>
+        <prettyName>Users</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator>,</separator>
+        <separators>|,</separators>
+        <size>1</size>
+        <sort>none</sort>
+        <unmodifiable>0</unmodifiable>
+        <usesList>1</usesList>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
+      </users>
     </class>
     <property>
       <project>Other</project>
+    </property>
+    <property>
+      <spaces/>
+    </property>
+    <property>
+      <users/>
     </property>
   </object>
   <object>

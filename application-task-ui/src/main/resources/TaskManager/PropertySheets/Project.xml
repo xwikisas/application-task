@@ -42,17 +42,28 @@
 #set($name = 'project')
 #set($propertyClass = $object.getxWikiClass().get($name))
 #set($existingValue = $object.getValue('project'))
+## Only the projects allowed for the location of the task and the current user can be assigned. The current project of
+## an existing task is kept, even if it is no longer allowed, so that saving the task doesn't change it.
+#set($taskReference = $object.reference.documentReference)
+#set($allowedProjects = $services.task.getAllowedProjects($taskReference))
+#set($isNewTask = !$xwiki.exists($taskReference))
 &lt;select size="1" name="TaskManager.TaskManagerClass_0_project" id="TaskManager.TaskManagerClass_0_project"&gt;
+## Don't force the default project of a new task when it can't be assigned.
+#if ($isNewTask &amp;&amp; !$allowedProjects.contains($existingValue))
+  &lt;option value="" selected='selected'&gt;&lt;/option&gt;
+#end
 #foreach($rValue in $propertyClass.mapValues.entrySet())
-  #set($key = "TaskManager.TaskManagerClass_project_$rValue.key")
-  #set($translation = $services.localization.render($key))
-  &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
-    #if ($translation == $key)
-      $escapetool.xml($rValue.key)
-    #else
-      $escapetool.xml($translation)
-    #end
-  &lt;/option&gt;
+  #if ($allowedProjects.contains($rValue.key) || (!$isNewTask &amp;&amp; $existingValue == $rValue.key))
+    #set($key = "TaskManager.TaskManagerClass_project_$rValue.key")
+    #set($translation = $services.localization.render($key))
+    &lt;option value="$escapetool.xml($rValue.key)" #if($existingValue == $rValue.key) selected='selected' #end&gt;
+      #if ($translation == $key)
+        $escapetool.xml($rValue.key)
+      #else
+        $escapetool.xml($translation)
+      #end
+    &lt;/option&gt;
+  #end
 #end
 {{/html}}
 #else
