@@ -51,6 +51,7 @@ import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
 import org.xwiki.test.ui.po.CopyOrRenameOrDeleteStatusPage;
 import org.xwiki.test.ui.po.CopyPage;
+import org.xwiki.test.ui.po.CreatePagePage;
 import org.xwiki.test.ui.po.RenamePage;
 import org.xwiki.test.ui.po.ViewPage;
 import org.xwiki.test.ui.po.editor.WikiEditPage;
@@ -531,14 +532,14 @@ class TaskManagerIT
     void projectRestrictions(TestUtils setup)
     {
         setup.loginAsSuperAdmin();
-        DocumentReference allowedTask =
-            new DocumentReference("xwiki", Arrays.asList("TaskManager", "ProjectRestrictionAllowed"), "Task");
+        // Tasks can be created outside the TaskManager space, so the space of a project doesn't have to be in it.
+        DocumentReference allowedTask = new DocumentReference("xwiki", "ProjectRestrictionAllowed", "Task");
         DocumentReference otherTask =
             new DocumentReference("xwiki", Arrays.asList("TaskManager", "ProjectRestrictionOther"), "Task");
         String spaceProject = "SpaceProject";
         String userProject = "UserProject";
-        createProject(setup, spaceProject, "spaces", "TaskManager.ProjectRestrictionAllowed.WebHome");
-        createProject(setup, userProject, "spaces", "TaskManager.ProjectRestrictionAllowed.WebHome", "users",
+        createProject(setup, spaceProject, "spaces", "ProjectRestrictionAllowed.WebHome");
+        createProject(setup, userProject, "spaces", "ProjectRestrictionAllowed.WebHome", "users",
             "XWiki." + SIMPLE_USER_NAME);
         createTask(setup, allowedTask);
         createTask(setup, otherTask);
@@ -553,6 +554,20 @@ class TaskManagerIT
         assertTrue(projects.contains(spaceProject));
         assertTrue(projects.contains(userProject));
 
+        // A task created from the UI is created in the chosen location, even outside the TaskManager space.
+        CreatePagePage createPage = TaskManagerHomePage.gotoPage().createPage();
+        createPage.getDocumentPicker().setTitle("ProjectRestrictionUITask");
+        createPage.setTemplate("TaskManager.TaskManagerTemplates.TaskManagerTemplateProvider");
+        createPage.getDocumentPicker().setParent("ProjectRestrictionAllowed");
+        createPage.clickCreate();
+        TaskManagerInlinePage inlinePage = new TaskManagerInlinePage();
+        assertTrue(inlinePage.getProjects().contains(spaceProject));
+        inlinePage.setProject(spaceProject);
+        ViewPage uiTaskPage = inlinePage.clickSaveAndView();
+        assertEquals("ProjectRestrictionAllowed", uiTaskPage.getMetaDataValue("space"));
+        DocumentReference uiTask =
+            new DocumentReference("xwiki", "ProjectRestrictionAllowed", uiTaskPage.getMetaDataValue("page"));
+
         // The users of a project can assign it wherever the task is located.
         setup.login(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD);
         projects = getAssignableProjects(setup, otherTask);
@@ -562,6 +577,7 @@ class TaskManagerIT
         setup.loginAsSuperAdmin();
         setup.deletePage(allowedTask);
         setup.deletePage(otherTask);
+        setup.deletePage(uiTask);
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_" + spaceProject));
         setup.deletePage(new DocumentReference("xwiki", "TaskManager", "Project_" + userProject));
     }
