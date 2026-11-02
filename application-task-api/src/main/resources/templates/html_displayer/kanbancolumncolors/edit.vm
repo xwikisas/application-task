@@ -1,0 +1,74 @@
+## ---------------------------------------------------------------------------
+## See the NOTICE file distributed with this work for additional
+## information regarding copyright ownership.
+##
+## This is free software; you can redistribute it and/or modify it
+## under the terms of the GNU Lesser General Public License as
+## published by the Free Software Foundation; either version 2.1 of
+## the License, or (at your option) any later version.
+##
+## This software is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public
+## License along with this software; if not, write to the Free
+## Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+## ---------------------------------------------------------------------------
+## The Kanban board JSX hides this input in the macro editor, along with the picker of the columns parameter, and
+## displays instead a list of the selected columns, built from the templates below, where the columns are added,
+## removed, reordered and colored. It computes the value of both parameters from that list.
+#set ($discard = $xwiki.jsx.use('TaskManager.KanbanBoardMacro'))
+#set ($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
+<input type="text" class="kanban-column-colors"
+  #foreach ($parameter in $displayer.parameters.entrySet())
+    $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
+  #end
+/>
+<template class="kanban-columns-editor-template">
+  <div class="kanban-columns-editor">
+    <ul class="list-group kanban-columns"></ul>
+    <p class="text-muted kanban-columns-empty">
+      $escapetool.xml($services.localization.render('taskmanager.kanbanboard.columns.empty'))
+    </p>
+    <div class="dropdown kanban-columns-add">
+      <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+        $services.icon.renderHTML('add')
+        $escapetool.xml($services.localization.render('taskmanager.kanbanboard.columns.add'))
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li class="kanban-columns-search">
+          #set ($searchHint = $services.localization.render('taskmanager.kanbanboard.columns.search'))
+          <input type="search" class="form-control input-sm" placeholder="$escapetool.xml($searchHint)"
+            aria-label="$escapetool.xml($searchHint)"/>
+        </li>
+        <li class="dropdown-header kanban-columns-no-match">
+          $escapetool.xml($services.localization.render('taskmanager.kanbanboard.columns.noMatch'))
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+<template class="kanban-column-template">
+  <li class="list-group-item kanban-column">
+    #set ($reorderHint = $services.localization.render('taskmanager.kanbanboard.columns.reorder'))
+    <span class="kanban-column-handle" role="button" tabindex="0" title="$escapetool.xml($reorderHint)"
+      aria-label="$escapetool.xml($reorderHint)">$services.icon.renderHTML('menu')</span>
+    #set ($colorHint = $services.localization.render('taskmanager.kanbanboard.columnColor'))
+    <input type="color" class="kanban-column-color" title="$escapetool.xml($colorHint)"
+      aria-label="$escapetool.xml($colorHint)"/>
+    <span class="kanban-column-name"></span>
+    #set ($removeHint = $services.localization.render('taskmanager.kanbanboard.columns.remove'))
+    <button type="button" class="btn btn-default btn-xs kanban-column-remove" title="$escapetool.xml($removeHint)"
+      aria-label="$escapetool.xml($removeHint)">$services.icon.renderHTML('cross')</button>
+  </li>
+</template>
+<template class="kanban-column-suggestion-template">
+  <li class="kanban-column-suggestion">
+    <a href="#"><span class="kanban-column-suggestion-name"></span>$services.icon.renderHTML('add')</a>
+  </li>
+</template>
