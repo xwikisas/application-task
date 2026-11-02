@@ -138,7 +138,7 @@ Example:
       <cache>long</cache>
     </property>
     <property>
-      <code>require(['jquery'], function ($) {
+      <code>require(['jquery', 'bootstrap'], function ($) {
 
   /**
    * Handles the fetching of the modal and the lazy loading of the css/js.
@@ -190,6 +190,8 @@ Example:
   const kanbanColors = {green: '#88cc44', blue: '#00aacc', orange: '#ff9911', yellow: '#ffcc33', red: '#ee4433'};
   // The color used by the Kanban macro for the columns that don't have one.
   const missingColor = 'blue';
+  // Used to generate the ids of the column names, which describe the controls of each column.
+  let columnCounter = 0;
 
   /**
    * Converts a color, as specified in the colors parameter, to the #rrggbb format required by the color inputs.
@@ -207,11 +209,16 @@ Example:
     return context.fillStyle.startsWith('#') ? context.fillStyle : '#000000';
   };
 
+  const cloneTemplate = function (template) {
+    return $(template.prop('content').firstElementChild.cloneNode(true));
+  };
+
   /**
-   * Replaces the colors parameter in the macro editor with a color picker displayed in each item of the columns
-   * parameter. The colors parameter value is computed from the selected columns, in their order.
+   * Replaces the columns and colors parameters in the macro editor with a list of the selected columns, where the
+   * columns are added (from a searchable list of statuses), removed, reordered (by drag and drop or with the arrow
+   * keys) and colored. The value of both parameters is computed from the list, so the colors stay paired with the columns.
    */
-  const initColumnColors = function (colorsInput) {
+  const initColumnsEditor = function (colorsInput) {
     const columnsSelect = colorsInput.closest('.macro-parameters').find('select[name="columns"]');
     if (!columnsSelect.length) {
       // Keep the colors text input when there are no columns to pick the colors for.
@@ -220,25 +227,51 @@ Example:
     // The colors are paired with the columns by position, so wait for the columns picker to restore the order of the
     // columns from the macro call (see TaskManager.TaskStatusPicker).
     if (columnsSelect.data('taskStatusPickerReady')) {
-      initColumnColorPickers(colorsInput, columnsSelect);
+      createColumnsEditor(colorsInput, columnsSelect);
     } else {
       columnsSelect.one('taskStatusPicker:ready', function () {
-        initColumnColorPickers(colorsInput, columnsSelect);
+        createColumnsEditor(colorsInput, columnsSelect);
       });
     }
   };
 
-  const initColumnColorPickers = function (colorsInput, columnsSelect) {
-    colorsInput.closest('.macro-parameter').hide();
-    const columnsParameter = columnsSelect.closest('.macro-parameter');
-    const colorPickerTitle = colorsInput.attr('data-color-picker-title');
-    const getColumns = function () {
-      return columnsSelect.val() || [];
+  const createColumnsEditor = function (colorsInput, columnsSelect) {
+    const selectize = columnsSelect[0].selectize;
+    // All the statuses, in the order they are listed by the picker.
+    const statuses = Object.values(selectize.options).sort(function (alice, bob) {
+      return alice.$order - bob.$order;
+    }).map(function (option) {
+      return {value: option.value, label: option.label || option.text || option.value};
+    });
+    const getLabel = function (value) {
+      const status = statuses.find(function (status) {
+        return status.value === value;
+      });
+      return status ? status.label : value;
     };
+
+    const selectizeControl = columnsSelect.next('.selectize-control').hide();
+    colorsInput.closest('.macro-parameter').hide();
+    const editor = cloneTemplate(colorsInput.siblings('template.kanban-columns-editor-template'))
+      .insertAfter(selectizeControl);
+    const columnTemplate = colorsInput.siblings('template.kanban-column-template');
+    const suggestionTemplate = colorsInput.siblings('template.kanban-column-suggestion-template');
+    const list = editor.find('.kanban-columns');
+    const addDropdown = editor.find('.kanban-columns-add');
+    const addButton = addDropdown.find('.dropdown-toggle');
+    const searchInput = addDropdown.find('.kanban-columns-search input');
+    const noMatch = addDropdown.find('.kanban-columns-no-match');
+
+    const getColumns = function () {
+      return list.children().map(function () {
+        return $(this).attr('data-value');
+      }).get();
+    };
+
     // The color of each column, including the removed ones, so that they get their color back when added again.
     const columnColors = {};
     const colors = colorsInput.val().split(',');
-    getColumns().forEach(function (column, index) {
+    (columnsSelect.val() || []).forEach(function (column, index) {
       columnColors[column] = (colors[index] || '').trim() || missingColor;
     });
     const getColor = function (column) {
@@ -253,59 +286,214 @@ Example:
       }
       return columnColors[column];
     };
-    const updateColors = function () {
+
+    const createColumn = function (value) {
+      const column = cloneTemplate(columnTemplate).attr('data-value', value);
+      const nameId = 'kanban-column-name-' + columnCounter++;
+      column.find('.kanban-column-name').attr('id', nameId).text(getLabel(value));
+      column.find('.kanban-column-handle, .kanban-column-color, .kanban-column-remove')
+        .attr('aria-describedby', nameId);
+      column.find('.kanban-column-color').val(toHexColor(getColor(value)));
+      return column;
+    };
+
+    const isDropdownOpen = function () {
+      return addDropdown.hasClass('open');
+    };
+
+    const closeDropdown = function () {
+      if (isDropdownOpen()) {
+        addButton.dropdown('toggle');
+      }
+    };
+
+    const createSuggestion = function (status) {
+      const suggestion = cloneTemplate(suggestionTemplate).attr('data-value', status.value);
+      suggestion.find('.kanban-column-suggestion-name').text(status.label);
+      return suggestion;
+    };
+
+    // Lists the statuses that are not displayed yet and match the search query.
+    const updateSuggestions = function () {
+      const columns = getColumns();
+      const availableStatuses = statuses.filter(function (status) {
+        return !columns.includes(status.value);
+      });
+      if (!availableStatuses.length) {
+        // Bootstrap doesn't toggle the dropdown of a disabled button.
+        closeDropdown();
+      }
+      addButton.prop('disabled', !availableStatuses.length);
+      const query = searchInput.val().trim().toLowerCase();
+      const matchingStatuses = availableStatuses.filter(function (status) {
+        return status.label.toLowerCase().includes(query) || status.value.toLowerCase().includes(query);
+      });
+      addDropdown.find('.kanban-column-suggestion').remove();
+      noMatch.before(matchingStatuses.map(createSuggestion)).toggle(!matchingStatuses.length);
+    };
+
+    // Computes the value of the columns and colors parameters from the list of columns.
+    const update = function () {
+      const columns = getColumns();
+      // Selectize updates the select options to match the given order, which the macro editor serializes.
+      selectize.setValue(columns, true);
+      colorsInput.val(columns.map(getColor).join(','));
+      list.toggle(columns.length &gt; 0);
+      editor.find('.kanban-columns-empty').toggle(!columns.length);
+      updateSuggestions();
+    };
+
+    const addColumn = function (value) {
+      const column = createColumn(value).appendTo(list);
+      update();
+      if (addButton.prop('disabled')) {
+        // All the statuses are displayed, so the dropdown is closed. Keep the focus near the added column.
+        column.find('.kanban-column-handle').focus();
+      }
+    };
+
+    initColumnsList(list, update);
+
+    list.on('input change', '.kanban-column-color', function () {
+      columnColors[$(this).closest('.kanban-column').attr('data-value')] = $(this).val();
       colorsInput.val(getColumns().map(getColor).join(','));
-    };
-    const createColorPicker = function () {
-      return $(document.createElement('input')).attr({
-        type: 'color',
-        'class': 'kanban-column-color',
-        title: colorPickerTitle,
-        'aria-label': colorPickerTitle
-      }).on('mousedown click', function (event) {
-        // Prevent the selectize widget from selecting the column item or opening the column suggestions.
+    }).on('click', '.kanban-column-remove', function () {
+      const column = $(this).closest('.kanban-column');
+      // Keep the focus in the list, so that the keyboard users can remove several columns in a row.
+      const nextFocus = (column.next().length ? column.next() : column.prev()).find('.kanban-column-remove');
+      column.remove();
+      update();
+      (nextFocus.length ? nextFocus : addButton).focus();
+    });
+
+    addDropdown.on('shown.bs.dropdown', function () {
+      searchInput.val('');
+      updateSuggestions();
+      searchInput.focus();
+    }).on('input', '.kanban-columns-search input', updateSuggestions).on('click', '.kanban-column-suggestion a',
+      function (event) {
+        // Keep the dropdown open, so that several columns can be added in a row.
+        event.preventDefault();
         event.stopPropagation();
-      }).on('input change', function () {
-        columnColors[$(this).closest('[data-value]').attr('data-value')] = $(this).val();
-        updateColors();
-      });
-    };
-    // Add a color picker to the column items that don't have one. The selectize widget re-renders the items when they
-    // are added, so we need to do this whenever its content changes.
-    const addColorPickers = function () {
-      columnsParameter.find('.selectize-input > [data-value]').each(function () {
-        const item = $(this).addClass('kanban-column-item');
-        let colorPicker = item.children('.kanban-column-color');
-        if (!colorPicker.length) {
-          colorPicker = createColorPicker().prependTo(item);
+        const suggestion = $(this).parent();
+        const index = addDropdown.find('.kanban-column-suggestion').index(suggestion);
+        addColumn(suggestion.attr('data-value'));
+        if (isDropdownOpen()) {
+          // Focus the suggestion that took the place of the added one, or the search input when there is none.
+          const suggestions = addDropdown.find('.kanban-column-suggestion a');
+          (suggestions.length ? suggestions.eq(Math.min(index, suggestions.length - 1)) : searchInput).focus();
         }
-        const color = toHexColor(getColor(item.attr('data-value')));
-        if (colorPicker.val() !== color) {
-          colorPicker.val(color);
-        }
-      });
-    };
-    columnsSelect.on('change', updateColors);
-    new MutationObserver(addColorPickers).observe(columnsParameter[0], {childList: true, subtree: true});
-    updateColors();
-    addColorPickers();
+      }).on('keydown', function (event) {
+      handleDropdownKeys(event, addDropdown, searchInput, closeDropdown);
+    });
+
+    // Display the selected columns.
+    list.append((columnsSelect.val() || []).map(createColumn));
+    update();
   };
 
-  const initAllColumnColors = function (container) {
+  /**
+   * Handles the keyboard navigation in the dropdown listing the statuses to add, before the Bootstrap dropdown and the
+   * macro editor modal get the events.
+   */
+  const handleDropdownKeys = function (event, addDropdown, searchInput, closeDropdown) {
+    const suggestions = addDropdown.find('.kanban-column-suggestion a');
+    const inSearchInput = searchInput.is(event.target);
+    if (event.key === 'Escape' &amp;&amp; addDropdown.hasClass('open')) {
+      // Close only the dropdown, not the macro editor modal.
+      closeDropdown();
+      addDropdown.find('.dropdown-toggle').focus();
+    } else if (event.key === 'Enter' &amp;&amp; inSearchInput) {
+      // Add the first matching status, and keep searching.
+      suggestions.first().click();
+      if (addDropdown.hasClass('open')) {
+        searchInput.focus();
+      }
+    } else if (event.key === 'ArrowDown' &amp;&amp; inSearchInput) {
+      suggestions.first().focus();
+    } else if (event.key === 'ArrowUp' &amp;&amp; suggestions.first().is(event.target)) {
+      searchInput.focus();
+    } else {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  /**
+   * Makes the columns of the list reorderable by dragging their handle, or by pressing the up and down arrow keys while
+   * their handle is focused.
+   */
+  const initColumnsList = function (list, onReorder) {
+    let draggedColumn = null;
+    list.on('pointerdown', '.kanban-column-handle', function () {
+      // Only the handle starts the drag, so that the color input and the column name keep working as usual.
+      $(this).closest('.kanban-column').attr('draggable', 'true');
+    }).on('pointerup', '.kanban-column-handle', function () {
+      $(this).closest('.kanban-column').removeAttr('draggable');
+    }).on('dragstart', '.kanban-column', function (event) {
+      draggedColumn = $(this).addClass('dragging');
+      const dataTransfer = event.originalEvent.dataTransfer;
+      dataTransfer.effectAllowed = 'move';
+      // Firefox doesn't start the drag without data.
+      dataTransfer.setData('text/plain', draggedColumn.attr('data-value'));
+    }).on('dragover', function (event) {
+      if (!draggedColumn) {
+        // Something else is dragged over the list.
+        return;
+      }
+      event.preventDefault();
+      event.originalEvent.dataTransfer.dropEffect = 'move';
+      // Move the dragged column before the first column whose middle is below the pointer.
+      const pointerY = event.originalEvent.clientY;
+      const nextColumn = list.children().not(draggedColumn).filter(function () {
+        const box = this.getBoundingClientRect();
+        return pointerY &lt; box.top + box.height / 2;
+      }).first();
+      if (!nextColumn.length) {
+        draggedColumn.appendTo(list);
+      } else if (draggedColumn.next()[0] !== nextColumn[0]) {
+        draggedColumn.insertBefore(nextColumn);
+      }
+    }).on('drop', function (event) {
+      if (draggedColumn) {
+        // Prevent the browser from opening the dragged data.
+        event.preventDefault();
+      }
+    }).on('dragend', '.kanban-column', function () {
+      $(this).removeClass('dragging').removeAttr('draggable');
+      draggedColumn = null;
+      onReorder();
+    }).on('keydown', '.kanban-column-handle', function (event) {
+      const column = $(this).closest('.kanban-column');
+      // Move the sibling column instead of the focused one, which would lose the focus.
+      if (event.key === 'ArrowUp' &amp;&amp; column.prev().length) {
+        column.prev().insertAfter(column);
+      } else if (event.key === 'ArrowDown' &amp;&amp; column.next().length) {
+        column.next().insertBefore(column);
+      } else {
+        return;
+      }
+      event.preventDefault();
+      onReorder();
+    });
+  };
+
+  const initAllColumnsEditors = function (container) {
     $(container).find('input.kanban-column-colors').each(function () {
       const colorsInput = $(this);
-      if (!colorsInput.data('kanbanColumnColorsInitialized')) {
-        colorsInput.data('kanbanColumnColorsInitialized', true);
-        initColumnColors(colorsInput);
+      if (!colorsInput.data('kanbanColumnsEditorInitialized')) {
+        colorsInput.data('kanbanColumnsEditorInitialized', true);
+        initColumnsEditor(colorsInput);
       }
     });
   };
 
   $(document).on('xwiki:dom:updated', function (event, data) {
-    initAllColumnColors(data ? data.elements : document.body);
+    initAllColumnsEditors(data ? data.elements : document.body);
   });
   // The macro editor might have been displayed before this code was loaded.
-  initAllColumnColors(document.body);
+  initAllColumnsEditors(document.body);
 });
 </code>
     </property>
@@ -452,27 +640,46 @@ Example:
 .kanban-board .task-card-status-${sdone} .panel .panel-title {
   color: ${sdonecolor};
 }
-/* The color pickers displayed next to the selected columns in the macro editor. The column items have a 1px 5px
-   padding (see selectize.bootstrap3.css), so with a 20px line height a 12px color box gets 5px of space on each side,
-   the same as between it and the column name. The form styles of the macro editor (e.g. full width, padding, rounded
-   corners) apply to all its inputs, so we need to override them. */
-.selectize-control.multi .selectize-input > .kanban-column-item {
-  display: inline-flex;
-  align-items: center;
-  line-height: 20px;
+/* The list of the selected columns, in the macro editor. */
+.kanban-columns-editor .kanban-columns {
+  margin-bottom: 10px;
 }
-.selectize-input input.kanban-column-color {
+.kanban-columns-editor .kanban-column {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+}
+.kanban-columns-editor .kanban-column.dragging {
+  opacity: .5;
+}
+.kanban-columns-editor .kanban-column-handle {
+  color: @text-muted;
+  cursor: grab;
+}
+.kanban-columns-editor .kanban-column-handle:hover,
+.kanban-columns-editor .kanban-column-handle:focus {
+  color: @text-color;
+}
+.kanban-columns-editor .kanban-column-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* The form styles of the macro editor (e.g. full width, padding, rounded corners) apply to all its inputs, so we need
+   to override them. */
+.kanban-columns-editor input.kanban-column-color {
   flex: none;
   box-sizing: border-box;
-  width: 12px !important;
+  width: 20px !important;
   min-width: 0 !important;
   max-width: none !important;
-  height: 12px !important;
+  height: 20px !important;
   min-height: 0 !important;
-  margin: 0 5px 0 0 !important;
+  margin: 0 !important;
   padding: 0 !important;
   border: 1px solid rgba(0, 0, 0, .3) !important;
-  border-radius: 2px !important;
+  border-radius: @border-radius-small !important;
   box-shadow: none !important;
   background: none;
   cursor: pointer;
@@ -488,10 +695,32 @@ input.kanban-column-color::-moz-color-swatch {
   border: none;
   border-radius: 0;
 }
+.kanban-columns-editor .kanban-columns-empty {
+  margin-bottom: 10px;
+}
+/* The dropdown listing the statuses to add as columns. The search input stays visible when the statuses are scrolled. */
+.kanban-columns-add .dropdown-menu {
+  min-width: 250px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-top: 0;
+}
+.kanban-columns-add .kanban-columns-search {
+  position: sticky;
+  top: 0;
+  padding: 5px;
+  background-color: @dropdown-bg;
+}
+.kanban-columns-add .kanban-column-suggestion a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
 </code>
     </property>
     <property>
-      <contentType/>
+      <contentType>LESS</contentType>
     </property>
     <property>
       <name>Kanban board style</name>

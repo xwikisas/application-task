@@ -544,32 +544,49 @@ public class TaskMacrosIT
             "{{kanbanboard columns=\"Done,ToDo\" colors=\"#3e6970,red\"/}}\n\n ").editWYSIWYG();
         KanbanBoardMacroModal macroEditModal = openKanbanBoardMacroModal(new CKEditor("content").waitToLoad());
 
-        // The colors are picked next to the columns, which keep the order from the macro call.
+        // The colors are picked in the list of columns, which keeps the order from the macro call.
         assertFalse(macroEditModal.isColorsParameterDisplayed());
         assertEquals(List.of("Done", "ToDo"), macroEditModal.getColumns());
         assertEquals("#3e6970", macroEditModal.getColumnColor("Done"));
         // The named colors are displayed with the values used by the Kanban board.
         assertEquals("#ee4433", macroEditModal.getColumnColor("ToDo"));
 
+        // Only the statuses that are not displayed yet can be added.
+        assertEquals(List.of("InProgress"), macroEditModal.searchColumns("prog"));
+        assertEquals(List.of(), macroEditModal.searchColumns("done"));
+
         // An added column gets the first Kanban color that is not used yet.
         macroEditModal.addColumn("InProgress");
         assertEquals(List.of("Done", "ToDo", "InProgress"), macroEditModal.getColumns());
         assertEquals("#88cc44", macroEditModal.getColumnColor("InProgress"));
 
+        macroEditModal.moveColumnUp("InProgress");
+        assertEquals(List.of("Done", "InProgress", "ToDo"), macroEditModal.getColumns());
+
+        // A column added back gets its previous color.
+        macroEditModal.removeColumn("ToDo");
+        assertEquals(List.of("Done", "InProgress"), macroEditModal.getColumns());
+        macroEditModal.addColumn("ToDo");
+        assertEquals("#ee4433", macroEditModal.getColumnColor("ToDo"));
+
+        macroEditModal.moveColumnDown("Done");
+        assertEquals(List.of("InProgress", "Done", "ToDo"), macroEditModal.getColumns());
+
         macroEditModal.setColumnColor("Done", "#123456");
         macroEditModal.clickSubmit();
         editPage.clickSaveAndView();
 
+        // The colors follow their columns.
         KanbanBoardMacro board = new KanbanBoardMacroPage().getKanbanMacro();
-        KanbanColumn done = board.getColumn(0);
-        assertEquals("Done", done.getType());
-        assertEquals("#123456", Color.fromString(done.getHeaderColor()).asHex());
-        KanbanColumn todo = board.getColumn(1);
-        assertEquals("ToDo", todo.getType());
-        assertEquals("#ee4433", Color.fromString(todo.getHeaderColor()).asHex());
-        KanbanColumn inProgress = board.getColumn(2);
+        KanbanColumn inProgress = board.getColumn(0);
         assertEquals("InProgress", inProgress.getType());
         assertEquals("#88cc44", Color.fromString(inProgress.getHeaderColor()).asHex());
+        KanbanColumn done = board.getColumn(1);
+        assertEquals("Done", done.getType());
+        assertEquals("#123456", Color.fromString(done.getHeaderColor()).asHex());
+        KanbanColumn todo = board.getColumn(2);
+        assertEquals("ToDo", todo.getType());
+        assertEquals("#ee4433", Color.fromString(todo.getHeaderColor()).asHex());
 
         setup.deletePage(pageWithKanbanColumnColors);
     }
