@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.xwiki.livedata.test.po.LiveDataElement;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.test.ui.po.BaseElement;
 
 /**
@@ -34,11 +36,25 @@ import org.xwiki.test.ui.po.BaseElement;
  */
 public class TaskReportMacro extends BaseElement
 {
+    private final String id;
+
     private final WebElement report;
 
     public TaskReportMacro(String id)
     {
+        this.id = id;
         this.report = getDriver().findElement(By.id(id));
+    }
+
+    /**
+     * @return the table layout of the live data listing the tasks of this report, once it finished loading
+     * @since 3.11.5
+     */
+    public TableLayoutElement getTableLayout()
+    {
+        TableLayoutElement tableLayout = new LiveDataElement(this.id).getTableLayout();
+        tableLayout.waitUntilReady();
+        return tableLayout;
     }
 
     public List<TaskElement> getTasks()

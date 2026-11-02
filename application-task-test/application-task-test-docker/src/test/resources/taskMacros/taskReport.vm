@@ -27,3 +27,5 @@ id="reportid2"/}}
 {{task-report tags="tag1,tag2" id="reportid4"/}}
 
 {{task-report pages="TaskManager.WebHome" id="reportid5"/}}
+
+{{task-report columns="name,project,severity,_actions" sortBy="" nameDisplay="link" id="reportid6"/}}

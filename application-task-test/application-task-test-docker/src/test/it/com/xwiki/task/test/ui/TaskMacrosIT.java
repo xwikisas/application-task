@@ -59,6 +59,7 @@ import org.xwiki.contrib.application.task.test.po.TaskReportMacro;
 import org.xwiki.contrib.application.task.test.po.TaskboxMacroModal;
 import org.xwiki.contrib.application.task.test.po.TasksMacroModal;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
@@ -224,6 +225,20 @@ public class TaskMacrosIT
         // Checks the "pages" parameter, pages="TaskManager.WebHome".
         TaskReportMacro reportMacro5 = new TaskReportMacro("reportid5");
         assertEquals("TaskFromTemplate2001/01/01 01:01", reportMacro5.getTask(0).getContent());
+
+        // Checks the default columns, which must stay the same when new columns become available.
+        assertEquals(List.of("Task", "Deadline", "Assignee", "Location"), reportMacro5.getColumnNames());
+
+        // Checks the "nameDisplay" parameter, nameDisplay="link", together with the project, severity and actions
+        // columns and an empty "sortBy" parameter.
+        TaskReportMacro reportMacro6 = new TaskReportMacro("reportid6");
+        TableLayoutElement reportTable6 = reportMacro6.getTableLayout();
+        assertEquals(List.of("Task", "Project", "Priority", "Actions"), reportMacro6.getColumnNames());
+        reportTable6.assertCellWithLink("Task", "TaskFromTemplate",
+            setup.getURL(new DocumentReference(wiki.getName(), "TaskManager", "TaskFromTemplate")));
+        reportTable6.assertRow("Project", "Other");
+        reportTable6.assertRow("Priority", "Low");
+        assertTrue(reportMacro6.getTasks().isEmpty());
     }
 
     @Test

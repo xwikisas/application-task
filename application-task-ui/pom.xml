@@ -42,7 +42,10 @@
       TaskManager.CKEditorPlugin.PluginEnabler,
       TaskManager.CKEditorPlugin.Plugin
     </xwiki.extension.licensing.publicDocuments>
+    <!-- TaskManager.HomeDashboard holds the gadgets of the home page dashboard. It is excluded so that it can be edited,
+      the licensing denying edit on all the licensed documents. Its rights restrict the edit to the administrators. -->
     <xwiki.extension.licensing.excludedDocuments>
+      TaskManager.HomeDashboard,
       TaskManager.Administration,
       TaskManager.WebPreferences,
       TaskManager.ToDo,
@@ -100,6 +103,19 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-appwithinminutes-ui</artifactId>
+      <version>${platform.version}</version>
+      <type>xar</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-dashboard-macro</artifactId>
+      <version>${platform.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-dashboard-ui</artifactId>
       <version>${platform.version}</version>
       <type>xar</type>
       <scope>runtime</scope>

@@ -70,7 +70,7 @@
   #foreach ($row in $map.rows)
     #if ("$!row.number" == '')
       #set ($row.name = $services.localization.render('taskmanager.livetable.noRights'))
-    #else
+    #elseif ("$!request.nameDisplay" != 'link')
       #set ($discard = $services.task.configuration)
       #if ($doc)
         #set ($row.name = $doc.getRenderedContent("{{tasks ids='${row.number}'/}}", $doc.syntax, 'html/5.0'))

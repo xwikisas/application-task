@@ -269,6 +269,7 @@
 #set ($displayColumns = $xcontext.macro.params.columns)
 #set ($rowCount = $wikimacro.parameters.limit)
 #set ($tableId = $escapetool.xml($wikimacro.parameters.id))
+#set ($nameDisplay = $wikimacro.parameters.nameDisplay)
 #set ($spaceFilter = [])
 #if ("$!pages.trim()" != '')
   #foreach($page in $pages.split('\s*,\s*'))
@@ -358,10 +359,29 @@
           "id": "list",
           "options": $statusOptions
         }
+      },
+      {
+        "id": "project",
+        "visible": false
+      },
+      {
+        "id": "severity",
+        "visible": false
+      },
+      {
+        "id": "_actions",
+        "visible": false
       }
     ]
   }
 })
+## Display the task name as a link to the task page instead of rendering the task macro.
+#if ($nameDisplay == 'link')
+  #set ($discard = $livedataCfg.meta.propertyDescriptors.get(0).put('displayer', {
+    "id": "link",
+    "propertyHref": "doc.url"
+  }))
+#end
 #if (!$statusFilter.isEmpty())
   #set ($discard = $livedataCfg['query']['filters'].add({
     'property': 'status',
@@ -416,7 +436,7 @@
   #set ($discard = $propDescriptor.put('visible', $colVisibility.getOrDefault($propDescriptor.id, false)))
 #end
 ## We add all the columns. If any column was already added, it will preserve its position. Only the selected ones will be visible.
-#set ($discard = $colSet.addAll(['name', 'number', 'duedate', 'assignee', 'owner', 'completeDate', 'createDate', 'reporter', 'status']))
+#set ($discard = $colSet.addAll(['name', 'number', 'duedate', 'assignee', 'owner', 'completeDate', 'createDate', 'reporter', 'status', 'project', 'severity', '_actions']))
 ## Pass the query filters explicitly, otherwise the liveTable source applies the 'hidden' filter, excluding inline tasks.
 #set ($sourceParams = {
   "className": "TaskManager.TaskManagerClass",
@@ -424,13 +444,16 @@
   "resultPage": "TaskManager.TaskReportResultPage",
   "queryFilters": $stringtool.join($taskQueryFilters, ','),
   "space": $spaceFilter,
-  "tasktag": $tags.split('\s*,\s*')
+  "tasktag": $tags.split('\s*,\s*'),
+  "nameDisplay": "$!nameDisplay"
 })
 
 {{liveData
   id="$services.rendering.escape($tableId, 'xwiki/2.1')"
   properties="$services.rendering.escape($stringtool.join($colSet, ','), 'xwiki/2.1')"
-  sort="$services.rendering.escape("$!sortBy:asc", 'xwiki/2.1')"
+  #if ("$!sortBy" != '')
+  sort="$services.rendering.escape("$sortBy:asc", 'xwiki/2.1')"
+  #end
   limit="$services.rendering.escape($rowCount, 'xwiki/2.1')"
   source="liveTable"
   sourceParameters="$services.rendering.escape($escapetool.url($sourceParams), 'xwiki/2.1')"
@@ -1371,6 +1394,96 @@ $jsontool.serialize($livedataCfg)
     </property>
     <property>
       <name>id</name>
+    </property>
+    <property>
+      <type>java.lang.String</type>
+    </property>
+  </object>
+  <object>
+    <name>TaskManager.TaskReportMacro</name>
+    <number>10</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>4ac80052-a7f8-4c0e-b9e9-a919a053f670</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>task</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>nameDisplay</name>
     </property>
     <property>
       <type>java.lang.String</type>

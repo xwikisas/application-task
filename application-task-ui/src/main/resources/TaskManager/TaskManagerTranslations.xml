@@ -38,6 +38,10 @@
   <hidden>true</hidden>
   <content># Application Panel title
 TaskManager.home.title=Task Manager
+taskmanager.home.gadget.gantt=Gantt chart
+taskmanager.home.gadget.tasks=Tasks
+taskmanager.home.dashboard.title=Task Manager Dashboard
+taskmanager.home.customizeDashboard=Customize dashboard
 TaskManager.panels.name=Task Manager
 TaskManager.administration.noRights=You need to be an Administrator
 TaskManager.administration.livetable.doc.date=Date
@@ -270,11 +274,13 @@ rendering.macro.task-report.parameter.status.description=Display all the tasks t
 rendering.macro.task-report.parameter.limit.name=Live table limit
 rendering.macro.task-report.parameter.limit.description=Specifies how many tasks should be displayed on a single page.
 rendering.macro.task-report.parameter.columns.name=Live table display columns
-rendering.macro.task-report.parameter.columns.description=A list of task properties that you want the table to display. The possible values are: name, duedate, assignee, owner, reporter, number, status, completeDate, createDate.
+rendering.macro.task-report.parameter.columns.description=A list of task properties that you want the table to display. The possible values are: name, duedate, assignee, owner, reporter, number, status, completeDate, createDate, project, severity, _actions.
 rendering.macro.task-report.parameter.sortBy.name=Sort By
 rendering.macro.task-report.parameter.sortBy.description=The column that will be used to order the table.
 rendering.macro.task-report.parameter.id.name=Table ID
 rendering.macro.task-report.parameter.id.description=An unique identifier for the table. If the field is not completed, a random ID will be assigned.
+rendering.macro.task-report.parameter.nameDisplay.name=Task name display
+rendering.macro.task-report.parameter.nameDisplay.description=How to display the task name column. The possible values are: task (render the task with its checkbox, number, assignee and due date) and link (a link to the task page).
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents=The fold events during which the task listener will execute.
 TaskManager.TaskManagerConfigurationClass_notSkippedFoldEvents.hint=In order to sync the task macros and task pages, the application makes use of listeners that react whenever a page is modified. These listeners do not execute during Fold Events (processes that operate on numerous documents). This property lists the exceptions to that rule. By default, the listeners should be executed during the "org.xwiki.filter.job.FilterConversionStarted" event because we want the task macros to function out of the post after an import/migration. You can add or remove fold events based on your preferences. The values should be comma separated.
 TaskManager.TaskManagerConfigurationClass_defaultInlineStatus=The status that will be set to newly created task macros.
