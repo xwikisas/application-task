@@ -17,6 +17,8 @@ com.xwiki.task.internal.TaskMacroUpdateEventListener
 com.xwiki.task.internal.TaskManagerConfigurationSource
 com.xwiki.task.internal.TaskObjectUpdateEventListener
 com.xwiki.task.internal.TaskStatusSyncListener
+com.xwiki.task.internal.TaskProjectRestrictionListener
+com.xwiki.task.internal.DefaultProjectManager
 com.xwiki.task.internal.SuperCompactReferenceSerializer
 com.xwiki.task.internal.job.TaskDataInferringJob
 com.xwiki.task.internal.job.TaskReferenceRelativizerJob

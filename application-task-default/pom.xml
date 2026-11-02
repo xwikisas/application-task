@@ -25,14 +25,14 @@
   <parent>
     <groupId>com.xwiki.task</groupId>
     <artifactId>application-task</artifactId>
-    <version>3.11.5-SNAPSHOT</version>
+    <version>3.11.5-issue354-SNAPSHOT</version>
   </parent>
   <name>Task Manager Application - Default</name>
   <description>The default implementation of the Task Manager Application API (Pro). This package is needed for the application to work properly.</description>
   <artifactId>application-task-default</artifactId>
 
   <properties>
-    <xwiki.jacoco.instructionRatio>0.54</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.55</xwiki.jacoco.instructionRatio>
     <xwiki.extension.namespaces>{root}</xwiki.extension.namespaces>
   </properties>
 

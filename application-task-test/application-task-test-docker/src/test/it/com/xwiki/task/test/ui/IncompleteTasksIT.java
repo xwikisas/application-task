@@ -79,6 +79,8 @@ public class IncompleteTasksIT
         setup.loginAsSuperAdmin();
 
         TaskAdminPage taskAdmin = TaskAdminPage.gotoPage();
+        // The administration page might have been left in edit mode by another user in the previous tests.
+        taskAdmin.forceEdit();
         taskAdmin.setNotSkippedFoldEvents("com.xpn.xwiki.internal.event.XARImportingEvent");
         taskAdmin.clickSave();
 
