@@ -41,6 +41,7 @@ import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xwiki.date.internal.StorageDateFormatHistory;
 import com.xwiki.date.script.DateScriptService;
 import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.model.Task;
@@ -74,6 +75,7 @@ public class IntegrationTests
         componentManager.registerMockComponent(ScriptService.class, "datemacro");
         componentManager.registerMockComponent(TaskScriptService.class);
         componentManager.registerMockComponent(DateScriptService.class);
+        componentManager.registerMockComponent(StorageDateFormatHistory.class);
         ContextualLocalizationManager localizationManager =
             componentManager.registerMockComponent(ContextualLocalizationManager.class);
 

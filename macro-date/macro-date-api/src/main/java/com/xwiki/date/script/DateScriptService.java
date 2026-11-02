@@ -19,6 +19,10 @@
  */
 package com.xwiki.date.script;
 
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -28,6 +32,7 @@ import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
 import com.xwiki.date.DateMacroConfiguration;
+import com.xwiki.date.StoredDateParser;
 
 /**
  * Script service for retrieving information about the Date macro.
@@ -44,11 +49,56 @@ public class DateScriptService implements ScriptService
     @Inject
     private DateMacroConfiguration configuration;
 
+    @Inject
+    private StoredDateParser parser;
+
     /**
      * @return the configuration of the Date macro.
      */
     public DateMacroConfiguration getConfiguration()
     {
         return this.configuration;
+    }
+
+    /**
+     * @param value a date stored in a macro parameter
+     * @return the parsed date, or {@code null} if the value can't be parsed
+     * @see StoredDateParser#parse(String, String)
+     * @since 3.12.0
+     */
+    @Unstable
+    public Date parse(String value)
+    {
+        return parse(value, null);
+    }
+
+    /**
+     * @param value a date stored in a macro parameter
+     * @param format the format the value was explicitly written in, or {@code null} if it was written in a storage
+     *     format
+     * @return the parsed date, or {@code null} if the value can't be parsed
+     * @see StoredDateParser#parse(String, String)
+     * @since 3.12.0
+     */
+    @Unstable
+    public Date parse(String value, String format)
+    {
+        try {
+            return this.parser.parse(value, format);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    /**
+     * @return the storage formats used to parse the stored dates, the current one first, then the previous ones, most
+     *     recent first
+     * @see StoredDateParser#getStorageDateFormats()
+     * @since 3.12.0
+     */
+    @Unstable
+    public List<String> getStorageDateFormats()
+    {
+        return this.parser.getStorageDateFormats();
     }
 }

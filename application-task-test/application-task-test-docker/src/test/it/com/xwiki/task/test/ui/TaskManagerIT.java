@@ -509,6 +509,21 @@ class TaskManagerIT
         for (int i = 0; i < ids.size(); i++) {
             assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
         }
+
+        // Adding a project, status or severity with the name of an existing one, case-insensitive, is refused.
+        taskAdminPage.addNewProject("other");
+        assertEquals(List.of("A project named \"other\" already exists."), taskAdminPage.getErrorMessages());
+        taskAdminPage.forceEdit();
+        taskAdminPage.addNewStatus("TODO", 4);
+        assertEquals(List.of("A status named \"TODO\" already exists."), taskAdminPage.getErrorMessages());
+        taskAdminPage.forceEdit();
+        taskAdminPage.addNewSeverity(" High ");
+        assertEquals(List.of("A priority named \" High \" already exists."), taskAdminPage.getErrorMessages());
+        taskAdminPage = TaskAdminPage.gotoPage();
+        taskAdminPage.forceEdit();
+        for (int i = 0; i < ids.size(); i++) {
+            assertEquals(expectedResults.get(i), taskAdminPage.countSectionElements(ids.get(i)));
+        }
     }
 
     @ParameterizedTest

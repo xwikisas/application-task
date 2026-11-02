@@ -38,6 +38,8 @@ public class TaskPickerElement extends BaseElement
     private static final String PARAMETER_FIELD_SELECTOR =
         "[class*=-editor-modal] .macro-parameter-field select[name='%s']";
 
+    private static final String MODAL_HEADER_SELECTOR = "[class*=-editor-modal] .modal-header";
+
     private final String parameterName;
 
     /**
@@ -57,14 +59,12 @@ public class TaskPickerElement extends BaseElement
      */
     public TaskPickerElement selectTask(String searchText, String value)
     {
-        getSuggestInput().sendKeys(searchText).waitForSuggestions().selectByValue(value);
-        // The suggestions stay open when the picker accepts multiple tasks, covering the buttons of the modal.
-        // SuggestInputElement#hideSuggestions presses Escape, which would close the modal, so move the focus out of the
-        // picker instead.
-        getDriver().findElementWithoutWaitingWithoutScrolling(By.cssSelector(String.format(
-            "[class*=-editor-modal] .macro-parameter[data-id='%s'] .macro-parameter-name", this.parameterName))).click();
-        getDriver().waitUntilCondition(
-            driver -> driver.findElements(By.cssSelector(".selectize-dropdown.active")).isEmpty());
+        SuggestInputElement suggestInput = getSuggestInput();
+        suggestInput.sendKeys(searchText).waitForSuggestions().selectByValue(value);
+        // The picker reopens the suggestions after a selection, and they can cover the modal buttons. Close them by
+        // moving the focus out of the picker, since Escape would also close the modal.
+        getDriver().findElementWithoutWaitingWithoutScrolling(By.cssSelector(MODAL_HEADER_SELECTOR)).click();
+        suggestInput.waitForSuggestionsClearance();
         return this;
     }
 

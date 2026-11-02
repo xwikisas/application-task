@@ -36,8 +36,10 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.support.Color;
 import org.xwiki.ckeditor.test.po.AutocompleteDropdown;
 import org.xwiki.ckeditor.test.po.CKEditor;
+import org.xwiki.ckeditor.test.po.MacroDialogEditModal;
 import org.xwiki.ckeditor.test.po.RichTextAreaElement;
 import org.xwiki.contrib.application.task.test.po.DateMacroAdminPage;
+import org.xwiki.contrib.application.task.test.po.DateMacroModal;
 import org.xwiki.contrib.application.task.test.po.DateMacroPage;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacro;
 import org.xwiki.contrib.application.task.test.po.KanbanBoardMacroModal;
@@ -52,11 +54,13 @@ import org.xwiki.contrib.application.task.test.po.TaskElement;
 import org.xwiki.contrib.application.task.test.po.TaskMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
+import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.contrib.application.task.test.po.TaskPickerElement;
 import org.xwiki.contrib.application.task.test.po.TaskReportMacro;
 import org.xwiki.contrib.application.task.test.po.TaskboxMacroModal;
 import org.xwiki.contrib.application.task.test.po.TasksMacroModal;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
+import org.xwiki.livedata.test.po.TableLayoutElement;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
@@ -127,6 +131,9 @@ public class TaskMacrosIT
         new LocalDocumentReference("Main", "PageWithKanbanColumnColors");
 
     private final LocalDocumentReference pageWithDateMacro = new LocalDocumentReference("Main", "PageWithDateMacro");
+
+    private final LocalDocumentReference pageWithOldStorageFormat =
+        new LocalDocumentReference("Main", "PageWithOldStorageFormat");
 
     private final LocalDocumentReference pageTaskModal = new LocalDocumentReference("Main", "PageWithTaskModal");
 
@@ -222,6 +229,20 @@ public class TaskMacrosIT
         // Checks the "pages" parameter, pages="TaskManager.WebHome".
         TaskReportMacro reportMacro5 = new TaskReportMacro("reportid5");
         assertEquals("TaskFromTemplate2001/01/01 01:01", reportMacro5.getTask(0).getContent());
+
+        // Checks the default columns, which must stay the same when new columns become available.
+        assertEquals(List.of("Task", "Deadline", "Assignee", "Location"), reportMacro5.getColumnNames());
+
+        // Checks the "nameDisplay" parameter, nameDisplay="link", together with the project, severity and actions
+        // columns and an empty "sortBy" parameter.
+        TaskReportMacro reportMacro6 = new TaskReportMacro("reportid6");
+        TableLayoutElement reportTable6 = reportMacro6.getTableLayout();
+        assertEquals(List.of("Task", "Project", "Priority", "Actions"), reportMacro6.getColumnNames());
+        reportTable6.assertCellWithLink("Task", "TaskFromTemplate",
+            setup.getURL(new DocumentReference(wiki.getName(), "TaskManager", "TaskFromTemplate")));
+        reportTable6.assertRow("Project", "Other");
+        reportTable6.assertRow("Priority", "Low");
+        assertTrue(reportMacro6.getTasks().isEmpty());
     }
 
     @Test
@@ -654,11 +675,12 @@ public class TaskMacrosIT
     @Order(81)
     void quickActions(TestUtils setup) throws Exception
     {
-        // The task quick action inserts a task with a generated reference and the current user as reporter.
+        // The task quick action inserts a task with a generated reference and the current user as reporter (the
+        // current user depends on the tests that ran before).
         String content = insertWithQuickAction(setup, "/task", "Task", "Type your task here.");
         assertTrue(content.startsWith("{{task "), content);
         assertTrue(content.contains(" reference=\""), content);
-        assertTrue(content.contains("reporter=\"XWiki.superadmin\""), content);
+        assertTrue(content.contains("reporter=\"XWiki." + setup.getLoggedInUserName() + "\""), content);
         assertTrue(content.contains("createDate=\""), content);
         assertTrue(content.matches("(?s).*}}\\s*Type your task here\\.\\s*\\{\\{/task}}"), content);
         assertEquals(1, new ViewPageWithTasks().getTasks().size());
@@ -816,6 +838,59 @@ public class TaskMacrosIT
         assertEquals("", adminPage2.getDisplayDateFormat());
     }
 
+    @Test
+    @Order(86)
+    void changeStorageDateFormat(TestUtils setup) throws Exception
+    {
+        // The dates are written in the default storage format.
+        setup.createPage(pageWithOldStorageFormat, "{{date value=\"2026/02/24 11:36\"/}}\n\n"
+            + "{{task reference=\"StorageFormatTask\" reporter=\"XWiki.Admin\" createDate=\"2026/02/20 09:15\" "
+            + "status=\"Done\" completeDate=\"2026/02/22 10:30\"}}"
+            + "Old format task {{date value=\"2026/03/01 12:00\"/}}{{/task}}");
+        // The date quick action inserts the current date in the storage format.
+        String year = String.valueOf(Year.now().getValue());
+        String content = insertWithQuickAction(setup, "/date", "Date", year);
+        assertTrue(content.matches("\\{\\{date value=\"\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}\"/}}"), content);
+
+        DateMacroAdminPage adminPage = DateMacroAdminPage.gotoPage();
+        adminPage.setStorageDateFormat("dd/MM/yyyy HH:mm");
+        adminPage.clickSave();
+        assertEquals("dd/MM/yyyy HH:mm", adminPage.getStorageDateFormat());
+
+        // The dates written in the previous storage format are still read correctly.
+        setup.gotoPage(pageWithOldStorageFormat);
+        assertEquals("2026/02/24 11:36", new DateMacroPage().getDisplayedDate());
+        assertEquals("Old format task 2026/03/01 12:00", new ViewPageWithTasks().getTaskMacroContent(0));
+
+        // The macro editor converts them to the new storage format.
+        WYSIWYGEditPage editPage = new ViewPage().editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+        DateMacroModal dateMacroModal = openMacroModal(editor, new DateMacroModal());
+        assertEquals("24/02/2026 11:36", dateMacroModal.getValue());
+        dateMacroModal.clickSubmit();
+        // Saving the page also extracts the task again from the macro, still in the previous storage format.
+        editPage.clickSaveAndView();
+        assertTrue(setup.rest().<Page>get(pageWithOldStorageFormat).getContent()
+            .startsWith("{{date value=\"24/02/2026 11:36\"/}}"));
+
+        new ViewPageWithTasks().getTaskMacroLink(0).click();
+        TaskManagerViewPage taskPage = new TaskManagerViewPage();
+        assertEquals("20/02/2026 09:15:00", taskPage.getCreateDate());
+        assertEquals("22/02/2026 10:30:00", taskPage.getCompletionDate());
+        assertEquals("01/03/2026 12:00:00", taskPage.getDueDate());
+
+        // The date quick action uses the new storage format, even though the editor plugin was loaded before.
+        content = insertWithQuickAction(setup, "/date", "Date", year);
+        assertTrue(content.matches("\\{\\{date value=\"\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}\"/}}"), content);
+        setup.deletePage(pageWithQuickActions);
+
+        // Change back the storage format to default.
+        DateMacroAdminPage adminPage2 = DateMacroAdminPage.gotoPage();
+        adminPage2.clearStorageDateFormat();
+        adminPage2.clickSave();
+        assertEquals("", adminPage2.getStorageDateFormat());
+    }
+
     private String getMacroContent(String filename)
     {
         try (InputStream inputStream = getClass().getResourceAsStream("/taskMacros/" + filename)) {
@@ -902,11 +977,15 @@ public class TaskMacrosIT
 
     private TaskMacroModal openMacroModal(CKEditor editor)
     {
+        return openMacroModal(editor, new TaskMacroModal());
+    }
+
+    private <T extends MacroDialogEditModal> T openMacroModal(CKEditor editor, T macroEditModal)
+    {
         RichTextAreaElement textArea = editor.getRichTextArea(true);
         textArea.sendKeys(Keys.HOME, Keys.LEFT);
         textArea.waitUntilWidgetSelected();
         textArea.sendKeys(Keys.ENTER);
-        TaskMacroModal macroEditModal = new TaskMacroModal();
         macroEditModal.waitUntilReady();
         return macroEditModal;
     }

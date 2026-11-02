@@ -23,16 +23,21 @@ package com.xwiki.task.internal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
+import org.xwiki.job.event.JobFinishedEvent;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
@@ -64,6 +69,16 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
 {
     private static final String EXCEPTION_DOCUMENT_RETRIEVAL = "Could not retrieve the document [{}]. Cause:";
 
+    private static final String EXCEPTION_TASK_PAGES_UPDATE =
+        "Something went wrong during the updating of the task pages bound to the task macros present in [{}].";
+
+    /**
+     * The execution context property holding the last document saved during the current fold event, which still has
+     * to be processed. It is kept in the execution context (and not in a field of this singleton) so that concurrent
+     * fold events, executed by different jobs, don't process each other's documents.
+     */
+    private static final String PENDING_FOLD_DOCUMENT = "taskMacroUpdate.pendingFoldDocument";
+
     @Inject
     private ContextualAuthorizationManager authorizationManager;
 
@@ -74,7 +89,11 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     @Inject
     private TaskManager taskManager;
 
-    private DocumentReference lastFoldDocumentReference;
+    @Inject
+    private Execution execution;
+
+    @Inject
+    private Provider<XWikiContext> contextProvider;
 
     /**
      * Default constructor.
@@ -82,7 +101,19 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     public TaskMacroUpdateEventListener()
     {
         super(TaskMacroUpdateEventListener.class.getName(), Arrays.asList(new DocumentUpdatingEvent(),
-            new DocumentCreatingEvent(), new DocumentDeletingEvent()));
+            new DocumentCreatingEvent(), new DocumentDeletingEvent(), new JobFinishedEvent()));
+    }
+
+    @Override
+    public void onEvent(Event event, Object source, Object data)
+    {
+        // Fold events such as the filter conversion (used by imports and migrations) are executed inside jobs. When
+        // the job finishes, process the last document that was saved during the fold event.
+        if (event instanceof JobFinishedEvent) {
+            processPendingFoldDocument(contextProvider.get());
+            return;
+        }
+        super.onEvent(event, source, data);
     }
 
     @Override
@@ -113,9 +144,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         } catch (TaskException e) {
             logger.error("Failed to delete the tasks that have the current document as owner:", e);
         } catch (Exception e) {
-            logger.error(
-                "Something went wrong during the updating of the task pages bound to the task macros present in [{}].",
-                document.getDocumentReference(), e);
+            logger.error(EXCEPTION_TASK_PAGES_UPDATE, document.getDocumentReference(), e);
         } finally {
             context.put(TASK_UPDATE_FLAG, null);
         }
@@ -124,28 +153,77 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     private boolean maybeHandleFoldEvent(XWikiDocument document, XWikiContext context, boolean inFoldEvent)
     {
         // If inside a fold event, ignore the various versions of the same document and process only the last revision.
-        // You can notice that the last document created during the fold event won't be processed by this listener.
-        // It will be processed during the next fold event. However, in the case of confluence migrations, the last
-        // processed document is "WebPreferences". This guarantees that all migrated documents that might contain
-        // tasks will be processed by this listener. If things change for the migrator, we have to change this
-        // optimization.
+        // A document is processed when a different document is saved or when the job that executes the fold event
+        // finishes.
         if (inFoldEvent) {
-            if (lastFoldDocumentReference != null && !document.getDocumentReference()
-                .equals(lastFoldDocumentReference))
-            {
-                try {
-                    updateTaskPages(context.getWiki().getDocument(lastFoldDocumentReference, context), context);
-                } catch (XWikiException e) {
-                    logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, lastFoldDocumentReference, e);
-                } finally {
-                    lastFoldDocumentReference = document.getDocumentReference();
+            AtomicReference<DocumentReference> pendingDocument = getPendingFoldDocument();
+            if (pendingDocument != null) {
+                DocumentReference previousDocument = pendingDocument.getAndSet(document.getDocumentReference());
+                if (previousDocument != null && !previousDocument.equals(document.getDocumentReference())) {
+                    processFoldDocument(previousDocument, context);
                 }
             } else {
-                lastFoldDocumentReference = document.getDocumentReference();
+                // No execution context to remember the document in, so process it right away.
+                processFoldDocument(document, context);
             }
             return true;
         }
         return false;
+    }
+
+    private void processPendingFoldDocument(XWikiContext context)
+    {
+        ExecutionContext executionContext = execution.getContext();
+        if (executionContext == null || context == null) {
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        AtomicReference<DocumentReference> pendingDocument =
+            (AtomicReference<DocumentReference>) executionContext.getProperty(PENDING_FOLD_DOCUMENT);
+        if (pendingDocument == null) {
+            return;
+        }
+        DocumentReference documentReference = pendingDocument.getAndSet(null);
+        if (documentReference != null) {
+            processFoldDocument(documentReference, context);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private AtomicReference<DocumentReference> getPendingFoldDocument()
+    {
+        ExecutionContext executionContext = execution.getContext();
+        if (executionContext == null) {
+            return null;
+        }
+        if (!executionContext.hasProperty(PENDING_FOLD_DOCUMENT)) {
+            // Inherited, so that the contexts pushed during the fold event share the same pending document.
+            executionContext.newProperty(PENDING_FOLD_DOCUMENT).inherited()
+                .initial(new AtomicReference<DocumentReference>()).declare();
+        }
+        return (AtomicReference<DocumentReference>) executionContext.getProperty(PENDING_FOLD_DOCUMENT);
+    }
+
+    private void processFoldDocument(DocumentReference documentReference, XWikiContext context)
+    {
+        try {
+            processFoldDocument(context.getWiki().getDocument(documentReference, context), context);
+        } catch (XWikiException e) {
+            logger.warn(EXCEPTION_DOCUMENT_RETRIEVAL, documentReference, e);
+        }
+    }
+
+    private void processFoldDocument(XWikiDocument document, XWikiContext context)
+    {
+        // Set the flag so that the saves of the task pages don't trigger this listener again.
+        context.put(TASK_UPDATE_FLAG, true);
+        try {
+            updateTaskPages(document, context);
+        } catch (Exception e) {
+            logger.error(EXCEPTION_TASK_PAGES_UPDATE, document.getDocumentReference(), e);
+        } finally {
+            context.put(TASK_UPDATE_FLAG, null);
+        }
     }
 
     private void updateTaskPages(XWikiDocument document, XWikiContext context)

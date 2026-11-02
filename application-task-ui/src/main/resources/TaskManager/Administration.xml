@@ -41,6 +41,10 @@
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
 #else
+  #set ($dateMacroAdminURL = $xwiki.getURL('XWiki.XWikiPreferences', 'admin', 'editor=globaladmin&amp;section=Date%20Macro'))
+  #set ($dateMacroAdminLink = "[[Date Macro&gt;&gt;path:$dateMacroAdminURL]]")
+  {{info}}$services.localization.render('TaskManager.administration.dateFormats.info', [$dateMacroAdminLink]){{/info}}
+
   == $services.localization.render('TaskManager.adminitration.addProject') ==
   {{include reference="TaskManager.AdministrationAddProject"/}}
   == $services.localization.render('TaskManager.adminitration.addStatus') ==

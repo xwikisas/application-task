@@ -30,6 +30,9 @@
 
   <artifactId>macro-date-default</artifactId>
   <name>Date Macro - Default</name>
+  <properties>
+    <xwiki.jacoco.instructionRatio>0.56</xwiki.jacoco.instructionRatio>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -45,6 +48,18 @@
       <groupId>com.xwiki.date</groupId>
       <artifactId>macro-date-api</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-tool-test-component</artifactId>
+      <version>${commons.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Needed to mock XWikiContext. -->
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

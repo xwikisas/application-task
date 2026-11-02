@@ -19,9 +19,9 @@
  */
 package com.xwiki.task.internal;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -52,7 +52,7 @@ public class DefaultTaskCounter implements TaskCounter
     @Inject
     private ModelContext modelContext;
 
-    private final Map<String, Integer> counterMap = new HashMap<>();
+    private final Map<String, Integer> counterMap = new ConcurrentHashMap<>();
 
     @Override
     public synchronized int getNextNumber() throws TaskException

@@ -323,38 +323,66 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>require(['jquery', 'moment'], function ($, moment) {
-   $(function(){
-      $("input[id='TaskManager.TaskManagerClass_0_progress']").on('change', function(event){
-        var val = $(this).val();
-        var status = 'ToDo';
-        if(val &amp;&amp; val != ''){
-            val = parseInt(val);
-            if(val &lt; 100){
-               status = 'InProgress';
-            } else {
-               status = 'Done';
-           }
-        }
-         $("select[name='TaskManager.TaskManagerClass_0_status']").val(status);
-      });
-      $("select[id='TaskManager.TaskManagerClass_0_status']").on('change', function(event){
-        var status = $(this).val();
-        if (status == 'Done') {
-          $("input[name='TaskManager.TaskManagerClass_0_progress']").val(100);
-        } else if (status == 'InProgress') {
-          let startDateInput = $("input[name='TaskManager.TaskManagerClass_0_startDate']");
-          const format = moment().toMomentFormatString(startDateInput.data('format'));
-          if (startDateInput.val() == '') {
-            startDateInput.val(moment().format(format));
-          }
-        }
-      });
-   });
+      <code>// Applies the same rules as the TaskStatusSyncListener, so that the form shows the values that will be saved.
+require(['jquery', 'moment'], function ($, moment) {
+  $(function() {
+    const statusSelect = $("select[id='TaskManager.TaskManagerClass_0_status']");
+    const progressInput = $("input[id='TaskManager.TaskManagerClass_0_progress']");
+    let previousStatus = statusSelect.val();
+
+    const setDateIfEmpty = function(property) {
+      const dateInput = $("input[name='TaskManager.TaskManagerClass_0_" + property + "']");
+      if (dateInput.length &amp;&amp; dateInput.val() == '') {
+        dateInput.val(moment().format(moment().toMomentFormatString(dateInput.data('format'))));
+      }
+    };
+
+    // Updates the dates that depend on the status, whatever changed it.
+    const onStatusChanged = function(status) {
+      if (status == 'Done') {
+        setDateIfEmpty('completeDate');
+      } else if (previousStatus == 'Done') {
+        $("input[name='TaskManager.TaskManagerClass_0_completeDate']").val('');
+      }
+      if (status == 'InProgress') {
+        setDateIfEmpty('startDate');
+      }
+      previousStatus = status;
+    };
+
+    progressInput.on('change', function() {
+      const value = $(this).val();
+      if (value == '') {
+        return;
+      }
+      const progress = parseInt(value);
+      const status = statusSelect.val();
+      let newStatus = status;
+      if (progress &gt;= 100) {
+        newStatus = 'Done';
+      } else if (status == 'Done' || (progress &gt; 0 &amp;&amp; status == 'ToDo')) {
+        newStatus = 'InProgress';
+      }
+      if (newStatus != status) {
+        statusSelect.val(newStatus);
+        onStatusChanged(newStatus);
+      }
+    });
+
+    statusSelect.on('change', function() {
+      const status = $(this).val();
+      if (status == 'Done') {
+        progressInput.val(100);
+      } else if (status == 'ToDo' || previousStatus == 'Done') {
+        progressInput.val(0);
+      }
+      onStatusChanged(status);
+    });
+  });
 });</code>
     </property>
     <property>
-      <name>Update the status value automatically when the progress value is changed</name>
+      <name>Keep the status, progress and dates in sync while editing</name>
     </property>
     <property>
       <parse/>

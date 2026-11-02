@@ -19,6 +19,9 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -52,6 +55,9 @@ public class TaskAdminPage extends AdministrationSectionPage
 
     @FindBy(id = "status")
     private WebElement addStatusTextInput;
+
+    @FindBy(id = "order")
+    private WebElement addStatusOrderInput;
 
     private Select defaultInlineStatusSelect;
 
@@ -115,15 +121,29 @@ public class TaskAdminPage extends AdministrationSectionPage
      * Create a new status for tasks (e.g. ToDo, Done).
      *
      * @param statusName Name that will be used for the new status
-     * @since 3.7.2
+     * @param order the position of the new status among the other statuses
+     * @since 3.12.0
      */
-    public void addNewStatus(String statusName)
+    public void addNewStatus(String statusName, int order)
     {
         addStatusTextInput.click();
         addStatusTextInput.clear();
         addStatusTextInput.sendKeys(statusName);
-        addStatusTextInput.sendKeys(Keys.ENTER);
+        addStatusOrderInput.clear();
+        addStatusOrderInput.sendKeys(String.valueOf(order));
+        addStatusOrderInput.sendKeys(Keys.ENTER);
         getDriver().waitUntilPageIsReloaded();
+    }
+
+    /**
+     * @return the error messages displayed in the section, e.g. after adding a project, status or severity that
+     *     already exists
+     * @since 3.12.0
+     */
+    public List<String> getErrorMessages()
+    {
+        return getDriver().findElements(By.cssSelector("#admin-page-content .box.errormessage")).stream()
+            .map(WebElement::getText).collect(Collectors.toList());
     }
 
     private Select getDefaultInlineStatusSelect()

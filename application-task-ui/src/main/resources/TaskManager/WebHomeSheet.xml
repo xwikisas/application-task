@@ -36,13 +36,13 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include reference="TaskManager.TaskQueryMacros" /}}
-
-{{velocity}}
+  <content>{{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
 #else
+## The gadgets are stored on a separate page, so that customizing the dashboard doesn't require editing this page.
+#set ($dashboardReference = $services.model.createDocumentReference('', 'TaskManager', 'HomeDashboard'))
 
 {{html}}
 &lt;a id="task-manager-view-task-template-list"
@@ -52,55 +52,21 @@
     $escapetool.xml($services.localization.render('taskmanager.templateList.button'))
   &lt;/button&gt;
 &lt;/a&gt;
+#if ($services.security.authorization.hasAccess('edit', $dashboardReference))
+  &lt;a id="task-manager-customize-dashboard"
+      href="$escapetool.xml($xwiki.getURL($dashboardReference, 'edit', $escapetool.url({
+        'editor': 'inline',
+        'xredirect': $doc.getURL()
+      })))"
+      class="buttonwrapper"&gt;
+    &lt;button class='btn'&gt;
+      $escapetool.xml($services.localization.render('taskmanager.home.customizeDashboard'))
+    &lt;/button&gt;
+  &lt;/a&gt;
+#end
 {{/html}}
 
-{{taskgantt readonly="false"/}}
-
-#set ($statusOptions = [{"value": "", "label": $services.localization.render('livedata.filter.list.emptyLabel')}])
-#foreach($rValue in $services.task.getSortedStatuses())
-  #set($key = "TaskManager.TaskManagerClass_status_$rValue")
-  #set($translation = $services.localization.render($key))
-  #if ($translation == $key)
-    #set ($discard = $statusOptions.add({ "value": $rValue, "label": $rValue}))
-  #else
-    #set ($discard = $statusOptions.add({ "value": $rValue, "label": $translation}))
-  #end
-#end
-## Pass the query filters explicitly, otherwise the liveTable source applies the 'hidden' filter, excluding inline tasks.
-#set ($sourceParams = {
-  "className": "TaskManager.TaskManagerClass",
-  "translationPrefix": "taskmanager.livetable.",
-  "resultPage": "TaskManager.TaskManagerLiveTableResults",
-  "queryFilters": $stringtool.join($taskQueryFilters, ',')
-})
-
-{{liveData
-  id="taskmanager"
-  properties="name,project,status,severity,reporter,assignee,duedate,_actions"
-  source="liveTable"
-  sourceParameters="$services.rendering.escape($escapetool.url($sourceParams), 'xwiki/2.1')"
-}}
-{
-  "meta": {
-    "propertyDescriptors": [
-      {
-        "id": "name",
-        "displayer": {
-          "id": "link",
-          "propertyHref": "doc.url"
-        }
-      },
-      {
-        "id": "status",
-        "filter": {
-          "id": "list",
-          "options": $jsontool.serialize($statusOptions)
-        }
-      }
-    ]
-  }
-}
-{{/liveData}}
+{{dashboard source="TaskManager.HomeDashboard"/}}
 #end
 {{/velocity}}</content>
   <object>

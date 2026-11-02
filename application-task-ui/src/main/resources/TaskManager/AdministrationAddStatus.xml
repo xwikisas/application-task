@@ -41,14 +41,19 @@
   #set($status = $request.status)
   #set($order = $request.order)
   #if($stringtool.isNotBlank($status) &amp;&amp; $stringtool.isNotBlank($order) &amp;&amp; $services.csrf.isTokenValid($request.form_token))
-    #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Status_$status"))
-    #set($document = $xwiki.getDocument($documentRef))
-    #set($discard = $document.setTitle("$status"))
-    #set($discard = $document.setHidden(true))
-    #set($object = $document.getObject('TaskManager.StatusClass', true))
-    #set($discard = $object.set('status', $status))
-    #set($discard = $object.set('order', $order))
-    #set($discard = $document.save())
+    #set($existingCount = $services.query.xwql("from doc.object(TaskManager.StatusClass) as obj where lower(obj.status) = :value").bindValue('value', $status.trim().toLowerCase()).count())
+    #if($existingCount &gt; 0)
+      {{error}}$services.localization.render('TaskManager.administration.addStatus.duplicate', [$services.rendering.escape($status, 'xwiki/2.1')]){{/error}}
+    #else
+      #set($documentRef = $services.model.createDocumentReference($xcontext.getDatabase(), 'TaskManager', "Status_$status"))
+      #set($document = $xwiki.getDocument($documentRef))
+      #set($discard = $document.setTitle("$status"))
+      #set($discard = $document.setHidden(true))
+      #set($object = $document.getObject('TaskManager.StatusClass', true))
+      #set($discard = $object.set('status', $status))
+      #set($discard = $object.set('order', $order))
+      #set($discard = $document.save())
+    #end
   #end
 
   {{html}}

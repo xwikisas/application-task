@@ -122,7 +122,7 @@
       </use>
     </class>
     <property>
-      <cache>long</cache>
+      <cache>forbid</cache>
     </property>
     <property>
       <code>(function () {
@@ -133,6 +133,7 @@
     }
   });
   const $ = jQuery;
+  // The storage format can be changed, so this extension must not be cached by the browser.
   const taskDateFormat = "$!services.datemacro.configuration.storageDateFormat";
   const taskMacroName = "$!services.localization.render('rendering.macro.task.name')";
   const taskMacroDescription = "$!services.localization.render('rendering.macro.task.description')";

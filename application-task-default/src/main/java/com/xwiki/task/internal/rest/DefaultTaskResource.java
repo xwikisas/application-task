@@ -21,7 +21,6 @@ package com.xwiki.task.internal.rest;
  */
 
 import java.util.Collections;
-import java.util.Date;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -97,16 +96,8 @@ public class DefaultTaskResource extends ModifiablePageResource implements TaskR
                     setStatus.equals(Task.STATUS_DONE) ? taskConfiguration.getDefaultInlineStatus() : Task.STATUS_DONE;
             }
 
+            // The properties depending on the status are synchronized by TaskStatusSyncListener.
             taskObject.set(Task.STATUS, newStatus, getXWikiContext());
-
-            Date completeDate = null;
-            int progress = 0;
-            if (newStatus.equals(Task.STATUS_DONE)) {
-                completeDate = new Date();
-                progress = 100;
-            }
-            taskObject.set(Task.PROGRESS, progress, getXWikiContext());
-            taskObject.set(Task.COMPLETE_DATE, completeDate, getXWikiContext());
 
             getXWikiContext().getWiki().saveDocument(document, "Task status was updated.", getXWikiContext());
 
