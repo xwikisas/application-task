@@ -39,16 +39,19 @@ import org.xwiki.security.authorization.Right;
 import org.xwiki.skinx.SkinExtension;
 import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
+import org.xwiki.webjars.script.WebJarsScriptService;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xwiki.date.internal.StorageDateFormatHistory;
 import com.xwiki.date.script.DateScriptService;
+import com.xwiki.task.internal.TaskJavaScriptResources;
 import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.model.Task;
 import com.xwiki.task.script.TaskScriptService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -65,8 +68,9 @@ public class IntegrationTests
     @RenderingTestSuite.Initialized
     public void initialize(MockitoComponentManager componentManager) throws Exception
     {
-        componentManager.registerMockComponent(SkinExtension.class, "ssx");
-        componentManager.registerMockComponent(SkinExtension.class, "jsx");
+        componentManager.registerMockComponent(SkinExtension.class, "linkx");
+        componentManager.registerMockComponent(TaskJavaScriptResources.class);
+        componentManager.registerComponent(ScriptService.class, "webjars", mock(WebJarsScriptService.class));
         ConfigurationSource taskCfgSc =
             componentManager.registerMockComponent(ConfigurationSource.class, "taskmanager");
         when(taskCfgSc.getProperty("isIdDisplayed", true)).thenReturn(true);

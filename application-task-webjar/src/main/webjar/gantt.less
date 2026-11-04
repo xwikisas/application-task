@@ -1,0 +1,219 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+.gantt {
+  /**
+   * Grid and backgrounds.
+   */
+  .grid-background {
+    fill: none;
+  }
+  .grid-row {
+    fill: @xwiki-page-content-bg;
+  }
+  .grid-row:nth-child(even) {
+    fill: @nav-link-hover-bg;
+  }
+  .row-line {
+    stroke: @xwiki-border-color;
+  }
+  .tick {
+    stroke: @xwiki-border-color;
+    stroke-width: 0.7;
+  }
+  .tick.thick {
+    stroke-width: 2;
+  }
+  .today-highlight {
+    fill: @xwiki-border-color;
+    opacity: 0.5;
+  }
+  /**
+   * Heading.
+   */
+  .grid-header {
+    fill: @xwiki-page-content-bg;
+    stroke: @xwiki-border-color;
+    stroke-width: 1.4;
+  }
+  .lower-text, .upper-text {
+    font-size: @font-size-base;
+    text-anchor: middle;
+    fill: @text-color;
+  }
+  .hide {
+    display: none;
+  }
+  /**
+   * Bar handles and arrow.
+   */
+  .arrow {
+    fill: none;
+    stroke: @text-color;
+    stroke-width: 1.4;
+  }
+  .handle {
+    fill: lighten(@xwiki-border-color, 10%);
+    cursor: ew-resize;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+  }
+  .bar-wrapper:hover .handle {
+    visibility: visible;
+    opacity: 1;
+  }
+  /**
+   * Task bar defaults.
+   */
+  .bar {
+    fill: @xwiki-border-color;
+    rect, polygon {
+      filter: drop-shadow(0 0 0.2rem fade(contrast(@xwiki-page-content-bg), 33%));
+    }
+    stroke: contrast(@xwiki-page-content-bg);
+    stroke-width: 0;
+    transition: stroke-width 0.3s ease;
+    user-select: none;
+  }
+  .bar-invalid {
+    fill: transparent;
+    stroke: contrast(@xwiki-page-content-bg);
+    stroke-width: 1;
+    stroke-dasharray: 5;
+  }
+  .bar-wrapper.taskgantt-no-due-date .bar {
+    filter: none;
+  }
+  .bar-progress {
+    fill: @brand-info;
+  }
+  .bar-wrapper {
+    cursor: pointer;
+    outline: none;
+    &.active, &:hover {
+      .bar {
+        fill: darken(@xwiki-background-secondary-color, 10%);
+      }
+      .bar-progress {
+        fill: lighten(@brand-info, 10%);
+      }
+    }
+  }
+  /**
+   * Bar text.
+   */
+  .bar-label {
+    fill: contrast(@xwiki-border-color);
+    dominant-baseline: central;
+    text-anchor: middle;
+    font-size: @font-size-base;
+    font-weight: bold;
+    &.big {
+      fill: contrast(@xwiki-page-content-bg);
+      text-anchor: start;
+    }
+  }
+  .bar-invalid ~ .bar-label {
+    fill: @text-color;
+  }
+  /**
+   * Custom classes for XWiki tasks.
+   */
+  .bar-wrapper.taskgantt-no-due-date text, .bar-wrapper.taskgantt-no-due-date text.big {
+    filter:url(#rounded-corners);
+    fill:@nav-link-hover-bg;
+  }
+  .bar-wrapper.taskgantt-no-due-date .bar, .bar-wrapper.taskgantt-no-due-date .bar-progress {
+    mask: url('#fademask');
+  }
+}
+.taskgantt {
+  position:relative;
+  overflow:hidden;
+}
+.gantt-container {
+  position: relative;
+  overflow: auto;
+  font-size: @font-size-base;
+  /* Default gantt popup styles removed. */
+}
+.taskgantt-parameter {
+  background-color: @xwiki-panel-header-bg;
+  color: @xwiki-panel-header-text;
+  border-radius: 10px;
+  padding: 2px 5px 2px 5px;
+}
+.taskgantt-noedit-overlay {
+  position:absolute;
+  visibility:hidden;
+  &.active {
+    visibility: visible;
+  }
+  height:100%;
+  width:100%;
+  z-index: 3;
+  left:0;
+  top:0;
+  background-color: fade(@navbar-default-bg, 60%);
+  display:flex;
+  justify-content:center;
+  span {
+    color: contrast(@navbar-default-bg);
+    font-weight: bold;
+    align-self:center;
+    font-size:@font-size-h2;
+  }
+}
+
+.gantt-popup {
+  position: absolute;
+  overflow: visible;
+  visibility: hidden;
+  &.active {
+    visibility: visible;
+  }
+
+  .popuptext {
+    width: fit-content;
+    background-color: @brand-info;
+    color: @xwiki-page-header-bg-color;
+    text-align: center;
+    white-space: pre;
+    border-radius: 6px;
+    padding: 0.3em 0.5em;
+    position: absolute;
+    z-index: 2;
+    .gantt-popup-progress-number {
+      display: inline-block;
+      width:3.3em;
+      text-align: center;
+    }
+    &:after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: rotate(45deg) translate(-40%, -40%);
+      background-color: @brand-info;
+      height: 7px;
+      width: 7px;
+    }
+  }
+}

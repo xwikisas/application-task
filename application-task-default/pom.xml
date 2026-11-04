@@ -32,7 +32,7 @@
   <artifactId>application-task-default</artifactId>
 
   <properties>
-    <xwiki.jacoco.instructionRatio>0.54</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.56</xwiki.jacoco.instructionRatio>
     <xwiki.extension.namespaces>{root}</xwiki.extension.namespaces>
   </properties>
 
@@ -101,6 +101,23 @@
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-skin-api</artifactId>
       <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-webjars-api</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-uiextension-api</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <!-- The style sheets loaded by the task macros. -->
+      <groupId>com.xwiki.task</groupId>
+      <artifactId>application-task-webjar</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.rendering</groupId>

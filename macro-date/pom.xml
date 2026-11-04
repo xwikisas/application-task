@@ -32,6 +32,7 @@
   <packaging>pom</packaging>
   <name>Date Macro - Parent POM</name>
   <modules>
+    <module>macro-date-webjar</module>
     <module>macro-date-api</module>
     <module>macro-date-default</module>
     <module>macro-date-ui</module>

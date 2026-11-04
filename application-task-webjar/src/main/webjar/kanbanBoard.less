@@ -1,0 +1,115 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+.kanban-board .panel .panel-title {
+  font-size: 120%;
+  font-weight: 700;
+}
+.kanban-board .panel .panel-body {
+  background: #FCFCFC;
+}
+.kanban-board .task-card-status-Late .panel .panel-title {
+  color: #FF0000;
+}
+.kanban-board .task-card-status-ToDo .panel .panel-title {
+  color: #2173AF;
+}
+.kanban-board .task-card-status-InProgress .panel .panel-title {
+  color: green;
+}
+.kanban-board .task-card-status-Done .panel .panel-title {
+  color: gray;
+}
+/* The list of the selected columns, in the macro editor. */
+.kanban-columns-editor .kanban-columns {
+  margin-bottom: 10px;
+}
+.kanban-columns-editor .kanban-column {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+}
+.kanban-columns-editor .kanban-column.dragging {
+  opacity: .5;
+}
+.kanban-columns-editor .kanban-column-handle {
+  color: @text-muted;
+  cursor: grab;
+}
+.kanban-columns-editor .kanban-column-handle:hover,
+.kanban-columns-editor .kanban-column-handle:focus {
+  color: @text-color;
+}
+.kanban-columns-editor .kanban-column-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* The form styles of the macro editor (e.g. full width, padding, rounded corners) apply to all its inputs, so we need
+   to override them. */
+.kanban-columns-editor input.kanban-column-color {
+  flex: none;
+  box-sizing: border-box;
+  width: 20px !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 20px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(0, 0, 0, .3) !important;
+  border-radius: @border-radius-small !important;
+  box-shadow: none !important;
+  background: none;
+  cursor: pointer;
+}
+input.kanban-column-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input.kanban-column-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 0;
+}
+input.kanban-column-color::-moz-color-swatch {
+  border: none;
+  border-radius: 0;
+}
+.kanban-columns-editor .kanban-columns-empty {
+  margin-bottom: 10px;
+}
+/* The dropdown listing the statuses to add as columns. The search input stays visible when the statuses are scrolled. */
+.kanban-columns-add .dropdown-menu {
+  min-width: 250px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-top: 0;
+}
+.kanban-columns-add .kanban-columns-search {
+  position: sticky;
+  top: 0;
+  padding: 5px;
+  background-color: @dropdown-bg;
+}
+.kanban-columns-add .kanban-column-suggestion a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}

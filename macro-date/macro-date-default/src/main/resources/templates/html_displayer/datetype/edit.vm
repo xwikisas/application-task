@@ -19,7 +19,7 @@
 ## ---------------------------------------------------------------------------
 ## The input gets the 'datetime' class, that initializes the date time picker, only after its value is converted from
 ## the storage format it was written in to the current one. The macro editor sets the value on the client side.
-#set ($discard = $xwiki.jsx.use('DateMacro.Code.StoredDatePicker'))
+#set ($discard = $xwiki.jsrx.use('datemacro/js/storedDatePicker.js'))
 #set ($dateTimePickerParams = {
   'value': $displayer.value,
   'data-format': $services.datemacro.configuration.storageDateFormat,

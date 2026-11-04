@@ -1,0 +1,142 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+.task-card {
+  background: white;
+
+  border-style: solid;
+  border-width: 1px;
+  border-color: #E8E8E8;
+  padding-top: 1ex;
+  padding-bottom: 1ex;
+}
+.task-card .task-card-title {
+  color: #2173AF;
+  font-size: 120%;
+}
+.task-card .task-card-status {
+  font-size: 80%;
+}
+.task-card .task-card-late {
+  position: absolute;
+  width: 0;
+  height: 0;
+  display: block;
+  font-size: 0;
+  border-style: solid;
+  border-color: red;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+  border-width: 8px;
+  padding: 0;
+  margin: 0;
+  top: 0;
+  left: 0;
+  z-index: 5;
+}
+.task-card .task-card-late:hover {
+  color: red;
+  width: 100%;
+  height: 100%;
+  font-size: 150%;
+  padding: 1ex;
+  background: rgba(225,225,225,0.8);
+  border-color: red;
+  font-weight: 700;
+}
+.task-card.task-card-status-Late .task-card-status {
+  color: #FF0000;
+}
+.task-card.task-card-status-ToDo .task-card-status {
+  color: #2173AF;
+}
+.task-card.task-card-status-InProgress .task-card-status {
+  color: green;
+}
+.task-card.task-card-status-Done .task-card-status {
+  color: gray;
+}
+.task-card .task-card-dependencies .task-card-dependency {
+  display: inline-block;
+  width: 1.5em;
+  height: 1ex;
+  margin-right: 0.25em;
+}
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-Late {
+  background: #FF0000;
+}
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-ToDo {
+  background: #2173AF;
+}
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-InProgress {
+  background: green;
+}
+.task-card .task-card-dependencies .task-card-dependency.task-card-status-Done {
+  background: gray;
+}
+.task-card .task-card-dependencies .task-card-dependency .task-card {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  opacity: 0;
+  margin-top: 1ex;
+  transition: opacity 0.25s ease-in-out;
+}
+.task-card .task-card-dependencies .task-card-dependency:hover .task-card {
+  display: block;
+  opacity: 0.9;
+}
+.task-card .task-card-duedate {
+  color: gray;
+  font-size: 60%;
+}
+.task-card .task-card-assignees {
+  height: 5ex;
+  display: flex;
+  gap: 1ex;
+}
+.task-card .task-card-assignees .task-card-assignee {
+  height: 5ex;
+}
+.task-card .task-card-assignees .task-card-assignee img {
+  height: 5ex;
+}
+.task-card .task-card-assignees .task-card-assignee .task-card-tooltip {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  height: 5ex;
+  padding-left: 2ex;
+  padding-right: 2ex;
+
+  background: #E8E8E8;
+}
+.task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip {
+  display: inline-block;
+  margin-left: 2.5ex;
+}
+.task-card .task-card-assignees .task-card-assignee:hover .task-card-tooltip::before {
+  content: "";
+  border-style: solid;
+  border-width: 2.5ex;
+  border-color: transparent;
+  border-right-color: #E8E8E8;
+  position: absolute;
+  margin: 0 0 0 -7ex; /* Size of the border (2.5ex) x2 plus the padding-left (2ex) of the .task-card-tooltip */
+}

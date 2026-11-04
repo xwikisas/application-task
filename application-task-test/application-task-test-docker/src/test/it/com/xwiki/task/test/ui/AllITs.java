@@ -32,7 +32,12 @@ import org.xwiki.test.docker.junit5.UITest;
  * @version $Id$
  * @since 2.6
  */
-@UITest(properties = {"xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin"}, extraJARs = {
+@UITest(properties = {
+    // The resource skin extension plugins (jsrx, ssrx) load the JavaScript code shipped in the application JARs. They
+    // are enabled by default in the XWiki distribution, but not in the test one.
+    "xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin,"
+        + "com.xpn.xwiki.plugin.skinx.JsResourceSkinExtensionPlugin,"
+        + "com.xpn.xwiki.plugin.skinx.CssResourceSkinExtensionPlugin"}, extraJARs = {
     "org.xwiki.platform:xwiki-platform-jodatime:15.10",
     // Used by the CKEditor macro service to list the macros that can be installed, when inserting a macro.
     "org.xwiki.platform:xwiki-platform-extension-index:15.10"}, resolveExtraJARs = true)

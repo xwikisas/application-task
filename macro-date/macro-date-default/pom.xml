@@ -31,13 +31,25 @@
   <artifactId>macro-date-default</artifactId>
   <name>Date Macro - Default</name>
   <properties>
-    <xwiki.jacoco.instructionRatio>0.56</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.73</xwiki.jacoco.instructionRatio>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-skin-api</artifactId>
       <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-webjars-api</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <!-- The style sheet loaded by the date macro. -->
+      <groupId>com.xwiki.date</groupId>
+      <artifactId>macro-date-webjar</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>

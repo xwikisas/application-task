@@ -23,7 +23,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,7 +41,9 @@ import org.xwiki.rendering.listener.Format;
 import org.xwiki.rendering.macro.AbstractMacro;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
+import org.xwiki.script.service.ScriptService;
 import org.xwiki.skinx.SkinExtension;
+import org.xwiki.webjars.script.WebJarsScriptService;
 
 import com.xwiki.date.DateMacroConfiguration;
 import com.xwiki.date.DateType;
@@ -63,9 +67,9 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     public static final String MACRO_NAME = "date";
 
     /**
-     * The reference to the document that contains the necessary CSS for the Date macro.
+     * The id of the WebJar holding the style sheet of the Date macro.
      */
-    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "DateMacro.Code.SkinExtension";
+    public static final String WEBJAR_ID = "com.xwiki.date:macro-date-webjar";
 
     @Inject
     private DateMacroConfiguration configuration;
@@ -73,9 +77,15 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     @Inject
     private StoredDateParser parser;
 
+    // The style sheet is not loaded from a wiki page (SSX), because it would be missing for the users that can't view
+    // that page.
     @Inject
-    @Named("ssx")
-    private SkinExtension ssx;
+    @Named("linkx")
+    private SkinExtension linkx;
+
+    @Inject
+    @Named("webjars")
+    private ScriptService webjarsScriptService;
 
     /**
      * The default Constructor for the Date macro.
@@ -96,7 +106,7 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
     public List<Block> execute(DateMacroParameters parameters, String content, MacroTransformationContext context)
         throws MacroExecutionException
     {
-        this.ssx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
+        useStyleSheet();
         Date paramDate;
         try {
             paramDate = parser.parse(parameters.getValue(), parameters.getFormat());
@@ -116,6 +126,17 @@ public class DateMacro extends AbstractMacro<DateMacroParameters>
         returnBlock.setParameters(Collections.singletonMap("class", "xwiki-date"));
 
         return Collections.singletonList(returnBlock);
+    }
+
+    private void useStyleSheet()
+    {
+        // The style sheet is a LESS file, evaluated to get the variables of the current color theme.
+        String styleSheetURL = ((WebJarsScriptService) this.webjarsScriptService).url(WEBJAR_ID, "dateMacro.less",
+            Collections.singletonMap("evaluate", true));
+        Map<String, Object> linkParameters = new HashMap<>();
+        linkParameters.put("type", "text/css");
+        linkParameters.put("rel", "stylesheet");
+        this.linkx.use(styleSheetURL, linkParameters);
     }
 }
 

@@ -28,7 +28,7 @@
   #set ($discard = $xwiki.linkx.use($services.webjars.url('selectize.js', 'css/selectize.bootstrap3.css'),
     {'type': 'text/css', 'rel': 'stylesheet'}))
   #set ($discard = $xwiki.ssfx.use('uicomponents/suggest/xwiki.selectize.css', true))
-  #set ($discard = $xwiki.jsx.use('TaskManager.TaskPagesSearch'))
+  #set ($discard = $xwiki.jsrx.use('taskmanager/js/taskPagesSearch.js'))
   #set ($taskPickerAttributes = {})
   #set ($discard = $taskPickerAttributes.putAll($parameters))
   #set ($taskPickerValue = $taskPickerAttributes.remove('value'))

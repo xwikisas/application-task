@@ -41,8 +41,6 @@
       free (e.g. the Kanban board macro), so the inclusion must not fail without a license. -->
     <xwiki.extension.licensing.publicDocuments>
       TaskManager.WebHome,
-      TaskManager.CKEditorPlugin.PluginEnabler,
-      TaskManager.CKEditorPlugin.Plugin,
       TaskManager.TaskQueryMacros
     </xwiki.extension.licensing.publicDocuments>
     <!-- TaskManager.HomeDashboard holds the gadgets of the home page dashboard. It is excluded so that it can be edited,

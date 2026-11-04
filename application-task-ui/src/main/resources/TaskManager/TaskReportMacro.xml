@@ -461,8 +461,9 @@
 $jsontool.serialize($livedataCfg)
 {{/liveData}}
 
-#set ($discard = $xwiki.ssx.use('TaskManager.SkinExtensions'))
-#set ($discard = $xwiki.jsx.use('TaskManager.SkinExtensions'))
+#set ($discard = $xwiki.linkx.use($services.webjars.url('com.xwiki.task:application-task-webjar', 'taskMacro.less', {'evaluate': true}),
+  {'type': 'text/css', 'rel': 'stylesheet'}))
+#set ($discard = $xwiki.jsrx.use('taskmanager/js/taskMacro.js'))
 #end
 {{/velocity}}</code>
     </property>

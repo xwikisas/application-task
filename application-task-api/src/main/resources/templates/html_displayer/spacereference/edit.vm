@@ -23,5 +23,5 @@
 #foreach ($parameter in $displayer.parameters.entrySet())
   $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
 #end/>
-#set ($discard = $xwiki.jsx.use('TaskManager.KanbanBoardMacro'))
+#set ($discard = $xwiki.jsrx.use('taskmanager/js/kanbanBoard.js'))
 

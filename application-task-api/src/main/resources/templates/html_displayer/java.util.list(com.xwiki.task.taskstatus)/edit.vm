@@ -19,7 +19,7 @@
 ## ---------------------------------------------------------------------------
 #template("pickers_macros.vm")
 ## Restores the order of the selected statuses from the macro call, which the picker would otherwise lose.
-#set ($discard = $xwiki.jsx.use('TaskManager.TaskStatusPicker'))
+#set ($discard = $xwiki.jsrx.use('taskmanager/js/taskStatusPicker.js'))
 #set ($options = [])
 #set ($translationKeyPrefix = 'TaskManager.TaskManagerClass_status_')
 #foreach ($status in $services.task.getSortedStatuses())

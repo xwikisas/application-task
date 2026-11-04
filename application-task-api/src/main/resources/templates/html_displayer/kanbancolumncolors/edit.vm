@@ -20,8 +20,9 @@
 ## The Kanban board JSX hides this input in the macro editor, along with the picker of the columns parameter, and
 ## displays instead a list of the selected columns, built from the templates below, where the columns are added,
 ## removed, reordered and colored. It computes the value of both parameters from that list.
-#set ($discard = $xwiki.jsx.use('TaskManager.KanbanBoardMacro'))
-#set ($discard = $xwiki.ssx.use('TaskManager.KanbanBoardMacro'))
+#set ($discard = $xwiki.jsrx.use('taskmanager/js/kanbanBoard.js'))
+#set ($discard = $xwiki.linkx.use($services.webjars.url('com.xwiki.task:application-task-webjar', 'kanbanBoard.less', {'evaluate': true}),
+  {'type': 'text/css', 'rel': 'stylesheet'}))
 <input type="text" class="kanban-column-colors"
   #foreach ($parameter in $displayer.parameters.entrySet())
     $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"

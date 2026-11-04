@@ -43,7 +43,9 @@ import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
+import org.xwiki.script.service.ScriptService;
 import org.xwiki.skinx.SkinExtension;
+import org.xwiki.webjars.script.WebJarsScriptService;
 import org.xwiki.xml.XMLUtils;
 
 import com.xwiki.task.MacroUtils;
@@ -51,6 +53,7 @@ import com.xwiki.task.TaskConfiguration;
 import com.xwiki.task.TaskException;
 import com.xwiki.task.TaskManager;
 import com.xwiki.task.internal.TaskBlockProcessor;
+import com.xwiki.task.internal.TaskJavaScriptResources;
 import com.xwiki.task.internal.TaskReferenceUtils;
 import com.xwiki.task.macro.TaskMacroParameters;
 import com.xwiki.task.model.Task;
@@ -66,22 +69,32 @@ import com.xwiki.task.model.Task;
 public abstract class AbstractTaskMacro<P> extends AbstractMacro<P>
 {
     /**
-     * The reference to the document that contains the necessary CSS for TaskManager macros.
+     * The JavaScript resource, from the application JAR, that handles the task checkbox.
      */
-    public static final String SKIN_RESOURCES_DOCUMENT_REFERENCE = "TaskManager.SkinExtensions";
+    public static final String JAVASCRIPT_RESOURCE = "taskmanager/js/taskMacro.js";
+
+    /**
+     * The id of the WebJar holding the style sheets of the application.
+     */
+    public static final String WEBJAR_ID = "com.xwiki.task:application-task-webjar";
 
     private static final String HTML_CLASS = "class";
 
     @Inject
     private TaskBlockProcessor taskBlockProcessor;
 
+    // The style sheets and the JavaScript code are not loaded from wiki pages (SSX / JSX), because they would be
+    // missing for the users that can't view these pages.
     @Inject
-    @Named("ssx")
-    private SkinExtension ssx;
+    @Named("linkx")
+    private SkinExtension linkx;
 
     @Inject
-    @Named("jsx")
-    private SkinExtension jsx;
+    private TaskJavaScriptResources javaScriptResources;
+
+    @Inject
+    @Named("webjars")
+    private ScriptService webjarsScriptService;
 
     @Inject
     private TaskManager taskManager;
@@ -135,8 +148,7 @@ public abstract class AbstractTaskMacro<P> extends AbstractMacro<P>
     protected List<Block> renderTask(TaskMacroParameters parameters, String content,
         MacroTransformationContext context) throws MacroExecutionException
     {
-        this.ssx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
-        this.jsx.use(SKIN_RESOURCES_DOCUMENT_REFERENCE);
+        useSkinResources();
 
         List<Block> contentBlocks = new ArrayList<>();
 
@@ -149,6 +161,18 @@ public abstract class AbstractTaskMacro<P> extends AbstractMacro<P>
         }
 
         return createTaskStructure(parameters, context, contentBlocks);
+    }
+
+    private void useSkinResources()
+    {
+        // The style sheet is a LESS file, evaluated to get the variables of the current color theme.
+        String styleSheetURL = ((WebJarsScriptService) this.webjarsScriptService).url(WEBJAR_ID, "taskMacro.less",
+            Collections.singletonMap("evaluate", true));
+        Map<String, Object> linkParameters = new HashMap<>();
+        linkParameters.put("type", "text/css");
+        linkParameters.put("rel", "stylesheet");
+        this.linkx.use(styleSheetURL, linkParameters);
+        this.javaScriptResources.use(JAVASCRIPT_RESOURCE);
     }
 
     private List<Block> createTaskStructure(TaskMacroParameters parameters, MacroTransformationContext context,
