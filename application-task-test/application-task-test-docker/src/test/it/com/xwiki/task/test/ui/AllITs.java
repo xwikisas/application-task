@@ -33,7 +33,9 @@ import org.xwiki.test.docker.junit5.UITest;
  * @since 2.6
  */
 @UITest(properties = {"xwikiCfgPlugins=com.xpn.xwiki.plugin.jodatime.JodaTimePlugin"}, extraJARs = {
-    "org.xwiki.platform:xwiki-platform-jodatime:15.10"}, resolveExtraJARs = true)
+    "org.xwiki.platform:xwiki-platform-jodatime:15.10",
+    // Used by the CKEditor macro service to list the macros that can be installed, when inserting a macro.
+    "org.xwiki.platform:xwiki-platform-extension-index:15.10"}, resolveExtraJARs = true)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 class AllIT
 {
