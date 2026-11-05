@@ -146,6 +146,15 @@ public class TaskAdminPage extends AdministrationSectionPage
             .map(WebElement::getText).collect(Collectors.toList());
     }
 
+    /**
+     * @return the task templates part of the section, where templates are listed and created
+     * @since 3.11.5
+     */
+    public TaskTemplateListPage getTaskTemplates()
+    {
+        return new TaskTemplateListPage();
+    }
+
     private Select getDefaultInlineStatusSelect()
     {
         if (defaultInlineStatusSelect == null) {

@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.xwiki.livedata.test.po.LiveDataElement;
 import org.xwiki.test.ui.po.ViewPage;
 
 /**
@@ -35,14 +36,16 @@ import org.xwiki.test.ui.po.ViewPage;
  */
 public class TaskTemplateListPage extends ViewPage
 {
+    private static final String LIVE_DATA_ID = "taskManagerTemplates";
+
     @FindBy(id = "button-submit-template")
     private WebElement submitTemplateButton;
 
     @FindBy(name = "templateName")
     private WebElement templateNameField;
 
-    @FindBy(className = "xwiki-livedata")
-    private WebElement livedataElement;
+    @FindBy(className = "task-template-list-description")
+    private WebElement descriptionElement;
 
     public static String getURL()
     {
@@ -69,11 +72,22 @@ public class TaskTemplateListPage extends ViewPage
     }
 
     /**
+     * @return the text explaining what task templates are
+     * @since 3.11.5
+     */
+    public String getDescription()
+    {
+        return descriptionElement.getText();
+    }
+
+    /**
      * @return a list of urls to /bin/view/..TemplateProvider
      */
     public List<String> getListedTemplates()
     {
-        return livedataElement.findElements(
+        // Wait for the live data to load its entries.
+        new LiveDataElement(LIVE_DATA_ID).getTableLayout();
+        return getDriver().findElement(By.id(LIVE_DATA_ID)).findElements(
             By.cssSelector("a[href*=\"/bin/view/\"][href*=\"TemplateProvider\"]")).stream()
             .map(we -> we.getAttribute("href")).collect(Collectors.toList());
     }

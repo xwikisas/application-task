@@ -45,13 +45,6 @@
 #set ($dashboardReference = $services.model.createDocumentReference('', 'TaskManager', 'HomeDashboard'))
 
 {{html}}
-&lt;a id="task-manager-view-task-template-list"
-    href="$escapetool.xml($xwiki.getDocument('TaskManager.TaskTemplateList').getURL())"
-    class="buttonwrapper"&gt;
-  &lt;button class='btn'&gt;
-    $escapetool.xml($services.localization.render('taskmanager.templateList.button'))
-  &lt;/button&gt;
-&lt;/a&gt;
 #if ($services.security.authorization.hasAccess('edit', $dashboardReference))
   &lt;a id="task-manager-customize-dashboard"
       href="$escapetool.xml($xwiki.getURL($dashboardReference, 'edit', $escapetool.url({

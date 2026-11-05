@@ -62,7 +62,7 @@ TaskManager.administration.addSeverity.duplicate=A priority named "{0}" already 
 TaskManager.adminitration.addProject=Add Project
 TaskManager.adminitration.addStatus=Add Status
 TaskManager.adminitration.addSeverity=Add Priority
-TaskManager.adminitration.templateList=Add Task Template
+TaskManager.administration.templates=Task Templates
 TaskManager.administration.dateFormats.info=The formats used to display and store the task dates (date macros, deadlines, creation and completion dates) are configured in the {0} administration section. The storage format can be changed at any time: the dates stored in a previous format are still read correctly.
 
 # Class fields
@@ -108,6 +108,7 @@ taskmanager.livetable._actions.delete=Delete
 taskmanager.livetable.emptyvalue=-
 
 # Template list specific keys
+taskmanager.templateList.description=A task template holds the default values of new tasks (status, priority, assignee, project, description, etc.). Each template becomes a page type when creating a page in the Task Manager space, so that the new task starts with the values of the template. After creating a template, you are redirected to its page, where you can set these default values.
 taskmanager.templateList.label=Name
 taskmanager.templateList.hint=The name of the new template
 taskmanager.templateList.button=Create new template
@@ -213,6 +214,11 @@ TaskManager.StatusClass_status_Done=Done
 TaskManager.SeverityClass_severity_Low=Low
 TaskManager.SeverityClass_severity_Medium=Medium
 TaskManager.SeverityClass_severity_High=High
+
+#######################################
+## until 3.11.4
+#######################################
+TaskManager.adminitration.templateList=Add Task Template
 
 ## Confluence-like tasks
 taskmanager.notification.statusChange.success=Task status changed successfully!

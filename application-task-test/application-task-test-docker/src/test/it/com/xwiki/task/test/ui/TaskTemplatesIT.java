@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
+import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskTemplateListPage;
@@ -65,10 +66,7 @@ public class TaskTemplatesIT
     void noEditRights(TestUtils setup)
     {
         setup.login(TEST_USERNAME, TEST_PASSWORD);
-        TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
-        taskManagerHomePage.clickTaskTemplateListButton();
-        assertEquals(setup.getDriver().getCurrentUrl(), TaskTemplateListPage.getURL());
-        TaskTemplateListPage page = new TaskTemplateListPage();
+        TaskTemplateListPage page = TaskTemplateListPage.gotoPage();
         page.setTemplateName("TestNoEdit");
         page.submit();
         assertNotNull(setup.getDriver().findElement(By.className("xnotification-error")));
@@ -111,6 +109,23 @@ public class TaskTemplatesIT
         assertTrue(
             page.getListedTemplates().contains(getTemplateSpaceUrl("view", testTemplate + "TemplateProvider", setup)),
             "Listed templates: " + page.getListedTemplates());
+
+        logout(setup);
+    }
+
+    @Test
+    @Order(3)
+    void templatesInAdministration(TestUtils setup)
+    {
+        setup.loginAsSuperAdmin();
+
+        // The templates are managed from the Task Manager administration section, which explains what they are.
+        TaskTemplateListPage templates = TaskAdminPage.gotoPage().getTaskTemplates();
+        assertTrue(templates.getDescription().startsWith("A task template holds the default values of new tasks"),
+            "Unexpected description: " + templates.getDescription());
+        // The template created by the previous test is listed.
+        assertTrue(templates.getListedTemplates().contains(getTemplateSpaceUrl("view", "TestTemplateProvider", setup)),
+            "Listed templates: " + templates.getListedTemplates());
 
         logout(setup);
     }
