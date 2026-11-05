@@ -229,6 +229,7 @@ taskmanager.notification.referenceGeneration.fail=Failed to generate a task refe
 taskmanager.notification.referenceGeneration.inprogress=Generating task reference
 taskmanager.notification.referenceGeneration.invalid=The task reference already exists! You need to generate another one.
 taskmanager.macro.task.referenceGeneration.title=Generate a reference
+taskmanager.macro.checkbox.idGeneration.title=Generate an id
 taskmanager.livetable.owner=Location
 taskmanager.livetable.completeDate=Completed on
 taskmanager.livetable.createDate=Creation date

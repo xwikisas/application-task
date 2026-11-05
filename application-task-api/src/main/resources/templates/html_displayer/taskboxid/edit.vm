@@ -18,10 +18,18 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 #set ($discard = $xwiki.jsrx.use('taskmanager/js/checkboxInit.js'))
-<input
-  class="taskbox-id"
-  type="text"
-  #foreach ($parameter in $displayer.parameters.entrySet())
-    $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
-  #end
-/>
+<div class="input-group taskbox-id-group">
+  <input
+    class="taskbox-id"
+    type="text"
+    #foreach ($parameter in $displayer.parameters.entrySet())
+      $escapetool.xml($parameter.key)="$!escapetool.xml($parameter.value)"
+    #end
+  />
+  <div class="input-group-btn">
+    <button type="button" class="btn btn-default"
+      title="$escapetool.xml($services.localization.render('taskmanager.macro.checkbox.idGeneration.title'))">
+      $services.icon.renderHTML('key')
+    </button>
+  </div>
+</div>

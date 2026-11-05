@@ -20,13 +20,19 @@
 require(['jquery'], function ($) {
   // Generate the id on the client side because the macro editor caches the HTML of the parameter displayers, so an
   // id generated on the server side would be the same for every new taskbox macro.
+  let generateId = function () {
+    return String(Math.random()).slice(-5);
+  };
   let init = function () {
     $('.taskbox-id').each(function () {
       if (!this.value) {
-        this.value = String(Math.random()).slice(-5);
+        this.value = generateId();
       }
     });
   };
   init();
   $(document).on('shown.bs.modal', '.modal', init);
+  $(document).on('click', '.taskbox-id-group .btn', function () {
+    $(this).closest('.taskbox-id-group').find('.taskbox-id').val(generateId()).trigger('change');
+  });
 });

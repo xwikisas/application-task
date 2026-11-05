@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.By;
 import org.xwiki.ckeditor.test.po.MacroDialogEditModal;
 
 /**
@@ -45,5 +46,17 @@ public class TaskboxMacroModal extends MacroDialogEditModal
     {
         getDriver().waitUntilCondition(driver -> !getMacroParameter(PARAMETER_ID).isEmpty());
         return getMacroParameter(PARAMETER_ID);
+    }
+
+    /**
+     * Clicks the button next to the id parameter that generates a new id.
+     *
+     * @return the newly generated id
+     * @since 3.11.5
+     */
+    public String generateNewId()
+    {
+        getDriver().findElementWithoutWaitingWithoutScrolling(By.cssSelector(".taskbox-id-group .btn-default")).click();
+        return getId();
     }
 }
