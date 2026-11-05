@@ -51,7 +51,7 @@
   {{include reference="TaskManager.AdministrationAddStatus"/}}
   == $services.localization.render('TaskManager.adminitration.addSeverity') ==
   {{include reference="TaskManager.AdministrationAddSeverity"/}}
-  == $services.localization.render('TaskManager.adminitration.templateList') ==
+  == $services.localization.render('TaskManager.administration.templates') ==
   {{include reference="TaskManager.TaskTemplateList"/}}
   == $services.localization.render('TaskManager.adminitration.incompleteTasks') ==
   {{include reference="TaskManager.AdministrationIncompleteTasks"/}}
