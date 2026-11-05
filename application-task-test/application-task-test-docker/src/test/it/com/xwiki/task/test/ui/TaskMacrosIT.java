@@ -651,7 +651,7 @@ public class TaskMacrosIT
 
     @Test
     @Order(80)
-    void taskboxMacroIdParameter(TestUtils setup)
+    void taskboxMacroIdParameter(TestUtils setup) throws Exception
     {
         WYSIWYGEditPage editPage =
             setup.createPage(pageTaskboxModal, "{{checkbox}}Checkbox without id{{/checkbox}}\n\n ").editWYSIWYG();
@@ -665,10 +665,16 @@ public class TaskMacrosIT
         // The id is generated again, and differently, the next time the macro editor is opened.
         macroEditModal = openTaskboxMacroModal(editor);
         String secondId = macroEditModal.getId();
-        macroEditModal.clickCancel();
         assertNotEquals(firstId, secondId);
 
-        editPage.clickCancel();
+        // The id can be regenerated from the macro editor, like the reference of the task macro.
+        macroEditModal.setMacroParameter("id", "customId");
+        String regeneratedId = macroEditModal.generateNewId();
+        assertTrue(regeneratedId.matches("\\d{5}"), "Unexpected generated id: " + regeneratedId);
+        macroEditModal.clickSubmit();
+        editPage.clickSaveAndView();
+        assertEquals("{{checkbox id=\"" + regeneratedId + "\"}}\nCheckbox without id\n{{/checkbox}}",
+            setup.rest().<Page>get(pageTaskboxModal).getContent().trim());
     }
 
     @Test
