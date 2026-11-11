@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content>{{velocity}}
 #if ($xcontext.action == 'get')
-  #if ("$!request.getPages" != '')
+  #if ("$!request.getPages" != '' &amp;&amp; $xwiki.hasAccessLevel('admin', $xcontext.user, 'XWiki.XWikiPreferences'))
     #set ($offset = "$!request.offset")
     #if ($offset == '')
       #set ($offset = '0')
