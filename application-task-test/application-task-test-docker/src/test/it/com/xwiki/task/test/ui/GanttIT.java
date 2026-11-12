@@ -88,9 +88,12 @@ class GanttIT
     private static final String GANTT_MACRO_FILTER_SPACES =
         "\n\n{{taskgantt spaces=\"TaskManager.TestSpace\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
 
+    private static final String GANTT_MACRO_FILTER_ASSIGNEES_SPECIAL_CHARACTERS =
+        "\n\n{{taskgantt assignees=\"XWiki.Ad_in\" hideNoDueDate=\"false\"}}{{/taskgantt}}";
+
     private static final String GANTT_MACROS =
         GANTT_MACRO + GANTT_MACRO_READONLY + GANTT_MACRO_FILTER_ASSIGNEES + GANTT_MACRO_FILTER_PROJECTS
-            + GANTT_MACRO_FILTER_SPACES;
+            + GANTT_MACRO_FILTER_SPACES + GANTT_MACRO_FILTER_ASSIGNEES_SPECIAL_CHARACTERS;
 
     private static final String TASK_MACROS = "{{task reference=\"TestSpace/Task_0\" reporter=\"XWiki.Admin\" "
         + "createDate=\"2001/01/01 12:00\" status=\"Done\" " + "completeDate=\"2001/01/01 12:00\"}}"
@@ -265,6 +268,10 @@ class GanttIT
         ids = gantts.get(4).getTaskIds();
         assertEquals(1, ids.size(), ids.toString());
         assertTrue(ids.contains("xwiki:TaskManager.TestSpace.TestTask3"), ids.toString());
+
+        // The characters of the assignee filter are matched literally: no task is assigned to "XWiki.Ad_in".
+        ids = gantts.get(5).getTaskIds();
+        assertTrue(ids.isEmpty(), ids.toString());
 
         // Readonly
         gantts.get(1).dragTask("xwiki:TaskManager.TestTask0", 50);
