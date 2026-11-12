@@ -47,6 +47,7 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceResolver;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -95,6 +96,10 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     @Inject
     private Provider<XWikiContext> contextProvider;
 
+    @Inject
+    @Named("document")
+    private UserReferenceResolver<DocumentReference> userRefResolver;
+
     /**
      * Default constructor.
      */
@@ -140,7 +145,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 taskManager.deleteTasksByOwner(document.getDocumentReference());
                 return;
             }
-            updateTaskPages(document, context);
+            // The task pages are created and modified by the user that saves the page.
+            updateTaskPages(document, context, userRefResolver.resolve(context.getUserReference()));
         } catch (TaskException e) {
             logger.error("Failed to delete the tasks that have the current document as owner:", e);
         } catch (Exception e) {
@@ -218,7 +224,9 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         // Set the flag so that the saves of the task pages don't trigger this listener again.
         context.put(TASK_UPDATE_FLAG, true);
         try {
-            updateTaskPages(document, context);
+            // During a fold event (e.g. an import) the context user is the one that triggered the process, so the
+            // task pages are attributed to the author of the processed page.
+            updateTaskPages(document, context, document.getAuthors().getContentAuthor());
         } catch (Exception e) {
             logger.error(EXCEPTION_TASK_PAGES_UPDATE, document.getDocumentReference(), e);
         } finally {
@@ -226,7 +234,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         }
     }
 
-    private void updateTaskPages(XWikiDocument document, XWikiContext context)
+    private void updateTaskPages(XWikiDocument document, XWikiContext context, UserReference author)
     {
         XDOM documentContent = document.getXDOM();
 
@@ -244,7 +252,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         }
         if (!tasks.isEmpty() || !previousDocTasks.isEmpty()) {
             deleteTaskPages(document, context, previousDocTasks);
-            createOrUpdateTaskPages(document, context, tasks);
+            createOrUpdateTaskPages(document, context, tasks, author);
         }
     }
 
@@ -277,7 +285,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         }
     }
 
-    private void createOrUpdateTaskPages(XWikiDocument document, XWikiContext context, List<Task> tasks)
+    private void createOrUpdateTaskPages(XWikiDocument document, XWikiContext context, List<Task> tasks,
+        UserReference author)
     {
         for (Task task : tasks) {
             DocumentReference taskReference = task.getReference();
@@ -303,7 +312,7 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
                 {
                     continue;
                 }
-                boolean docChanged = maybeUpdateTaskDoc(document, context, task, taskObj, taskDoc, taskReference);
+                boolean docChanged = maybeUpdateTaskDoc(document, context, task, taskObj, taskDoc, author);
 
                 if (docChanged) {
                     context.getWiki().saveDocument(taskDoc, "Task updated!", context);
@@ -316,13 +325,12 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
     }
 
     private boolean maybeUpdateTaskDoc(XWikiDocument document, XWikiContext context, Task task, BaseObject taskObj,
-        XWikiDocument taskDoc, DocumentReference taskReference)
+        XWikiDocument taskDoc, UserReference author)
     {
         BaseObject clonedObj = taskObj.clone();
-        UserReference currentUser = document.getAuthors().getContentAuthor();
-        taskDoc.getAuthors().setOriginalMetadataAuthor(currentUser);
-        clonedObj.set(Task.OWNER, serializer.serialize(document.getDocumentReference(), taskReference),
-            context);
+        taskDoc.getAuthors().setOriginalMetadataAuthor(author);
+        clonedObj.set(Task.OWNER,
+            serializer.serialize(document.getDocumentReference(), taskDoc.getDocumentReference()), context);
         populateObjectWithMacroParams(context, task, clonedObj);
         boolean docChanged = !clonedObj.getDiff(taskObj, context).isEmpty();
         if (docChanged) {
@@ -330,8 +338,8 @@ public class TaskMacroUpdateEventListener extends AbstractTaskEventListener
         }
         if (taskDoc.isNew()) {
             taskDoc.setHidden(true);
-            taskDoc.getAuthors().setCreator(currentUser);
-            taskDoc.getAuthors().setEffectiveMetadataAuthor(currentUser);
+            taskDoc.getAuthors().setCreator(author);
+            taskDoc.getAuthors().setEffectiveMetadataAuthor(author);
         }
         return docChanged;
     }
