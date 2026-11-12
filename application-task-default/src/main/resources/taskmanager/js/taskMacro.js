@@ -43,8 +43,13 @@ require(['jquery', 'xwiki-l10n!xwiki-task-status-change-messages'], function ($,
     let task = checkbox.closest('.task-macro');
     let restURL = '';
     if (checkbox.closest('.taskbox').length > 0) {
-      let rawId = checkbox.data('rawid');
-      restURL = XWiki.currentDocument.getRestURL() + '/taskbox/' + encodeURI(rawId) + '?checked=' + checkbox.prop('checked');
+      // Read the attribute, since data() converts the ids that look like numbers.
+      let rawId = checkbox.attr('data-rawid') || '';
+      // The id is a single path segment. The dot segments can't be used since they are resolved even when encoded.
+      if (rawId != '' && rawId != '.' && rawId != '..') {
+        restURL = XWiki.currentDocument.getRestURL() + '/taskbox/' + encodeURIComponent(rawId) + '?checked=' +
+          checkbox.prop('checked');
+      }
     } else if (task.length > 0) {
       let taskDocument = XWiki.Model.resolve(taskId, XWiki.EntityType.DOCUMENT, XWiki.currentDocument.documentReference);
       if (taskDocument.getReversedReferenceChain()[0].type != XWiki.EntityType.WIKI) {

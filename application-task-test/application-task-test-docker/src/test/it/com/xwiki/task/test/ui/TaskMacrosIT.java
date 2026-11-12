@@ -966,6 +966,23 @@ public class TaskMacrosIT
         setup.deletePage(pageWithQuickActions);
     }
 
+    @Test
+    @Order(89)
+    void toggleCheckboxWithSpecialCharactersInId(TestUtils setup)
+    {
+        setup.createPage(pageWithCheckboxes,
+            "{{checkbox id=\"Is it done?/#1\"}}Checkbox toggled in view mode{{/checkbox}}");
+        ViewPageWithTasks viewPage = new ViewPageWithTasks();
+        assertFalse(viewPage.isTaskMacroCheckboxChecked(0));
+
+        // A checkbox can be toggled in view mode whatever the characters of its id.
+        viewPage.clickTaskMacroCheckbox(0);
+        setup.gotoPage(pageWithCheckboxes);
+        assertTrue(new ViewPageWithTasks().isTaskMacroCheckboxChecked(0));
+
+        setup.deletePage(pageWithCheckboxes);
+    }
+
     private String getMacroContent(String filename)
     {
         try (InputStream inputStream = getClass().getResourceAsStream("/taskMacros/" + filename)) {
