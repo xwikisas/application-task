@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
@@ -40,6 +41,8 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.observation.event.Event;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.user.UserReference;
 import org.xwiki.user.UserReferenceResolver;
 
@@ -70,6 +73,9 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
     @Inject
     @Named("document")
     private UserReferenceResolver<DocumentReference> userRefResolver;
+
+    @Inject
+    private ContextualAuthorizationManager authorizationManager;
 
     /**
      * Constructor.
@@ -104,23 +110,33 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
 
         try {
             context.put(TASK_UPDATE_FLAG, true);
-            if (!taskOwner.isEmpty()) {
-                XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
-                if (!ownerDocument.isNew()) {
-                    ownerDocument.setContent(
-                        taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
-                            ownerDocument.getSyntax()));
-                    UserReference currentUserReference = userRefResolver.resolve(context.getUserReference());
-                    ownerDocument.getAuthors().setOriginalMetadataAuthor(currentUserReference);
-                    context.getWiki().saveDocument(ownerDocument,
-                        String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
-                }
+            if (!taskOwner.isEmpty() && canEditOwner(taskOwnerRef, document.getDocumentReference(), context)) {
+                updateOwnerDocument(taskOwnerRef, taskObj, context);
             }
         } catch (XWikiException e) {
             logger.warn("Failed to process the owner document of the task [{}]: [{}].", taskOwnerRef,
                 ExceptionUtils.getRootCauseMessage(e));
         } finally {
             context.put(TASK_UPDATE_FLAG, null);
+        }
+    }
+
+    private void updateOwnerDocument(DocumentReference taskOwnerRef, BaseObject taskObj, XWikiContext context)
+        throws XWikiException
+    {
+        XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
+        if (ownerDocument.isNew()) {
+            return;
+        }
+        String previousContent = ownerDocument.getContent();
+        ownerDocument.setContent(taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
+            ownerDocument.getSyntax()));
+        // Save the owner only when its task macro call was actually updated.
+        if (!StringUtils.equals(previousContent, ownerDocument.getContent())) {
+            UserReference currentUserReference = userRefResolver.resolve(context.getUserReference());
+            ownerDocument.getAuthors().setOriginalMetadataAuthor(currentUserReference);
+            context.getWiki().saveDocument(ownerDocument,
+                String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
         }
     }
 
@@ -177,13 +193,9 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
                     return true;
                 }
 
-                context.put(TASK_UPDATE_FLAG, true);
-                XWikiDocument ownerDocument = context.getWiki().getDocument(ownerDocumentReference, context);
-                ownerDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(document.getDocumentReference(),
-                    ownerDocument.getDocumentReference(), ownerDocument.getXDOM(), ownerDocument.getSyntax()));
-                context.getWiki().saveDocument(ownerDocument,
-                    String.format("Removed the task with the reference of [%s]", document.getDocumentReference()),
-                    context);
+                if (canEditOwner(ownerDocumentReference, document.getDocumentReference(), context)) {
+                    removeMacroCallFromOwner(document.getDocumentReference(), ownerDocumentReference, context);
+                }
             } catch (XWikiException e) {
                 logger.warn("Failed to remove the macro call from the owner document of the task [{}]: [{}].",
                     document.getDocumentReference(), ExceptionUtils.getRootCauseMessage(e));
@@ -192,6 +204,32 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
             }
             return true;
         }
+        return false;
+    }
+
+    private void removeMacroCallFromOwner(DocumentReference taskReference, DocumentReference ownerReference,
+        XWikiContext context) throws XWikiException
+    {
+        context.put(TASK_UPDATE_FLAG, true);
+        XWikiDocument ownerDocument = context.getWiki().getDocument(ownerReference, context).clone();
+        String previousContent = ownerDocument.getContent();
+        ownerDocument.setContent(taskXDOMProcessor.removeTaskMacroCall(taskReference,
+            ownerDocument.getDocumentReference(), ownerDocument.getXDOM(), ownerDocument.getSyntax()));
+        // Save the owner only when it actually contained the macro call of the deleted task.
+        if (!StringUtils.equals(previousContent, ownerDocument.getContent())) {
+            context.getWiki().saveDocument(ownerDocument,
+                String.format("Removed the task with the reference of [%s]", taskReference), context);
+        }
+    }
+
+    private boolean canEditOwner(DocumentReference ownerReference, DocumentReference taskReference,
+        XWikiContext context)
+    {
+        if (authorizationManager.hasAccess(Right.EDIT, ownerReference)) {
+            return true;
+        }
+        logger.warn("The task macro of the task [{}] was not updated in the page [{}] because the user [{}] cannot "
+            + "edit that page.", taskReference, ownerReference, context.getUserReference());
         return false;
     }
 
