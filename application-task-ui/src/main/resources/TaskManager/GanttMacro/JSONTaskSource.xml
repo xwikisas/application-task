@@ -91,13 +91,15 @@
       #csvToArray($request.assignees $assignees)
       #set ($assignees = $assignees['csvReturn'])
       #set ($assigneeQuery = '')
+      #set ($index = 0)
       #foreach ($assignee in $assignees)
         #if ($assigneeQuery.length() &gt; 0)
           #set ($assigneeQuery = "$assigneeQuery OR")
         #end
         ## The task contains at least one of the specified users.
-        #set ($assigneeQuery = "$assigneeQuery task.assignee LIKE '%$escapetool.sql($assignee),%'" +
-          " OR task.assignee LIKE '%$escapetool.sql($assignee)'")
+        #set ($assigneeQuery = "$assigneeQuery task.assignee LIKE :assigneeInList${index}" +
+          " OR task.assignee LIKE :assigneeLast${index}")
+        #set ($index = $index + 1)
       #end
       #set ($query = "$query AND ($assigneeQuery)")
     #end
@@ -148,6 +150,15 @@
       #foreach ($space in $spaces)
         #set ($space = $space + '.%')
         #set ($query = $query.bindValue("spaces${index}", $space))
+        #set ($index = $index + 1)
+      #end
+    #end
+    #if ($assignees)
+      #set ($index = 0)
+      #foreach ($assignee in $assignees)
+        ## The assignee is matched literally, its characters having no special meaning in the LIKE pattern.
+        #set ($query = $query.bindValue("assigneeInList${index}").anyChars().literal("${assignee},").anyChars().query())
+        #set ($query = $query.bindValue("assigneeLast${index}").anyChars().literal($assignee).query())
         #set ($index = $index + 1)
       #end
     #end
