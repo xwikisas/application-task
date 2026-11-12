@@ -44,7 +44,8 @@
       TaskManager.TaskQueryMacros
     </xwiki.extension.licensing.publicDocuments>
     <!-- TaskManager.HomeDashboard holds the gadgets of the home page dashboard. It is excluded so that it can be edited,
-      the licensing denying edit on all the licensed documents. Its rights restrict the edit to the administrators. -->
+      the licensing denying edit on all the licensed documents. Its rights restrict the edit to the administrators.
+      Every excluded document must restrict its edit the same way. -->
     <xwiki.extension.licensing.excludedDocuments>
       TaskManager.HomeDashboard,
       TaskManager.Administration,

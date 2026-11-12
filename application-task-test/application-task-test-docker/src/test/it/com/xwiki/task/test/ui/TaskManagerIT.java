@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -49,6 +50,7 @@ import org.xwiki.test.docker.junit5.TestReference;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.docker.junit5.WikisSource;
 import org.xwiki.test.ui.TestUtils;
+import org.xwiki.rest.model.jaxb.Page;
 import org.xwiki.test.ui.po.CopyOrRenameOrDeleteStatusPage;
 import org.xwiki.test.ui.po.CopyPage;
 import org.xwiki.test.ui.po.RenamePage;
@@ -399,6 +401,24 @@ class TaskManagerIT
         TaskManagerViewPage objPage = new TaskManagerViewPage();
         assertEquals("Copy", objPage.getOwner());
         setup.deletePage(testRef);
+    }
+
+    @Test
+    @Order(64)
+    void configurationPagesAreEditedByAdministratorsOnly(TestUtils setup) throws Exception
+    {
+        UsernamePasswordCredentials adminCredentials =
+            setup.setDefaultCredentials(new UsernamePasswordCredentials(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD));
+        try {
+            for (String pageName : List.of("Administration", "TaskReferenceRelativizerJob")) {
+                Page page = setup.rest().get(new DocumentReference("xwiki", "TaskManager", pageName));
+                page.setTitle("Changed by a simple user");
+                // The save is refused.
+                setup.rest().save(page, 401);
+            }
+        } finally {
+            setup.setDefaultCredentials(adminCredentials);
+        }
     }
 
     @ParameterizedTest
