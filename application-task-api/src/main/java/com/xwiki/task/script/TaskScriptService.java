@@ -34,6 +34,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.job.Job;
 import org.xwiki.job.JobException;
 import org.xwiki.job.JobExecutor;
+import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
@@ -72,6 +73,9 @@ public class TaskScriptService implements ScriptService
     private ContextualAuthorizationManager authorization;
 
     @Inject
+    private ModelContext modelContext;
+
+    @Inject
     private JobExecutor jobExecutor;
 
     @Inject
@@ -89,7 +93,7 @@ public class TaskScriptService implements ScriptService
      */
     public void relativizeMacroReferences()
     {
-        if (!authorization.hasAccess(Right.ADMIN)) {
+        if (!hasWikiAdmin()) {
             return;
         }
         try {
@@ -111,7 +115,7 @@ public class TaskScriptService implements ScriptService
      */
     public Job inferTaskData()
     {
-        if (!authorization.hasAccess(Right.ADMIN)) {
+        if (!hasWikiAdmin()) {
             return null;
         }
 
@@ -125,13 +129,13 @@ public class TaskScriptService implements ScriptService
     }
 
     /**
-     * Infer data for the tasks of some document.
+     * Infer data for the tasks of some document. The current user needs to be able to edit the document.
      *
      * @param documentReference the document reference of the document.
      */
     public void inferTaskData(DocumentReference documentReference)
     {
-        if (!authorization.hasAccess(Right.ADMIN)) {
+        if (!authorization.hasAccess(Right.EDIT, documentReference)) {
             return;
         }
         try {
@@ -196,5 +200,10 @@ public class TaskScriptService implements ScriptService
             logger.error("Failed to retrieve the statuses.", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean hasWikiAdmin()
+    {
+        return authorization.hasAccess(Right.ADMIN, modelContext.getCurrentEntityReference());
     }
 }

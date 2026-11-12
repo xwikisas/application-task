@@ -148,10 +148,13 @@ public class DefaultTaskMissingDataManager implements TaskMissingDataManager
             if (taskDatesInitializer.processDocument(document, xdom, context)) {
                 UserReference lastAuthor = document.getAuthors().getContentAuthor();
                 DocumentReference currentContextUser = context.getUserReference();
-                context.setUserReference(documentUserSerializer.serialize(lastAuthor));
-                document.setContent(xdom);
-                context.getWiki().saveDocument(document, "Updated data of tasks.", context);
-                context.setUserReference(currentContextUser);
+                try {
+                    context.setUserReference(documentUserSerializer.serialize(lastAuthor));
+                    document.setContent(xdom);
+                    context.getWiki().saveDocument(document, "Updated data of tasks.", context);
+                } finally {
+                    context.setUserReference(currentContextUser);
+                }
             }
         } catch (XWikiException e) {
             throw new TaskException(String.format("Failed to retrieve the document for [%s].", documentReference), e);
