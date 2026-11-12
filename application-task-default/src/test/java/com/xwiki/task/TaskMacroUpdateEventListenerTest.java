@@ -161,6 +161,9 @@ class TaskMacroUpdateEventListenerTest
 
     private final UserReference userRef = new DocumentUserReference(userDocRef, true);
 
+    private final UserReference previousAuthorRef =
+        new DocumentUserReference(new DocumentReference("xwiki", "XWiki", "PreviousAuthor"), true);
+
     private Task task = new Task();
 
     private Task task_1 = new Task();
@@ -179,7 +182,8 @@ class TaskMacroUpdateEventListenerTest
         when(this.prevVersionDoc.getXDOM()).thenReturn(this.prevVersionDocXDOM);
         when(this.docWithTasks.clone()).thenReturn(this.docWithTasks);
         when(this.docWithTasks.getAuthors()).thenReturn(this.documentAuthors);
-        when(this.documentAuthors.getContentAuthor()).thenReturn(userRef);
+        // The page with the task macros was last saved by another user than the current one.
+        when(this.documentAuthors.getContentAuthor()).thenReturn(previousAuthorRef);
         when(this.prevVersionDoc.clone()).thenReturn(this.prevVersionDoc);
         when(this.taskDoc.clone()).thenReturn(this.taskDoc);
         when(this.task_1Doc.clone()).thenReturn(this.task_1Doc);
@@ -250,11 +254,33 @@ class TaskMacroUpdateEventListenerTest
         this.eventListener.onEvent(new DocumentUpdatingEvent(), this.docWithTasks, this.context);
 
         verify(this.taskObj).set(Task.OWNER, this.pageWithMacro.toString(), this.context);
+        // The task page is attributed to the user that saved the page, not to its previous author.
+        verify(this.documentAuthors).setCreator(this.userRef);
         verify(this.documentAuthors).setEffectiveMetadataAuthor(this.userRef);
         verify(this.documentAuthors).setOriginalMetadataAuthor(this.userRef);
+        verify(this.documentAuthors, never()).setCreator(this.previousAuthorRef);
         verify(this.taskObj).set(Task.NAME, "Hello there", this.context);
         verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
         verify(this.wiki).deleteDocument(this.task_1Doc, this.context);
+    }
+
+    @Test
+    void onFoldEventTaskPagesAreAttributedToThePageAuthor() throws XWikiException
+    {
+        // No execution context, so the document is processed right away.
+        when(this.observationContext.isIn(any())).thenReturn(true);
+        when(this.taskXDOMProcessor.extract(this.docXDOM, this.pageWithMacro)).thenReturn(
+            new ArrayList<>(Collections.singletonList(task)));
+        when(this.taskDoc.isNew()).thenReturn(true);
+        when(this.authorizationManager.hasAccess(Right.EDIT, taskPage)).thenReturn(true);
+
+        this.eventListener.onEvent(new DocumentUpdatingEvent(), this.docWithTasks, this.context);
+
+        verify(this.documentAuthors).setCreator(this.previousAuthorRef);
+        verify(this.documentAuthors).setEffectiveMetadataAuthor(this.previousAuthorRef);
+        verify(this.documentAuthors).setOriginalMetadataAuthor(this.previousAuthorRef);
+        verify(this.documentAuthors, never()).setCreator(this.userRef);
+        verify(this.wiki).saveDocument(this.taskDoc, "Task updated!", this.context);
     }
 
     @Test
@@ -309,6 +335,7 @@ class TaskMacroUpdateEventListenerTest
         DocumentReference reference = new DocumentReference("xwiki", "Migrated", name);
         XWikiDocument document = mock(XWikiDocument.class);
         when(document.getDocumentReference()).thenReturn(reference);
+        when(document.getAuthors()).thenReturn(this.documentAuthors);
         when(this.wiki.getDocument(reference, this.context)).thenReturn(document);
         return document;
     }
