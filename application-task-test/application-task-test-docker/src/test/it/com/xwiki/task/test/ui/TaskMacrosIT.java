@@ -897,6 +897,75 @@ public class TaskMacrosIT
         assertEquals("", adminPage2.getStorageDateFormat());
     }
 
+    @Test
+    @Order(87)
+    void createTasksFromTheKeyboard(TestUtils setup) throws Exception
+    {
+        String placeholder = "Type your task here.";
+        setup.createPage(pageWithQuickActions, "").editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+        RichTextAreaElement textArea = editor.getRichTextArea();
+        runQuickAction(textArea, "/task", "Task", placeholder);
+        // The placeholder of the inserted task is selected, so typing replaces it.
+        textArea.sendKeys("First task");
+        textArea.waitUntilTextContains("First task");
+        assertFalse(textArea.getText().contains(placeholder), textArea.getText());
+
+        // Enter adds a new task after the current one.
+        textArea.sendKeys(Keys.ENTER);
+        textArea.waitUntilTextContains(placeholder);
+        textArea.sendKeys("Second task");
+        // Tab nests the task in the previous one.
+        textArea.sendKeys(Keys.TAB);
+        // Enter adds a new task next to the nested one.
+        textArea.sendKeys(Keys.ENTER);
+        textArea.waitUntilTextContains(placeholder);
+        // Enter on an empty nested task moves it out of its parent, and Enter on an empty top level task removes it.
+        textArea.sendKeys(Keys.ENTER, Keys.ENTER, "After the tasks");
+        new WYSIWYGEditPage().clickSaveAndView();
+
+        String content = setup.rest().<Page>get(pageWithQuickActions).getContent().trim();
+        assertEquals(2, content.split("\\{\\{task ", -1).length - 1, content);
+        assertTrue(content.matches("(?s)\\{\\{task [^}]*}}\\s*First task\\s*\\{\\{task [^}]*}}\\s*Second task\\s*"
+            + "\\{\\{/task}}\\s*\\{\\{/task}}\\s*After the tasks"), content);
+        // Both tasks are created, the nested one included.
+        assertEquals(2, new ViewPageWithTasks().getTasks().size());
+
+        setup.deletePage(pageWithQuickActions);
+    }
+
+    @Test
+    @Order(88)
+    void createCheckboxesFromTheKeyboard(TestUtils setup) throws Exception
+    {
+        String placeholder = "Type your task here.";
+        setup.createPage(pageWithQuickActions, "").editWYSIWYG();
+        CKEditor editor = new CKEditor("content").waitToLoad();
+        RichTextAreaElement textArea = editor.getRichTextArea();
+        runQuickAction(textArea, "/checkbox", "Checkbox", placeholder);
+        textArea.sendKeys("First checkbox");
+        textArea.waitUntilTextContains("First checkbox");
+        assertFalse(textArea.getText().contains(placeholder), textArea.getText());
+
+        // Enter adds a new checkbox after the current one, and Tab nests it in the previous one.
+        textArea.sendKeys(Keys.ENTER);
+        textArea.waitUntilTextContains(placeholder);
+        textArea.sendKeys("Second checkbox", Keys.TAB);
+        // Leave the list: the first Enter adds an empty checkbox, the next ones move it out and then remove it.
+        textArea.sendKeys(Keys.ENTER);
+        textArea.waitUntilTextContains(placeholder);
+        textArea.sendKeys(Keys.ENTER, Keys.ENTER, "After the checkboxes");
+        new WYSIWYGEditPage().clickSaveAndView();
+
+        String content = setup.rest().<Page>get(pageWithQuickActions).getContent().trim();
+        assertEquals(2, content.split("\\{\\{checkbox ", -1).length - 1, content);
+        assertTrue(content.matches("(?s)\\{\\{checkbox id=\"\\d{5}\"}}\\s*First checkbox\\s*"
+            + "\\{\\{checkbox id=\"\\d{5}\"}}\\s*Second checkbox\\s*\\{\\{/checkbox}}\\s*\\{\\{/checkbox}}\\s*"
+            + "After the checkboxes"), content);
+
+        setup.deletePage(pageWithQuickActions);
+    }
+
     private String getMacroContent(String filename)
     {
         try (InputStream inputStream = getClass().getResourceAsStream("/taskMacros/" + filename)) {
@@ -1048,7 +1117,13 @@ public class TaskMacrosIT
     {
         setup.createPage(pageWithQuickActions, "").editWYSIWYG();
         CKEditor editor = new CKEditor("content").waitToLoad();
-        RichTextAreaElement textArea = editor.getRichTextArea();
+        runQuickAction(editor.getRichTextArea(), command, actionName, expectedText);
+        new WYSIWYGEditPage().clickSaveAndView();
+        return setup.rest().<Page>get(pageWithQuickActions).getContent().trim();
+    }
+
+    private void runQuickAction(RichTextAreaElement textArea, String command, String actionName, String expectedText)
+    {
         textArea.sendKeys(command);
         AutocompleteDropdown quickActions = new AutocompleteDropdown();
         quickActions.waitForItemSelected(command, actionName);
@@ -1056,7 +1131,5 @@ public class TaskMacrosIT
         quickActions.waitForItemSubmitted();
         // Wait for the inserted macro to be rendered.
         textArea.waitUntilTextContains(expectedText);
-        new WYSIWYGEditPage().clickSaveAndView();
-        return setup.rest().<Page>get(pageWithQuickActions).getContent().trim();
     }
 }

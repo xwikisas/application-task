@@ -60,6 +60,7 @@ import com.xwiki.task.model.Task;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -243,6 +244,21 @@ public class TaskXDOMProcessorTest
 
         verify(this.taskReferenceUtils).resolveAsDocumentReference(TASK1_ID, this.contentSource);
         verify(spyContentChildren).remove(this.taskMacro1);
+    }
+
+    @Test
+    void removeTaskMacroCallLooksInsideOtherTasks()
+    {
+        Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
+        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
+
+        this.processor.removeTaskMacroCall(this.task2Reference, this.contentSource, this.docContent, Syntax.XWIKI_2_1);
+
+        verify(this.blockFinder).find(eq(this.docContent), eq(Syntax.XWIKI_2_1), visitorLambdaCaptor.capture());
+        // The task to remove might be nested in the content of a task that doesn't match.
+        assertEquals(MacroBlockFinder.Lookup.CONTINUE, visitorLambdaCaptor.getValue().apply(this.taskMacro1));
+        verify(this.taskMacro1, never()).getParent();
     }
 
     private void callVisitorLambdaFunction()

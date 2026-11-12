@@ -194,8 +194,8 @@ public class TaskXDOMProcessor
                     siblings.remove(macro);
                     return MacroBlockFinder.Lookup.BREAK;
                 }
-                return MacroBlockFinder.Lookup.SKIP;
             }
+            // Look inside the content of the other tasks too, since tasks can be nested.
             return MacroBlockFinder.Lookup.CONTINUE;
         });
         return docContent;
