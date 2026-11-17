@@ -36,49 +36,13 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content/>
-  <object>
-    <name>TaskManager.WebHome</name>
-    <number>0</number>
-    <className>XWiki.DocumentSheetBinding</className>
-    <guid>7f946fd5-21a2-4f88-aa38-e869d08bc71c</guid>
-    <class>
-      <name>XWiki.DocumentSheetBinding</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <sheet>
-        <cache>0</cache>
-        <classname/>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <displayType>input</displayType>
-        <hint/>
-        <idField/>
-        <multiSelect>0</multiSelect>
-        <name>sheet</name>
-        <number>1</number>
-        <picker>1</picker>
-        <prettyName>Sheet</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators/>
-        <size>30</size>
-        <sort>none</sort>
-        <sql/>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <valueField/>
-        <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
-      </sheet>
-    </class>
-    <property>
-      <sheet>TaskManager.WebHomeSheet</sheet>
-    </property>
-  </object>
+  <content>{{velocity}}
+#set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
+#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
+  {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
+#else
+  ## The content is stored on a separate page that is excluded from the licensing, so that it can be edited.
+  {{include reference="TaskManager.HomeContent"/}}
+#end
+{{/velocity}}</content>
 </xwikidoc>

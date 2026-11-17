@@ -189,7 +189,7 @@ class TaskManagerIT
     @ParameterizedTest
     @WikisSource()
     @Order(30)
-    void taskManagerHomePage(WikiReference wiki, TestUtils setup)
+    void taskManagerHomePage(WikiReference wiki, TestUtils setup) throws Exception
     {
         setup.setCurrentWiki(wiki.getName());
         TaskManagerHomePage taskManagerHomePage = TaskManagerHomePage.gotoPage();
@@ -199,6 +199,20 @@ class TaskManagerIT
         assertEquals("Done", tableLayout.getCell("Status", 1).getText());
         assertEquals("Do this as well", tableLayout.getCell("Task", 2).getText());
         assertEquals("In Progress", tableLayout.getCell("Status", 2).getText());
+
+        // The home page displays the content of TaskManager.HomeContent, which the administrators can edit.
+        DocumentReference homeContentRef = new DocumentReference(wiki.getName(), "TaskManager", "HomeContent");
+        Page homeContent = setup.rest().get(homeContentRef);
+        String defaultContent = homeContent.getContent();
+        try {
+            homeContent.setContent("Customized home page");
+            setup.rest().save(homeContent);
+            taskManagerHomePage = TaskManagerHomePage.gotoPage();
+            assertEquals("Customized home page", taskManagerHomePage.getContent());
+        } finally {
+            homeContent.setContent(defaultContent);
+            setup.rest().save(homeContent);
+        }
     }
 
     @ParameterizedTest
@@ -410,7 +424,7 @@ class TaskManagerIT
         UsernamePasswordCredentials adminCredentials =
             setup.setDefaultCredentials(new UsernamePasswordCredentials(SIMPLE_USER_NAME, SIMPLE_USER_PASSWORD));
         try {
-            for (String pageName : List.of("Administration", "TaskReferenceRelativizerJob")) {
+            for (String pageName : List.of("Administration", "TaskReferenceRelativizerJob", "HomeContent")) {
                 Page page = setup.rest().get(new DocumentReference("xwiki", "TaskManager", pageName));
                 page.setTitle("Changed by a simple user");
                 // The save is refused.

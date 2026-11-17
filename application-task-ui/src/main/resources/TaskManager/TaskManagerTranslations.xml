@@ -38,10 +38,9 @@
   <hidden>true</hidden>
   <content># Application Panel title
 TaskManager.home.title=Task Manager
-taskmanager.home.gadget.gantt=Gantt chart
-taskmanager.home.gadget.tasks=Tasks
-taskmanager.home.dashboard.title=Task Manager Dashboard
-taskmanager.home.customizeDashboard=Customize dashboard
+taskmanager.home.gantt=Gantt chart
+taskmanager.home.tasks=Tasks
+taskmanager.home.content.title=Task Manager Home Content
 TaskManager.panels.name=Task Manager
 TaskManager.administration.noRights=You need to be an Administrator
 TaskManager.administration.livetable.doc.date=Date
