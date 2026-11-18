@@ -111,7 +111,7 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
         try {
             context.put(TASK_UPDATE_FLAG, true);
             if (!taskOwner.isEmpty() && canEditOwner(taskOwnerRef, document.getDocumentReference(), context)) {
-                updateOwnerDocument(taskOwnerRef, taskObj, context);
+                updateOwnerDocument(taskOwnerRef, taskObj, isDescriptionChanged(document, taskObj), context);
             }
         } catch (XWikiException e) {
             logger.warn("Failed to process the owner document of the task [{}]: [{}].", taskOwnerRef,
@@ -121,23 +121,39 @@ public class TaskObjectUpdateEventListener extends AbstractTaskEventListener
         }
     }
 
-    private void updateOwnerDocument(DocumentReference taskOwnerRef, BaseObject taskObj, XWikiContext context)
-        throws XWikiException
+    private void updateOwnerDocument(DocumentReference taskOwnerRef, BaseObject taskObj, boolean descriptionChanged,
+        XWikiContext context) throws XWikiException
     {
         XWikiDocument ownerDocument = context.getWiki().getDocument(taskOwnerRef, context).clone();
         if (ownerDocument.isNew()) {
             return;
         }
         String previousContent = ownerDocument.getContent();
+        // Copy the description to the macro content only when this save changed it.
         ownerDocument.setContent(taskXDOMProcessor.updateTaskMacroCall(taskOwnerRef, taskObj, ownerDocument.getXDOM(),
-            ownerDocument.getSyntax()));
+            ownerDocument.getSyntax(), descriptionChanged));
         // Save the owner only when its task macro call was actually updated.
         if (!StringUtils.equals(previousContent, ownerDocument.getContent())) {
             UserReference currentUserReference = userRefResolver.resolve(context.getUserReference());
             ownerDocument.getAuthors().setOriginalMetadataAuthor(currentUserReference);
+            if (descriptionChanged) {
+                // The current user changed the content of the owner, as when editing it directly.
+                ownerDocument.getAuthors().setEffectiveMetadataAuthor(currentUserReference);
+            }
             context.getWiki().saveDocument(ownerDocument,
                 String.format("Task [%s] has been updated!", taskObj.getDocumentReference()), context);
         }
+    }
+
+    private boolean isDescriptionChanged(XWikiDocument taskDocument, BaseObject taskObj)
+    {
+        XWikiDocument previousTaskDocument = taskDocument.getOriginalDocument();
+        BaseObject previousTaskObj = previousTaskDocument == null ? null
+            : previousTaskDocument.getXObject(TASK_CLASS_REFERENCE, taskObj.getNumber());
+        String previousDescription =
+            previousTaskObj == null ? null : previousTaskObj.getLargeStringValue(Task.DESCRIPTION);
+        return !StringUtils.equals(StringUtils.defaultString(previousDescription),
+            StringUtils.defaultString(taskObj.getLargeStringValue(Task.DESCRIPTION)));
     }
 
     private boolean shouldSkip(XWikiDocument document, XWikiContext context, boolean inFoldEvent, BaseObject taskObj)

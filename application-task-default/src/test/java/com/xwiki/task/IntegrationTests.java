@@ -132,6 +132,20 @@ public class IntegrationTests
         Task task3 = new Task();
         task3.setReference(ref3);
 
+        DocumentReference ref4 = new DocumentReference("xwiki", "Sandbox", "Task4");
+        when(taskReferenceUtils.resolve("Sandbox.Task4", null)).thenReturn(ref4);
+        when(taskReferenceUtils.serializeAsDocumentReference(eq(ref4), any())).thenReturn("Sandbox.Task4");
+        Task task4 = new Task();
+        task4.setReference(ref4);
+        task4.setDescription("{{restrictedModeProbe/}}");
+        task4.setNumber(4);
+        task4.setStatus(Task.STATUS_IN_PROGRESS);
+        task4.setReporter(user);
+        when(taskManager.getTask(4)).thenReturn(task4);
+        when(taskManager.getTask((EntityReference) ref4)).thenReturn(task4);
+        when(authorizationManager.hasAccess(Right.VIEW, ref4)).thenReturn(true);
+        componentManager.registerComponent(RestrictedModeProbeMacro.class);
+
         when(taskManager.getTask(3)).thenReturn(task3);
         when(taskManager.getTask(2)).thenReturn(task2);
         when(taskManager.getTask(1)).thenReturn(task);

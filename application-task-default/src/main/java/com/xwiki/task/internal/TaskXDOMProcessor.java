@@ -152,17 +152,20 @@ public class TaskXDOMProcessor
      * @param taskObject the task object that will be used to update task macro.
      * @param content the content of the document that needs parsing.
      * @param syntax the syntax of the document content.
+     * @param updateDescription whether the content of the task macro is replaced by the description of the task
+     *     object; when {@code false}, the current content of the macro is kept and only its mentions and due date are
+     *     synchronized with the task object
      * @return the modified content.
      */
     public XDOM updateTaskMacroCall(DocumentReference documentReference, BaseObject taskObject, XDOM content,
-        Syntax syntax)
+        Syntax syntax, boolean updateDescription)
     {
         DocumentReference taskDocRef = taskObject.getDocumentReference();
         SimpleDateFormat storageFormat = new SimpleDateFormat(configuration.get().getStorageDateFormat());
         blockFinder.find(content, syntax, (macro) -> {
             if (Task.MACRO_NAME.equals(macro.getId())) {
                 if (maybeUpdateTaskMacroCall(documentReference, taskObject, taskDocRef, content, storageFormat,
-                    macro))
+                    macro, updateDescription))
                 {
                     return MacroBlockFinder.Lookup.BREAK;
                 }
@@ -227,7 +230,8 @@ public class TaskXDOMProcessor
     }
 
     private boolean maybeUpdateTaskMacroCall(DocumentReference documentReference, BaseObject taskObject,
-        DocumentReference taskDocRef, XDOM content, SimpleDateFormat storageFormat, MacroBlock macro)
+        DocumentReference taskDocRef, XDOM content, SimpleDateFormat storageFormat, MacroBlock macro,
+        boolean updateDescription)
     {
         DocumentReference taskRef =
             taskReferenceUtils.resolveAsDocumentReference(macro.getParameters().getOrDefault(Task.REFERENCE, ""),
@@ -244,7 +248,8 @@ public class TaskXDOMProcessor
                     taskBlockProcessor.generateTaskContentBlocks(
                         Arrays.stream(taskObject.getLargeStringValue(Task.ASSIGNEE).split(","))
                             .filter(StringUtils::isNotEmpty).collect(Collectors.toList()),
-                        taskObject.getDateValue(Task.DUE_DATE), taskObject.getLargeStringValue(Task.DESCRIPTION),
+                        taskObject.getDateValue(Task.DUE_DATE),
+                        updateDescription ? taskObject.getLargeStringValue(Task.DESCRIPTION) : macro.getContent(),
                         storageFormat);
 
                 String newContent = macroUtils.renderMacroContent(newTaskContentBlocks, syntax);

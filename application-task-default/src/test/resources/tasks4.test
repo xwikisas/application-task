@@ -1,0 +1,12 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.1
+.# Tasks macro displaying a task whose description contains a macro.
+.#-----------------------------------------------------
+{{restrictedModeProbe/}}
+
+{{tasks ids="4" /}}
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+restricted=false<div class="task-macro"><div class="task-info"><input type="checkbox" data-taskId="Sandbox.Task4" data-rawid="Sandbox.Task4"  class="task-status"><span class="wikiinternallink"><a href="Sandbox.Task4">#4</a></span></div><div class="task-content">restricted=true</div></div>

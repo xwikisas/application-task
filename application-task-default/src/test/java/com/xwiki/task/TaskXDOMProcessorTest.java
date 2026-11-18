@@ -214,7 +214,8 @@ public class TaskXDOMProcessorTest
         when(this.taskMacro1.getParent()).thenReturn(this.docContent);
         when(this.docContent.getChildren()).thenReturn(new ArrayList<>(Collections.singletonList(this.taskMacro1)));
 
-        this.processor.updateTaskMacroCall(this.contentSource, this.taskObject, this.docContent, Syntax.XWIKI_2_1);
+        this.processor.updateTaskMacroCall(this.contentSource, this.taskObject, this.docContent, Syntax.XWIKI_2_1,
+            true);
 
         callVisitorLambdaFunction();
 
@@ -225,6 +226,45 @@ public class TaskXDOMProcessorTest
             eq(DEFAULT_TASK_DATE),
             eq(TASK1_ID), any(SimpleDateFormat.class));
         verify(this.macroUtils).renderMacroContent(Collections.emptyList(), Syntax.XWIKI_2_1);
+    }
+
+    @Test
+    void updateTaskMacroCallKeepsTheMacroContentWhenTheDescriptionIsNotUpdated()
+        throws TaskException, ComponentLookupException
+    {
+        Map<String, String> taskMacro1Params = initTaskMacroParams(TASK1_ID, DEFAULT_TASK_DATE_STRING,
+            Task.STATUS_DONE, adminReference.toString(), DEFAULT_TASK_DATE_STRING);
+        when(this.taskMacro1.getParameters()).thenReturn(taskMacro1Params);
+        when(this.taskMacro1.getContent()).thenReturn("Current content");
+
+        when(this.taskObject.getDocumentReference()).thenReturn(this.task1Reference);
+        when(this.taskObject.getStringValue(Task.STATUS)).thenReturn(Task.STATUS_DONE);
+        when(this.taskObject.getLargeStringValue(Task.DESCRIPTION)).thenReturn("{{velocity}}other{{/velocity}}");
+        when(this.taskObject.getLargeStringValue(Task.ASSIGNEE)).thenReturn(adminReference.toString());
+        when(this.taskObject.getLargeStringValue(Task.REPORTER)).thenReturn(adminReference.toString());
+        when(this.taskObject.getDateValue(Task.DUE_DATE)).thenReturn(DEFAULT_TASK_DATE);
+        when(this.taskObject.getDateValue(Task.COMPLETE_DATE)).thenReturn(DEFAULT_TASK_DATE);
+        when(this.taskObject.getDateValue(Task.CREATE_DATE)).thenReturn(DEFAULT_TASK_DATE);
+
+        when(this.taskBlockProcessor.generateTaskContentBlocks(eq(List.of(adminReference.toString())),
+            eq(DEFAULT_TASK_DATE), eq("Current content"), any(SimpleDateFormat.class)))
+            .thenReturn(Collections.emptyList());
+        when(this.macroUtils.renderMacroContent(Collections.emptyList(), Syntax.XWIKI_2_1)).thenReturn(
+            "TaskContent");
+
+        when(this.taskMacro1.getParent()).thenReturn(this.docContent);
+        when(this.docContent.getChildren()).thenReturn(new ArrayList<>(Collections.singletonList(this.taskMacro1)));
+
+        this.processor.updateTaskMacroCall(this.contentSource, this.taskObject, this.docContent, Syntax.XWIKI_2_1,
+            false);
+
+        callVisitorLambdaFunction();
+
+        verify(this.taskMacro1).setParameter(Task.STATUS, Task.STATUS_DONE);
+        // The mentions and the due date are synchronized in the current content, the description is not copied.
+        verify(this.taskBlockProcessor).generateTaskContentBlocks(eq(List.of(adminReference.toString())),
+            eq(DEFAULT_TASK_DATE), eq("Current content"), any(SimpleDateFormat.class));
+        verify(this.macroUtils).updateMacroContent(this.taskMacro1, "TaskContent");
     }
 
     @Test

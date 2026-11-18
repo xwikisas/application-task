@@ -31,6 +31,8 @@
     files="src/main/java/com/xwiki/task/internal/TaskXDOMProcessor\.java"/>
   <suppress checks="ClassFanOutComplexity"
     files="src/main/java/com/xwiki/task/internal/macro/AbstractTaskMacro\.java"/>
+  <suppress checks="ClassFanOutComplexity"
+    files="src/main/java/com/xwiki/task/internal/macro/TasksMacro\.java"/>
   <suppress checks="ClassFanOutComplexity|CyclomaticComplexity|NPathComplexity"
     files="src/main/java/com/xwiki/task/internal/TaskDatesInitializer\.java"/>
 </suppressions>

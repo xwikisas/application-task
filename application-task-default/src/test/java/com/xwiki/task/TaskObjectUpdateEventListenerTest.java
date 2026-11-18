@@ -56,7 +56,10 @@ import com.xwiki.task.model.Task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -155,8 +158,8 @@ class TaskObjectUpdateEventListenerTest
         when(this.ownerDoc.getXDOM()).thenReturn(this.ownerXDOM);
         when(this.ownerDoc.getSyntax()).thenReturn(Syntax.XWIKI_2_1);
         when(this.ownerDoc.getAuthors()).thenReturn(this.ownerAuthors);
-        when(this.taskXDOMProcessor.updateTaskMacroCall(this.ownerRef, this.taskObj, this.ownerXDOM,
-            Syntax.XWIKI_2_1)).thenReturn(this.ownerXDOM);
+        when(this.taskXDOMProcessor.updateTaskMacroCall(eq(this.ownerRef), eq(this.taskObj), eq(this.ownerXDOM),
+            eq(Syntax.XWIKI_2_1), anyBoolean())).thenReturn(this.ownerXDOM);
         when(this.taskXDOMProcessor.removeTaskMacroCall(this.taskRef, this.ownerRef, this.ownerXDOM,
             Syntax.XWIKI_2_1)).thenReturn(this.ownerXDOM);
         when(this.authorizationManager.hasAccess(Right.EDIT, this.ownerRef)).thenReturn(true);
@@ -171,6 +174,47 @@ class TaskObjectUpdateEventListenerTest
 
         verify(this.ownerAuthors).setOriginalMetadataAuthor(this.userReference);
         verify(this.wiki).saveDocument(this.ownerDoc, "Task [xwiki:Space.Task] has been updated!", this.context);
+    }
+
+    @Test
+    void updateTaskDescriptionMakesTheUserTheContentAuthorOfTheOwner() throws XWikiException
+    {
+        mockPreviousDescription("{{velocity}}old{{/velocity}}");
+        when(this.taskObj.getLargeStringValue(Task.DESCRIPTION)).thenReturn("{{velocity}}new{{/velocity}}");
+        when(this.ownerDoc.getContent()).thenReturn(OLD_CONTENT, NEW_CONTENT);
+
+        this.eventListener.onEvent(new DocumentUpdatingEvent(), this.taskDoc, this.context);
+
+        verify(this.taskXDOMProcessor).updateTaskMacroCall(this.ownerRef, this.taskObj, this.ownerXDOM,
+            Syntax.XWIKI_2_1, true);
+        verify(this.ownerAuthors).setEffectiveMetadataAuthor(this.userReference);
+        verify(this.wiki).saveDocument(this.ownerDoc, "Task [xwiki:Space.Task] has been updated!", this.context);
+    }
+
+    @Test
+    void updateTaskWithoutDescriptionChangeKeepsTheMacroContentAndTheOwnerAuthor() throws XWikiException
+    {
+        mockPreviousDescription("{{velocity}}not written by the current user{{/velocity}}");
+        when(this.taskObj.getLargeStringValue(Task.DESCRIPTION))
+            .thenReturn("{{velocity}}not written by the current user{{/velocity}}");
+        when(this.ownerDoc.getContent()).thenReturn(OLD_CONTENT, NEW_CONTENT);
+
+        this.eventListener.onEvent(new DocumentUpdatingEvent(), this.taskDoc, this.context);
+
+        verify(this.taskXDOMProcessor).updateTaskMacroCall(this.ownerRef, this.taskObj, this.ownerXDOM,
+            Syntax.XWIKI_2_1, false);
+        verify(this.ownerAuthors, never()).setEffectiveMetadataAuthor(any());
+        verify(this.wiki).saveDocument(this.ownerDoc, "Task [xwiki:Space.Task] has been updated!", this.context);
+    }
+
+    private void mockPreviousDescription(String description)
+    {
+        XWikiDocument previousTaskDoc = mock(XWikiDocument.class);
+        BaseObject previousTaskObj = mock(BaseObject.class);
+        when(this.taskDoc.getOriginalDocument()).thenReturn(previousTaskDoc);
+        when(previousTaskDoc.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE, 0))
+            .thenReturn(previousTaskObj);
+        when(previousTaskObj.getLargeStringValue(Task.DESCRIPTION)).thenReturn(description);
     }
 
     @Test

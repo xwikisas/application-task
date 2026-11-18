@@ -38,9 +38,15 @@ import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
+import org.xwiki.rendering.block.XDOM;
+import org.xwiki.rendering.internal.transformation.MutableRenderingContext;
 import org.xwiki.rendering.macro.AbstractMacro;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
+import org.xwiki.rendering.transformation.RenderingContext;
+import org.xwiki.rendering.transformation.Transformation;
+import org.xwiki.rendering.transformation.TransformationContext;
+import org.xwiki.rendering.transformation.TransformationException;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
@@ -85,6 +91,13 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
     @Inject
     private MacroUtils macroUtils;
 
+    @Inject
+    @Named("macro")
+    private Transformation macroTransformation;
+
+    @Inject
+    private RenderingContext renderingContext;
+
     /**
      * Default constructor.
      */
@@ -106,7 +119,7 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
     {
         String ids = parameters.getIds();
 
-        List<Block> blocks = new ArrayList<>();
+        List<Block> taskBlocks = new ArrayList<>();
 
         SimpleDateFormat storageFormat = new SimpleDateFormat(dateMacroConfiguration.getStorageDateFormat());
         List<Block> errorList = new ArrayList<>();
@@ -128,18 +141,42 @@ public class TasksMacro extends AbstractMacro<TasksMacroParameters>
                     task.getCompleteDate() != null ? storageFormat.format(task.getCompleteDate()) : "");
 
                 String taskContent = getMacroContent(task, storageFormat, context);
-                blocks.add(new MacroBlock("task", taskParams, taskContent, false));
+                taskBlocks.add(new MacroBlock("task", taskParams, taskContent, false));
             } catch (NumberFormatException | TaskException | ComponentLookupException e) {
                 errorList.add(
                     new MacroBlock("error", Collections.emptyMap(), ExceptionUtils.getRootCauseMessage(e), false));
             }
         }
+        List<Block> blocks = new ArrayList<>(executeRestricted(taskBlocks, context));
         if (noViewRights) {
             blocks.add(0, new MacroBlock("warning", Collections.emptyMap(),
                 localizationManager.getTranslationPlain("taskmanager.macro.tasks.noRights"), false));
         }
         blocks.addAll(errorList);
         return blocks;
+    }
+
+    /**
+     * Execute the given task macros, in restricted mode since their content comes from other pages.
+     */
+    private List<Block> executeRestricted(List<Block> taskBlocks, MacroTransformationContext context)
+        throws MacroExecutionException
+    {
+        if (taskBlocks.isEmpty()) {
+            return taskBlocks;
+        }
+        XDOM xdom = new XDOM(taskBlocks);
+        TransformationContext currentContext = context.getTransformationContext();
+        TransformationContext restrictedContext = new TransformationContext(xdom, currentContext.getSyntax(), true);
+        restrictedContext.setId(currentContext.getId());
+        restrictedContext.setTargetSyntax(currentContext.getTargetSyntax());
+        try {
+            ((MutableRenderingContext) this.renderingContext).transformInContext(this.macroTransformation,
+                restrictedContext, xdom);
+        } catch (TransformationException e) {
+            throw new MacroExecutionException("Failed to display the tasks.", e);
+        }
+        return xdom.getChildren();
     }
 
     private String getMacroContent(Task task, SimpleDateFormat storageFormat,
