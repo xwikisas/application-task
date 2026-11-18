@@ -36,9 +36,7 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include reference="TaskManager.TaskQueryMacros" /}}
-
-{{velocity output="false"}}
+  <content>{{velocity output="false"}}
 #macro (putOrDefault $map $propertyName $value $default1)
   #if ($value)
     #set ($discard = $map.put($propertyName, $value))
@@ -58,6 +56,7 @@
   #set ($discard = $return.put('csvReturn', $newArray))
 #end
 {{/velocity}}{{velocity wiki="false"}}
+#template('taskQuery_macros.vm')
 ##
 ## This page prepares and returns the JSON of tasks used in the frappe-gantt library, in the taskgantt macro.
 ## Parameters are the same as taskgantt macro, with an optional 'taskId'.

@@ -265,9 +265,8 @@ Example:
       <async_enabled/>
     </property>
     <property>
-      <code>{{include reference="TaskManager.TaskQueryMacros" /}}
-
-{{velocity}}
+      <code>{{velocity output="false"}}
+#template('taskQuery_macros.vm')
 #set ($discard = $xwiki.linkx.use($services.webjars.url('com.xwiki.task:application-task-webjar', 'kanbanBoard.less', {'evaluate': true}),
   {'type': 'text/css', 'rel': 'stylesheet'}))
 ## The xwql variable is used by the awmkanban macro called from this one. It starts with the constraint shared by all
@@ -308,6 +307,9 @@ Example:
 #set ($columns = "$!{xcontext.macro.params.columns}")
 #set ($order = "$!{xcontext.macro.params.order}")
 #set ($limit = "$!{xcontext.macro.params.limit}")
+{{/velocity}}
+
+{{velocity}}
 {{awmkanban
   className="TaskManager.TaskManagerClass"
   category="status"

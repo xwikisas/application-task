@@ -252,7 +252,9 @@
       <async_enabled>0</async_enabled>
     </property>
     <property>
-      <code>{{include reference="TaskManager.TaskQueryMacros" /}}
+      <code>{{velocity output="false"}}
+#template('taskQuery_macros.vm')
+{{/velocity}}
 
 {{velocity}}
 #set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))

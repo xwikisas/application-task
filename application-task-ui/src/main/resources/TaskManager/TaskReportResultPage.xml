@@ -37,8 +37,8 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{include reference="XWiki.LiveTableResultsMacros" /}}
-{{include reference="TaskManager.TaskQueryMacros" /}}
 {{velocity wiki="false"}}
+#template('taskQuery_macros.vm')
 #set ($extraFrom = '')
 #getTaskTypeConstraint($request.taskType 'taskTypeOwner.value' 'typeConstraint')
 #if ($typeConstraint != '')

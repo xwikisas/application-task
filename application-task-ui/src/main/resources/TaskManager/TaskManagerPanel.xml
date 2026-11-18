@@ -174,7 +174,9 @@
       <category>Information</category>
     </property>
     <property>
-      <content>{{include reference="TaskManager.TaskQueryMacros" /}}
+      <content>{{velocity output="false"}}
+#template('taskQuery_macros.vm')
+{{/velocity}}
 
 {{velocity}}
   #panelheader($services.localization.render('taskmanager.panel.paneltitle'))
