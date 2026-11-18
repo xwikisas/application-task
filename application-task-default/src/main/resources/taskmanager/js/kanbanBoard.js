@@ -129,10 +129,13 @@ require(['jquery', 'bootstrap'], function ($) {
       return status ? status.label : value;
     };
 
-    const selectizeControl = columnsSelect.next('.selectize-control').hide();
+    // Use the wrapper held by the selectize widget: depending on the XWiki version, other elements (e.g. a screen reader
+    // label) are inserted between the select and the widget markup.
+    const selectizeControl = selectize.$wrapper.hide();
     colorsInput.closest('.macro-parameter').hide();
-    const editor = cloneTemplate(colorsInput.siblings('template.kanban-columns-editor-template'))
-      .insertAfter(selectizeControl);
+    // Keep the cloned editor: insertAfter returns the inserted elements, which are none if the target is missing.
+    const editor = cloneTemplate(colorsInput.siblings('template.kanban-columns-editor-template'));
+    editor.insertAfter(selectizeControl);
     const columnTemplate = colorsInput.siblings('template.kanban-column-template');
     const suggestionTemplate = colorsInput.siblings('template.kanban-column-suggestion-template');
     const list = editor.find('.kanban-columns');
