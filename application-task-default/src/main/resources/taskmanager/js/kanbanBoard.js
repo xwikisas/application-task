@@ -130,8 +130,9 @@ require(['jquery', 'bootstrap'], function ($) {
     };
 
     // Use the wrapper held by the selectize widget: depending on the XWiki version, other elements (e.g. a screen reader
-    // label) are inserted between the select and the widget markup.
-    const selectizeControl = selectize.$wrapper.hide();
+    // label) are inserted between the select and the widget markup. Selectize.js holds it as a jQuery object, while
+    // Tom Select, which replaces Selectize.js starting with XWiki 18, holds it as a DOM element.
+    const selectizeControl = $(selectize.$wrapper || selectize.wrapper).hide();
     colorsInput.closest('.macro-parameter').hide();
     // Keep the cloned editor: insertAfter returns the inserted elements, which are none if the target is missing.
     const editor = cloneTemplate(colorsInput.siblings('template.kanban-columns-editor-template'));
