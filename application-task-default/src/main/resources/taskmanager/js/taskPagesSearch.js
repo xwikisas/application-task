@@ -47,12 +47,19 @@ require(['jquery', 'xwiki-selectize'], function($) {
       }
     };
   };
-  var init = function() {
-    $('.suggest-task-pages').each(function() {
+  var init = function(container) {
+    $(container).find('select.suggest-task-pages').each(function() {
       var picker = $(this);
-      picker.xwikiSelectize(getSettings(picker));
+      if (!picker.data('taskPickerInitialized')) {
+        picker.data('taskPickerInitialized', true);
+        picker.xwikiSelectize(getSettings(picker));
+      }
     });
   };
-  init();
-  $(document).on('shown.bs.modal', '.modal', init);
+  // The macro editor fires this event once it has inserted the parameter fields, which can be after the modal is shown.
+  $(document).on('xwiki:dom:updated', function(event, data) {
+    init(data ? data.elements : document.body);
+  });
+  // The picker might have been displayed before this code was loaded.
+  init(document.body);
 });

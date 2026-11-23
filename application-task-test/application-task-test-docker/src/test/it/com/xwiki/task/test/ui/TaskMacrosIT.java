@@ -834,6 +834,12 @@ public class TaskMacrosIT
         taskPicker.selectTask("Picker task two", secondTask);
         taskPicker.selectTask(thirdTask, thirdTask);
         assertEquals(List.of(firstTask, secondTask, thirdTask), taskPicker.getSelectedTasks());
+        // The tasks picker is displayed again when the macro editor is reopened in the same editing session.
+        macroEditModal.clickCancel();
+        macroEditModal = openTasksMacroModal(editor);
+        taskPicker = macroEditModal.getTaskPicker();
+        assertEquals(List.of("#" + firstTask + " Picker task one"), taskPicker.getSelectedTaskLabels());
+
         macroEditModal.clickSubmit();
         editPage.clickSaveAndView();
 

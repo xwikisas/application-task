@@ -23,15 +23,19 @@ require(['jquery'], function ($) {
   let generateId = function () {
     return String(Math.random()).slice(-5);
   };
-  let init = function () {
-    $('.taskbox-id').each(function () {
+  let init = function (container) {
+    $(container).find('.taskbox-id').each(function () {
       if (!this.value) {
         this.value = generateId();
       }
     });
   };
-  init();
-  $(document).on('shown.bs.modal', '.modal', init);
+  // The macro editor fires this event once it has inserted the parameter fields, which can be after the modal is shown.
+  $(document).on('xwiki:dom:updated', function (event, data) {
+    init(data ? data.elements : document.body);
+  });
+  // The macro editor might have been displayed before this code was loaded.
+  init(document.body);
   $(document).on('click', '.taskbox-id-group .btn', function () {
     $(this).closest('.taskbox-id-group').find('.taskbox-id').val(generateId()).trigger('change');
   });
