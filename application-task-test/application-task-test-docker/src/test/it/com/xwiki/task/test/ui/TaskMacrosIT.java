@@ -57,6 +57,7 @@ import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerViewPage;
 import org.xwiki.contrib.application.task.test.po.TaskPickerElement;
 import org.xwiki.contrib.application.task.test.po.TaskReportMacro;
+import org.xwiki.contrib.application.task.test.po.TaskReportMacroModal;
 import org.xwiki.contrib.application.task.test.po.TaskboxMacroModal;
 import org.xwiki.contrib.application.task.test.po.TasksMacroModal;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
@@ -175,6 +176,9 @@ public class TaskMacrosIT
     private final LocalDocumentReference pickerCardTask1 = new LocalDocumentReference("Main", "PickerCardTask1");
 
     private final LocalDocumentReference pickerCardTask2 = new LocalDocumentReference("Main", "PickerCardTask2");
+
+    private final LocalDocumentReference pageWithTaskReportColumns =
+        new LocalDocumentReference("Main", "PageWithTaskReportColumns");
 
     @BeforeAll
     void setup(TestUtils setup)
@@ -830,16 +834,16 @@ public class TaskMacrosIT
         assertEquals(List.of(firstTask), taskPicker.getSelectedTasks());
         assertEquals(List.of("#" + firstTask + " Picker task one"), taskPicker.getSelectedTaskLabels());
 
-        // More tasks can be selected, searching them either by title or by number.
-        taskPicker.selectTask("Picker task two", secondTask);
-        taskPicker.selectTask(thirdTask, thirdTask);
-        assertEquals(List.of(firstTask, secondTask, thirdTask), taskPicker.getSelectedTasks());
         // The tasks picker is displayed again when the macro editor is reopened in the same editing session.
         macroEditModal.clickCancel();
         macroEditModal = openTasksMacroModal(editor);
         taskPicker = macroEditModal.getTaskPicker();
         assertEquals(List.of("#" + firstTask + " Picker task one"), taskPicker.getSelectedTaskLabels());
 
+        // More tasks can be selected, searching them either by title or by number.
+        taskPicker.selectTask("Picker task two", secondTask);
+        taskPicker.selectTask(thirdTask, thirdTask);
+        assertEquals(List.of(firstTask, secondTask, thirdTask), taskPicker.getSelectedTasks());
         macroEditModal.clickSubmit();
         editPage.clickSaveAndView();
 
@@ -1059,6 +1063,32 @@ public class TaskMacrosIT
         assertTrue(new ViewPageWithTasks().isTaskMacroCheckboxChecked(0));
 
         setup.deletePage(pageWithCheckboxes);
+    }
+
+    @Test
+    @Order(90)
+    void taskReportColumnsPicker(TestUtils setup) throws Exception
+    {
+        WYSIWYGEditPage editPage = setup.createPage(pageWithTaskReportColumns,
+            "{{task-report id=\"columnsreport\" columns=\"name,status,number,owner\"/}}\n\n ").editWYSIWYG();
+        TaskReportMacroModal macroEditModal =
+            openMacroModal(new CKEditor("content").waitToLoad(), new TaskReportMacroModal());
+
+        // The columns picker keeps the order from the macro call, which is the order of the table columns.
+        assertEquals(List.of("name", "status", "number", "owner"), macroEditModal.getColumns());
+
+        // All the columns supported by the macro can be added, at the end.
+        macroEditModal.addColumn("Priority", "severity");
+        assertEquals(List.of("name", "status", "number", "owner", "severity"), macroEditModal.getColumns());
+        macroEditModal.clickSubmit();
+        editPage.clickSaveAndView();
+
+        assertTrue(setup.rest().<Page>get(pageWithTaskReportColumns).getContent()
+            .contains("columns=\"name,status,number,owner,severity\""));
+        assertEquals(List.of("Task", "Status", "Key", "Location", "Priority"),
+            new TaskReportMacro("columnsreport").getColumnNames());
+
+        setup.deletePage(pageWithTaskReportColumns);
     }
 
     private String getMacroContent(String filename)

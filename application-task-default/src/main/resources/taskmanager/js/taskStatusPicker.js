@@ -39,8 +39,8 @@ require(['jquery'], function ($) {
   };
 
   /**
-   * Returns the selected statuses in the order from the macro call. The values are taken from the selected statuses,
-   * since their case might differ from the macro call.
+   * Returns the selected values (e.g. statuses) in the order from the macro call. The values are taken from the
+   * select, since their case might differ from the macro call.
    */
   const getOrderedValue = function (select) {
     const selectedStatuses = select.val() || [];
@@ -63,8 +63,10 @@ require(['jquery'], function ($) {
   };
 
   /**
-   * The select lists its options in the order of the statuses, so the selectize widget displays the selected statuses
-   * in that order instead of the order from the macro call, which matters (e.g. for the columns of the Kanban board).
+   * The select lists its options in a fixed order (e.g. the order of the statuses), so the selectize widget displays the
+   * selected values in that order instead of the order from the macro call, which matters (e.g. for the columns of the
+   * Kanban board or of the Task report). Used for the selects with the 'task-status-picker' or 'task-ordered-picker'
+   * class.
    * Once the order is restored, the select gets the 'taskStatusPicker:ready' event and the 'taskStatusPickerReady'
    * data, so that code depending on the order of the selected statuses can wait for it.
    */
@@ -92,7 +94,7 @@ require(['jquery'], function ($) {
   };
 
   const init = function (container) {
-    $(container).find('select.task-status-picker').each(function () {
+    $(container).find('select.task-status-picker, select.task-ordered-picker').each(function () {
       const select = $(this);
       if (!select.data('taskStatusPickerInitialized')) {
         select.data('taskStatusPickerInitialized', true);

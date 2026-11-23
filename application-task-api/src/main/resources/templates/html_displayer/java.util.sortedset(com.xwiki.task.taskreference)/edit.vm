@@ -18,6 +18,8 @@
 ## 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 ## ---------------------------------------------------------------------------
 #template("pickers_macros.vm")
+## Restores the order of the selected columns from the macro call, which the picker would otherwise lose.
+#set ($discard = $xwiki.jsrx.use('taskmanager/js/taskStatusPicker.js'))
 #set ($options = [
   { "name": "name", "value": "name"},
   { "name": "number", "value": "number"},
@@ -27,12 +29,16 @@
   { "name": "completeDate", "value": "completeDate"},
   { "name": "createDate", "value": "createDate"},
   { "name": "reporter", "value": "reporter"},
-  { "name": "status", "value": "status"}
+  { "name": "status", "value": "status"},
+  { "name": "project", "value": "project"},
+  { "name": "severity", "value": "severity"},
+  { "name": "_actions", "value": "_actions"}
 ])
 #set ($parameters = {
   'name': $displayer.parameters.name,
   'value': $displayer.value,
   'multiple': 'multiple',
+  'class': 'task-ordered-picker',
   'options': $options,
   'prefix': 'taskmanager.livetable.'
 })
