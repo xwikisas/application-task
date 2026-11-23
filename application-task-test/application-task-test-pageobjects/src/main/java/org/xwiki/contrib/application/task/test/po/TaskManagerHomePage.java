@@ -19,6 +19,9 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -113,5 +116,21 @@ public class TaskManagerHomePage extends ViewPage
         TableLayoutElement tableLayoutElement = liveDataElement.getTableLayout();
         tableLayoutElement.waitUntilReady();
         return tableLayoutElement;
+    }
+
+    /**
+     * Opens the Information pane and lists the pages included by the home page, through which their content can be
+     * edited.
+     *
+     * @return the titles of the included pages
+     * @since 3.12.1
+     */
+    public List<String> getIncludedPages()
+    {
+        openInformationDocExtraPane();
+        By includedPagesSelector = By.xpath("//*[@id = 'informationcontent']"
+            + "//dt[label[normalize-space() = 'Included pages']]/following-sibling::dd[1]//a");
+        return getDriver().findElementsWithoutWaiting(includedPagesSelector).stream().map(WebElement::getText)
+            .collect(Collectors.toList());
     }
 }

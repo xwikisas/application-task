@@ -179,6 +179,9 @@
         <configuration>
           <visibleTechnicalPages>
             <visibleTechnicalPage>.*/TaskManager/WebHome\.xml</visibleTechnicalPage>
+            <!-- Visible so that the Information pane of the home page links to it (it lists only the visible included
+              pages), the home page having no other link to edit its content. -->
+            <visibleTechnicalPage>.*/TaskManager/HomeContent\.xml</visibleTechnicalPage>
           </visibleTechnicalPages>
         </configuration>
       </plugin>

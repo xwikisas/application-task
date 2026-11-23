@@ -199,6 +199,8 @@ class TaskManagerIT
         assertEquals("Done", tableLayout.getCell("Status", 1).getText());
         assertEquals("Do this as well", tableLayout.getCell("Task", 2).getText());
         assertEquals("In Progress", tableLayout.getCell("Status", 2).getText());
+        // The Information pane links to the included TaskManager.HomeContent page, which can't be reached otherwise.
+        assertEquals(List.of("Task Manager Home Content"), taskManagerHomePage.getIncludedPages());
 
         // The home page displays the content of TaskManager.HomeContent, which the administrators can edit.
         DocumentReference homeContentRef = new DocumentReference(wiki.getName(), "TaskManager", "HomeContent");

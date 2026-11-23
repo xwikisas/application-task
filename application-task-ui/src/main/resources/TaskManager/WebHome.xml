@@ -36,15 +36,7 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content>{{velocity}}
-#set ($mainReference = $services.model.createDocumentReference('', 'TaskManager', 'TaskManagerClass'))
-#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
-  {{missingLicenseMessage extensionName="taskmanager.extension.name"/}}
-#else
-  ## The content is stored on a separate page that is excluded from the licensing, so that it can be edited.
-  {{include reference="TaskManager.HomeContent"/}}
-#end
-{{/velocity}}</content>
+  <content>{{include reference="TaskManager.HomeContent"/}}</content>
   <object>
     <name>TaskManager.WebHome</name>
     <number>0</number>
