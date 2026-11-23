@@ -35,6 +35,7 @@ import org.xwiki.contrib.application.task.test.po.NotificationButton;
 import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
+import org.xwiki.contrib.application.task.test.po.TaskNotificationsUserProfilePage;
 import org.xwiki.contrib.application.task.test.po.ViewPageWithTasks;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.platform.notifications.test.po.NotificationsTrayPage;
@@ -151,7 +152,8 @@ class NotificationIT
 
         // Configure the notification preferences for the Test User, such that they only receive notifications from the
         // Task Manager Application.
-        NotificationsUserProfilePage userNotificationPreferences = NotificationsUserProfilePage.gotoPage(TEST_USERNAME);
+        NotificationsUserProfilePage userNotificationPreferences =
+            TaskNotificationsUserProfilePage.gotoPage(TEST_USERNAME);
         userNotificationPreferences.disableAllParameters();
         setTaskNotificationsState(userNotificationPreferences, BootstrapSwitch.State.ON);
         logout(setup);
@@ -530,7 +532,7 @@ class NotificationIT
     private void enableTaskNotifications(TestUtils setup, String user)
     {
         doAsUser(setup, user, () -> {
-            NotificationsUserProfilePage prefs = NotificationsUserProfilePage.gotoPage(user);
+            NotificationsUserProfilePage prefs = TaskNotificationsUserProfilePage.gotoPage(user);
             prefs.disableAllParameters();
 
             try {
