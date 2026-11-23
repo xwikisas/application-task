@@ -19,6 +19,8 @@
  */
 package org.xwiki.contrib.application.task.test.po;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.xwiki.ckeditor.test.po.MacroDialogEditModal;
 
 /**
@@ -35,6 +37,20 @@ public class TasksMacroModal extends MacroDialogEditModal
         super.waitUntilReady();
         getTaskPicker().waitUntilReady();
         return this;
+    }
+
+    /**
+     * Cancels the macro editing and waits for the modal to be closed, so that it can be opened again right away.
+     *
+     * @since 3.12.1
+     */
+    @Override
+    public void clickCancel()
+    {
+        super.clickCancel();
+        // The modal fades out, and its backdrop is removed once it is hidden.
+        getDriver().waitUntilCondition(driver -> driver.findElements(By.cssSelector("[class*=-editor-modal]")).stream()
+            .noneMatch(WebElement::isDisplayed) && driver.findElements(By.className("modal-backdrop")).isEmpty());
     }
 
     /**

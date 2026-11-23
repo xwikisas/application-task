@@ -128,6 +128,9 @@ public class TaskTemplatesIT
             page.getListedTemplates().contains(getTemplateSpaceUrl("view", testTemplate + "TemplateProvider", setup)),
             "Listed templates: " + page.getListedTemplates());
 
+        // Delete the task, which the task listings of the next tests would display.
+        setup.loginAsSuperAdmin();
+        setup.deletePage(taskRef);
         logout(setup);
     }
 
