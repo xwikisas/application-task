@@ -20,6 +20,7 @@
 package com.xwiki.task.test.ui;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -29,6 +30,10 @@ import org.xwiki.contrib.application.task.test.po.TaskAdminPage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerHomePage;
 import org.xwiki.contrib.application.task.test.po.TaskManagerInlinePage;
 import org.xwiki.contrib.application.task.test.po.TaskTemplateListPage;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.ObjectPropertyReference;
+import org.xwiki.model.reference.ObjectReference;
+import org.xwiki.rest.model.jaxb.Property;
 import org.xwiki.test.docker.junit5.ExtensionOverride;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
@@ -36,6 +41,7 @@ import org.xwiki.test.ui.po.CreatePagePage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,7 +83,7 @@ public class TaskTemplatesIT
 
     @Test
     @Order(2)
-    void createTemplate(TestUtils setup)
+    void createTemplate(TestUtils setup) throws Exception
     {
         String testTemplate = "Test";
         String templateName = "TaskManager.TaskManagerTemplates." + testTemplate + "Template";
@@ -95,14 +101,26 @@ public class TaskTemplatesIT
         assertEquals(getTemplateSpaceUrl("edit", testTemplate + "Template", setup), setup.getDriver().getCurrentUrl());
 
         TaskManagerInlinePage taskEditPage = new TaskManagerInlinePage();
+        // Setting the progress also moves the template to In Progress, which fills the start date of a task.
         taskEditPage.setProgress(testProperty);
         taskEditPage.clickSaveAndView();
+        // The template doesn't hold dates, which would be copied to every task created from it.
+        DocumentReference templateRef = new DocumentReference(setup.getCurrentWiki(),
+            List.of("TaskManager", "TaskManagerTemplates"), testTemplate + "Template");
+        assertEquals("", getTaskProperty(setup, templateRef, "createDate"));
+        assertEquals("", getTaskProperty(setup, templateRef, "startDate"));
+
         createPageFromTemplate("TestTaskPage", templateName + "Provider");
         taskEditPage = new TaskManagerInlinePage();
         // See that the right template is applied.
         assertEquals(testProperty, taskEditPage.getProgress());
         // Also test that the templates don't show up as dependencies.
         assertFalse(taskEditPage.getDependencies().contains(templateName));
+        taskEditPage.clickSaveAndView();
+        // The task gets its own creation date.
+        DocumentReference taskRef = new DocumentReference(setup.getCurrentWiki(), "TaskManager", "TestTaskPage");
+        assertNotEquals("", getTaskProperty(setup, taskRef, "createDate"));
+        assertEquals("", getTaskProperty(setup, taskRef, "startDate"));
 
         // Check that the new template is listed.
         page = TaskTemplateListPage.gotoPage();
@@ -133,6 +151,14 @@ public class TaskTemplatesIT
     private String getTemplateSpaceUrl(String action, String templateName, TestUtils setup)
     {
         return setup.getURL(List.of("TaskManager", "TaskManagerTemplates"), templateName, action, "").split("\\?")[0];
+    }
+
+    private String getTaskProperty(TestUtils setup, DocumentReference documentReference, String property)
+        throws Exception
+    {
+        Property value = setup.rest().get(new ObjectPropertyReference(property,
+            new ObjectReference("TaskManager.TaskManagerClass[0]", documentReference)));
+        return Objects.toString(value.getValue(), "");
     }
 
     private void createPageFromTemplate(String title, String template)

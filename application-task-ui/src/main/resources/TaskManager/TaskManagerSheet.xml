@@ -130,6 +130,15 @@
     )))
   #end
   #if($isEdit &amp;&amp; !$isSheet)
+    #set ($isTaskTemplate = $doc.space == 'TaskManager.TaskManagerTemplates')
+    #if ($doc.isNew() &amp;&amp; !$isTaskTemplate)
+      ## Don't copy the dates of the task template, which can hold the dates of the moment it was saved. The empty
+      ## creation date is displayed as the current date.
+      #set ($taskObj = $doc.getObject('TaskManager.TaskManagerClass'))
+      #set ($discard = $taskObj.set('createDate', ''))
+      #set ($discard = $taskObj.set('startDate', $NULL))
+      #set ($discard = $taskObj.set('completeDate', $NULL))
+    #end
     (% class="xform" %)
     (((
       (% class="row" %)
@@ -150,7 +159,7 @@
                   ## we are a non-terminal page: use space name
                   #set($taskName = $doc.documentReference.parent.name)
                 #end
-                #if ($doc.space == 'TaskManager.TaskManagerTemplates')
+                #if ($isTaskTemplate)
                   ## Don't set the title for templates.
                   #set ($taskName = '')
                 #end
@@ -176,13 +185,18 @@
         (((
           (% class="row" %)
           (((
-            #displayPropertyCol('startDate', 'calendar')
-            #displayPropertyCol('createDate', 'calendar')
+            ## The creation, start and completion dates of a template would be copied to every task created from it.
+            #if (!$isTaskTemplate)
+              #displayPropertyCol('startDate', 'calendar')
+              #displayPropertyCol('createDate', 'calendar')
+            #end
             #displayPropertyCol('duedate', 'time')
-            (% class="col-xs-12 col-sm-6" %)
-            (((
-            )))
-            #displayPropertyCol('completeDate', 'check')
+            #if (!$isTaskTemplate)
+              (% class="col-xs-12 col-sm-6" %)
+              (((
+              )))
+              #displayPropertyCol('completeDate', 'check')
+            #end
           )))
           (% class="row" %)
           (((

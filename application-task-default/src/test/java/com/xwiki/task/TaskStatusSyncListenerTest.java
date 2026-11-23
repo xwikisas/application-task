@@ -289,6 +289,41 @@ class TaskStatusSyncListenerTest
     }
 
     @Test
+    void templateDatesAreCleared()
+    {
+        when(this.document.getDocumentReference())
+            .thenReturn(new DocumentReference("xwiki", List.of("TaskManager", "TaskManagerTemplates"), "Template"));
+        setTask(this.taskObj, Task.STATUS_IN_PROGRESS, 40);
+        this.taskObj.setDateValue(Task.CREATE_DATE, OLD_DATE);
+        this.taskObj.setDateValue(Task.START_DATE, OLD_DATE);
+        this.taskObj.setDateValue(Task.COMPLETE_DATE, OLD_DATE);
+        this.taskObj.setDateValue(Task.DUE_DATE, OLD_DATE);
+
+        this.listener.onEvent(new DocumentCreatingEvent(), this.document, this.context);
+
+        assertNull(this.taskObj.getDateValue(Task.CREATE_DATE));
+        assertNull(this.taskObj.getDateValue(Task.START_DATE));
+        assertNull(this.taskObj.getDateValue(Task.COMPLETE_DATE));
+        assertEquals(OLD_DATE, this.taskObj.getDateValue(Task.DUE_DATE));
+        assertEquals(Task.STATUS_IN_PROGRESS, this.taskObj.getStringValue(Task.STATUS));
+        assertEquals(40, this.taskObj.getIntValue(Task.PROGRESS));
+    }
+
+    @Test
+    void templateWithoutDatesIsNotModified()
+    {
+        when(this.document.getDocumentReference())
+            .thenReturn(new DocumentReference("xwiki", List.of("TaskManager", "TaskManagerTemplates"), "Template"));
+        setTask(this.taskObj, STATUS_TODO, 0);
+
+        update();
+
+        assertNull(this.taskObj.getField(Task.CREATE_DATE));
+        assertNull(this.taskObj.getField(Task.START_DATE));
+        assertNull(this.taskObj.getField(Task.COMPLETE_DATE));
+    }
+
+    @Test
     void documentWithoutTaskObjectIsIgnored()
     {
         when(this.document.getXObject(AbstractTaskEventListener.TASK_CLASS_REFERENCE)).thenReturn(null);

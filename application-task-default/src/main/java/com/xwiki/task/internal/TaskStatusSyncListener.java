@@ -50,6 +50,8 @@ import com.xwiki.task.model.Task;
  * <li>the completion date is set when the task becomes {@code Done} and cleared when it stops being {@code Done};</li>
  * <li>the start date is set, if missing, when the task is moved to {@code InProgress}.</li>
  * </ul>
+ * Task templates are not synchronized, but their creation, start and completion dates are cleared, since every task
+ * created from a template would get them.
  * A property explicitly changed in the same save is never overwritten. The task document is modified before being
  * saved, so no additional save is needed.
  *
@@ -68,6 +70,9 @@ public class TaskStatusSyncListener extends AbstractTaskEventListener
 
     private static final List<String> TEMPLATE_SPACE_REFERENCES = List.of(TASK_MANAGER_SPACE, "TaskManagerTemplates");
 
+    private static final List<String> TEMPLATE_CLEARED_DATES =
+        List.of(Task.CREATE_DATE, Task.START_DATE, Task.COMPLETE_DATE);
+
     private static final String STATUS_TODO = "ToDo";
 
     private static final int DONE_PROGRESS = 100;
@@ -84,7 +89,11 @@ public class TaskStatusSyncListener extends AbstractTaskEventListener
     protected void processEvent(XWikiDocument document, XWikiContext context, Event event, boolean inFoldEvent)
     {
         BaseObject taskObj = document.getXObject(TASK_CLASS_REFERENCE);
-        if (taskObj == null || isTemplate(document)) {
+        if (taskObj == null) {
+            return;
+        }
+        if (isTemplate(document)) {
+            clearTemplateDates(taskObj);
             return;
         }
 
@@ -112,6 +121,20 @@ public class TaskStatusSyncListener extends AbstractTaskEventListener
             // Only on an actual transition, so that tasks created as in progress don't get a start date.
             if (originalTaskObj != null) {
                 syncStartDate(taskObj, originalTaskObj, status);
+            }
+        }
+    }
+
+    /**
+     * The tasks created from a template get a copy of its object, so the dates of the template would become the dates
+     * of every task created from it. The edit form used to set them: it displays an empty creation date as the current
+     * date, and fills the start and completion dates when the status changes.
+     */
+    private void clearTemplateDates(BaseObject taskObj)
+    {
+        for (String property : TEMPLATE_CLEARED_DATES) {
+            if (taskObj.getDateValue(property) != null) {
+                taskObj.setDateValue(property, null);
             }
         }
     }
